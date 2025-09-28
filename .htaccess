@@ -1,5 +1,9 @@
-
 <IfModule mod_rewrite.c>
     RewriteEngine On
+
+    # Ensure we're in the root and not public/
+    RewriteCond %{REQUEST_URI} !^/public
+
+    # Redirect to public/
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
