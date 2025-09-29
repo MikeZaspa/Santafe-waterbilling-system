@@ -1,17 +1,12 @@
+Options -Indexes -MultiViews
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
     
-    # Redirect all requests to public folder except existing files/directories
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
+    # Skip rewrite if the request is for public folder
+    RewriteCond %{REQUEST_URI} ^/public [NC]
+    RewriteRule ^ - [L]
+    
+    # Rewrite everything else to public folder
     RewriteRule ^(.*)$ public/$1 [L]
-</IfModule>
-
-# Prevent directory listing
-Options -Indexes
-
-# Security headers
-<IfModule mod_headers.c>
-    Header always set X-Content-Type-Options nosniff
-    Header always set X-Frame-Options DENY
 </IfModule>
