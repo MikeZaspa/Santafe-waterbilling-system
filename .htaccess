@@ -1,5 +1,14 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteCond %{REQUEST_URI} !^/public
+
+    # Prevent directory listing
+    Options -Indexes
+
+    # Redirect everything except public, storage, vendor, .env, etc.
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteCond %{REQUEST_URI} !^/storage/
+    RewriteCond %{REQUEST_URI} !^/vendor/
+    RewriteCond %{REQUEST_URI} !^/\.env
+    RewriteCond %{REQUEST_URI} !^/\.git
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
