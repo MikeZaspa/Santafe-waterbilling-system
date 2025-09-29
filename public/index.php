@@ -15,9 +15,9 @@ if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php'))
 }
 
 
-require __DIR__.'/../santafe-waterbilling.com/vendor/autoload.php';
+require __DIR__.'/santafe-waterbilling.com/vendor/autoload.php';
 
-$app = require_once __DIR__.'/../santafe-waterbilling.com/bootstrap/app.php';
+$app = require_once __DIR__.'/santafe-waterbilling.com/bootstrap/app.php';
 
 /** @var Kernel $kernel */
 $kernel = $app->make(Kernel::class);
