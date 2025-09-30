@@ -289,5 +289,9 @@ Route::prefix('disconnect')->group(function () {
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/', function () {
     return view('welcome');
-    
+
+    Route::get('/', function () {
+    return view('auth.admin_login');
+});
+
 });
