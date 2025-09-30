@@ -665,6 +665,61 @@
     </div>
 </div>
 
+
+<!-- Disconnection Modal -->
+<div class="modal fade" id="disconnectionModal" tabindex="-1" aria-labelledby="disconnectionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="disconnectionModalLabel">Disconnect Consumer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="disconnectionForm">
+                    @csrf
+                    <input type="hidden" id="disconnect_consumer_id" name="consumer_id">
+                    <input type="hidden" id="disconnect_billing_id" name="billing_id">
+                    
+                    <div class="mb-3">
+                        <label for="consumerInfo" class="form-label">Consumer</label>
+                        <input type="text" class="form-control" id="consumerInfo" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="amountDue" class="form-label">Amount Due</label>
+                        <input type="number" step="0.01" class="form-control" id="amountDue" name="amount_due" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="disconnectionReason" class="form-label">Reason</label>
+                        <select class="form-select" id="disconnectionReason" name="reason" required>
+                            <option value="">Select Reason</option>
+                            <option value="Non-payment">Non-payment</option>
+                            <option value="Overdue bill">Overdue bill</option>
+                            <option value="Violation of terms">Violation of terms</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="disconnectionDate" class="form-label">Disconnection Date</label>
+                        <input type="date" class="form-control" id="disconnectionDate" name="disconnection_date" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="disconnectionNotes" class="form-label">Notes (Optional)</label>
+                        <textarea class="form-control" id="disconnectionNotes" name="notes" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" id="confirmDisconnect">Disconnect</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Bootstrap Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <!-- jQuery -->
@@ -794,23 +849,26 @@ $(document).ready(function() {
                 }
             },
             {
-                data: 'id',
-                name: 'actions',
-                orderable: false,
-                searchable: false,
-                render: function(data, type, row) {
-                    return `
-                        <div class="btn-group">
-                            <button class="btn btn-sm btn-primary btn-action edit-btn" data-id="${data}" title="Edit">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger btn-action delete-btn" data-id="${data}" title="Delete">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
-                    `;
+                    data: 'id',
+                    name: 'actions',
+                    orderable: false,
+                    searchable: false,
+                    render: function(data, type, row) {
+                        return `
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-primary btn-action edit-btn" data-id="${data}" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-warning btn-action disconnect-btn" data-id="${data}" data-consumer-id="${row.consumer_id}" title="Disconnect">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger btn-action delete-btn" data-id="${data}" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        `;
+                    }
                 }
-            }
         ],
         order: [[0, 'desc']],
         createdRow: function(row, data, dataIndex) {
@@ -1329,11 +1387,12 @@ function performLogout() {
             window.location.href = '/admin-login';
         }
     });
-    
-    // Alternative: Simple redirect (if no server-side logout needed)
-    // window.location.href = '/login';
+
 }
+
 });
+
+
 </script>
 </body>
 </html>

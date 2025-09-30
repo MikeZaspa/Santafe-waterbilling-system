@@ -247,4 +247,27 @@ public function disconnect(Request $request, $billingId)
             
         return response()->json($consumers);
     }
+
+     public function getConsumerInfo(Billing $billing)
+    {
+        try {
+            $consumer = $billing->consumer;
+            
+            if (!$consumer) {
+                return response()->json([
+                    'error' => 'Consumer not found'
+                ], 404);
+            }
+
+            return response()->json([
+                'consumer' => $consumer,
+                'billing' => $billing
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to load consumer information: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

@@ -42,10 +42,14 @@ class AdminConsumer extends Model
     {
         return $this->hasMany(AccountantBilling::class, 'consumer_id');
     }
-    // Relationship with disconnections
     public function disconnections()
     {
         return $this->hasMany(Disconnection::class);
+    }
+
+    public function currentDisconnection()
+    {
+        return $this->hasOne(Disconnection::class)->where('status', 'disconnected');
     }
 
    

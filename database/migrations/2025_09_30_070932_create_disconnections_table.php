@@ -4,20 +4,20 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateDisconnectionsTable extends Migration
+return new class extends Migration
 {
     public function up()
     {
         Schema::create('disconnections', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('bill_id'); 
             $table->unsignedBigInteger('consumer_id');
+            $table->unsignedBigInteger('billing_id')->nullable();
+            $table->decimal('amount_due', 10, 2);
+            $table->string('reason');
             $table->date('disconnection_date');
-            $table->text('reason')->nullable();
-            $table->enum('status', ['disconnected', 'reconnected'])->default('disconnected');
-            $table->foreignId('disconnected_by')->constrained('users')->onDelete('cascade');
             $table->date('reconnection_date')->nullable();
-            $table->foreignId('reconnected_by')->nullable()->constrained('users')->onDelete('cascade');
+            $table->text('notes')->nullable();
+            $table->enum('status', ['active', 'resolved'])->default('active');
             $table->timestamps();
         });
     }
@@ -26,4 +26,4 @@ class CreateDisconnectionsTable extends Migration
     {
         Schema::dropIfExists('disconnections');
     }
-}
+};

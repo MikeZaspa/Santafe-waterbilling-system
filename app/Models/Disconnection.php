@@ -10,39 +10,29 @@ class Disconnection extends Model
     use HasFactory;
 
     protected $fillable = [
-        'bill_id',
         'consumer_id',
-        'disconnection_date',
+        'billing_id',
+        'amount_due',
         'reason',
-        'status',
-        'disconnected_by',
+        'disconnection_date',
         'reconnection_date',
-        'reconnected_by'
+        'notes',
+        'status'
     ];
 
     protected $casts = [
         'disconnection_date' => 'date',
         'reconnection_date' => 'date',
+        'amount_due' => 'decimal:2'
     ];
 
     public function consumer()
     {
-        return $this->belongsTo(AdminConsumer::class, 'consumer_id');
+        return $this->belongsTo(Consumer::class);
     }
 
-    public function bill()
+    public function billing()
     {
-        return $this->belongsTo(Billing::class, 'bill_id');
+        return $this->belongsTo(Billing::class);
     }
-
-    public function disconnectedBy()
-    {
-        return $this->belongsTo(User::class, 'disconnected_by');
-    }
-
-    public function reconnectedBy()
-    {
-        return $this->belongsTo(User::class, 'reconnected_by');
-    }
-
 }

@@ -549,7 +549,7 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Due Date</label>
-                            <input type="date" class="form-control" id="dueDate" required>
+                            <input type="date" class="form-control" id="dueDate" readonly>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Status</label>

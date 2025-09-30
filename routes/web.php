@@ -22,7 +22,7 @@ use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\PaymentHistoryController;
 use App\Http\Controllers\OnlinePaymentController;
 use App\Http\Controllers\AccountantManageController;
-use App\Http\Controllers\DisconnectController;
+use App\Http\Controllers\DisconnectionController;
 
 Route::get('/admin-register', [AuthController::class, 'showRegistrationForm'])->name('admin-register');
 Route::post('/admin-register', [AuthController::class, 'register']);
@@ -275,23 +275,19 @@ Route::delete('/admin-accountant/{id}', [AccountantManageController::class, 'des
 Route::get('/consumer-information', [AuthController::class, 'showInformation'])->name('consumer-information');
     Route::post('/consumer-information', [AuthController::class,'consumerinformation']);
 
-//Route::get('/admin-plumber-disconnection', [AuthController::class, 'showDisconnectionForm'])->name('admin-plumber-disconnection');
-//Route::post('/admin-plumber-disconnection', [AuthController::class,'admindisconnection']);
+Route::get('/admin-plumber-disconnection', [AuthController::class, 'showDisconnectionForm'])->name('admin-plumber-disconnection');
+Route::post('/admin-plumber-disconnection', [AuthController::class,'admindisconnection']);
 
 
-Route::prefix('disconnect')->group(function () {
-    Route::get('/', [DisconnectController::class, 'index'])->name('disconnect.index');
-    Route::post('/{billingId}', [DisconnectController::class, 'disconnect'])->name('disconnect.store');
-    Route::put('/reconnect/{disconnectionId}', [DisconnectController::class, 'reconnect'])->name('disconnect.reconnect');
-    Route::get('/status/{consumerId}', [DisconnectController::class, 'getDisconnectionStatus'])->name('disconnect.status');
-});
+
+Route::post('/disconnections', [DisconnectionController::class, 'store']);
+Route::post('/disconnections/reconnect', [DisconnectionController::class, 'reconnect']);
+Route::get('/admin-plumber-disconnection', [DisconnectionController::class, 'index']);
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/', function () {
     return view('welcome');
 
-    Route::get('/', function () {
-    return view('auth.admin_login');
-});
+  
 
 });
