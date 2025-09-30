@@ -23,9 +23,9 @@ class BillingController extends Controller
     
     return view('auth.admin-plumber-consumer');
 }
-    public function create()
+   public function create()
     {
-        $consumers = AdminConsumer::where('status', 'active')
+        $consumers = AdminConsumer::where('status', 'active') // Correct
             ->select(['id', 'first_name', 'middle_name', 'last_name', 'suffix', 'meter_no', 'consumer_type'])
             ->orderBy('last_name')
             ->orderBy('first_name')
