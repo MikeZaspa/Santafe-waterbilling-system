@@ -12,23 +12,21 @@ class Disconnection extends Model
     protected $fillable = [
         'consumer_id',
         'billing_id',
-        'amount_due',
         'reason',
+        'notes',
         'disconnection_date',
         'reconnection_date',
-        'notes',
         'status'
     ];
 
     protected $casts = [
         'disconnection_date' => 'date',
         'reconnection_date' => 'date',
-        'amount_due' => 'decimal:2'
     ];
 
     public function consumer()
     {
-        return $this->belongsTo(Consumer::class);
+        return $this->belongsTo(AdminConsumer::class);
     }
 
     public function billing()

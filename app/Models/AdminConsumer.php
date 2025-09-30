@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class AdminConsumer extends Model
 {
     use HasFactory;
-   
+   protected $table = 'admin_consumers';
    protected $fillable = [
     'first_name',
     'middle_name',
@@ -47,9 +47,17 @@ class AdminConsumer extends Model
         return $this->hasMany(Disconnection::class);
     }
 
-    public function currentDisconnection()
+    public function getFullNameAttribute()
     {
-        return $this->hasOne(Disconnection::class)->where('status', 'disconnected');
+        $name = $this->first_name;
+        if ($this->middle_name) {
+            $name .= ' ' . $this->middle_name;
+        }
+        $name .= ' ' . $this->last_name;
+        if ($this->suffix) {
+            $name .= ' ' . $this->suffix;
+        }
+        return $name;
     }
 
    

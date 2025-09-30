@@ -110,6 +110,10 @@
             border-left-color: #DC3545;
         }
         
+        .metric-card.disconnected {
+            border-left-color: #DC3545;
+        }
+        
         .metric-card.total {
             border-left-color: #17A2B8;
         }
@@ -135,6 +139,11 @@
         }
         
         .metric-icon.overdue {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: #DC3545;
+        }
+        
+        .metric-icon.disconnected {
             background-color: rgba(220, 53, 69, 0.1);
             color: #DC3545;
         }
@@ -185,12 +194,41 @@
         .text-completed { color: #28a745; }
         .text-pending { color: #ffc107; }
         .text-overdue { color: #dc3545; }
+        .text-disconnected { color: #dc3545; }
         .text-total { color: #17a2b8; }
         
         .bg-completed { background-color: rgba(40, 167, 69, 0.1); }
         .bg-pending { background-color: rgba(255, 193, 7, 0.1); }
         .bg-overdue { background-color: rgba(220, 53, 69, 0.1); }
+        .bg-disconnected { background-color: rgba(220, 53, 69, 0.1); }
         .bg-total { background-color: rgba(23, 162, 184, 0.1); }
+        
+        /* Disconnection list styles */
+        .disconnection-item {
+            border-left: 3px solid #dc3545;
+            padding-left: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .disconnection-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .consumer-name {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .disconnection-date {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+        
+        .no-disconnections {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+        }
         
         /* Mobile overlay styles */
         .mobile-overlay {
@@ -391,6 +429,7 @@
     
     <!-- Dashboard Content -->
     <div class="container-fluid p-3 p-md-4">
+        <!-- Metrics Cards -->
         <div class="row g-4 mb-4">
             <!-- Completed Readings Card -->
             <div class="col-md-6 col-lg-3">
@@ -431,27 +470,122 @@
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Charts Row -->
-        <div class="row g-4">
-            <div class="col-md-6">
+            <!-- Disconnected Consumers Card -->
+            <div class="col-md-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
-                        <h5 class="card-title">Completed Readings by Month</h5>
-                        <div class="chart-container">
-                            <canvas id="completedReadingsChart"></canvas>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-2">Disconnected</h6>
+                                <h3>{{ $disconnectedCount }}</h3>
+                                <small class="text-danger">
+                                    <i class="bi bi-x-circle"></i> Consumers with disconnected service
+                                </small>
+                            </div>
+                            <div class="bg-disconnected p-3 rounded">
+                                <i class="bi bi-x-circle-fill text-disconnected fs-4"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
+
+            <!-- Overdue Readings Card -->
+            <div class="col-md-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
-                        <h5 class="card-title">Monthly Consumption Trend (m³)</h5>
-                        <div class="chart-container">
-                            <canvas id="consumptionTrendChart"></canvas>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-2">Overdue Readings</h6>
+                                <h3>{{ $overdueCount }}</h3>
+                                <small class="text-warning">
+                                    <i class="bi bi-exclamation-triangle"></i> Readings past due date
+                                </small>
+                            </div>
+                            <div class="bg-overdue p-3 rounded">
+                                <i class="bi bi-exclamation-triangle-fill text-overdue fs-4"></i>
+                            </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts and Recent Disconnections Row -->
+        <div class="row g-4">
+            <!-- Charts Column -->
+            <div class="col-lg-8">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Completed Readings by Month</h5>
+                                <div class="chart-container">
+                                    <canvas id="completedReadingsChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Monthly Consumption Trend (m³)</h5>
+                                <div class="chart-container">
+                                    <canvas id="consumptionTrendChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Disconnections Column -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title d-flex justify-content-between align-items-center">
+                            <span>Recent Disconnections</span>
+                            <span class="badge bg-danger">{{ $disconnectedCount }}</span>
+                        </h5>
+                        
+                        @if($recentDisconnections->count() > 0)
+                            <div class="disconnections-list">
+                                @foreach($recentDisconnections as $disconnection)
+                                    <div class="disconnection-item">
+                                        <div class="consumer-name">
+                                            {{ $disconnection->consumer->first_name }} 
+                                            {{ $disconnection->consumer->last_name }}
+                                        </div>
+                                        <div class="disconnection-date">
+                                            <small>
+                                                <i class="bi bi-calendar-event me-1"></i>
+                                                {{ \Carbon\Carbon::parse($disconnection->updated_at)->format('M d, Y') }}
+                                            </small>
+                                        </div>
+                                        <div class="meter-info">
+                                            <small class="text-muted">
+                                                Meter: {{ $disconnection->meter_no }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="no-disconnections">
+                                <i class="bi bi-check-circle display-4 text-success mb-3"></i>
+                                <p class="mb-0">No disconnected consumers</p>
+                                <small>All consumers are currently connected</small>
+                            </div>
+                        @endif
+                        
+                        @if($disconnectedCount > 5)
+                            <div class="text-center mt-3">
+                                <a href="admin-plumber-disconnection" class="btn btn-sm btn-outline-danger">
+                                    View All Disconnections
+                                </a>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -461,6 +595,10 @@
 
 <!-- Bootstrap Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- SweetAlert2 for notifications -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -621,58 +759,51 @@
     });
 
     // Logout functionality
-$('#logoutBtn').click(function(e) {
-    e.preventDefault();
-    
-    Swal.fire({
-        title: 'Sign Out?',
-        text: 'Are you sure you want to sign out?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Yes, Sign Out',
-        cancelButtonText: 'Cancel'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Perform logout - you can customize this based on your authentication system
-            performLogout();
-        }
-    });
-});
-
-function performLogout() {
-    // Show loading state
-    Swal.fire({
-        title: 'Signing Out...',
-        text: 'Please wait',
-        allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
+    $('#logoutBtn').click(function(e) {
+        e.preventDefault();
+        
+        Swal.fire({
+            title: 'Sign Out?',
+            text: 'Are you sure you want to sign out?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, Sign Out',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                performLogout();
+            }
+        });
     });
 
-    // Example: Send logout request to server
-    // Replace this with your actual logout endpoint
-    $.ajax({
-        url: '/logout', // Your logout route
-        type: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
-        success: function(response) {
-            // Redirect to login page
-            window.location.href = '/login';
-        },
-        error: function(xhr) {
-            // If AJAX fails, still redirect to login
-            window.location.href = '/login';
-        }
-    });
-    
-    // Alternative: Simple redirect (if no server-side logout needed)
-    // window.location.href = '/login';
-}
+    function performLogout() {
+        // Show loading state
+        Swal.fire({
+            title: 'Signing Out...',
+            text: 'Please wait',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // Send logout request to server
+        $.ajax({
+            url: '/logout',
+            type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                window.location.href = '/login';
+            },
+            error: function(xhr) {
+                window.location.href = '/login';
+            }
+        });
+    }
 </script>
 
 </body>

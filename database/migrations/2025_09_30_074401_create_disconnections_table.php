@@ -12,12 +12,11 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('consumer_id');
             $table->unsignedBigInteger('billing_id')->nullable();
-            $table->decimal('amount_due', 10, 2);
             $table->string('reason');
+            $table->text('notes')->nullable();
             $table->date('disconnection_date');
             $table->date('reconnection_date')->nullable();
-            $table->text('notes')->nullable();
-            $table->enum('status', ['active', 'resolved'])->default('active');
+            $table->enum('status', ['disconnected', 'reconnected'])->default('disconnected');
             $table->timestamps();
         });
     }

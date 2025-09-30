@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Santa Fe Water Billing System</title>
+    <title>Santa Fe Water Billing System - Disconnections</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
     <!-- Custom CSS -->
     <link rel="icon" type="image/png" href="image/santafe.png">
-    <style>
+   <style>
         :root {
             --primary-color: #d32f2f;
             --primary-light: #ff6659;
@@ -475,6 +475,17 @@
                 text-align: center;
             }
         }
+        
+        /* Disconnection status styling */
+        .status-disconnected {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        
+        .status-connected {
+            color: #198754;
+            font-weight: 600;
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -566,6 +577,7 @@
                                         <th class="decimal-align">Current</th>
                                         <th class="decimal-align">Consumption</th>
                                         <th class="date-column">Reading Date</th>
+                                        <th>Status</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -665,7 +677,6 @@
     </div>
 </div>
 
-
 <!-- Disconnection Modal -->
 <div class="modal fade" id="disconnectionModal" tabindex="-1" aria-labelledby="disconnectionModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -683,11 +694,6 @@
                     <div class="mb-3">
                         <label for="consumerInfo" class="form-label">Consumer</label>
                         <input type="text" class="form-control" id="consumerInfo" readonly>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="amountDue" class="form-label">Amount Due</label>
-                        <input type="number" step="0.01" class="form-control" id="amountDue" name="amount_due" required>
                     </div>
                     
                     <div class="mb-3">
@@ -729,6 +735,7 @@
 <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
 <!-- SweetAlert2 for notifications -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
 <script>
 $(document).ready(function() {
@@ -849,26 +856,43 @@ $(document).ready(function() {
                 }
             },
             {
-                    data: 'id',
-                    name: 'actions',
-                    orderable: false,
-                    searchable: false,
-                    render: function(data, type, row) {
-                        return `
-                            <div class="btn-group">
-                                <button class="btn btn-sm btn-primary btn-action edit-btn" data-id="${data}" title="Edit">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <button class="btn btn-sm btn-warning btn-action disconnect-btn" data-id="${data}" data-consumer-id="${row.consumer_id}" title="Disconnect">
-                                    <i class="bi bi-x-circle"></i>
-                                </button>
-                                <button class="btn btn-sm btn-danger btn-action delete-btn" data-id="${data}" title="Delete">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </div>
-                        `;
+                data: 'disconnection_status',
+                name: 'disconnection_status',
+                render: function(data, type, row) {
+                    if (data === 'disconnected') {
+                        return '<span class="status-disconnected">Disconnected</span>';
+                    } else {
+                        return '<span class="status-connected">Connected</span>';
                     }
                 }
+            },
+            {
+                data: 'id',
+                name: 'actions',
+                orderable: false,
+                searchable: false,
+                render: function(data, type, row) {
+                    const disconnectBtn = row.disconnection_status === 'disconnected' 
+                        ? `<button class="btn btn-sm btn-success btn-action reconnect-btn" data-id="${data}" data-consumer-id="${row.consumer_id}" title="Reconnect">
+                                <i class="bi bi-check-circle"></i>
+                            </button>`
+                        : `<button class="btn btn-sm btn-warning btn-action disconnect-btn" data-id="${data}" data-consumer-id="${row.consumer_id}" title="Disconnect">
+                                <i class="bi bi-x-circle"></i>
+                            </button>`;
+                    
+                    return `
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-primary btn-action edit-btn" data-id="${data}" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            ${disconnectBtn}
+                            <button class="btn btn-sm btn-danger btn-action delete-btn" data-id="${data}" title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                }
+            }
         ],
         order: [[0, 'desc']],
         createdRow: function(row, data, dataIndex) {
@@ -919,6 +943,18 @@ $(document).ready(function() {
                 }) : 
                 'N/A';
                 
+            const status = item.disconnection_status === 'disconnected' 
+                ? '<span class="status-disconnected">Disconnected</span>' 
+                : '<span class="status-connected">Connected</span>';
+                
+            const disconnectBtn = item.disconnection_status === 'disconnected' 
+                ? `<button class="btn btn-sm btn-success btn-action reconnect-btn" data-id="${item.id}" data-consumer-id="${item.consumer_id}" title="Reconnect">
+                        <i class="bi bi-check-circle"></i>
+                    </button>`
+                : `<button class="btn btn-sm btn-warning btn-action disconnect-btn" data-id="${item.id}" data-consumer-id="${item.consumer_id}" title="Disconnect">
+                        <i class="bi bi-x-circle"></i>
+                    </button>`;
+                
             const card = `
                 <div class="billing-card" data-id="${item.id}">
                     <div class="billing-card-header">
@@ -950,11 +986,16 @@ $(document).ready(function() {
                             <span class="billing-card-label">Reading Date:</span>
                             <span class="billing-card-value">${readingDate}</span>
                         </div>
+                        <div class="billing-card-row">
+                            <span class="billing-card-label">Status:</span>
+                            <span class="billing-card-value">${status}</span>
+                        </div>
                     </div>
                     <div class="billing-card-actions">
                         <button class="btn btn-sm btn-primary btn-action edit-btn" data-id="${item.id}" title="Edit">
                             <i class="bi bi-pencil"></i>
                         </button>
+                        ${disconnectBtn}
                         <button class="btn btn-sm btn-danger btn-action delete-btn" data-id="${item.id}" title="Delete">
                             <i class="bi bi-trash"></i>
                         </button>
@@ -1309,6 +1350,74 @@ $(document).ready(function() {
         });
     });
 
+    // Disconnect consumer functionality
+    $(document).on('click', '.disconnect-btn', function() {
+        const billingId = $(this).data('id');
+        const consumerId = $(this).data('consumer-id');
+        
+        // Get consumer info for display
+        const row = $(this).closest('tr');
+        const consumerName = row.find('td:eq(1)').text();
+        
+        // Set values in the disconnection modal
+        $('#disconnect_consumer_id').val(consumerId);
+        $('#disconnect_billing_id').val(billingId);
+        $('#consumerInfo').val(consumerName);
+        $('#disconnectionDate').val(new Date().toISOString().split('T')[0]);
+        
+        // Show confirmation dialog
+        Swal.fire({
+            title: 'Disconnect Consumer?',
+            text: `Are you sure you want to disconnect ${consumerName}?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#fd7e14',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, Disconnect',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show the disconnection modal for additional details
+                $('#disconnectionModal').modal('show');
+            }
+        });
+    });
+
+    $('#confirmDisconnect').click(function() {
+        const formData = $('#disconnectionForm').serialize();
+        
+        $.ajax({
+            url: '/disconnections',
+            type: 'POST',
+            data: formData,
+            beforeSend: function() {
+                $('#confirmDisconnect').prop('disabled', true).html(
+                    '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...'
+                );
+            },
+            complete: function() {
+                $('#confirmDisconnect').prop('disabled', false).html('Disconnect');
+            },
+            success: function(response) {
+                showSuccessAlert('Disconnected!', response.message);
+                $('#disconnectionModal').modal('hide');
+                table.ajax.reload(null, false);
+                
+               
+            },
+            error: function(xhr) {
+                if (xhr.status === 419) { // CSRF token mismatch
+                    showErrorAlert('Session Expired', 'Your session has expired. Please refresh the page and try again.');
+                } else if (xhr.status === 422) {
+                    const errors = xhr.responseJSON.errors;
+                    let errorMessages = Object.values(errors).flat();
+                    showErrorAlert('Validation Error', errorMessages.join('<br>'));
+                } else {
+                    showErrorAlert('Error!', xhr.responseJSON?.message || 'Failed to disconnect consumer');
+                }
+            }
+        });
+    });
     // Helper functions for notifications
     function showSuccessAlert(title, message) {
         Swal.fire({
@@ -1338,62 +1447,58 @@ $(document).ready(function() {
             timer: 3000
         });
     }
-    // Logout functionality
-$('#logoutBtn').click(function(e) {
-    e.preventDefault();
     
-    Swal.fire({
-        title: 'Sign Out?',
-        text: 'Are you sure you want to sign out?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Yes, Sign Out',
-        cancelButtonText: 'Cancel'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Perform logout - you can customize this based on your authentication system
-            performLogout();
-        }
+    // Logout functionality
+    $('#logoutBtn').click(function(e) {
+        e.preventDefault();
+        
+        Swal.fire({
+            title: 'Sign Out?',
+            text: 'Are you sure you want to sign out?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, Sign Out',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Perform logout - you can customize this based on your authentication system
+                performLogout();
+            }
+        });
     });
+
+    function performLogout() {
+        // Show loading state
+        Swal.fire({
+            title: 'Signing Out...',
+            text: 'Please wait',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // Example: Send logout request to server
+        // Replace this with your actual logout endpoint
+        $.ajax({
+            url: '/logout', // Your logout route
+            type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                // Redirect to login page
+                window.location.href = '/admin-login';
+            },
+            error: function(xhr) {
+                // If AJAX fails, still redirect to login
+                window.location.href = '/admin-login';
+            }
+        });
+    }
 });
-
-function performLogout() {
-    // Show loading state
-    Swal.fire({
-        title: 'Signing Out...',
-        text: 'Please wait',
-        allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
-    });
-
-    // Example: Send logout request to server
-    // Replace this with your actual logout endpoint
-    $.ajax({
-        url: '/logout', // Your logout route
-        type: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
-        success: function(response) {
-            // Redirect to login page
-            window.location.href = '/admin-login';
-        },
-        error: function(xhr) {
-            // If AJAX fails, still redirect to login
-            window.location.href = '/admin-login';
-        }
-    });
-
-}
-
-});
-
-
 </script>
 </body>
 </html>
-

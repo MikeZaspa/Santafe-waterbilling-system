@@ -3,34 +3,27 @@
 namespace App\Http\Controllers;
 
 use App\Models\Disconnection;
-use App\Models\Consumer;
 use App\Models\Billing;
+use App\Models\AdminConsumer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class DisconnectionController extends Controller
 {
-    /**
-     * Display disconnections page
-     */
     public function index()
     {
         $disconnections = Disconnection::with(['consumer', 'billing'])
-            ->orderBy('disconnection_date', 'desc')
+            ->orderBy('created_at', 'desc')
             ->get();
-            
+
         return view('auth.admin-plumber-disconnection', compact('disconnections'));
     }
 
-    /**
-     * Store a new disconnection
-     */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'consumer_id' => 'required|exists:consumers,id',
+        $request->validate([
+            'consumer_id' => 'required|exists:admin_consumers,id', // Changed to admin_consumers
             'billing_id' => 'required|exists:billings,id',
-            'amount_due' => 'required|numeric|min:0',
             'reason' => 'required|string|max:255',
             'disconnection_date' => 'required|date',
             'notes' => 'nullable|string'
@@ -40,71 +33,102 @@ class DisconnectionController extends Controller
             DB::beginTransaction();
 
             // Create disconnection record
-            $disconnection = Disconnection::create($validated);
+            $disconnection = Disconnection::create([
+                'consumer_id' => $request->consumer_id,
+                'billing_id' => $request->billing_id,
+                'reason' => $request->reason,
+                'notes' => $request->notes,
+                'disconnection_date' => $request->disconnection_date,
+                'status' => 'disconnected',
+                'disconnected_by' => auth()->id() ?? 1
+            ]);
+
+            // Update billing record status
+            $billing = Billing::find($request->billing_id);
+            $billing->update([
+                'disconnection_status' => 'disconnected'
+            ]);
 
             // Update consumer status
-            $consumer = Consumer::find($validated['consumer_id']);
-            $consumer->update(['status' => 'disconnected']);
-
-            // Update billing status
-            $billing = Billing::find($validated['billing_id']);
-            $billing->update(['status' => 'disconnected']);
+            $consumer = AdminConsumer::find($request->consumer_id);
+            $consumer->update([
+                'status' => 'disconnected',
+                'disconnection_date' => $request->disconnection_date
+            ]);
 
             DB::commit();
 
             return response()->json([
-                'message' => 'Consumer disconnected successfully',
+                'success' => true,
+                'message' => 'Consumer disconnected successfully!',
                 'disconnection' => $disconnection
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
+            
             return response()->json([
+                'success' => false,
                 'message' => 'Failed to disconnect consumer: ' . $e->getMessage()
             ], 500);
         }
     }
 
-    /**
-     * Reconnect a consumer
-     */
-    public function reconnect(Request $request)
+    public function reconnect(Request $request, Disconnection $disconnection)
     {
-        $validated = $request->validate([
-            'consumer_id' => 'required|exists:consumers,id',
-            'billing_id' => 'required|exists:billings,id'
+        // Validate the request
+        $request->validate([
+            'reconnection_date' => 'required|date',
+            'notes' => 'nullable|string|max:500'
         ]);
 
         try {
             DB::beginTransaction();
 
-            // Update consumer status
-            $consumer = Consumer::find($validated['consumer_id']);
-            $consumer->update(['status' => 'active']);
+            // Update the disconnection record
+            $disconnection->update([
+                'reconnection_date' => $request->reconnection_date,
+                'status' => 'reconnected',
+                'notes' => $request->notes ?? $disconnection->notes,
+                'reconnected_by' => auth()->id() // If you have authentication
+            ]);
 
-            // Update billing status
-            $billing = Billing::find($validated['billing_id']);
-            $billing->update(['status' => 'active']);
-
-            // Mark disconnection as resolved
-            Disconnection::where('consumer_id', $validated['consumer_id'])
-                ->where('status', 'active')
-                ->update([
-                    'status' => 'resolved',
-                    'reconnection_date' => now()
+            // Update the related billing record if needed
+            if ($disconnection->billing) {
+                $disconnection->billing->update([
+                    'status' => 'active' // Or whatever status indicates reconnection
                 ]);
+            }
 
             DB::commit();
 
             return response()->json([
-                'message' => 'Consumer reconnected successfully'
+                'success' => true,
+                'message' => 'Consumer reconnected successfully',
+                'data' => $disconnection
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
+            
             return response()->json([
+                'success' => false,
                 'message' => 'Failed to reconnect consumer: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+
+    public function getDisconnectionHistory($consumerId)
+    {
+        $disconnections = Disconnection::with('billing')
+            ->where('consumer_id', $consumerId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'disconnections' => $disconnections
+        ]);
     }
 }

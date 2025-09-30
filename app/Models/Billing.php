@@ -34,6 +34,11 @@ class Billing extends Model
         return $this->hasMany(Disconnection::class);
     }
 
+    public function activeDisconnection()
+    {
+        return $this->hasOne(Disconnection::class)->where('status', 'disconnected');
+    }
+
     
     
 }
