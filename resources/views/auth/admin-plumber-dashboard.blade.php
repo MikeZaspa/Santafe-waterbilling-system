@@ -491,20 +491,19 @@
                 </div>
             </div>
 
-            <!-- Overdue Readings Card -->
             <div class="col-md-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="text-muted mb-2">Overdue Readings</h6>
-                                <h3>{{ $overdueCount }}</h3>
-                                <small class="text-warning">
-                                    <i class="bi bi-exclamation-triangle"></i> Readings past due date
+                                <h6 class="text-muted mb-2">Reconnections</h6>
+                                <h3>{{ $reconnectionCount }}</h3>
+                                <small class="text-success">
+                                    <i class="bi bi-plug"></i> Recently reconnected consumers
                                 </small>
                             </div>
-                            <div class="bg-overdue p-3 rounded">
-                                <i class="bi bi-exclamation-triangle-fill text-overdue fs-4"></i>
+                            <div class="bg-success p-3 rounded" style="background-color: #d1e7dd !important;">
+                                <i class="bi bi-plug-fill text-success fs-4"></i>
                             </div>
                         </div>
                     </div>

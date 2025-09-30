@@ -22,11 +22,8 @@ class ReadingController extends Controller
         // Count readings without current reading (pending)
         $pendingCount = Billing::whereNull('current_reading')->count();
         
-        // Count overdue readings (reading date passed but no current reading)
-        $overdueCount = Billing::whereDate('reading_date', '<', $today)
-                              ->whereNull('current_reading')
-                              ->count();
-        
+        $reconnectionCount = Disconnection::where('status', 'reconnected')->count();
+
         // Count disconnected consumers - FIXED: Added import and corrected query
         $disconnectedCount = Disconnection::where('status', 'disconnected')->count();
         
@@ -76,11 +73,11 @@ class ReadingController extends Controller
             ->limit(5)
             ->get();
 
-        return view('auth.admin-plumber-dashboard', [
+       return view('auth.admin-plumber-dashboard', [
             'completedCount' => $completedCount,
             'pendingCount' => $pendingCount,
-            'overdueCount' => $overdueCount,
             'disconnectedCount' => $disconnectedCount,
+            'reconnectionCount' => $reconnectionCount, // Add this line
             'totalCount' => $totalCount,
             'consumptionData' => $consumptionData,
             'completedData' => $completedData,
