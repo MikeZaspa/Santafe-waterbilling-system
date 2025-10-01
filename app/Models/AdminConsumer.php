@@ -42,23 +42,4 @@ class AdminConsumer extends Model
     {
         return $this->hasMany(AccountantBilling::class, 'consumer_id');
     }
-    public function disconnections()
-    {
-        return $this->hasMany(Disconnection::class);
-    }
-
-    public function getFullNameAttribute()
-    {
-        $name = $this->first_name;
-        if ($this->middle_name) {
-            $name .= ' ' . $this->middle_name;
-        }
-        $name .= ' ' . $this->last_name;
-        if ($this->suffix) {
-            $name .= ' ' . $this->suffix;
-        }
-        return $name;
-    }
-
-   
 }
