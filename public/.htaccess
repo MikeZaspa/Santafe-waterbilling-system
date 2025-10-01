@@ -25,9 +25,11 @@
 </IfModule>
 
 # ===== SECURITY BLOCKS =====
+
+# Deny access to hidden files (.env, .git, etc.)
 <FilesMatch "^\.">
-    Order allow,deny
-    Deny from all
+    Require all denied
 </FilesMatch>
 
+# Deny access to sensitive folders
 RedirectMatch 403 ^/(vendor|storage|bootstrap|config|database|resources|routes|tests)(.*)$
