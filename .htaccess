@@ -1,4 +1,10 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteRule ^(.*)$ public/$1 [L]
+
+    # If request is not an existing file or directory
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+
+    # Send everything to public/index.php
+    RewriteRule ^(.*)$ public/index.php [L]
 </IfModule>
