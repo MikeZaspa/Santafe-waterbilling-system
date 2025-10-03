@@ -272,8 +272,30 @@ class AuthController extends Controller
             return back()->with('error', $message);
         }
     }
+    
     public function login(Request $request)
     {
+        // Check if user is temporarily locked out
+        $lockoutKey = 'login_attempts_' . $request->ip();
+        $lockoutTimeKey = 'login_lockout_' . $request->ip();
+        
+        $attempts = session($lockoutKey, 0);
+        $lockoutTime = session($lockoutTimeKey);
+        
+        if ($lockoutTime && now()->diffInSeconds($lockoutTime) < 30) {
+            $remainingTime = 30 - now()->diffInSeconds($lockoutTime);
+            return back()->withErrors([
+                'email' => "Too many login attempts. Please try again in {$remainingTime} seconds.",
+            ])->onlyInput('email');
+        }
+        
+        // Reset attempts if lockout time has expired
+        if ($lockoutTime && now()->diffInSeconds($lockoutTime) >= 30) {
+            session([$lockoutKey => 0]);
+            session([$lockoutTimeKey => null]);
+            $attempts = 0;
+        }
+
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required',
@@ -291,6 +313,16 @@ class AuthController extends Controller
         $user = Admin::where('email', $request->email)->first();
 
         if (!$user) {
+            $attempts++;
+            session([$lockoutKey => $attempts]);
+            
+            if ($attempts >= 3) {
+                session([$lockoutTimeKey => now()]);
+                return back()->withErrors([
+                    'email' => 'Too many login attempts. Please try again in 30 seconds.',
+                ])->onlyInput('email');
+            }
+            
             return back()->withErrors([
                 'email' => 'The provided email does not exist in our system.',
             ])->onlyInput('email');
@@ -307,6 +339,10 @@ class AuthController extends Controller
 
         // Attempt authentication
         if (Auth::guard('admin')->attempt($credentials)) {
+            // Reset login attempts on successful login
+            session([$lockoutKey => 0]);
+            session([$lockoutTimeKey => null]);
+            
             $request->session()->regenerate();
             
             // Check if the user is active (add this if you have an 'active' column)
@@ -321,8 +357,19 @@ class AuthController extends Controller
         }
 
         // If authentication failed (wrong password)
+        $attempts++;
+        session([$lockoutKey => $attempts]);
+        
+        if ($attempts >= 3) {
+            session([$lockoutTimeKey => now()]);
+            return back()->withErrors([
+                'password' => 'Too many login attempts. Please try again in 30 seconds.',
+            ])->onlyInput('email');
+        }
+        
+        $remainingAttempts = 3 - $attempts;
         return back()->withErrors([
-            'password' => 'The provided password is incorrect.',
+            'password' => "The provided password is incorrect. {$remainingAttempts} attempts remaining.",
         ])->onlyInput('email');
     }
 

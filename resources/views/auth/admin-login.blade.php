@@ -6,6 +6,7 @@
     <title>Login | Santa Fe Water Billing System</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root {
             --primary: #1a73e8;
@@ -17,6 +18,7 @@
             --border: #dadce0;
             --error: #d93025;
             --success: #06d6a0;
+            --warning: #ffa726;
         }
         
         * {
@@ -106,6 +108,11 @@
             background-color: var(--primary-dark);
         }
         
+        .btn-login:disabled {
+            background-color: var(--text-light);
+            cursor: not-allowed;
+        }
+        
         .forgot-password {
             margin: 1rem 0;
             text-align: right;
@@ -190,6 +197,13 @@
             margin-top: 0.4rem;
         }
         
+        .attempts-warning {
+            color: var(--warning);
+            font-size: 0.8rem;
+            margin-top: 0.4rem;
+            font-weight: 500;
+        }
+        
         @media (max-width: 480px) {
             .login-container {
                 padding: 1.5rem;
@@ -204,6 +218,12 @@
             margin-bottom: 1rem;
             border: 1px solid #a3d9a5;
             border-radius: 4px;
+        }
+        
+        .countdown-timer {
+            color: var(--warning);
+            font-weight: 600;
+            margin-top: 0.5rem;
         }
     </style>
 </head>
@@ -244,7 +264,7 @@
                 </a>
             </div>
             
-            <button type="submit" class="btn-login">
+            <button type="submit" class="btn-login" id="loginBtn">
                 <span>Log In</span>
             </button>
             
@@ -266,7 +286,15 @@
             const form = document.getElementById('loginForm');
             const emailInput = document.getElementById('email');
             const passwordInput = document.getElementById('password');
+            const loginBtn = document.getElementById('loginBtn');
             const togglePassword = document.getElementById('togglePassword');
+            
+            let loginAttempts = 0;
+            let isLocked = false;
+            let lockoutTime = null;
+            
+            // Check if there's a lockout from previous session
+            checkLockoutStatus();
             
             // Toggle password visibility
             togglePassword.addEventListener('click', function() {
@@ -278,6 +306,12 @@
             
             // Form validation
             form.addEventListener('submit', function(e) {
+                if (isLocked) {
+                    e.preventDefault();
+                    showLockoutAlert();
+                    return;
+                }
+                
                 let isValid = true;
                 
                 // Validate email
@@ -312,6 +346,23 @@
                 
                 if(!isValid) {
                     e.preventDefault();
+                } else {
+                    // Increment attempts counter
+                    loginAttempts++;
+                    localStorage.setItem('loginAttempts', loginAttempts);
+                    localStorage.setItem('lastAttemptTime', new Date().getTime());
+                    
+                    // Check if should lock
+                    if (loginAttempts >= 3) {
+                        lockoutTime = new Date().getTime();
+                        localStorage.setItem('lockoutTime', lockoutTime);
+                        isLocked = true;
+                        loginBtn.disabled = true;
+                        
+                        e.preventDefault();
+                        showLockoutAlert();
+                        startCountdown();
+                    }
                 }
             });
             
@@ -331,8 +382,99 @@
                     errorDiv.style.display = 'none';
                 }
             });
+            
+            function checkLockoutStatus() {
+                const storedAttempts = localStorage.getItem('loginAttempts');
+                const storedLockoutTime = localStorage.getItem('lockoutTime');
+                
+                if (storedAttempts) {
+                    loginAttempts = parseInt(storedAttempts);
+                }
+                
+                if (storedLockoutTime) {
+                    const now = new Date().getTime();
+                    const lockoutDuration = 30000; // 30 seconds
+                    const timePassed = now - parseInt(storedLockoutTime);
+                    
+                    if (timePassed < lockoutDuration) {
+                        isLocked = true;
+                        loginBtn.disabled = true;
+                        startCountdown();
+                    } else {
+                        // Reset if lockout time has passed
+                        localStorage.removeItem('loginAttempts');
+                        localStorage.removeItem('lockoutTime');
+                        localStorage.removeItem('lastAttemptTime');
+                        loginAttempts = 0;
+                        isLocked = false;
+                        loginBtn.disabled = false;
+                    }
+                }
+            }
+            
+            function showLockoutAlert() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Too Many Attempts',
+                    html: 'You have exceeded the maximum login attempts. Please wait <strong>30 seconds</strong> before trying again.',
+                    confirmButtonColor: '#1a73e8',
+                    confirmButtonText: 'OK'
+                });
+            }
+            
+            function showAttemptWarning(remainingAttempts) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Incorrect Password',
+                    html: `The password you entered is incorrect. You have <strong>${remainingAttempts}</strong> attempt(s) remaining.`,
+                    confirmButtonColor: '#1a73e8',
+                    confirmButtonText: 'Try Again'
+                });
+            }
+            
+            function startCountdown() {
+                const lockoutTime = parseInt(localStorage.getItem('lockoutTime'));
+                const countdownElement = document.createElement('div');
+                countdownElement.className = 'countdown-timer';
+                countdownElement.innerHTML = 'Please wait <span id="countdown">30</span> seconds before trying again.';
+                
+                // Insert countdown after login button
+                loginBtn.parentNode.insertBefore(countdownElement, loginBtn.nextSibling);
+                
+                const countdownInterval = setInterval(function() {
+                    const now = new Date().getTime();
+                    const timeLeft = 30000 - (now - lockoutTime);
+                    const secondsLeft = Math.ceil(timeLeft / 1000);
+                    
+                    document.getElementById('countdown').textContent = secondsLeft;
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(countdownInterval);
+                        countdownElement.remove();
+                        isLocked = false;
+                        loginBtn.disabled = false;
+                        localStorage.removeItem('loginAttempts');
+                        localStorage.removeItem('lockoutTime');
+                        localStorage.removeItem('lastAttemptTime');
+                        loginAttempts = 0;
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Ready to Try Again',
+                            text: 'You can now attempt to login again.',
+                            confirmButtonColor: '#1a73e8',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                }, 1000);
+            }
+            
+            // Show attempt warning if there are previous failed attempts
+            if (loginAttempts > 0 && loginAttempts < 3) {
+                const remainingAttempts = 3 - loginAttempts;
+                showAttemptWarning(remainingAttempts);
+            }
         });
     </script>
 </body>
 </html>
-

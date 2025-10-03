@@ -796,10 +796,10 @@
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
-                window.location.href = '/login';
+                window.location.href = '/admin-login';
             },
             error: function(xhr) {
-                window.location.href = '/login';
+                window.location.href = '/admin-login';
             }
         });
     }
