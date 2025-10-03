@@ -75,48 +75,56 @@ class DisconnectionController extends Controller
     }
 
     public function reconnect(Request $request, Disconnection $disconnection)
-    {
-        // Validate the request
-        $request->validate([
-            'reconnection_date' => 'required|date',
-            'notes' => 'nullable|string|max:500'
+{
+    // Validate the request
+    $request->validate([
+        'reconnection_date' => 'required|date',
+        'notes' => 'nullable|string|max:500'
+    ]);
+
+    try {
+        DB::beginTransaction();
+
+        // Update the disconnection record
+        $disconnection->update([
+            'reconnection_date' => $request->reconnection_date,
+            'status' => 'reconnected',
+            'notes' => $request->notes ?? $disconnection->notes,
+            'reconnected_by' => auth()->id()
         ]);
 
-        try {
-            DB::beginTransaction();
-
-            // Update the disconnection record
-            $disconnection->update([
-                'reconnection_date' => $request->reconnection_date,
-                'status' => 'reconnected',
-                'notes' => $request->notes ?? $disconnection->notes,
-                'reconnected_by' => auth()->id() // If you have authentication
+        // Update the related billing record
+        if ($disconnection->billing) {
+            $disconnection->billing->update([
+                'disconnection_status' => 'reconnected' // or 'active' depending on your needs
             ]);
-
-            // Update the related billing record if needed
-            if ($disconnection->billing) {
-                $disconnection->billing->update([
-                    'status' => 'active' // Or whatever status indicates reconnection
-                ]);
-            }
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Consumer reconnected successfully',
-                'data' => $disconnection
-            ]);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to reconnect consumer: ' . $e->getMessage()
-            ], 500);
         }
+
+        // Update the consumer status back to active
+        if ($disconnection->consumer) {
+            $disconnection->consumer->update([
+                'status' => 'active',
+                'disconnection_date' => null // Clear disconnection date
+            ]);
+        }
+
+        DB::commit();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Consumer reconnected successfully',
+            'data' => $disconnection
+        ]);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to reconnect consumer: ' . $e->getMessage()
+        ], 500);
     }
+}
 
 
     public function getDisconnectionHistory($consumerId)

@@ -47,7 +47,7 @@ public function create()
             'address_information' => 'nullable|string|max:1000',
             'connection_date' => 'required|date',
             'consumer_type' => 'required|in:residential,commercial,institutional',
-            'status' => 'required|in:active,inactive,disconnected,cut',
+            'status' => 'required|in:active,inactive',
         ]);
 
         // Set default connection date if empty
@@ -138,5 +138,22 @@ public function create()
             'message' => 'Consumer deleted successfully'
         ]);
     }
-    
+    // Add this method to AdminConsumerController
+public function updateStatus(Request $request, $id)
+{
+    $validated = $request->validate([
+        'status' => 'required|in:active,inactive,disconnected'
+    ]);
+
+    $consumer = AdminConsumer::findOrFail($id);
+    $consumer->update([
+        'status' => $validated['status'],
+        'disconnection_date' => $validated['status'] === 'disconnected' ? now() : null
+    ]);
+
+    return response()->json([
+        'message' => 'Consumer status updated successfully',
+        'consumer' => $consumer
+    ]);
+}
 }
