@@ -68,45 +68,38 @@ public function calculateAmount($type, $consumption)
     $totalAmount = 0;
     $remainingConsumption = $consumption;
 
+    foreach ($rates as $rate) {
+        if (str_contains($rate->range, '+')) {
+            // Handle open-ended range (e.g., "31+")
+            $rangeConsumption = $remainingConsumption;
+            $rangeAmount = $rangeConsumption * $rate->amount;
+        } else {
+            // Handle normal ranges (e.g., "0-10", "11-20")
+            $rangeParts = explode('-', $rate->range);
+            $min = (int)$rangeParts[0];
+            $max = (int)$rangeParts[1];
+            $rangeConsumption = min($remainingConsumption, $max - $min + 1);
+            
+            // Special handling for commercial 0-10 fixed price
+            if ($type === 'commercial' && $min === 0 && $max === 10) {
+                // Fixed price for 0-10 range - pay 165 once if any consumption in this range
+                $rangeAmount = $rangeConsumption > 0 ? $rate->amount : 0;
+            } else {
+                // Normal per-unit calculation for other ranges
+                $rangeAmount = $rangeConsumption * $rate->amount;
+            }
+        }
+
+        $totalAmount += $rangeAmount;
+        $remainingConsumption -= $rangeConsumption;
+
+        if ($remainingConsumption <= 0) break;
+    }
+
+    // Add posos charge if residential
     if ($type === 'residential') {
-        $baseAmount = 13;
-        $rangeSize = 10;
-        $rangeIndex = 0;
-        
-        while ($remainingConsumption > 0) {
-            if ($rangeIndex === 0) {
-                if ($consumption <= 10) {
-                    $totalAmount = 130;
-                    break;
-                } else {
-                    $totalAmount = 130;
-                    $remainingConsumption -= min($remainingConsumption, 10);
-                }
-            } else {
-                $currentAmount = $baseAmount + ($rangeIndex * 2);
-                $rangeConsumption = min($remainingConsumption, $rangeSize);
-                $totalAmount += $rangeConsumption * $currentAmount;
-                $remainingConsumption -= $rangeConsumption;
-            }
-            $rangeIndex++;
-        }
-        
-    } else {
-        foreach ($rates as $rate) {
-            if (str_contains($rate->range, '+')) {
-                $rangeConsumption = $remainingConsumption;
-            } else {
-                $rangeParts = explode('-', $rate->range);
-                $min = (int)$rangeParts[0];
-                $max = (int)$rangeParts[1];
-                $rangeConsumption = min($remainingConsumption, $max - $min + 1);
-            }
-
-            $totalAmount += $rangeConsumption * $rate->amount;
-            $remainingConsumption -= $rangeConsumption;
-
-            if ($remainingConsumption <= 0) break;
-        }
+        $pososCharge = floor($consumption / 11) * 2;
+        $totalAmount += $pososCharge;
     }
 
     return round($totalAmount, 2);
