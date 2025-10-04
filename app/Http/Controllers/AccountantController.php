@@ -316,45 +316,124 @@ public function edit($id)
     /**
      * Calculate water bill based on consumption and rates
      */
-    public function calculateWaterBill($type, $consumption)
-{
-    $rates = WaterRate::where('type', $type)
-              ->orderBy('range')
-              ->get();
+     public function calculateWaterBill($type, $consumption)
+    {
+        $rates = WaterRate::where('type', $type)
+                  ->orderBy('range')
+                  ->get();
 
-    if ($rates->isEmpty()) {
-        throw new \Exception("No water rates defined for {$type} type");
-    }
-
-    $totalAmount = 0;
-    $remainingConsumption = $consumption;
-
-    foreach ($rates as $rate) {
-        if (str_contains($rate->range, '+')) {
-            // Handle open-ended range (e.g., "31+")
-            $rangeConsumption = $remainingConsumption;
-        } else {
-            // Handle normal ranges (e.g., "0-10", "11-20")
-            $rangeParts = explode('-', $rate->range);
-            $min = (int)$rangeParts[0];
-            $max = (int)$rangeParts[1];
-            $rangeConsumption = min($remainingConsumption, $max - $min + 1);
+        if ($rates->isEmpty()) {
+            throw new \Exception("No water rates defined for {$type} type");
         }
 
-        $totalAmount += $rangeConsumption * $rate->amount;
-        $remainingConsumption -= $rangeConsumption;
+        $totalAmount = 0;
+        $remainingConsumption = max(0, $consumption); // Ensure non-negative
 
-        if ($remainingConsumption <= 0) break;
+        try {
+            if ($type === 'commercial') {
+                foreach ($rates as $rate) {
+                    if ($remainingConsumption <= 0) break;
+                    
+                    if ($rate->range === '0-10') {
+                        if ($remainingConsumption > 0) {
+                            $totalAmount += $rate->amount;
+                            $rangeConsumption = min($remainingConsumption, 10);
+                            $remainingConsumption -= $rangeConsumption;
+                        }
+                    } elseif ($rate->range === '11-20') {
+                        $rangeConsumption = min($remainingConsumption, 10);
+                        $totalAmount += $rangeConsumption * $rate->amount;
+                        $remainingConsumption -= $rangeConsumption;
+                    } elseif ($rate->range === '21-30') {
+                        $rangeConsumption = min($remainingConsumption, 10);
+                        $totalAmount += $rangeConsumption * $rate->amount;
+                        $remainingConsumption -= $rangeConsumption;
+                    } elseif (str_contains($rate->range, '+')) {
+                        $totalAmount += $remainingConsumption * $rate->amount;
+                        $remainingConsumption = 0;
+                    }
+                }
+            } elseif ($type === 'institutional') {
+                // Check if required rate ranges exist
+                $fixedRate = $rates->where('range', '6-15')->first();
+                $rate_16_25 = $rates->where('range', '16-25')->first();
+                $rate_26_plus = $rates->filter(function($rate) {
+                    return str_contains($rate->range, '+');
+                })->first();
+
+                // 0-5: free
+                $units_0_5 = min($consumption, 5);
+                $remaining = max(0, $consumption - $units_0_5);
+
+                // 6-15: fixed price if consumption >= 6
+                if ($consumption >= 6 && $fixedRate) {
+                    $totalAmount += $fixedRate->amount;
+                }
+
+                // 16-25: per unit
+                if ($consumption > 15 && $rate_16_25) {
+                    $units_16_25 = min($consumption, 25) - 15;
+                    $totalAmount += max(0, $units_16_25) * $rate_16_25->amount;
+                }
+
+                // 26+: per unit
+                if ($consumption > 25 && $rate_26_plus) {
+                    $units_26_plus = max(0, $consumption - 25);
+                    $totalAmount += $units_26_plus * $rate_26_plus->amount;
+                }
+            } else {
+                // RESIDENTIAL - FIXED PROGRESSIVE CALCULATION
+                $previousMax = 0;
+                
+                foreach ($rates as $rate) {
+                    if ($remainingConsumption <= 0) break;
+
+                    if (str_contains($rate->range, '+')) {
+                        // Open-ended range - charge remaining consumption
+                        $rangeConsumption = $remainingConsumption;
+                        $rangeAmount = $rangeConsumption * $rate->amount;
+                    } else {
+                        // Calculate tier range
+                        $rangeParts = explode('-', $rate->range);
+                        if (count($rangeParts) !== 2) {
+                            continue; // Skip invalid ranges
+                        }
+                        
+                        $min = (int)$rangeParts[0];
+                        $max = (int)$rangeParts[1];
+                        
+                        // Calculate consumption in this tier
+                        $tierMin = $previousMax + 1;
+                        $tierMax = $max;
+                        $rangeConsumption = max(0, min($consumption, $tierMax) - $tierMin + 1);
+                        
+                        $rangeAmount = $rangeConsumption * $rate->amount;
+                        $previousMax = $max;
+                    }
+                    
+                    $totalAmount += $rangeAmount;
+                    $remainingConsumption -= $rangeConsumption;
+                }
+
+                // Add posos charge for residential (with safety check)
+                if ($consumption > 0) {
+                    $pososCharge = floor($consumption / 11) * 2;
+                    $totalAmount += $pososCharge;
+                }
+            }
+
+            return round($totalAmount, 2);
+
+        } catch (\Exception $e) {
+            \Log::error("Water billing calculation error: " . $e->getMessage(), [
+                'type' => $type,
+                'consumption' => $consumption,
+                'rates' => $rates->toArray()
+            ]);
+            throw new \Exception("Error calculating water bill: " . $e->getMessage());
+        }
     }
 
-    // Add posos charge if residential
-    if ($type === 'residential') {
-        $pososCharge = floor($consumption / 11) * 2;
-        $totalAmount += $pososCharge;
-    }
-
-    return round($totalAmount, 2);
-}
 public function getBillingDetails($id)
 {
     try {
