@@ -68,32 +68,75 @@ public function calculateAmount($type, $consumption)
     $totalAmount = 0;
     $remainingConsumption = $consumption;
 
-    foreach ($rates as $rate) {
-        if (str_contains($rate->range, '+')) {
-            // Handle open-ended range (e.g., "31+")
-            $rangeConsumption = $remainingConsumption;
-            $rangeAmount = $rangeConsumption * $rate->amount;
-        } else {
-            // Handle normal ranges (e.g., "0-10", "11-20")
-            $rangeParts = explode('-', $rate->range);
-            $min = (int)$rangeParts[0];
-            $max = (int)$rangeParts[1];
-            $rangeConsumption = min($remainingConsumption, $max - $min + 1);
-            
-            // Special handling for commercial 0-10 fixed price
-            if ($type === 'commercial' && $min === 0 && $max === 10) {
-                // Fixed price for 0-10 range - pay 165 once if any consumption in this range
-                $rangeAmount = $rangeConsumption > 0 ? $rate->amount : 0;
-            } else {
-                // Normal per-unit calculation for other ranges
-                $rangeAmount = $rangeConsumption * $rate->amount;
+    if ($type === 'commercial') {
+        foreach ($rates as $rate) {
+            if ($rate->range === '0-10') {
+                if ($remainingConsumption > 0) {
+                    $totalAmount += $rate->amount;
+                    $rangeConsumption = min($remainingConsumption, 10);
+                    $remainingConsumption -= $rangeConsumption;
+                }
+            } elseif ($rate->range === '11-20') {
+                $rangeConsumption = min($remainingConsumption, 10);
+                $totalAmount += $rangeConsumption * $rate->amount;
+                $remainingConsumption -= $rangeConsumption;
+            } elseif ($rate->range === '21-30') {
+                $rangeConsumption = min($remainingConsumption, 10);
+                $totalAmount += $rangeConsumption * $rate->amount;
+                $remainingConsumption -= $rangeConsumption;
+            } elseif (str_contains($rate->range, '+')) {
+                $totalAmount += $remainingConsumption * $rate->amount;
+                $remainingConsumption = 0;
             }
+            if ($remainingConsumption <= 0) break;
+        }
+    } elseif ($type === 'institutional') {
+        // 0-5: free
+        if ($consumption > 5) {
+            $units_0_5 = 5;
+        } else {
+            $units_0_5 = $consumption;
+        }
+        $remaining = $consumption - $units_0_5;
+
+        // 6-15: fixed price if consumption >= 6
+        $fixedRate = $rates->where('range', '6-15')->first();
+        if ($consumption >= 6 && $fixedRate) {
+            $totalAmount += $fixedRate->amount;
         }
 
-        $totalAmount += $rangeAmount;
-        $remainingConsumption -= $rangeConsumption;
+        // 16-25: per unit
+        $rate_16_25 = $rates->where('range', '16-25')->first();
+        if ($consumption > 15 && $rate_16_25) {
+            $units_16_25 = min($consumption, 25) - 15;
+            $totalAmount += $units_16_25 * $rate_16_25->amount;
+        }
 
-        if ($remainingConsumption <= 0) break;
+        // 26+: per unit
+        $rate_26_plus = $rates->filter(function($rate) {
+            return str_contains($rate->range, '+');
+        })->first();
+        if ($consumption > 25 && $rate_26_plus) {
+            $units_26_plus = $consumption - 25;
+            $totalAmount += $units_26_plus * $rate_26_plus->amount;
+        }
+    } else {
+        // Residential (original logic)
+        foreach ($rates as $rate) {
+            if (str_contains($rate->range, '+')) {
+                $rangeConsumption = $remainingConsumption;
+                $rangeAmount = $rangeConsumption * $rate->amount;
+            } else {
+                $rangeParts = explode('-', $rate->range);
+                $min = (int)$rangeParts[0];
+                $max = (int)$rangeParts[1];
+                $rangeConsumption = min($remainingConsumption, $max - $min + 1);
+                $rangeAmount = $rangeConsumption * $rate->amount;
+            }
+            $totalAmount += $rangeAmount ?? 0;
+            $remainingConsumption -= $rangeConsumption ?? 0;
+            if ($remainingConsumption <= 0) break;
+        }
     }
 
     // Add posos charge if residential
