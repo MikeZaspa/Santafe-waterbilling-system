@@ -380,7 +380,6 @@
         
         <div class="auth-buttons">
             <button class="btn login-btn" id="loginBtn"><i class="fas fa-sign-in-alt"></i> Login</button>
-            <button class="btn signup-btn" id="signupBtn"><i class="fas fa-user-plus"></i> Sign Up</button>
         </div>
         
         <div class="menu-toggle">
@@ -437,7 +436,6 @@
             <p>&copy; 2023 Santa Fe Water Utility. All rights reserved.</p>
         </div>
     </footer>
-dada
     <script>
         const menuToggle = document.querySelector('.menu-toggle');
         const navLinks = document.querySelector('.nav-links');
