@@ -270,10 +270,7 @@
             
             <div class="divider">or</div>
             
-            <div class="signup-link">
-                <span>Don't have an account?</span>
-                <a href="{{ route('admin-register') }}">Sign up</a>
-            </div>
+            
             <div class="extra-portals" style="margin-top: 1rem; font-size: 0.9rem; text-align: center;">
                 <a href="" style="color: var(--primary); text-decoration: none; margin-right: 1rem;">
                     Plumber Portal and Accountant Portal
