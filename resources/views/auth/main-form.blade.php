@@ -131,58 +131,58 @@
             transition: all 0.3s ease;
         }
 
-        .hero {
-            background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0)), 
-                            url('{{ asset('image/background.jfif') }}');
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: flex-start;
-            text-align: left;
-            padding: 100px 50px;
-            color: white;
-            height: 70vh;
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            font-family: 'Times New Roman', serif;
-        }
+         .hero {
+    background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0)), 
+                    url('{{ asset('image/background.jfif') }}');
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    text-align: left;
+    padding: 100px 50px;
+    color: white;
+    height: 70vh;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    font-family: 'Times New Roman', serif; /* Added to match formal college style */
+}
 
-        .hero h1 {
-            font-size: 2rem;
-            margin-bottom: 15px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+.hero h1 {
+    font-size: 2rem; /* Increased from 1.5rem for better visibility */
+    margin-bottom: 15px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    font-weight: bold;
+    text-transform: uppercase; /* Matches the all-caps style in the image */
+    letter-spacing: 1px; /* Improves readability for uppercase text */
+}
 
-        .hero p {
-            font-size: 1.1rem;
-            margin-bottom: 25px;
-            line-height: 1.6;
-            max-width: 600px;
-        }
+.hero p {
+    font-size: 1.1rem;
+    margin-bottom: 25px;
+    line-height: 1.6;
+    max-width: 600px;
+}
 
-        .hero ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
+.hero ul {
+    list-style-type: none;
+    padding-left: 0;
+}
 
-        .hero ul li {
-            margin-bottom: 10px;
-            position: relative;
-            padding-left: 25px;
-            font-size: 1rem;
-        }
+.hero ul li {
+    margin-bottom: 10px;
+    position: relative;
+    padding-left: 25px;
+    font-size: 1rem;
+}
 
-        .hero ul li:before {
-            content: "•";
-            position: absolute;
-            left: 0;
-            color: white;
-            font-size: 1.2rem;
-        }
+.hero ul li:before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: white;
+    font-size: 1.2rem;
+}
 
         .cta-buttons {
             display: flex;
@@ -237,6 +237,30 @@
             margin-bottom: 50px;
             font-size: 2.5rem;
             color: #0077b6;
+        }
+
+        /* Mobile Menu Login Button */
+        .mobile-login-btn {
+            display: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            background-color: transparent;
+            color: #333;
+            border: 2px solid #0077b6;
+            width: 90%;
+            margin: 15px auto;
+            text-align: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .mobile-login-btn:hover {
+            background-color: #0077b6;
+            color: white;
         }
 
         /* Footer */
@@ -304,7 +328,6 @@
             border-top: 1px solid #555;
         }
 
-        /* Mobile Styles */
         @media (max-width: 768px) {
             .navbar {
                 padding: 15px 20px;
@@ -334,21 +357,8 @@
                 margin: 15px 0;
             }
 
-            /* FIX: Keep the auth buttons visible on mobile */
             .auth-buttons {
-                display: flex;
-                align-items: center;
-            }
-            
-            /* Add mobile-specific login button styling */
-            .mobile-login-btn {
                 display: none;
-                background-color: transparent;
-                border: none;
-                color: #333;
-                font-size: 1.2rem;
-                cursor: pointer;
-                margin-right: 15px;
             }
             
             .menu-toggle {
@@ -372,32 +382,10 @@
                 width: 100%;
                 justify-content: center;
             }
-            
-            /* Mobile-specific adjustments for login button */
-            .auth-buttons .btn {
-                padding: 6px 12px;
-                font-size: 0.9rem;
-                margin-left: 10px;
-            }
-        }
 
-        /* Small mobile devices */
-        @media (max-width: 480px) {
-            .logo-text {
-                display: none;
-            }
-            
-            .auth-buttons .btn {
-                padding: 6px 10px;
-                font-size: 0.8rem;
-            }
-            
-            .auth-buttons .btn i {
-                margin-right: 0;
-            }
-            
-            .auth-buttons .btn span {
-                display: none;
+            /* Show mobile login button */
+            .mobile-login-btn {
+                display: flex;
             }
         }
     </style>
@@ -416,12 +404,11 @@
             <li><a href="#"><i class="fas fa-file-invoice-dollar"></i> Billing</a></li>
             <li><a href="about"><i class="fas fa-chart-line"></i> About</a></li>
             <li><a href="#"><i class="fas fa-phone"></i> Contact</a></li>
+            <!-- Mobile login button will be added here by JavaScript -->
         </ul>
         
         <div class="auth-buttons">
-            <button class="btn login-btn" id="loginBtn">
-                <i class="fas fa-sign-in-alt"></i> <span>Login</span>
-            </button>
+            <button class="btn login-btn" id="loginBtn"><i class="fas fa-sign-in-alt"></i> Login</button>
         </div>
         
         <div class="menu-toggle">
@@ -431,18 +418,18 @@
         </div>
     </nav>
 
-    <section class="hero">
-        <h1>WELCOME TO SANTA FE WATER BILLING SYSTEM</h1>
-        <p>Efficient water management and billing services for Santa Fe residents</p>
-        <div class="cta-buttons">
-            <button class="cta-btn secondary-btn" id="learnMoreBtn">
-                <i class="fas fa-question-circle"></i> LEARN MORE
-            </button>
-        </div>
-    </section>
+   <section class="hero">
+    <h1>WELCOME TO SANTA FE WATER BILLING SYSTEM</h1>
+    <p>Efficient water management and billing services for Santa Fe residents</p>
+    <div class="cta-buttons">
+        <button class="cta-btn secondary-btn" id="learnMoreBtn">
+            <i class="fas fa-question-circle"></i> LEARN MORE
+        </button>
+    </div>
+</section>
 
     <section class="features">
-        <!-- Features content here -->
+       
     </section>
 
     <footer>
@@ -478,12 +465,22 @@
             <p>&copy; 2025. Santa Fe Water Utility. All rights reserved.</p>
         </div>
     </footer>
-    
     <script>
         const menuToggle = document.querySelector('.menu-toggle');
         const navLinks = document.querySelector('.nav-links');
         const loginBtn = document.getElementById('loginBtn');
         const learnMoreBtn = document.getElementById('learnMoreBtn');
+        
+        // Create mobile login button
+        const mobileLoginBtn = document.createElement('li');
+        mobileLoginBtn.innerHTML = `
+            <button class="mobile-login-btn" id="mobileLoginBtn">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </button>
+        `;
+        
+        // Add mobile login button to nav links
+        navLinks.appendChild(mobileLoginBtn);
         
         menuToggle.addEventListener('click', () => {
             navLinks.classList.toggle('active');
@@ -491,6 +488,11 @@
         });
         
         loginBtn.addEventListener('click', () => {
+            window.location.href = "admin-login";
+        });
+        
+        // Add event listener for mobile login button
+        document.getElementById('mobileLoginBtn').addEventListener('click', () => {
             window.location.href = "admin-login";
         });
         
