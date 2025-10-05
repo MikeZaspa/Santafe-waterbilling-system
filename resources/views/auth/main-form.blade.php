@@ -433,7 +433,7 @@
             </div>
         </div>
         <div class="copyright">
-            <p>&copy; 2023 Santa Fe Water Utility. All rights reserved.</p>
+            <p>&copy; 2025 Santa Fe Water Utility. All rights reserved.</p>
         </div>
     </footer>
     <script>
