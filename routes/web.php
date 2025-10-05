@@ -23,6 +23,7 @@ use App\Http\Controllers\PaymentHistoryController;
 use App\Http\Controllers\OnlinePaymentController;
 use App\Http\Controllers\AccountantManageController;
 use App\Http\Controllers\DisconnectionController;
+use App\Http\Controllers\ConsumerNotificationController;
 
 Route::get('/admin-register', [AuthController::class, 'showRegistrationForm'])->name('admin-register');
 Route::post('/admin-register', [AuthController::class, 'register']);
@@ -286,9 +287,4 @@ Route::get('/admin-plumber-disconnection', [DisconnectionController::class, 'ind
 Route::post('/admin-plumber-disconnection/{disconnection}/reconnect', [DisconnectionController::class, 'reconnect'])->name('admin.plumber.disconnection.reconnect');
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-Route::get('/', function () {
-    return view('welcome');
 
-  
-
-});
