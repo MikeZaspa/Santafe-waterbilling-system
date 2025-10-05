@@ -447,6 +447,89 @@
             border-radius: 50%; 
             object-fit: cover;  
         }
+
+        /* Responsive Table Styles */
+@media (max-width: 768px) {
+    .table-container {
+        padding: 15px;
+    }
+    
+    /* Hide regular table on mobile */
+    #billingTable_wrapper .dataTables_scrollHead,
+    #billingTable_wrapper .dataTables_scrollBody .table {
+        display: none;
+    }
+    
+    /* Mobile card view */
+    .mobile-billing-cards {
+        display: block;
+    }
+    
+    .billing-card {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+    }
+    
+    .billing-card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        transform: translateY(-2px);
+    }
+    
+    .card-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid #f8f9fa;
+    }
+    
+    .card-row:last-child {
+        border-bottom: none;
+    }
+    
+    .card-label {
+        font-weight: 600;
+        color: #495057;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .card-value {
+        color: #212529;
+        text-align: right;
+        font-size: 0.9rem;
+    }
+    
+    .card-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #e9ecef;
+    }
+}
+
+/* Show mobile cards only on mobile */
+.mobile-billing-cards {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .mobile-billing-cards {
+        display: block;
+    }
+    
+    .table-responsive {
+        display: none;
+    }
+}
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -502,76 +585,137 @@
     </header>
    
     <!-- Billing History -->
-    <div class="table-container">
-        <div class="table-title">
-            <h3>Billing History</h3>
-            <div>
-                <select class="form-select form-select-sm" id="statusFilter">
-                    <option value="">All Status</option>
-                    <option value="paid">Paid</option>
-                    <option value="unpaid">Unpaid</option>
-                    <option value="overdue">Overdue</option>
-                </select>
-            </div>
-        </div>
-        
-        <div class="table-responsive">
-            <table class="table table-hover" id="billingTable">
-                <thead>
-                    <tr>
-                        <th>Billing ID</th>
-                        <th>Billing Month</th>
-                        <th>Due Date</th>
-                        <th>Consumption (m³)</th>
-                        <th>Amount</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($bills as $bill)
-                    <tr>
-                        <td class="fw-medium">#{{ $loop->iteration }}</td>
-                        <td>{{ \Carbon\Carbon::parse($bill->reading_date)->format('F Y') }}</td>
-                        <td>{{ \Carbon\Carbon::parse($bill->due_date)->format('M d, Y') }}</td>
-                        <td>{{ $bill->consumption }} m³</td>
-                        <td class="fw-medium">₱{{ number_format($bill->total_amount, 2) }}</td>
-                        <td>
-                            @if($bill->status === 'paid')
-                                <span class="badge badge-paid">
-                                    <i class="bi bi-check-circle-fill me-1"></i> Paid
-                                </span>
-                            @elseif($bill->status === 'unpaid')
-                                <span class="badge badge-unpaid">
-                                    <i class="bi bi-exclamation-circle-fill me-1"></i> Unpaid
-                                </span>
-                            @else
-                                <span class="badge badge-overdue">
-                                    <i class="bi bi-clock-fill me-1"></i> Overdue
-                                </span>
-                            @endif
-                        </td>
-                        <td>
-                            <div class="d-flex">
-                                @if($bill->status !== 'paid')
-                                    <button class="btn btn-sm btn-success payment-btn me-1"
-                                        data-id="{{ $bill->id }}"
-                                        data-amount="{{ $bill->total_amount }}"
-                                        data-billno="{{ $loop->iteration }}">
-                                        <i class="bi bi-credit-card me-1"></i> Pay
-                                    </button>
-                                @endif
-                                <button class="btn btn-sm btn-outline-primary receipt-btn" data-id="{{ $bill->id }}">
-                                    <i class="bi bi-receipt"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+<div class="table-container">
+    <div class="table-title">
+        <h3>Billing History</h3>
+        <div>
+            <select class="form-select form-select-sm" id="statusFilter">
+                <option value="">All Status</option>
+                <option value="paid">Paid</option>
+                <option value="unpaid">Unpaid</option>
+                <option value="overdue">Overdue</option>
+            </select>
         </div>
     </div>
+    
+    <!-- Desktop Table View -->
+    <div class="table-responsive">
+        <table class="table table-hover" id="billingTable">
+            <!-- Your existing table content -->
+            <thead>
+                <tr>
+                    <th>Billing ID</th>
+                    <th>Billing Month</th>
+                    <th>Due Date</th>
+                    <th>Consumption (m³)</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($bills as $bill)
+                <tr>
+                    <td class="fw-medium">#{{ $loop->iteration }}</td>
+                    <td>{{ \Carbon\Carbon::parse($bill->reading_date)->format('F Y') }}</td>
+                    <td>{{ \Carbon\Carbon::parse($bill->due_date)->format('M d, Y') }}</td>
+                    <td>{{ $bill->consumption }} m³</td>
+                    <td class="fw-medium">₱{{ number_format($bill->total_amount, 2) }}</td>
+                    <td>
+                        @if($bill->status === 'paid')
+                            <span class="badge badge-paid">
+                                <i class="bi bi-check-circle-fill me-1"></i> Paid
+                            </span>
+                        @elseif($bill->status === 'unpaid')
+                            <span class="badge badge-unpaid">
+                                <i class="bi bi-exclamation-circle-fill me-1"></i> Unpaid
+                            </span>
+                        @else
+                            <span class="badge badge-overdue">
+                                <i class="bi bi-clock-fill me-1"></i> Overdue
+                            </span>
+                        @endif
+                    </td>
+                    <td>
+                        <div class="d-flex">
+                            @if($bill->status !== 'paid')
+                                <button class="btn btn-sm btn-success payment-btn me-1"
+                                    data-id="{{ $bill->id }}"
+                                    data-amount="{{ $bill->total_amount }}"
+                                    data-billno="{{ $loop->iteration }}">
+                                    <i class="bi bi-credit-card me-1"></i> Pay
+                                </button>
+                            @endif
+                            <button class="btn btn-sm btn-outline-primary receipt-btn" data-id="{{ $bill->id }}">
+                                <i class="bi bi-receipt"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Mobile Card View -->
+    <div class="mobile-billing-cards" id="mobileBillingCards">
+        @foreach($bills as $bill)
+        <div class="billing-card" data-bill-id="{{ $bill->id }}">
+            <div class="card-row">
+                <span class="card-label">Billing ID</span>
+                <span class="card-value fw-medium">#{{ $loop->iteration }}</span>
+            </div>
+            <div class="card-row">
+                <span class="card-label">Billing Month</span>
+                <span class="card-value">{{ \Carbon\Carbon::parse($bill->reading_date)->format('F Y') }}</span>
+            </div>
+            <div class="card-row">
+                <span class="card-label">Due Date</span>
+                <span class="card-value">{{ \Carbon\Carbon::parse($bill->due_date)->format('M d, Y') }}</span>
+            </div>
+            <div class="card-row">
+                <span class="card-label">Consumption</span>
+                <span class="card-value">{{ $bill->consumption }} m³</span>
+            </div>
+            <div class="card-row">
+                <span class="card-label">Amount</span>
+                <span class="card-value fw-medium">₱{{ number_format($bill->total_amount, 2) }}</span>
+            </div>
+            <div class="card-row">
+                <span class="card-label">Status</span>
+                <span class="card-value">
+                    @if($bill->status === 'paid')
+                        <span class="badge badge-paid">
+                            <i class="bi bi-check-circle-fill me-1"></i> Paid
+                        </span>
+                    @elseif($bill->status === 'unpaid')
+                        <span class="badge badge-unpaid">
+                            <i class="bi bi-exclamation-circle-fill me-1"></i> Unpaid
+                        </span>
+                    @else
+                        <span class="badge badge-overdue">
+                            <i class="bi bi-clock-fill me-1"></i> Overdue
+                        </span>
+                    @endif
+                </span>
+            </div>
+            <div class="card-actions">
+                @if($bill->status !== 'paid')
+                    <button class="btn btn-sm btn-success payment-btn"
+                        data-id="{{ $bill->id }}"
+                        data-amount="{{ $bill->total_amount }}"
+                        data-billno="{{ $loop->iteration }}">
+                        <i class="bi bi-credit-card me-1"></i> Pay
+                    </button>
+                @endif
+                <button class="btn btn-sm btn-outline-primary receipt-btn" data-id="{{ $bill->id }}">
+                    <i class="bi bi-receipt"></i> Receipt
+                </button>
+            </div>
+        </div>
+        @endforeach
+    </div>
+</div>
 
     <!-- Payment Modal -->
     <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
@@ -732,21 +876,79 @@
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <!-- Add to CSS section -->
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.0/css/responsive.bootstrap5.min.css">
+
+<!-- Add before closing body tag -->
+<script src="https://cdn.datatables.net/responsive/2.4.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.4.0/js/responsive.bootstrap5.min.js"></script>
     
     <script>
     $(document).ready(function() {
         // Initialize DataTable
-        $('#billingTable').DataTable({
-            ordering: true,
-            searching: true,
-            responsive: true,
-            language: {
-                search: "_INPUT_",
-                searchPlaceholder: "Search bills...",
-                lengthMenu: "Show _MENU_ entries",
-                info: "Showing _START_ to _END_ of _TOTAL_ entries",
+            const table = $('#billingTable').DataTable({
+        ordering: true,
+        searching: true,
+        responsive: true,
+        language: {
+            search: "_INPUT_",
+            searchPlaceholder: "Search bills...",
+            lengthMenu: "Show _MENU_ entries",
+            info: "Showing _START_ to _END_ of _TOTAL_ entries",
+        }
+    });
+    
+    // Apply status filter to both table and mobile cards
+    $('#statusFilter').change(function() {
+        const status = $(this).val();
+        
+        if (status) {
+            // Filter desktop table
+            table.column(5).search(status).draw();
+            
+            // Filter mobile cards
+            $('.billing-card').show();
+            if (status !== '') {
+                $('.billing-card').each(function() {
+                    const $card = $(this);
+                    const statusBadge = $card.find('.badge').attr('class');
+                    let cardStatus = '';
+                    
+                    if (statusBadge.includes('badge-paid')) cardStatus = 'paid';
+                    else if (statusBadge.includes('badge-unpaid')) cardStatus = 'unpaid';
+                    else if (statusBadge.includes('badge-overdue')) cardStatus = 'overdue';
+                    
+                    if (cardStatus !== status) {
+                        $card.hide();
+                    }
+                });
             }
-        });
+        } else {
+            // Show all
+            table.column(5).search('').draw();
+            $('.billing-card').show();
+        }
+    });
+    
+    // Handle window resize to toggle between table and cards
+    function checkViewMode() {
+        if ($(window).width() <= 768) {
+            $('.table-responsive').hide();
+            $('.mobile-billing-cards').show();
+        } else {
+            $('.table-responsive').show();
+            $('.mobile-billing-cards').hide();
+        }
+    }
+    
+    // Initial check
+    checkViewMode();
+    
+    // Check on resize
+    $(window).resize(function() {
+        checkViewMode();
+    });
+
         
         // Apply status filter
         $('#statusFilter').change(function() {
