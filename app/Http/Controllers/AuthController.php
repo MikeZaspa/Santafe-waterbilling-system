@@ -114,6 +114,11 @@ class AuthController extends Controller
     {
         return view('auth.consumer-information');
     }
+
+    public function showMainForm()
+    {
+        return view('auth.main-form');
+    }
     public function showVerifyForm()
     {
         $email = session('verification_email');

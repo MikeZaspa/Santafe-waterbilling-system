@@ -286,8 +286,11 @@ Route::get('/admin-plumber-disconnection', [DisconnectionController::class, 'ind
 // Fix: Add the missing route for plumber reconnection
 Route::post('/admin-plumber-disconnection/{disconnection}/reconnect', [DisconnectionController::class, 'reconnect'])->name('admin.plumber.disconnection.reconnect');
 
+Route::get('/main-form', [AuthController::class, 'showMainForm'])->name('main-form');
+Route::post('/main-form', [AuthController::class, 'main-form']);
+
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/', function () {
-    return view('auth.admin-login');
+    return view('auth.main-form');
 
 });
