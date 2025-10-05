@@ -131,58 +131,58 @@
             transition: all 0.3s ease;
         }
 
-         .hero {
-    background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0)), 
-                    url('{{ asset('image/background.jfif') }}');
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-    text-align: left;
-    padding: 100px 50px;
-    color: white;
-    height: 70vh;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    font-family: 'Times New Roman', serif; /* Added to match formal college style */
-}
+        .hero {
+            background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0)), 
+                            url('{{ asset('image/background.jfif') }}');
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            text-align: left;
+            padding: 100px 50px;
+            color: white;
+            height: 70vh;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            font-family: 'Times New Roman', serif;
+        }
 
-.hero h1 {
-    font-size: 2rem; /* Increased from 1.5rem for better visibility */
-    margin-bottom: 15px;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-    font-weight: bold;
-    text-transform: uppercase; /* Matches the all-caps style in the image */
-    letter-spacing: 1px; /* Improves readability for uppercase text */
-}
+        .hero h1 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
 
-.hero p {
-    font-size: 1.1rem;
-    margin-bottom: 25px;
-    line-height: 1.6;
-    max-width: 600px;
-}
+        .hero p {
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            max-width: 600px;
+        }
 
-.hero ul {
-    list-style-type: none;
-    padding-left: 0;
-}
+        .hero ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
 
-.hero ul li {
-    margin-bottom: 10px;
-    position: relative;
-    padding-left: 25px;
-    font-size: 1rem;
-}
+        .hero ul li {
+            margin-bottom: 10px;
+            position: relative;
+            padding-left: 25px;
+            font-size: 1rem;
+        }
 
-.hero ul li:before {
-    content: "•";
-    position: absolute;
-    left: 0;
-    color: white;
-    font-size: 1.2rem;
-}
+        .hero ul li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: white;
+            font-size: 1.2rem;
+        }
 
         .cta-buttons {
             display: flex;
@@ -238,7 +238,6 @@
             font-size: 2.5rem;
             color: #0077b6;
         }
-
 
         /* Footer */
         footer {
@@ -305,6 +304,7 @@
             border-top: 1px solid #555;
         }
 
+        /* Mobile Styles */
         @media (max-width: 768px) {
             .navbar {
                 padding: 15px 20px;
@@ -334,8 +334,21 @@
                 margin: 15px 0;
             }
 
+            /* FIX: Keep the auth buttons visible on mobile */
             .auth-buttons {
+                display: flex;
+                align-items: center;
+            }
+            
+            /* Add mobile-specific login button styling */
+            .mobile-login-btn {
                 display: none;
+                background-color: transparent;
+                border: none;
+                color: #333;
+                font-size: 1.2rem;
+                cursor: pointer;
+                margin-right: 15px;
             }
             
             .menu-toggle {
@@ -359,6 +372,33 @@
                 width: 100%;
                 justify-content: center;
             }
+            
+            /* Mobile-specific adjustments for login button */
+            .auth-buttons .btn {
+                padding: 6px 12px;
+                font-size: 0.9rem;
+                margin-left: 10px;
+            }
+        }
+
+        /* Small mobile devices */
+        @media (max-width: 480px) {
+            .logo-text {
+                display: none;
+            }
+            
+            .auth-buttons .btn {
+                padding: 6px 10px;
+                font-size: 0.8rem;
+            }
+            
+            .auth-buttons .btn i {
+                margin-right: 0;
+            }
+            
+            .auth-buttons .btn span {
+                display: none;
+            }
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -379,7 +419,9 @@
         </ul>
         
         <div class="auth-buttons">
-            <button class="btn login-btn" id="loginBtn"><i class="fas fa-sign-in-alt"></i> Login</button>
+            <button class="btn login-btn" id="loginBtn">
+                <i class="fas fa-sign-in-alt"></i> <span>Login</span>
+            </button>
         </div>
         
         <div class="menu-toggle">
@@ -389,18 +431,18 @@
         </div>
     </nav>
 
-   <section class="hero">
-    <h1>WELCOME TO SANTA FE WATER BILLING SYSTEM</h1>
-    <p>Efficient water management and billing services for Santa Fe residents</p>
-    <div class="cta-buttons">
-        <button class="cta-btn secondary-btn">
-            <i class="fas fa-question-circle"></i> LEARN MORE
-        </button>
-    </div>
-</section>
+    <section class="hero">
+        <h1>WELCOME TO SANTA FE WATER BILLING SYSTEM</h1>
+        <p>Efficient water management and billing services for Santa Fe residents</p>
+        <div class="cta-buttons">
+            <button class="cta-btn secondary-btn" id="learnMoreBtn">
+                <i class="fas fa-question-circle"></i> LEARN MORE
+            </button>
+        </div>
+    </section>
 
     <section class="features">
-       
+        <!-- Features content here -->
     </section>
 
     <footer>
@@ -436,12 +478,11 @@
             <p>&copy; 2025. Santa Fe Water Utility. All rights reserved.</p>
         </div>
     </footer>
+    
     <script>
         const menuToggle = document.querySelector('.menu-toggle');
         const navLinks = document.querySelector('.nav-links');
         const loginBtn = document.getElementById('loginBtn');
-        const signupBtn = document.getElementById('signupBtn');
-        const payNowBtn = document.getElementById('payNowBtn');
         const learnMoreBtn = document.getElementById('learnMoreBtn');
         
         menuToggle.addEventListener('click', () => {
@@ -451,14 +492,6 @@
         
         loginBtn.addEventListener('click', () => {
             window.location.href = "admin-login";
-        });
-        
-        signupBtn.addEventListener('click', () => {
-            window.location.href = "admin-register"; 
-        });
-        
-        payNowBtn.addEventListener('click', () => {
-            window.location.href = "pay-now";
         });
         
         learnMoreBtn.addEventListener('click', () => {
