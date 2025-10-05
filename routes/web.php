@@ -287,4 +287,9 @@ Route::get('/admin-plumber-disconnection', [DisconnectionController::class, 'ind
 Route::post('/admin-plumber-disconnection/{disconnection}/reconnect', [DisconnectionController::class, 'reconnect'])->name('admin.plumber.disconnection.reconnect');
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::get('/', function () {
+    return view('index');
 
+    
+
+});
