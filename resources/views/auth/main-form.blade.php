@@ -435,7 +435,7 @@
     <footer>
         <div class="footer-content">
             <div class="footer-column">
-                Develop by: Niño Mike Zaspa | Aian Desucatan | Mirriam Batain | Elmer Espinosa
+                Develop by: Niño Mike Zaspa | Aian Desucatan | Mirriam Batain | Elmer Espinosa.
             </div>
             <div class="footer-column">
                 <h3>Contact Us</h3>
