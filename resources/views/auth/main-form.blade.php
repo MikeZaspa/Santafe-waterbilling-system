@@ -435,21 +435,7 @@
     <footer>
         <div class="footer-content">
             <div class="footer-column">
-                <h3>Santa Fe Water</h3>
-                <p>Providing clean and reliable water services to our community with transparent billing solutions.</p>
-                <div class="social-links">
-                    <a href="#"><i class="fab fa-facebook"></i></a>
-                </div>
-            </div>
-            <div class="footer-column">
-                <h3>Quick Links</h3>
-                <ul>
-                    <li><a href="#">Home</a></li>
-                    <li><a href="#">Pay Bill</a></li>
-                    <li><a href="#">Services</a></li>
-                    <li><a href="#">About Us</a></li>
-                    <li><a href="#">Contact Us</a></li>
-                </ul>
+                Develop by: Niño Mike Zaspa | Aian Desucatan | Mirriam Batain | Elmer Espinosa
             </div>
             <div class="footer-column">
                 <h3>Contact Us</h3>
