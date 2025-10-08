@@ -419,7 +419,8 @@
     </nav>
 
    <section class="hero">
-  
+    <h1>WELCOME TO SANTA FE WATER BILLING SYSTEM</h1>
+    <p>Efficient water management and billing services for Santa Fe residents</p>
     <div class="cta-buttons">
         <button class="cta-btn secondary-btn" id="learnMoreBtn">
             <i class="fas fa-question-circle"></i> LEARN MORE
