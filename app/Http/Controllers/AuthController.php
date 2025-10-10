@@ -279,120 +279,56 @@ class AuthController extends Controller
     }
     
     public function login(Request $request)
-    {
-        // Check if user is temporarily locked out
-        $lockoutKey = 'login_attempts_' . $request->ip();
-        $lockoutTimeKey = 'login_lockout_' . $request->ip();
-        
-        $attempts = session($lockoutKey, 0);
-        $lockoutTime = session($lockoutTimeKey);
-        
-        if ($lockoutTime && now()->diffInSeconds($lockoutTime) < 30) {
-            $remainingTime = 30 - now()->diffInSeconds($lockoutTime);
-            return back()->withErrors([
-                'email' => "Too many login attempts. Please try again in {$remainingTime} seconds.",
-            ])->onlyInput('email');
-        }
-        
-        // Reset attempts if lockout time has expired
-        if ($lockoutTime && now()->diffInSeconds($lockoutTime) >= 30) {
-            session([$lockoutKey => 0]);
-            session([$lockoutTimeKey => null]);
-            $attempts = 0;
-        }
+{
+    $validator = Validator::make($request->all(), [
+        'email' => 'required|email',
+        'password' => 'required',
+    ]);
 
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
+    if ($validator->fails()) {
+        return redirect()->back()
+            ->withErrors($validator)
+            ->withInput();
+    }
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
+    $credentials = $request->only('email', 'password');
 
-        $credentials = $request->only('email', 'password');
+    // Check if admin exists first
+    $admin = Admin::where('email', $request->email)->first();
 
-        // Check if user exists first
-        $user = Admin::where('email', $request->email)->first();
-
-        if (!$user) {
-            $attempts++;
-            session([$lockoutKey => $attempts]);
-            
-            if ($attempts >= 3) {
-                session([$lockoutTimeKey => now()]);
-                return back()->withErrors([
-                    'email' => 'Too many login attempts. Please try again in 30 seconds.',
-                ])->onlyInput('email');
-            }
-            
-            return back()->withErrors([
-                'email' => 'The provided email does not exist in our system.',
-            ])->onlyInput('email');
-        }
-        
-        // Check if email is verified
-        if (!$user->email_verified_at) {
-            // Store email in session for verification
-            $request->session()->put('verification_email', $user->email);
-            
-            return redirect()->route('verify')
-                ->with('error', 'Please verify your email address before logging in.');
-        }
-
-        // Attempt authentication
-        if (Auth::guard('admin')->attempt($credentials)) {
-            // Reset login attempts on successful login
-            session([$lockoutKey => 0]);
-            session([$lockoutTimeKey => null]);
-            
-            $request->session()->regenerate();
-            
-            // Check if the user is active (add this if you have an 'active' column)
-            if (isset($user->active) && !$user->active) {
-                Auth::guard('admin')->logout();
-                return back()->withErrors([
-                    'email' => 'Your account is inactive. Please contact administrator.',
-                ])->onlyInput('email');
-            }
-
-            return $this->redirectToDashboard($user->role);
-        }
-
-        // If authentication failed (wrong password)
-        $attempts++;
-        session([$lockoutKey => $attempts]);
-        
-        if ($attempts >= 3) {
-            session([$lockoutTimeKey => now()]);
-            return back()->withErrors([
-                'password' => 'Too many login attempts. Please try again in 30 seconds.',
-            ])->onlyInput('email');
-        }
-        
-        $remainingAttempts = 3 - $attempts;
+    if (!$admin) {
         return back()->withErrors([
-            'password' => "The provided password is incorrect. {$remainingAttempts} attempts remaining.",
+            'email' => 'The provided email does not exist in our system.',
+        ])->onlyInput('email');
+    }
+    
+    // Check if email is verified
+    if (!$admin->email_verified_at) {
+        // Store email in session for verification
+        $request->session()->put('verification_email', $admin->email);
+        
+        return redirect()->route('verify')
+            ->with('error', 'Please verify your email address before logging in.');
+    }
+
+    // Check if admin is active
+    if (!$admin->active) {
+        return back()->withErrors([
+            'email' => 'Your account is inactive. Please contact administrator.',
         ])->onlyInput('email');
     }
 
-    protected function redirectToDashboard($role)
-    {
-        $dashboardRoutes = [
-            'admin' => '/admin-dashboard',
-            'accountant' => '/admin-accountant-dashboard',
-            'plumber' => '/admin-plumber-dashboard',
-        ];
+    // Attempt authentication
+    if (Auth::guard('admin')->attempt($credentials)) {
+        $request->session()->regenerate();
 
-        if (!array_key_exists($role, $dashboardRoutes)) {
-            Auth::guard('admin')->logout();
-            return redirect('/login')->withErrors([
-                'role' => 'Invalid user role. Access denied.'
-            ]);
-        }
-
-        return redirect()->intended($dashboardRoutes[$role]);
+        // Redirect all admins to the same dashboard
+        return redirect()->intended('/admin-dashboard');
     }
+
+    // If authentication failed (wrong password)
+    return back()->withErrors([
+        'password' => 'The provided password is incorrect.',
+    ])->onlyInput('email');
+}
 }
