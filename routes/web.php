@@ -291,6 +291,6 @@ Route::post('/main-form', [AuthController::class, 'main']);
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/', function () {
-    return view('welcome');
+    return view('auth.main-form');
 
 });
