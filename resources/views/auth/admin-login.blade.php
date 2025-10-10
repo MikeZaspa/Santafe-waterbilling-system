@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://www.google.com/recaptcha/api.js?render=<?php echo env('NOCAPTCHA_SITEKEY'); ?>"></script>
     <style>
         :root {
             --primary: #1a73e8;
@@ -225,6 +226,18 @@
             font-weight: 600;
             margin-top: 0.5rem;
         }
+        
+        .recaptcha-info {
+            font-size: 0.7rem;
+            color: var(--text-light);
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+        
+        .recaptcha-info a {
+            color: var(--primary);
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
@@ -242,6 +255,7 @@
         
         <form id="loginForm" method="POST" action="{{ route('admin-login') }}">
             @csrf
+            <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
             
             <div class="form-group">
                 <input type="email" id="email" name="email" value="{{ old('email') }}" required autofocus placeholder="Email address">
@@ -268,9 +282,18 @@
                 <span>Log In</span>
             </button>
             
+            <div class="recaptcha-info">
+                This site is protected by reCAPTCHA and the Google 
+                <a href="https://policies.google.com/privacy" target="_blank">Privacy Policy</a> and
+                <a href="https://policies.google.com/terms" target="_blank">Terms of Service</a> apply.
+            </div>
+            
             <div class="divider">or</div>
             
-            
+            <div class="signup-link">
+                <span>Don't have an account?</span>
+                <a href="{{ route('admin-register') }}">Sign up</a>
+            </div>
             <div class="extra-portals" style="margin-top: 1rem; font-size: 0.9rem; text-align: center;">
                 <a href="" style="color: var(--primary); text-decoration: none; margin-right: 1rem;">
                     Plumber Portal and Accountant Portal
@@ -285,6 +308,7 @@
             const passwordInput = document.getElementById('password');
             const loginBtn = document.getElementById('loginBtn');
             const togglePassword = document.getElementById('togglePassword');
+            const recaptchaResponse = document.getElementById('g-recaptcha-response');
             
             let loginAttempts = 0;
             let isLocked = false;
@@ -303,8 +327,9 @@
             
             // Form validation
             form.addEventListener('submit', function(e) {
+                e.preventDefault(); // Prevent default form submission
+                
                 if (isLocked) {
-                    e.preventDefault();
                     showLockoutAlert();
                     return;
                 }
@@ -342,25 +367,35 @@
                 }
                 
                 if(!isValid) {
-                    e.preventDefault();
-                } else {
-                    // Increment attempts counter
-                    loginAttempts++;
-                    localStorage.setItem('loginAttempts', loginAttempts);
-                    localStorage.setItem('lastAttemptTime', new Date().getTime());
-                    
-                    // Check if should lock
-                    if (loginAttempts >= 3) {
-                        lockoutTime = new Date().getTime();
-                        localStorage.setItem('lockoutTime', lockoutTime);
-                        isLocked = true;
-                        loginBtn.disabled = true;
-                        
-                        e.preventDefault();
-                        showLockoutAlert();
-                        startCountdown();
-                    }
+                    return;
                 }
+                
+                // Execute reCAPTCHA
+                grecaptcha.ready(function() {
+                    grecaptcha.execute('<?php echo env('NOCAPTCHA_SITEKEY'); ?>', {action: 'login'}).then(function(token) {
+                        // Set the token in the hidden input
+                        recaptchaResponse.value = token;
+                        
+                        // Increment attempts counter
+                        loginAttempts++;
+                        localStorage.setItem('loginAttempts', loginAttempts);
+                        localStorage.setItem('lastAttemptTime', new Date().getTime());
+                        
+                        // Check if should lock
+                        if (loginAttempts >= 3) {
+                            lockoutTime = new Date().getTime();
+                            localStorage.setItem('lockoutTime', lockoutTime);
+                            isLocked = true;
+                            loginBtn.disabled = true;
+                            
+                            showLockoutAlert();
+                            startCountdown();
+                        } else {
+                            // Submit the form if not locked
+                            form.submit();
+                        }
+                    });
+                });
             });
             
             // Clear errors when typing
