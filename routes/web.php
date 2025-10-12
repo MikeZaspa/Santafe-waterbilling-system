@@ -28,6 +28,8 @@ use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\AdminForgotPasswordController;
 use App\Http\Controllers\PlumberAuthController;
 use App\Http\Controllers\AccountantAuthController;
+use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\ForgotPasswordController;
 
 Route::get('/admin-register', [AuthController::class, 'showRegistrationForm'])->name('admin-register');
 Route::post('/admin-register', [AuthController::class, 'register']);
@@ -302,6 +304,19 @@ Route::post('/plumber/login', [PlumberAuthController::class, 'login'])->name('pl
 Route::get('/accountant/login', [AccountantAuthController::class, 'showLoginForm'])->name('accountant.login');
 Route::post('/accountant/login', [AccountantAuthController::class, 'login'])->name('accountant.login.submit');
 
+// Password Reset Routes
+Route::prefix('admin')->group(function () {
+    Route::get('/forgot-password', [AdminAuthController::class, 'showForgotPasswordForm'])->name('password.request');
+    Route::post('/forgot-password', [AdminAuthController::class, 'sendResetLinkEmail'])->name('password.email');
+    Route::get('/reset-password/{token}', [AdminAuthController::class, 'showResetForm'])->name('password.reset');
+    Route::post('/reset-password', [AdminAuthController::class, 'reset'])->name('password.update');
+    Route::post('/verify-reset-code', [AdminAuthController::class, 'verifyResetCode'])->name('password.verify');
+});
+
+// Password Reset Routes
+Route::post('/password/email', [ForgotPasswordController::class, 'sendResetLink'])->name('password.email');
+Route::get('/password/reset', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset.form');
+Route::post('/password/reset', [ForgotPasswordController::class, 'resetPassword'])->name('password.reset');
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/', function () {

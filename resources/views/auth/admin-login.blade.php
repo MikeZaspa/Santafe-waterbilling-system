@@ -357,9 +357,35 @@
             </div>
         </div>
         </form>
+        <!-- Forgot Password Modal -->
+        <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content shadow-lg border-0 rounded-4">
+                    <div class="modal-header bg-primary text-white rounded-top-4">
+                        <h5 class="modal-title" id="forgotPasswordModalLabel">Reset Your Password</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="forgotPasswordForm">
+                            @csrf
+                            <div class="mb-3">
+                                <label for="resetEmail" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="resetEmail" name="email" required placeholder="Enter your registered email">
+                                <div class="form-text">We'll send a password reset link to your email.</div>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary" id="sendResetLink">
+                                    <i class="fas fa-paper-plane me-2"></i>Send Reset Link
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('loginForm');
@@ -566,6 +592,74 @@
                 showAttemptWarning(remainingAttempts);
             }
         });
+
+        // Forgot Password Form Handling
+document.addEventListener('DOMContentLoaded', function() {
+    const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+    const sendResetLinkBtn = document.getElementById('sendResetLink');
+    
+    if (forgotPasswordForm) {
+        forgotPasswordForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('resetEmail').value;
+            const originalBtnText = sendResetLinkBtn.innerHTML;
+            
+            // Show loading state
+            sendResetLinkBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+            sendResetLinkBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/password/email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ email: email })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: data.message,
+                        confirmButtonColor: '#1a73e8'
+                    });
+                    
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('forgotPasswordModal'));
+                    modal.hide();
+                    
+                    // Reset form
+                    forgotPasswordForm.reset();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message,
+                        confirmButtonColor: '#1a73e8'
+                    });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred. Please try again.',
+                    confirmButtonColor: '#1a73e8'
+                });
+            } finally {
+                // Reset button
+                sendResetLinkBtn.innerHTML = originalBtnText;
+                sendResetLinkBtn.disabled = false;
+            }
+        });
+    }
+});
     </script>
 </body>
 </html>
