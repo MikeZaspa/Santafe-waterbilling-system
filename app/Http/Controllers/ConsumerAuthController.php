@@ -43,14 +43,8 @@ class ConsumerAuthController extends Controller
         // ✅ FIXED: Actually log in the user
         Auth::guard('consumer')->login($account);
         
-        // Get the consumer and their bills
-        $consumer = $account->consumer;
-        $bills = $consumer->billings()->with('consumer')->orderBy('created_at', 'desc')->get();
-    
-        return view('auth.consumer-login', [
-            'consumer' => $consumer,
-            'bills' => $bills
-        ]);
+        // Redirect to dashboard
+        return redirect()->route('consumer.dashboard');
     }
     
     // Dashboard method (for when user is already logged in)
@@ -80,6 +74,6 @@ class ConsumerAuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         
-        return redirect('/consumer-portal');
+        return redirect('/consumer/login');
     }
 }

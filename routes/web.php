@@ -26,7 +26,8 @@ use App\Http\Controllers\DisconnectionController;
 use App\Http\Controllers\ConsumerNotificationController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\AdminForgotPasswordController;
-
+use App\Http\Controllers\PlumberAuthController;
+use App\Http\Controllers\AccountantAuthController;
 
 Route::get('/admin-register', [AuthController::class, 'showRegistrationForm'])->name('admin-register');
 Route::post('/admin-register', [AuthController::class, 'register']);
@@ -133,9 +134,9 @@ Route::middleware(['auth:consumer'])->group(function () {
 });
 
 // Consumer Auth Routes
-Route::get('/consumer/login', [ConsumerAuthController::class, 'showLoginForm'])->name('consumer.login');
-Route::post('/consumer/login', [ConsumerAuthController::class, 'login']);
-Route::post('/consumer/logout', [ConsumerAuthController::class, 'logout'])->name('consumer.logout');
+Route::get('/consumer-login', [ConsumerAuthController::class, 'showLoginForm'])->name('consumer.portal');
+Route::post('/consumer-login', [ConsumerAuthController::class, 'login']);
+Route::post('/admin-logout', [ConsumerAuthController::class, 'logout'])->name('consumer.logout');
 
 // Consumer Dashboard Routes
 Route::middleware(['consumer.auth'])->group(function () {
@@ -292,6 +293,14 @@ Route::post('/admin-plumber-disconnection/{disconnection}/reconnect', [Disconnec
 
 Route::get('/main-form', [AuthController::class, 'showMainForm'])->name('main-form');
 Route::post('/main-form', [AuthController::class, 'main']);
+
+// Plumber Login Routes
+Route::get('/plumber/login', [PlumberAuthController::class, 'showLoginForm'])->name('plumber.login');
+Route::post('/plumber/login', [PlumberAuthController::class, 'login'])->name('plumber.login.submit');
+
+// Accountant Login Routes  
+Route::get('/accountant/login', [AccountantAuthController::class, 'showLoginForm'])->name('accountant.login');
+Route::post('/accountant/login', [AccountantAuthController::class, 'login'])->name('accountant.login.submit');
 
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

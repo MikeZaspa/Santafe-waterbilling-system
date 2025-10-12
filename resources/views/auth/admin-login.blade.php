@@ -238,6 +238,38 @@
             color: var(--primary);
             text-decoration: none;
         }
+
+        .portal-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .portal-link {
+            display: block;
+            padding: 0.8rem;
+            background-color: var(--light);
+            color: var(--primary);
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+        }
+
+        .portal-link:hover {
+            background-color: var(--primary);
+            color: var(--white);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(26, 115, 232, 0.2);
+        }
+        .divider {
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
     </style>
 </head>
 <body>
@@ -288,15 +320,46 @@
                 <a href="https://policies.google.com/terms" target="_blank">Terms of Service</a> apply.
             </div>
             
-            <div class="divider">or</div>
-            
-            <div class="extra-portals" style="margin-top: 1rem; font-size: 0.9rem; text-align: center;">
-                <a href="" style="color: var(--primary); text-decoration: none; margin-right: 1rem;">
-                    Plumber Portal and Accountant Portal
+           <div class="text-center mt-3">
+            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#portalModal">
+                Access Other Portals
+            </button>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="portalModal" tabindex="-1" aria-labelledby="portalModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content shadow-lg border-0 rounded-4">
+                    <div class="modal-header bg-primary text-white rounded-top-4">
+                        <h5 class="modal-title" id="portalModalLabel">Access Other Portals</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-center">
+
+                        <div class="divider my-3 text-muted">Choose a portal below</div>
+                        
+                        <div class="portal-links d-flex flex-column gap-3">
+                            <a href="{{ route('plumber.login') }}" class="btn btn-outline-secondary d-flex align-items-center justify-content-center gap-2">
+                                <i class="fas fa-tools"></i> Plumber Portal
+                            </a>
+                            <a href="{{ route('accountant.login') }}" class="btn btn-outline-secondary d-flex align-items-center justify-content-center gap-2">
+                                <i class="fas fa-calculator"></i> Accountant Portal
+                            </a>
+                            <a href="{{ route('consumer.portal') }}" class="btn btn-outline-secondary d-flex align-items-center justify-content-center gap-2">
+                                <i class="fas fa-users"></i> Consumer Portal
+                            </a>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
             </div>
+        </div>
         </form>
     </div>
-
+   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('loginForm');
