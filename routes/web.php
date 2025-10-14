@@ -320,30 +320,9 @@ Route::get('/password/reset', [ForgotPasswordController::class, 'showResetForm']
 Route::post('/password/reset', [ForgotPasswordController::class, 'resetPassword'])->name('password.reset');
 
 
-// routes/web.php
-Route::get('/accountant/notifications', [NotificationController::class, 'getNotifications']);
-Route::post('/accountant/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
-Route::post('/accountant/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
-Route::delete('/accountant/notifications/clear', [NotificationController::class, 'clearAll']);
-
-// Consumer routes
-Route::get('/consumer/notifications', [NotificationController::class, 'getNotifications']);
-Route::post('/consumer/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
-Route::post('/consumer/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
 
 
-// routes/web.php
 
-Route::middleware(['auth'])->group(function () {
-    // Consumer notification routes
-    Route::get('/consumer/notifications', [ConsumerController::class, 'getNotifications']);
-    Route::post('/consumer/notifications/mark-read', [ConsumerController::class, 'markNotificationsRead']);
-    Route::get('/consumer/notifications/count', [ConsumerController::class, 'getUnreadCount']);
-    
-    // Admin notification routes
-    Route::get('/admin/notifications', [AdminController::class, 'getNotifications']);
-    Route::post('/admin/notifications/mark-read', [AdminController::class, 'markNotificationsRead']);
-});
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/', function () {

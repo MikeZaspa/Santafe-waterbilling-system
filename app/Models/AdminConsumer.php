@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Notifications\Notifiable;
 
 class AdminConsumer extends Model
 {
@@ -44,16 +43,5 @@ class AdminConsumer extends Model
         return $this->hasMany(AccountantBilling::class, 'consumer_id');
     }
 
-     public function unreadNotifications()
-    {
-        return $this->morphMany(\Illuminate\Notifications\DatabaseNotification::class, 'notifiable')
-                    ->whereNull('read_at')
-                    ->orderBy('created_at', 'desc');
-    }
-
-    public function notifications()
-    {
-        return $this->morphMany(\Illuminate\Notifications\DatabaseNotification::class, 'notifiable')
-                    ->orderBy('created_at', 'desc');
-    }
+    
 }
