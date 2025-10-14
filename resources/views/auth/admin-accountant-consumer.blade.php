@@ -531,23 +531,7 @@
             <div class="position-relative me-3">
                 <a href="#" class="text-decoration-none text-dark position-relative" id="notificationBell" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-bell fs-5"></i>
-                    <span class="notification-badge" id="notificationCount">0</span>
-                </a>
-                <div class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationBell">
-                    <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
-                        <h6 class="mb-0">Notifications</h6>
-                        <button class="btn btn-sm btn-outline-secondary" id="markAllRead">Mark all as read</button>
-                    </div>
-                    <div class="notification-list" id="notificationList" style="max-height: 400px; overflow-y: auto;">
-                        <!-- Notifications will be populated here -->
-                    </div>
-                    <div class="notification-actions">
-                        <a href="#" class="text-decoration-none small">View All</a>
-                        <a href="#" class="text-decoration-none small text-danger" id="clearNotifications">Clear All</a>
-                    </div>
-                </div>
             </div>
-            
             <!-- User Dropdown -->
             <div class="dropdown">
                 <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">

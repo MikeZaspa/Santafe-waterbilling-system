@@ -2,11 +2,16 @@
 
 namespace App\Http\Controllers;
 
+
 use App\Models\Billing;
 use App\Models\AdminConsumer;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-
+use App\Notifications\NewBillingCreated;
+use App\Notifications\PaymentDueReminder;
+use App\Notifications\PaymentConfirmed;
+use Carbon\Carbon;
 
 class BillingController extends Controller
 {
@@ -34,14 +39,13 @@ class BillingController extends Controller
         return response()->json($consumers);
     }
 
-    public function store(Request $request)
+     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'consumer_id' => 'required|exists:admin_consumers,id',
-            'meter_no' => 'required|string|max:50',
-            'previous_reading' => 'required|numeric|min:0',
-            'current_reading' => 'required|numeric|min:0|gt:previous_reading',
-            'reading_date' => 'required|date|before_or_equal:today',
+            'current_reading' => 'required|numeric|min:0',
+            'due_date' => 'required|date',
+            '_token' => 'required'
         ]);
 
         if ($validator->fails()) {
@@ -51,47 +55,129 @@ class BillingController extends Controller
             ], 422);
         }
 
-        $validated = $validator->validated();
-        $consumer = AdminConsumer::findOrFail($validated['consumer_id']);
-
-        // Check for existing reading for this consumer in the same month/year
-        $existingReading = Billing::where('consumer_id', $validated['consumer_id'])
-            ->whereYear('reading_date', date('Y', strtotime($validated['reading_date'])))
-            ->whereMonth('reading_date', date('m', strtotime($validated['reading_date'])))
-            ->first();
-
-        if ($existingReading) {
-            return response()->json([
-                'message' => 'This consumer already has a reading for this billing period ('.date('F Y', strtotime($validated['reading_date'])).')',
-                'existing_reading' => $existingReading,
-                'errors' => ['reading_date' => ['Duplicate reading for this period']]
-            ], 422);
-        }
-
         try {
+            $consumer = AdminConsumer::findOrFail($request->consumer_id);
+            
+            // Get the last reading
+            $lastReading = Billing::where('consumer_id', $request->consumer_id)
+                ->orderBy('reading_date', 'desc')
+                ->first();
+
+            $previousReading = $lastReading ? $lastReading->current_reading : 0;
+            $currentReading = $request->current_reading;
+            $consumption = $currentReading - $previousReading;
+
+            // Calculate amount based on consumer type and consumption
+            $amount = $this->calculateWaterBill($consumer->consumer_type, $consumption);
+
+            // Create billing record
             $billing = Billing::create([
-                'consumer_id' => $validated['consumer_id'],
+                'consumer_id' => $request->consumer_id,
                 'consumer_type' => $consumer->consumer_type,
-                'meter_no' => $validated['meter_no'],
-                'previous_reading' => $validated['previous_reading'],
-                'current_reading' => $validated['current_reading'],
-                'consumption' => $validated['current_reading'] - $validated['previous_reading'],
-                'reading_date' => $validated['reading_date'],
+                'meter_no' => $consumer->meter_no,
+                'previous_reading' => $previousReading,
+                'current_reading' => $currentReading,
+                'consumption' => $consumption,
+                'reading_date' => now(),
+                'due_date' => $request->due_date,
+                'total_amount' => $amount,
+                'status' => 'unpaid'
             ]);
 
+            // Send notification to consumer
+            $consumer->notify(new NewBillingCreated($billing));
+
             return response()->json([
-                'message' => 'Billing record created successfully.',
-                'billing' => $billing->load('consumer')
+                'success' => true,
+                'message' => 'Billing record created successfully and notification sent.',
+                'billing' => $billing
             ], 201);
 
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Error creating billing record',
-                'error' => $e->getMessage()
+                'success' => false,
+                'message' => 'Error creating billing record: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+     
+
+     // Add method to process payments and send confirmation
+    public function processPayment(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'billing_id' => 'required|exists:billings,id',
+            'payment_amount' => 'required|numeric|min:0',
+            'payment_date' => 'required|date',
+            '_token' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'errors' => $validator->errors(),
+                'message' => 'Validation failed'
+            ], 422);
+        }
+
+        try {
+            $billing = Billing::findOrFail($request->billing_id);
+            $consumer = $billing->consumer;
+
+            // Create payment record
+            $payment = Payment::create([
+                'billing_id' => $billing->id,
+                'amount' => $request->payment_amount,
+                'payment_date' => $request->payment_date,
+                'payment_method' => 'cash', // or from request if available
+                'reference_number' => 'CASH' . time(),
+                'status' => 'confirmed'
+            ]);
+
+            // Update billing status
+            $billing->update([
+                'status' => 'paid',
+                'paid_at' => now()
+            ]);
+
+            // Send payment confirmation notification
+            $consumer->notify(new PaymentConfirmed($billing, $payment));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Payment processed successfully and confirmation sent.',
+                'payment' => $payment
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error processing payment: ' . $e->getMessage()
             ], 500);
         }
     }
 
+
+        // Method to send due date reminders (to be called by a scheduled command)
+    public function sendDueDateReminders()
+    {
+        $upcomingDueBills = Billing::where('status', 'unpaid')
+            ->whereBetween('due_date', [now(), now()->addDays(7)])
+            ->with('consumer')
+            ->get();
+
+        foreach ($upcomingDueBills as $billing) {
+            $daysUntilDue = now()->diffInDays(Carbon::parse($billing->due_date));
+            $billing->consumer->notify(new PaymentDueReminder($billing, $daysUntilDue));
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Due date reminders sent to ' . $upcomingDueBills->count() . ' consumers.'
+        ]);
+    }
+
+
+    
     public function show(Billing $billing)
     {
         return response()->json($billing->load('consumer'));
