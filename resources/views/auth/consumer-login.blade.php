@@ -530,6 +530,217 @@
         display: none;
     }
 }
+
+ /* Notification Styles (same as admin) */
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        
+        .notification-dropdown {
+            width: 400px;
+            max-width: 90vw;
+        }
+        
+        .notification-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f1f1f1;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .notification-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .notification-item.unread {
+            background-color: rgba(211, 47, 47, 0.05);
+        }
+        
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+        
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+        }
+        
+        .notification-message {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-bottom: 5px;
+            line-height: 1.4;
+        }
+        
+        .notification-time {
+            font-size: 0.75rem;
+            color: #adb5bd;
+        }
+        
+        .notification-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .notification-icon.success {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+        }
+        
+        .notification-icon.warning {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+        }
+        
+        .notification-icon.info {
+            background-color: rgba(0, 123, 255, 0.1);
+            color: #007bff;
+        }
+        
+        .notification-icon.danger {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+        
+        .notification-actions {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 15px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .notification-empty {
+            padding: 30px 20px;
+            text-align: center;
+            color: #6c757d;
+        }
+        /* Notification Styles */
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+}
+
+.notification-dropdown {
+    width: 400px;
+    max-width: 90vw;
+}
+
+.notification-item {
+    padding: 12px 15px;
+    border-bottom: 1px solid #f1f1f1;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.notification-item:hover {
+    background-color: #f8f9fa;
+}
+
+.notification-item.unread {
+    background-color: rgba(211, 47, 47, 0.05);
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-title {
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-size: 0.9rem;
+}
+
+.notification-message {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 5px;
+    line-height: 1.4;
+}
+
+.notification-time {
+    font-size: 0.75rem;
+    color: #adb5bd;
+}
+
+.notification-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.notification-icon.success {
+    background-color: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+}
+
+.notification-icon.warning {
+    background-color: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+}
+
+.notification-icon.info {
+    background-color: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+}
+
+.notification-icon.danger {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+}
+
+.notification-actions {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 15px;
+    border-top: 1px solid #e9ecef;
+}
+
+.notification-empty {
+    padding: 30px 20px;
+    text-align: center;
+    color: #6c757d;
+}
+
+.notification-empty i {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    color: #dee2e6;
+}
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -562,27 +773,42 @@
 <div class="main-content">
     <!-- Header -->
     <header class="header d-flex align-items-center">
-        <button id="sidebarToggle" class="btn d-lg-none me-3">
-            <i class="bi bi-list"></i>
-        </button>
-       
-        <div class="ms-auto d-flex align-items-center">
-            <div class="position-relative me-3">
-                <i class="bi bi-bell fs-5"></i>
-            </div>
-            <div class="dropdown">
-                <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
-                    <span>Consumer</span>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUser">
-                    <li><a class="dropdown-item" href="#">Profile</a></li>
-                    <li><a class="dropdown-item" href="#">Settings</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="admin-logout">Sign out</a></li>
-                </ul>
-            </div>
+    <div class="ms-auto d-flex align-items-center">
+        <!-- Notification Bell for Consumer -->
+<div class="position-relative me-3">
+    <a href="#" class="text-decoration-none text-dark position-relative" id="notificationBell" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-bell fs-5"></i>
+        <span class="notification-badge" id="notificationCount">0</span>
+    </a>
+    <div class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationBell">
+        <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+            <h6 class="mb-0">Notifications</h6>
+            <button class="btn btn-sm btn-outline-secondary" id="markAllRead">Mark all as read</button>
         </div>
-    </header>
+        <div class="notification-list" id="notificationList" style="max-height: 400px; overflow-y: auto;">
+            <!-- Notifications will be populated here -->
+        </div>
+        <div class="notification-actions">
+            <a href="#" class="text-decoration-none small">View All</a>
+            <a href="#" class="text-decoration-none small text-danger" id="clearNotifications">Clear All</a>
+        </div>
+    </div>
+</div>
+        
+        <!-- User Dropdown -->
+        <div class="dropdown">
+            <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                <span>Consumer</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUser">
+                <li><a class="dropdown-item" href="#">Profile</a></li>
+                <li><a class="dropdown-item" href="#">Settings</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="admin-logout">Sign out</a></li>
+            </ul>
+        </div>
+    </div>
+</header>
    
     <!-- Billing History -->
 <div class="table-container">

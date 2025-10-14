@@ -30,6 +30,7 @@ use App\Http\Controllers\PlumberAuthController;
 use App\Http\Controllers\AccountantAuthController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\NotificationController;
 
 Route::get('/admin-register', [AuthController::class, 'showRegistrationForm'])->name('admin-register');
 Route::post('/admin-register', [AuthController::class, 'register']);
@@ -317,6 +318,7 @@ Route::prefix('admin')->group(function () {
 Route::post('/password/email', [ForgotPasswordController::class, 'sendResetLink'])->name('password.email');
 Route::get('/password/reset', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset.form');
 Route::post('/password/reset', [ForgotPasswordController::class, 'resetPassword'])->name('password.reset');
+
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/', function () {
