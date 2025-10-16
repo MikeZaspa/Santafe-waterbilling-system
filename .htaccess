@@ -2,4 +2,17 @@
     RewriteEngine On
     RewriteCond %{REQUEST_URI} !^/public
     RewriteRule ^(.*)$ public/$1 [L]
+
+# Block access to sensitive files
+<FilesMatch "(^\.|\.env|composer\.json|artisan|server\.php|.git|.env|.htaccess|phpunit\.xml|storage|vendor)">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Disable directory listing
+Options -Indexes
+
 </IfModule>
+
+
+
