@@ -2,6 +2,7 @@
     RewriteEngine On
     RewriteCond %{REQUEST_URI} !^/public
     RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
 
 # Block access to sensitive files
 <FilesMatch "(^\.|\.env|composer\.json|artisan|server\.php|.git|.env|.htaccess|phpunit\.xml|storage|vendor)">
@@ -11,8 +12,5 @@
 
 # Disable directory listing
 Options -Indexes
-
-</IfModule>
-
 
 
