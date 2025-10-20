@@ -114,10 +114,18 @@ class AuthController extends Controller
     {
         return view('auth.consumer-information');
     }
-
+    
     public function showMainForm()
     {
         return view('auth.main-form');
+    }
+    public function showNotice()
+    {
+        return view('auth.admin-accountant-notice');
+    }
+    public function showConsumerNotice()
+    {
+        return view('auth.consumer/consumer-notice');
     }
     public function showVerifyForm()
     {

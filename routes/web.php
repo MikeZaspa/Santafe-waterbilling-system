@@ -352,6 +352,6 @@ Route::get('/consumer/notices', [ConsumerAuthController::class, 'getNotices'])->
  
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/', function () {
-    return view('auth.admin-login');
+    return view('auth.main-form');
 
 });

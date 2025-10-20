@@ -21,17 +21,18 @@ class PasswordResetMail extends Mailable
     }
 
     public function build()
-{
-    $encodedToken = urlencode($this->token);
-    $encodedEmail = urlencode($this->email);
-    
-    $resetUrl = url("/password/reset/{$encodedToken}/{$encodedEmail}");
-    
-    return $this->subject('Santa Fe Water - Password Reset Request')
-                ->view('emails.password-reset')
-                ->with([
-                    'resetUrl' => $resetUrl,
-                    'email' => $this->email,
-                ]);
-}
+    {
+        // Use the standard Laravel password reset route
+        $resetUrl = url(route('password.reset', [
+            'token' => $this->token,
+            'email' => $this->email
+        ], false));
+
+        return $this->subject('Santa Fe Water - Password Reset Request')
+                    ->view('emails.password-reset')
+                    ->with([
+                        'resetUrl' => $resetUrl,
+                        'email' => $this->email,
+                    ]);
+    }
 }

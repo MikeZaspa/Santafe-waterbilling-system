@@ -502,6 +502,13 @@
                 </a>
             </li>
 
+            <!-- Notices -->
+            <li class="nav-item">
+                <a class="nav-link" href="admin-accountant-notice">
+                    <i class="bi bi-bell"></i> Notices
+                </a>
+            </li>
+
             <!-- Reports -->
             <li class="nav-item">
                 <a class="nav-link" href="admin-accountant-reports">
@@ -526,7 +533,7 @@
         </button>
        
         <div class="ms-auto d-flex align-items-center">
-            <!-- Notification Bell for Admin -->
+           
             <!-- Notification Bell for Admin -->
             <div class="position-relative me-3">
                 <a href="#" class="text-decoration-none text-dark position-relative" id="notificationBell" data-bs-toggle="dropdown" aria-expanded="false">
