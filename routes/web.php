@@ -31,6 +31,7 @@ use App\Http\Controllers\AccountantAuthController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\NoticeController;
 
 Route::get('/admin-register', [AuthController::class, 'showRegistrationForm'])->name('admin-register');
 Route::post('/admin-register', [AuthController::class, 'register']);
@@ -314,18 +315,43 @@ Route::prefix('admin')->group(function () {
     Route::post('/verify-reset-code', [AdminAuthController::class, 'verifyResetCode'])->name('password.verify');
 });
 
-// Password Reset Routes
-Route::post('/password/email', [ForgotPasswordController::class, 'sendResetLink'])->name('password.email');
-Route::get('/password/reset', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset.form');
-Route::post('/password/reset', [ForgotPasswordController::class, 'resetPassword'])->name('password.reset');
+// Password reset routes
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLink'])->name('password.email');
+Route::get('/reset-password/{token}', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset.form');
+Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword'])->name('password.update');
+
+Route::get('/consumer/notifications', [NotificationController::class, 'index']);
+Route::get('/consumer/notifications/unread-count', [NotificationController::class, 'getUnreadCount']);
+Route::post('/consumer/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+Route::post('/consumer/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+
+Route::post('/admin-plumber-disconnection/{id}/reconnect', [ReadingController::class, 'reconnectConsumer'])->name('admin.reconnect');
+
+Route::get('/admin-accountant-notice', [AuthController::class, 'showNotice'])->name('admin-accountant-notice');
+Route::post('admin-accountant-notice', [AuthController::class, 'notice']);
+
+Route::get('/accountant-archieve', [AuthController::class, 'showArchieve'])->name('accountant-archieve');
+Route::post('accountant-archieve', [AuthController::class, 'archieve']);
 
 
+Route::get('/notices/consumers', [NoticeController::class, 'getConsumers'])->name('notices.consumers');
+// Notices Routes
+Route::prefix('notices')->group(function () {
+    Route::get('/', [NoticeController::class, 'index'])->name('notices.index');
+    Route::get('/consumers', [NoticeController::class, 'getConsumers'])->name('notices.consumers');
+    Route::post('/', [NoticeController::class, 'store'])->name('notices.store');
+    Route::get('/{notice}', [NoticeController::class, 'show'])->name('notices.show');
+    Route::get('/{notice}/edit', [NoticeController::class, 'edit'])->name('notices.edit');
+    Route::put('/{notice}', [NoticeController::class, 'update'])->name('notices.update');
+    Route::delete('/{notice}', [NoticeController::class, 'destroy'])->name('notices.destroy');
+    Route::patch('/{notice}/toggle-status', [NoticeController::class, 'toggleStatus'])->name('notices.toggle-status');
+});
 
+Route::get('/consumer/notices', [ConsumerAuthController::class, 'getNotices'])->name('consumer.notices');
 
-
-
+ 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/', function () {
-    return view('auth.main-form');
+    return view('auth.admin-login');
 
 });
