@@ -6,6 +6,7 @@
     <title>Login | Santa Fe Water Billing System</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://www.google.com/recaptcha/api.js?render=<?php echo env('NOCAPTCHA_SITEKEY'); ?>"></script>
     <style>
@@ -265,11 +266,12 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(26, 115, 232, 0.2);
         }
+        
         .divider {
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
     </style>
 </head>
 <body>
@@ -320,13 +322,14 @@
                 <a href="https://policies.google.com/terms" target="_blank">Terms of Service</a> apply.
             </div>
             
-           <div class="text-center mt-3">
-            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#portalModal">
-                Access Other Portals
-            </button>
-        </div>
+            <div class="text-center mt-3">
+                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#portalModal">
+                    Access Other Portals
+                </button>
+            </div>
+        </form>
 
-        <!-- Modal -->
+        <!-- Portal Modal -->
         <div class="modal fade" id="portalModal" tabindex="-1" aria-labelledby="portalModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content shadow-lg border-0 rounded-4">
@@ -335,7 +338,6 @@
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body text-center">
-
                         <div class="divider my-3 text-muted">Choose a portal below</div>
                         
                         <div class="portal-links d-flex flex-column gap-3">
@@ -356,7 +358,7 @@
                 </div>
             </div>
         </div>
-        </form>
+
         <!-- Forgot Password Modal -->
         <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -384,8 +386,8 @@
             </div>
         </div>
     </div>
-   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('loginForm');
@@ -539,16 +541,6 @@
                 });
             }
             
-            function showAttemptWarning(remainingAttempts) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Incorrect Password',
-                    html: `The password you entered is incorrect. You have <strong>${remainingAttempts}</strong> attempt(s) remaining.`,
-                    confirmButtonColor: '#1a73e8',
-                    confirmButtonText: 'Try Again'
-                });
-            }
-            
             function startCountdown() {
                 const lockoutTime = parseInt(localStorage.getItem('lockoutTime'));
                 const countdownElement = document.createElement('div');
@@ -586,80 +578,72 @@
                 }, 1000);
             }
             
-            // Show attempt warning if there are previous failed attempts
-            if (loginAttempts > 0 && loginAttempts < 3) {
-                const remainingAttempts = 3 - loginAttempts;
-                showAttemptWarning(remainingAttempts);
-            }
-        });
+            // Forgot Password Form Handling
+const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+const sendResetLinkBtn = document.getElementById('sendResetLink');
 
-        // Forgot Password Form Handling
-document.addEventListener('DOMContentLoaded', function() {
-    const forgotPasswordForm = document.getElementById('forgotPasswordForm');
-    const sendResetLinkBtn = document.getElementById('sendResetLink');
-    
-    if (forgotPasswordForm) {
-        forgotPasswordForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
+if (forgotPasswordForm) {
+    forgotPasswordForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const email = document.getElementById('resetEmail').value;
+        const originalBtnText = sendResetLinkBtn.innerHTML;
+        
+        // Show loading state
+        sendResetLinkBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+        sendResetLinkBtn.disabled = true;
+        
+        try {
+            const response = await fetch('/forgot-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ email: email })
+            });
             
-            const email = document.getElementById('resetEmail').value;
-            const originalBtnText = sendResetLinkBtn.innerHTML;
+            const data = await response.json();
             
-            // Show loading state
-            sendResetLinkBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
-            sendResetLinkBtn.disabled = true;
-            
-            try {
-                const response = await fetch('/password/email', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ email: email })
+            if (response.ok && data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: data.message,
+                    confirmButtonColor: '#1a73e8'
                 });
                 
-                const data = await response.json();
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('forgotPasswordModal'));
+                modal.hide();
                 
-                if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success!',
-                        text: data.message,
-                        confirmButtonColor: '#1a73e8'
-                    });
-                    
-                    // Close modal
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('forgotPasswordModal'));
-                    modal.hide();
-                    
-                    // Reset form
-                    forgotPasswordForm.reset();
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: data.message,
-                        confirmButtonColor: '#1a73e8'
-                    });
-                }
-            } catch (error) {
-                console.error('Error:', error);
+                // Reset form
+                forgotPasswordForm.reset();
+            } else {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'An error occurred. Please try again.',
+                    text: data.message || 'An error occurred. Please try again.',
                     confirmButtonColor: '#1a73e8'
                 });
-            } finally {
-                // Reset button
-                sendResetLinkBtn.innerHTML = originalBtnText;
-                sendResetLinkBtn.disabled = false;
             }
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'An error occurred. Please try again.',
+                confirmButtonColor: '#1a73e8'
+            });
+        } finally {
+            // Reset button
+            sendResetLinkBtn.innerHTML = originalBtnText;
+            sendResetLinkBtn.disabled = false;
+        }
+    });
+}
         });
-    }
-});
     </script>
 </body>
 </html>
