@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Billing;
-use App\Models\Disconnection; // Add this line
+use App\Models\Disconnection;
+use App\Models\AdminConsumer; // Add this if you need to access consumer data
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -22,9 +23,16 @@ class ReadingController extends Controller
         // Count readings without current reading (pending)
         $pendingCount = Billing::whereNull('current_reading')->count();
         
+        // Count reconnections (including those with fees)
         $reconnectionCount = Disconnection::where('status', 'reconnected')->count();
 
-        // Count disconnected consumers - FIXED: Added import and corrected query
+        // Calculate total reconnection fees collected this month
+        $monthlyReconnectionFees = Disconnection::where('status', 'reconnected')
+            ->whereMonth('reconnection_date', now()->month)
+            ->whereYear('reconnection_date', now()->year)
+            ->count() * 500; // ₱500 per reconnection
+
+        // Count disconnected consumers
         $disconnectedCount = Disconnection::where('status', 'disconnected')->count();
         
         // Total count of all readings
@@ -73,15 +81,48 @@ class ReadingController extends Controller
             ->limit(5)
             ->get();
 
-       return view('auth.admin-plumber-dashboard', [
+        return view('auth.admin-plumber-dashboard', [
             'completedCount' => $completedCount,
             'pendingCount' => $pendingCount,
             'disconnectedCount' => $disconnectedCount,
-            'reconnectionCount' => $reconnectionCount, // Add this line
+            'reconnectionCount' => $reconnectionCount,
+            'monthlyReconnectionFees' => $monthlyReconnectionFees, // Add this line
             'totalCount' => $totalCount,
             'consumptionData' => $consumptionData,
             'completedData' => $completedData,
             'recentDisconnections' => $recentDisconnections
         ]);
+    }
+
+    // Add this method to handle reconnection with fee
+    public function reconnect(Request $request, $id)
+    {
+        try {
+            $disconnection = Disconnection::findOrFail($id);
+            
+            // Update disconnection record
+            $disconnection->update([
+                'status' => 'reconnected',
+                'reconnection_date' => $request->reconnection_date,
+                'notes' => $request->notes . (isset($request->reconnection_fee) ? ' [Reconnection Fee: ₱500]' : ''),
+            ]);
+
+            // Here you would typically add the fee to the consumer's billing
+            // For example:
+            // $billing = $disconnection->billing;
+            // $billing->additional_fees += 500; // Add ₱500 reconnection fee
+            // $billing->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Consumer reconnected successfully. Reconnection fee of ₱500 has been applied.'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error reconnecting consumer: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

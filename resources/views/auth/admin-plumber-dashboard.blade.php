@@ -451,20 +451,20 @@
                 </div>
             </div>
 
-            <!-- Total Readings Card -->
+             <!-- Add this card to your dashboard HTML -->
             <div class="col-md-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="text-muted mb-2">Total Readings</h6>
-                                <h3>{{ $totalCount }}</h3>
+                                <h6 class="text-muted mb-2">Reconnection Fees</h6>
+                                <h3>₱{{ number_format($monthlyReconnectionFees) }}</h3>
                                 <small class="text-info">
-                                    <i class="bi bi-list-check"></i> All meter readings
+                                    <i class="bi bi-currency-dollar"></i> Collected this month
                                 </small>
                             </div>
-                            <div class="bg-total p-3 rounded">
-                                <i class="bi bi-list-check text-total fs-4"></i>
+                            <div class="bg-info p-3 rounded" style="background-color: #cfe2ff !important;">
+                                <i class="bi bi-cash-coin text-primary fs-4"></i>
                             </div>
                         </div>
                     </div>
