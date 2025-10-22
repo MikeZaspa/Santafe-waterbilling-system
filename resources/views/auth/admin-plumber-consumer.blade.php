@@ -784,9 +784,6 @@
                         <label for="cutReason" class="form-label">Reason for Cutting</label>
                         <select class="form-select" id="cutReason" name="reason" required>
                             <option value="">Select Reason</option>
-                            <option value="Relocation">Relocation</option>
-                            <option value="Account Closure">Account Closure</option>
-                            <option value="Non-compliance">Non-compliance</option>
                             <option value="Requested by Consumer">Requested by Consumer</option>
                             <option value="Other">Other</option>
                         </select>

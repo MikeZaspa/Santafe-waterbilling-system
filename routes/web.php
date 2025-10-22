@@ -374,6 +374,8 @@ Route::post('/cut-consumers', [BillingController::class, 'cutConsumer'])->name('
 Route::get('/cut-consumers', [BillingController::class, 'getCutConsumers'])->name('cut-consumers.index');
 Route::post('/cut-consumers/{id}/restore', [BillingController::class, 'restoreConsumer'])->name('cut-consumers.restore');
 
+
+
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/', function () {
     return view('auth.main-form');

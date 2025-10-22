@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth; // Add this line
 use Illuminate\Support\Facades\DB;
+
 class BillingController extends Controller
 {
    public function index()
