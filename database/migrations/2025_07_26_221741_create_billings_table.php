@@ -26,7 +26,6 @@ return new class extends Migration
             $table->index('consumer_id');
         });
     }
-
     public function down()
     {
         Schema::dropIfExists('billings');

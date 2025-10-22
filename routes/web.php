@@ -368,6 +368,12 @@ Route::get('/billing/last-reading/{consumerId}', [BillingController::class, 'get
 Route::get('/accountant/billings/{id}/details', [BillingController::class, 'getBillingDetails']);
 Route::get('/accountant/billings/{id}/receipt', [BillingController::class, 'getReceipt']);
 
+
+// Cut Consumer Routes
+Route::post('/cut-consumers', [BillingController::class, 'cutConsumer'])->name('cut-consumers.store');
+Route::get('/cut-consumers', [BillingController::class, 'getCutConsumers'])->name('cut-consumers.index');
+Route::post('/cut-consumers/{id}/restore', [BillingController::class, 'restoreConsumer'])->name('cut-consumers.restore');
+
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/', function () {
     return view('auth.main-form');

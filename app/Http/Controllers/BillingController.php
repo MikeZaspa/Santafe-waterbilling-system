@@ -4,11 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Billing;
 use App\Models\AdminConsumer;
+use App\Models\CutConsumer;
 use App\Models\AccountantBilling;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth; // Add this line
-
+use Illuminate\Support\Facades\DB;
 class BillingController extends Controller
 {
    public function index()
@@ -480,5 +481,167 @@ public function disconnect(Request $request, $billingId)
                 'message' => 'Failed to generate receipt.'
             ], 404);
         }
+    }
+
+     public function cutConsumer(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'consumer_id' => 'required|exists:admin_consumers,id',
+            'billing_id' => 'required|exists:billings,id',
+            'reason' => 'required|string|max:255',
+            'cut_date' => 'required|date',
+            'notes' => 'nullable|string'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'errors' => $validator->errors(),
+                'message' => 'Validation failed'
+            ], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            $consumer = AdminConsumer::findOrFail($request->consumer_id);
+            $billing = Billing::findOrFail($request->billing_id);
+
+            // Store billing data before deletion
+            $billingData = [
+                'consumer_id' => $billing->consumer_id,
+                'consumer_type' => $billing->consumer_type,
+                'meter_no' => $billing->meter_no,
+                'previous_reading' => $billing->previous_reading,
+                'current_reading' => $billing->current_reading,
+                'consumption' => $billing->consumption,
+                'reading_date' => $billing->reading_date,
+            ];
+
+            // Create cut consumer record with billing data
+            $cutConsumer = CutConsumer::create([
+                'consumer_id' => $consumer->id,
+                'billing_id' => $billing->id,
+                'name' => $this->formatConsumerName($consumer),
+                'consumer_type' => $consumer->consumer_type,
+                'meter_no' => $consumer->meter_no,
+                'reason' => $request->reason,
+                'cut_date' => $request->cut_date,
+                'notes' => $request->notes,
+                'cut_by' => auth()->id() ?? 1,
+                'billing_data' => json_encode($billingData) // Store billing data for restoration
+            ]);
+
+            // Delete the billing record
+            $billing->delete();
+
+            // Update consumer status to 'cut'
+            $consumer->update([
+                'status' => 'cut'
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Consumer successfully cut and moved to cut consumers list.'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Cut consumer error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to cut consumer: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get all cut consumers
+     */
+    public function getCutConsumers()
+    {
+        try {
+            $cutConsumers = CutConsumer::orderBy('cut_date', 'desc')->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $cutConsumers
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load cut consumers: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Restore a cut consumer
+     */
+    public function restoreConsumer($id)
+    {
+        DB::beginTransaction();
+        try {
+            $cutConsumer = CutConsumer::findOrFail($id);
+            $consumer = AdminConsumer::find($cutConsumer->consumer_id);
+
+            if (!$consumer) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Original consumer record not found'
+                ], 404);
+            }
+
+            // Restore consumer status to active
+            $consumer->update([
+                'status' => 'active'
+            ]);
+
+            // Restore the billing record if billing data exists
+            if ($cutConsumer->billing_data) {
+                $billingData = json_decode($cutConsumer->billing_data, true);
+                
+                Billing::create([
+                    'consumer_id' => $billingData['consumer_id'],
+                    'consumer_type' => $billingData['consumer_type'],
+                    'meter_no' => $billingData['meter_no'],
+                    'previous_reading' => $billingData['previous_reading'],
+                    'current_reading' => $billingData['current_reading'],
+                    'consumption' => $billingData['consumption'],
+                    'reading_date' => $billingData['reading_date'],
+                ]);
+            }
+
+            // Delete the cut consumer record
+            $cutConsumer->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Consumer successfully restored to active records.'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Restore consumer error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to restore consumer: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Helper method to format consumer name
+     */
+    private function formatConsumerName($consumer)
+    {
+        $name = $consumer->first_name;
+        if ($consumer->middle_name) $name .= ' ' . $consumer->middle_name;
+        $name .= ' ' . $consumer->last_name;
+        if ($consumer->suffix) $name .= ' ' . $consumer->suffix;
+        return trim($name);
     }
 }
