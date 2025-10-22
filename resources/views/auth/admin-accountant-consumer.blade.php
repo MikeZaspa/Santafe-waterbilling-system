@@ -217,6 +217,45 @@
     background: linear-gradient(135deg, rgba(255, 193, 7, 0.2) 0%, rgba(255, 193, 7, 0.15) 100%);
     transform: translateY(-1px);
 }
+
+/* Archive Badge Styles */
+.badge-archived {
+    background: linear-gradient(135deg, rgba(108, 117, 125, 0.15) 0%, rgba(108, 117, 125, 0.1) 100%);
+    color: #6c757d;
+    border: 1px solid rgba(108, 117, 125, 0.2);
+    box-shadow: 0 2px 4px rgba(108, 117, 125, 0.1);
+}
+
+.badge-archived:hover {
+    background: linear-gradient(135deg, rgba(108, 117, 125, 0.2) 0%, rgba(108, 117, 125, 0.15) 100%);
+    transform: translateY(-1px);
+}
+
+/* Archive Tab Styles */
+.nav-tabs .nav-link.active {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+    font-weight: 600;
+}
+
+.nav-tabs .nav-link {
+    color: #6c757d;
+}
+
+.nav-tabs .nav-link:hover {
+    color: var(--primary-color);
+    border-color: transparent;
+}
+
+/* Archive Table Styles */
+.archived-row {
+    background-color: rgba(108, 117, 125, 0.05);
+}
+
+.archived-row:hover {
+    background-color: rgba(108, 117, 125, 0.08);
+}
+
         /* Button Styles */
         .btn-action {
             width: 32px;
@@ -562,56 +601,218 @@
         <div class="table-title">
             <div class="d-flex justify-content-between align-items-center w-100">
                 <h3 class="mb-0">Billing Management</h3>
-                <button class="btn btn-primary" id="addBillingBtn" data-bs-toggle="modal" data-bs-target="#billingModal">
-                    <i class="bi bi-plus-circle-fill me-2"></i>
-                    Create New Billing
-                </button>
-            </div>
-        </div>
-        
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <div class="input-group">
-                    <input type="text" class="form-control" id="searchInput" placeholder="Search consumer...">
-                    <button class="btn btn-outline-secondary" type="button" id="searchBtn">
-                        <i class="bi bi-search"></i>
+                <div>
+                    <button class="btn btn-outline-secondary me-2" id="viewArchiveBtn">
+                        <i class="bi bi-archive me-2"></i>
+                        View Archive
+                    </button>
+                    <button class="btn btn-primary" id="addBillingBtn" data-bs-toggle="modal" data-bs-target="#billingModal">
+                        <i class="bi bi-plus-circle-fill me-2"></i>
+                        Create New Billing
                     </button>
                 </div>
             </div>
-            <div class="col-md-4">
-                <select class="form-select" id="statusFilter">
-                    <option value="">All Status</option>
-                    <option value="paid">Paid</option>
-                    <option value="unpaid">Unpaid</option>
-                    <option value="overdue">Overdue</option>
-                </select>
-            </div>
-            <div class="col-md-4">
-                <input type="month" class="form-control" id="monthFilter">
-            </div>
         </div>
         
-        <div class="table-responsive">
-            <table class="table table-hover" id="billingTable">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Consumer</th>
-                        <th>Type</th>
-                        <th>Meter No.</th>
-                        <th>Due Date</th>
-                        <th>Previous Reading</th>
-                        <th>Current Reading</th>
-                        <th>Consumption</th>
-                        <th>Total Amount</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Billing data will be loaded here via AJAX -->
-                </tbody>
-            </table>
+        <!-- Tab Navigation -->
+        <ul class="nav nav-tabs mb-3" id="billingTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="active-tab" data-bs-toggle="tab" data-bs-target="#active" type="button" role="tab">
+                    Active Billings
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="archived-tab" data-bs-toggle="tab" data-bs-target="#archived" type="button" role="tab">
+                    Archived Billings
+                </button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="billingTabsContent">
+            <!-- Active Billings Tab -->
+            <div class="tab-pane fade show active" id="active" role="tabpanel">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="searchInput" placeholder="Search consumer...">
+                            <button class="btn btn-outline-secondary" type="button" id="searchBtn">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <select class="form-select" id="statusFilter">
+                            <option value="">All Status</option>
+                            <option value="paid">Paid</option>
+                            <option value="unpaid">Unpaid</option>
+                            <option value="overdue">Overdue</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="month" class="form-control" id="monthFilter">
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover" id="billingTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Consumer</th>
+                                <th>Type</th>
+                                <th>Meter No.</th>
+                                <th>Due Date</th>
+                                <th>Previous Reading</th>
+                                <th>Current Reading</th>
+                                <th>Consumption</th>
+                                <th>Total Amount</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Active billing data will be loaded here via AJAX -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Archived Billings Tab -->
+            <div class="tab-pane fade" id="archived" role="tabpanel">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="archiveSearchInput" placeholder="Search archived consumer...">
+                            <button class="btn btn-outline-secondary" type="button" id="archiveSearchBtn">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <button class="btn btn-danger" id="emptyArchiveBtn">
+                            <i class="bi bi-trash me-2"></i>
+                            Empty Archive
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover" id="archiveTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Consumer</th>
+                                <th>Type</th>
+                                <th>Meter No.</th>
+                                <th>Archived Date</th>
+                                <th>Archived By</th>
+                                <th>Reason</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Archived billing data will be loaded here via AJAX -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Archive Confirmation Modal -->
+<div class="modal fade" id="archiveModal" tabindex="-1" aria-labelledby="archiveModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">Archive Billing</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="archiveForm">
+                    <input type="hidden" id="archiveBillingId">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Consumer</label>
+                        <input type="text" class="form-control" id="archiveConsumerName" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Reason for Archiving</label>
+                        <select class="form-select" id="archiveReason" required>
+                            <option value="">Select Reason</option>
+                            <option value="Account Closed">Account Closed</option>
+                            <option value="Meter Disconnected">Meter Disconnected</option>
+                            <option value="Duplicate Entry">Duplicate Entry</option>
+                            <option value="Data Correction">Data Correction</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3" id="otherReasonContainer" style="display: none;">
+                        <label class="form-label fw-bold">Specify Reason</label>
+                        <textarea class="form-control" id="otherReason" rows="2" placeholder="Please specify the reason..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Notes (Optional)</label>
+                        <textarea class="form-control" id="archiveNotes" rows="3" placeholder="Additional notes..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" id="confirmArchiveBtn">Archive</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Restore Confirmation Modal -->
+<div class="modal fade" id="restoreModal" tabindex="-1" aria-labelledby="restoreModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Restore Billing</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to restore this billing record? It will be moved back to the active billings.</p>
+                <input type="hidden" id="restoreBillingId">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Consumer</label>
+                    <input type="text" class="form-control" id="restoreConsumerName" readonly>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="confirmRestoreBtn">Restore</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Empty Archive Confirmation Modal -->
+<div class="modal fade" id="emptyArchiveModal" tabindex="-1" aria-labelledby="emptyArchiveModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Empty Archive</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <h6 class="alert-heading">Warning!</h6>
+                    <p class="mb-0">This action will permanently delete all archived billing records. This cannot be undone.</p>
+                </div>
+                <p>Are you absolutely sure you want to empty the archive?</p>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="confirmEmptyArchive">
+                    <label class="form-check-label" for="confirmEmptyArchive">
+                        I understand this action is irreversible
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmEmptyArchiveBtn" disabled>Empty Archive</button>
+            </div>
         </div>
     </div>
 </div>
@@ -771,8 +972,6 @@
   </div>
 </div>
 
-
-
 <!-- Bootstrap Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <!-- jQuery -->
@@ -785,9 +984,9 @@
 <!-- Moment.js for date handling -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 <script>
-$(document).ready(function() {
-    // Initialize DataTable with payment method column
-    const table = $('#billingTable').DataTable({
+ $(document).ready(function() {
+    // Initialize Active Billings DataTable
+    const activeTable = $('#billingTable').DataTable({
         processing: true,
         serverSide: true,
         ajax: {
@@ -797,6 +996,7 @@ $(document).ready(function() {
                 d.status = $('#statusFilter').val();
                 d.month = $('#monthFilter').val();
                 d.payment_method = $('#paymentMethodFilter').val();
+                d.archived = 0; // Only active records
             }
         },
         columns: [
@@ -900,6 +1100,9 @@ $(document).ready(function() {
                         <button class="btn btn-sm btn-primary edit-btn" data-id="${data}">
                             <i class="bi bi-pencil"></i> Edit
                         </button>
+                        <button class="btn btn-sm btn-warning archive-btn" data-id="${data}" data-consumer="${row.consumer ? row.consumer.first_name + ' ' + row.consumer.last_name : 'N/A'}">
+                            <i class="bi bi-archive"></i> Archive
+                        </button>
                         <button class="btn btn-sm btn-danger delete-btn" data-id="${data}">
                             <i class="bi bi-trash"></i> Delete
                         </button>
@@ -914,15 +1117,393 @@ $(document).ready(function() {
         ]
     });
 
-    // Apply filters
-    $('#statusFilter, #monthFilter').change(function() {
-        table.ajax.reload();
+    // Initialize Archived Billings DataTable
+    const archiveTable = $('#archiveTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: "{{ route('accountant.billings.archived.data') }}",
+            type: 'GET',
+            data: function(d) {
+                d.search = $('#archiveSearchInput').val();
+            }
+        },
+        columns: [
+            { 
+                data: 'DT_RowIndex',
+                name: 'DT_RowIndex',
+                orderable: false,
+                searchable: false
+            },
+            { 
+                data: 'consumer', 
+                name: 'consumer.first_name',
+                render: function(data, type, row) {
+                    return data ? data.first_name + ' ' + data.last_name : 'N/A';
+                }
+            },
+            { data: 'consumer_type', name: 'consumer_type' },
+            { data: 'meter_no', name: 'meter_no' },
+            { 
+                data: 'archived_at', 
+                name: 'archived_at',
+                render: function(data) {
+                    return data ? moment(data).format('MMM D, YYYY') : '';
+                }
+            },
+            { 
+                data: 'archived_by', 
+                name: 'archived_by',
+                render: function(data) {
+                    return data ? data.name : 'System';
+                }
+            },
+            { 
+                data: 'archive_reason', 
+                name: 'archive_reason',
+                render: function(data, type, row) {
+                    let reason = data || 'No reason specified';
+                    if (data === 'Other' && row.archive_notes) {
+                        reason = row.archive_notes;
+                    }
+                    return `<span title="${reason}">${reason.length > 30 ? reason.substring(0, 30) + '...' : reason}</span>`;
+                }
+            },
+            {
+                data: 'id',
+                name: 'actions',
+                orderable: false,
+                searchable: false,
+                render: function(data, type, row) {
+                    const consumerName = row.consumer ? row.consumer.first_name + ' ' + row.consumer.last_name : 'N/A';
+                    
+                    return `
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-sm btn-success restore-btn" data-id="${data}" data-consumer="${consumerName}">
+                            <i class="bi bi-arrow-counterclockwise"></i> Restore
+                        </button>
+                        <button class="btn btn-sm btn-danger delete-archive-btn" data-id="${data}">
+                            <i class="bi bi-trash"></i> Delete
+                        </button>
+                        <button class="btn btn-sm btn-info view-archive-details-btn" data-id="${data}">
+                            <i class="bi bi-eye"></i> Details
+                        </button>
+                    </div>
+                    `;
+                }
+            }
+        ],
+        createdRow: function(row, data, dataIndex) {
+            $(row).addClass('archived-row');
+        }
     });
 
-    // Search button
-    $('#searchBtn').click(function() {
-        table.search($('#searchInput').val()).draw();
+    // Apply filters for active table
+    $('#statusFilter, #monthFilter').change(function() {
+        activeTable.ajax.reload();
     });
+
+    // Search button for active table
+    $('#searchBtn').click(function() {
+        activeTable.search($('#searchInput').val()).draw();
+    });
+
+    // Archive button click handler
+    $(document).on('click', '.archive-btn', function() {
+        const billingId = $(this).data('id');
+        const consumerName = $(this).data('consumer');
+        
+        $('#archiveBillingId').val(billingId);
+        $('#archiveConsumerName').val(consumerName);
+        $('#archiveModal').modal('show');
+    });
+
+    // Archive reason change handler
+    $('#archiveReason').change(function() {
+        if ($(this).val() === 'Other') {
+            $('#otherReasonContainer').show();
+            $('#otherReason').prop('required', true);
+        } else {
+            $('#otherReasonContainer').hide();
+            $('#otherReason').prop('required', false);
+        }
+    });
+
+    // Confirm archive button
+    $('#confirmArchiveBtn').click(function() {
+        const billingId = $('#archiveBillingId').val();
+        const reason = $('#archiveReason').val();
+        const notes = reason === 'Other' ? $('#otherReason').val() : $('#archiveNotes').val();
+        
+        if (!reason) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Please select a reason for archiving'
+            });
+            return;
+        }
+        
+        if (reason === 'Other' && !$('#otherReason').val()) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Please specify the reason for archiving'
+            });
+            return;
+        }
+        
+        $.ajax({
+            url: `/accountant/billings/${billingId}/archive`,
+            type: 'POST',
+            data: {
+                reason: reason,
+                notes: notes,
+                _token: $('meta[name="csrf-token"]').attr('content')
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    $('#archiveModal').modal('hide');
+                    activeTable.ajax.reload();
+                    archiveTable.ajax.reload();
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Archived',
+                        text: response.message
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: response.message
+                    });
+                }
+            },
+            error: function(xhr) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: xhr.responseJSON?.message || 'Failed to archive billing'
+                });
+            }
+        });
+    });
+
+    // Restore button click handler
+    $(document).on('click', '.restore-btn', function() {
+        const billingId = $(this).data('id');
+        const consumerName = $(this).data('consumer');
+        
+        $('#restoreBillingId').val(billingId);
+        $('#restoreConsumerName').val(consumerName);
+        $('#restoreModal').modal('show');
+    });
+
+    // Confirm restore button
+    $('#confirmRestoreBtn').click(function() {
+        const billingId = $('#restoreBillingId').val();
+        
+        $.ajax({
+            url: `/accountant/billings/${billingId}/restore`,
+            type: 'POST',
+            data: {
+                _token: $('meta[name="csrf-token"]').attr('content')
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    $('#restoreModal').modal('hide');
+                    activeTable.ajax.reload();
+                    archiveTable.ajax.reload();
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Restored',
+                        text: response.message
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: response.message
+                    });
+                }
+            },
+            error: function(xhr) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: xhr.responseJSON?.message || 'Failed to restore billing'
+                });
+            }
+        });
+    });
+
+    // Empty archive button
+    $('#emptyArchiveBtn').click(function() {
+        $('#emptyArchiveModal').modal('show');
+    });
+
+    // Confirm empty archive checkbox
+    $('#confirmEmptyArchive').change(function() {
+        $('#confirmEmptyArchiveBtn').prop('disabled', !$(this).is(':checked'));
+    });
+
+    // Confirm empty archive button
+    $('#confirmEmptyArchiveBtn').click(function() {
+        $.ajax({
+            url: '/accountant/billings/empty-archive',
+            type: 'POST',
+            data: {
+                _token: $('meta[name="csrf-token"]').attr('content')
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    $('#emptyArchiveModal').modal('hide');
+                    archiveTable.ajax.reload();
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Archive Emptied',
+                        text: response.message
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: response.message
+                    });
+                }
+            },
+            error: function(xhr) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: xhr.responseJSON?.message || 'Failed to empty archive'
+                });
+            }
+        });
+    });
+
+    // Archive search button
+    $('#archiveSearchBtn').click(function() {
+        archiveTable.search($('#archiveSearchInput').val()).draw();
+    });
+
+    // View archive details button
+    $(document).on('click', '.view-archive-details-btn', function() {
+        const billingId = $(this).data('id');
+        
+        // You can implement a modal to show detailed archive information
+        // This would show the original billing data plus archive metadata
+        $.ajax({
+            url: `/accountant/billings/${billingId}/archive-details`,
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    // Show archive details in a modal
+                    showArchiveDetails(response.data);
+                }
+            },
+            error: function(xhr) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to load archive details'
+                });
+            }
+        });
+    });
+
+    // Delete archive record button
+    $(document).on('click', '.delete-archive-btn', function() {
+        const billingId = $(this).data('id');
+        
+        Swal.fire({
+            title: 'Delete Archived Record?',
+            text: "This will permanently delete this archived billing record. This action cannot be undone.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete permanently!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: `/accountant/billings/${billingId}/force-delete`,
+                    type: 'DELETE',
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            archiveTable.ajax.reload();
+                            Swal.fire(
+                                'Deleted!',
+                                response.message,
+                                'success'
+                            );
+                        }
+                    },
+                    error: function(xhr) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: xhr.responseJSON?.message || 'Failed to delete archived record'
+                        });
+                    }
+                });
+            }
+        });
+    });
+
+    // Function to show archive details
+    function showArchiveDetails(data) {
+        const modalContent = `
+            <div class="modal fade" id="archiveDetailsModal" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header bg-info text-white">
+                            <h5 class="modal-title">Archive Details</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Billing Information</h6>
+                                    <p><strong>Consumer:</strong> ${data.consumer.first_name} ${data.consumer.last_name}</p>
+                                    <p><strong>Meter No:</strong> ${data.meter_no}</p>
+                                    <p><strong>Type:</strong> ${data.consumer_type}</p>
+                                    <p><strong>Last Reading:</strong> ${data.current_reading}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Archive Information</h6>
+                                    <p><strong>Archived Date:</strong> ${moment(data.archived_at).format('MMM D, YYYY h:mm A')}</p>
+                                    <p><strong>Archived By:</strong> ${data.archived_by ? data.archived_by.name : 'System'}</p>
+                                    <p><strong>Reason:</strong> ${data.archive_reason}</p>
+                                    <p><strong>Notes:</strong> ${data.archive_notes || 'None'}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Remove existing modal if any
+        $('#archiveDetailsModal').remove();
+        
+        // Append and show modal
+        $('body').append(modalContent);
+        $('#archiveDetailsModal').modal('show');
+    }
 
     // Initialize modal when opened
     $('#billingModal').on('show.bs.modal', function() {
@@ -930,289 +1511,6 @@ $(document).ready(function() {
         fetchConsumers();
     });
 
-
-    $(document).on('click', '.receipt-btn', function(e) {
-    e.preventDefault();
-    const billingId = $(this).data('id');
-    
-    // Show loading state
-    $('#receiptModal').modal('show');
-    $('#receiptContent').html(`
-        <div class="text-center py-4">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <p class="mt-2">Generating receipt...</p>
-        </div>
-    `);
-    
-    // Fetch billing details for receipt
-    $.ajax({
-        url: `/accountant/billings/${billingId}/receipt`,
-        type: 'GET',
-        dataType: 'json',
-        success: function(response) {
-            if (response.success) {
-                const billing = response.data;
-                generateReceipt(billing);
-            } else {
-                $('#receiptContent').html(`
-                    <div class="text-center py-4 text-danger">
-                        <i class="bi bi-exclamation-circle"></i>
-                        <p class="mt-2">Failed to generate receipt: ${response.message}</p>
-                </div>
-                `);
-            }
-        },
-        error: function(xhr) {
-            console.error('Error fetching receipt data:', xhr.responseText);
-            $('#receiptContent').html(`
-                <div class="text-center py-4 text-danger">
-                    <i class="bi bi-exclamation-circle"></i>
-                    <p class="mt-2">Failed to load receipt data. Please try again.</p>
-                </div>
-            `);
-        }
-    });
-});
-
-// Function to generate receipt HTML based on the provided template
-function generateReceipt(billing) {
-    const paymentDate = billing.payment_date ? new Date(billing.payment_date) : new Date();
-    const readingDate = new Date(billing.reading_date || billing.due_date);
-    
-    // Format dates
-    const formattedPaymentDate = paymentDate.toLocaleDateString('en-PH', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-    }).replace(/\//g, '-');
-    
-    const formattedReadingDate = readingDate.toLocaleDateString('en-PH', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-    }).replace(/\//g, '-');
-    
-    const nextMonth = new Date(readingDate);
-    nextMonth.setMonth(nextMonth.getMonth() + 1);
-    const formattedNextMonth = nextMonth.toLocaleDateString('en-PH', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-    }).replace(/\//g, '-');
-    
-    // Calculate due date (22nd of current month)
-    const dueDate = new Date(readingDate);
-    dueDate.setDate(22);
-    const formattedDueDate = dueDate.toLocaleDateString('en-PH', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-    }).replace(/\//g, '-');
-    
-    // Calculate disconnection date (25th of current month)
-    const disconnectionDate = new Date(readingDate);
-    disconnectionDate.setDate(25);
-    const formattedDisconnectionDate = disconnectionDate.toLocaleDateString('en-PH', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-    }).replace(/\//g, '-');
-    
-    // Build consumer name
-    const consumer = billing.consumer;
-    let consumerName = consumer.first_name || '';
-    if (consumer.middle_name) consumerName += ' ' + consumer.middle_name;
-    consumerName += ' ' + (consumer.last_name || '');
-    if (consumer.suffix) consumerName += ' ' + consumer.suffix;
-    
-    // Generate bill number starting from 0001
-    // If billing.id is not starting from 1, we'll calculate the sequential number
-    const billNumber = String(billing.sequential_number || billing.id).padStart(4, '0');
-    
-    // Get current month name for bill month
-    const monthNames = ["January", "February", "March", "April", "May", "June",
-                       "July", "August", "September", "October", "November", "December"];
-    const billMonth = `${readingDate.getDate()}-${monthNames[readingDate.getMonth()].substring(0, 3)}`;
-    
-    // Calculate total amount with penalty
-    const totalAmount = parseFloat(billing.total_amount) + (billing.penalty_amount || 0);
-    
-    const receiptHTML = `
-        <div class="receipt-container" style="font-family: Arial, sans-serif; max-width: 400px; margin: 0 auto; padding: 15px; border: 1px solid #000; background-color: white;">
-            <div class="receipt-header" style="text-align: center; margin-bottom: 15px; border-bottom: 2px solid #000; padding-bottom: 10px;">
-                <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 10px;">
-                    <img src="{{ asset('image/santafe.png') }}" style="width: 60px; height: 60px; margin-right: 15px;" alt="Santa Fe Logo">
-                    <div>
-                        <h4 style="margin: 5px 0; font-size: 18px;">Santa Fe Water System and Management Board</h4>
-                        <p style="margin: 3px 0; font-size: 14px;">Santa Fe New Municipal Hall</p>
-                    </div>
-                </div>
-                <p style="margin: 3px 0; font-size: 14px;">PooC, Santa Fe, Cebu 6047</p>
-                <p style="margin: 3px 0; font-size: 14px;">CONTACT NO. 09469615234/09305694771</p>
-            </div>
-            
-            <div style="text-align: center; margin: 10px 0;">
-                <h3 style="margin: 5px 0; text-decoration: underline;">STATEMENT OF ACCOUNT</h3>
-            </div>
-            
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 12px;">
-                <tr>
-                    <td style="width: 30%; padding: 2px;"><strong>Account Type</strong></td>
-                    <td style="width: 35%; padding: 2px;">${consumer.consumer_type || 'RESIDENTIAL'}</td>
-                    <td style="width: 15%; padding: 2px;"><strong>Meter No.</strong></td>
-                    <td style="width: 20%; padding: 2px;">${consumer.meter_no || 'N/A'}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 2px;"><strong>Bill Num</strong></td>
-                    <td style="padding: 2px;">: ${billNumber}</td>
-                    <td style="padding: 2px;"><strong>Brand</strong></td>
-                    <td style="padding: 2px;">:</td>
-                </tr>
-                <tr>
-                    <td style="padding: 2px;"><strong>Name</strong></td>
-                    <td style="padding: 2px;">: ${consumerName.trim()}</td>
-                    <td style="padding: 2px;"><strong>Bill Month</strong></td>
-                    <td style="padding: 2px;">${billMonth}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 2px;"><strong>Address</strong></td>
-                    <td style="padding: 2px;" colspan="3">: ${consumer.address || 'PooC, Santa Fe, Cebu'}</td>
-                </tr>
-            </table>
-            
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 12px;">
-                <tr>
-                    <td colspan="2" style="padding: 2px;"><strong>Reading</strong></td>
-                    <td colspan="2" style="padding: 2px;"><strong>CHARGES</strong></td>
-                </tr>
-                <tr>
-                    <td style="width: 15%; padding: 2px;"><strong>From</strong></td>
-                    <td style="width: 35%; padding: 2px;">: ${formattedReadingDate}</td>
-                    <td style="width: 25%; padding: 2px;"><strong>Current :</strong></td>
-                    <td style="width: 25%; padding: 2px; text-align: right;">${parseFloat(billing.total_amount).toFixed(2)}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 2px;"><strong>To</strong></td>
-                    <td style="padding: 2px;">: ${formattedNextMonth}</td>
-                    <td style="padding: 2px;"><strong>Past Due :</strong></td>
-                    <td style="padding: 2px; text-align: right;">0.00</td>
-                </tr>
-                <tr>
-                    <td style="padding: 2px;"><strong>Previous</strong></td>
-                    <td style="padding: 2px;">: ${parseFloat(billing.previous_reading).toFixed(0)}</td>
-                    <td style="padding: 2px;"><strong>Penalty :</strong></td>
-                    <td style="padding: 2px; text-align: right;">${billing.penalty_amount ? parseFloat(billing.penalty_amount).toFixed(2) : '0.00'}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 2px;"><strong>Present</strong></td>
-                    <td style="padding: 2px;">: ${parseFloat(billing.current_reading).toFixed(0)}</td>
-                    <td style="padding: 2px;"></td>
-                    <td style="padding: 2px;"></td>
-                </tr>
-                <tr>
-                    <td style="padding: 2px;"><strong>Usage</strong></td>
-                    <td style="padding: 2px;">: ${parseFloat(billing.consumption).toFixed(0)}</td>
-                    <td style="padding: 2px;"></td>
-                    <td style="padding: 2px;"></td>
-                </tr>
-            </table>
-            
-            <div style="text-align: right; margin: 15px 0; border-top: 1px solid #000; padding-top: 5px;">
-                <p style="margin: 5px 0; font-weight: bold;">TOTAL BEFORE DUE DATE : Php ${parseFloat(billing.total_amount).toFixed(2)}</p>
-                ${billing.penalty_amount && billing.penalty_amount > 0 ? 
-                `<p style="margin: 5px 0; font-weight: bold; color: #dc3545;">PENALTY : Php ${parseFloat(billing.penalty_amount).toFixed(2)}</p>
-                <p style="margin: 5px 0; font-weight: bold;">TOTAL AMOUNT DUE : Php ${totalAmount.toFixed(2)}</p>` : ''}
-            </div>
-            
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 12px;">
-                <tr>
-                    <td style="padding: 2px;"><strong>DUE DATE</strong></td>
-                    <td style="padding: 2px;">: ${formattedDueDate}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 2px;"><strong>DISCONNECTION DATE</strong></td>
-                    <td style="padding: 2px;">: ${formattedDisconnectionDate}</td>
-                </tr>
-            </table>
-            
-            <div style="text-align: center; margin: 15px 0; font-style: italic;">
-                <p style="margin: 5px 0; font-size: 12px;">"AYAW SAYANGI ANG TUBIG KAY ANG TUBIG KINABUHI"</p>
-            </div>
-            
-            <div style="text-align: center; margin-top: 20px;">
-                <p style="margin: 3px 0; font-size: 11px; font-weight: bold;">FOR DISCONNECTION</p>
-                <p style="margin: 3px 0; font-size: 11px;">months</p>
-            </div>
-            
-            <div class="receipt-footer" style="text-align: center; margin-top: 20px; border-top: 1px dashed #000; padding-top: 10px; font-size: 10px;">
-                <p style="margin: 3px 0;">Thank you for your payment!</p>
-                <p style="margin: 3px 0;">Santa Fe Water System and Management Board</p>
-            </div>
-        </div>
-    `;
-    
-    $('#receiptContent').html(receiptHTML);
-}
-
-// Handle print receipt button
-$('#printReceiptBtn').click(function() {
-    const printWindow = window.open('', '_blank');
-    const receiptContent = document.getElementById('receiptContent').innerHTML;
-    
-    // For printing, we need to handle the image path differently
-    const printContent = receiptContent.replace(
-        'src="{{ asset('image/santafe.png') }}"',
-        'src="/image/santafe.png"'
-    );
-    
-    printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Print Receipt</title>
-            <style>
-                body {
-                    font-family: Arial, sans-serif;
-                    margin: 0;
-                    padding: 20px;
-                }
-                @media print {
-                    body {
-                        padding: 0;
-                    }
-                    .receipt-container {
-                        box-shadow: none;
-                        border: 1px solid #000;
-                        max-width: 100%;
-                    }
-                    img {
-                        max-width: 60px;
-                        height: auto;
-                    }
-                }
-            </style>
-        </head>
-        <body>
-            ${printContent}
-            <script>
-                window.onload = function() {
-                    // Add a small delay to ensure images are loaded before printing
-                    setTimeout(function() {
-                        window.print();
-                        setTimeout(function() {
-                            window.close();
-                        }, 100);
-                    }, 500);
-                }
-            <\/script>
-        </body>
-        </html>
-    `);
-    
-    printWindow.document.close();
-});
     // Reset all form fields
     function resetForm() {
         $('#billingForm')[0].reset();
@@ -1271,6 +1569,7 @@ $('#printReceiptBtn').click(function() {
             }
         });
     }
+    
     // Function to populate consumer options
     function populateConsumerOptions(consumers) {
         const optionsContainer = $('#consumerOptions');
@@ -1415,7 +1714,6 @@ $('#printReceiptBtn').click(function() {
         });
     }
 
-
     // Setup search functionality for consumers
     function setupSearchFunctionality() {
         $('#consumerSearch').on('input', function() {
@@ -1449,7 +1747,7 @@ $('#printReceiptBtn').click(function() {
             success: function(response) {
                 if (response.success) {
                     $('#billingModal').modal('hide');
-                    table.ajax.reload();
+                    activeTable.ajax.reload();
                     Swal.fire({
                         icon: 'success',
                         title: 'Success',
@@ -1488,67 +1786,67 @@ $('#printReceiptBtn').click(function() {
     });
 
     $(document).on('click', '.edit-btn', function() {
-    const billingId = $(this).data('id');
-    
-    // Show loading state
-    $('#billingModal').modal('show');
-    $('#selectedConsumerText').html(`
-        <div class="d-flex justify-content-center">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
+        const billingId = $(this).data('id');
+        
+        // Show loading state
+        $('#billingModal').modal('show');
+        $('#selectedConsumerText').html(`
+            <div class="d-flex justify-content-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
             </div>
-        </div>
-    `);
-    
-    $.ajax({
-        url: `/accountant/billings/${billingId}/edit`,
-        type: 'GET',
-        dataType: 'json',
-        success: function(response) {
-            if (response.success) {
-                const billing = response.data.billing;
-                const consumer = response.data.consumer;
+        `);
+        
+        $.ajax({
+            url: `/accountant/billings/${billingId}/edit`,
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    const billing = response.data.billing;
+                    const consumer = response.data.consumer;
+                    
+                    // Fill the form with consumer data
+                    $('#billingId').val(billing.id);
+                    
+                    // Build the full name with proper handling of optional fields
+                    let fullName = consumer.first_name || '';
+                    if (consumer.middle_name) fullName += ' ' + consumer.middle_name;
+                    fullName += ' ' + (consumer.last_name || '');
+                    if (consumer.suffix) fullName += ' ' + consumer.suffix;
+                    fullName = fullName.trim();
+                    
+                    $('#selectedConsumerText').text(fullName);
+                    $('#consumer_id').val(consumer.id);
+                    $('#type').val(consumer.consumer_type || 'N/A');
+                    $('#meterNumber').val(consumer.meter_no || 'N/A');
+                    
+                    // Fill billing data
+                    $('#dueDate').val(billing.due_date.split('T')[0]);
+                    $('#previousReading').val(parseFloat(billing.previous_reading).toFixed(2));
+                    $('#currentReading').val(parseFloat(billing.current_reading).toFixed(2));
+                    $('#consumption').val(parseFloat(billing.consumption).toFixed(2));
+                    $('#totalAmount').val(parseFloat(billing.total_amount).toFixed(2));
+                    $('#status').val(billing.status || 'unpaid');
+                    
+                    // Update modal title and button text
+                    $('#billingModal .modal-title').text('Edit Billing');
+                    $('#saveBilling').html('<i class="bi bi-save me-2"></i> Update Billing');
+                }
+            },
+            error: function(xhr) {
+                // Show error message in consumer display
+                $('#selectedConsumerText').text('Error loading consumer');
                 
-                // Fill the form with consumer data
-                $('#billingId').val(billing.id);
-                
-                // Build the full name with proper handling of optional fields
-                let fullName = consumer.first_name || '';
-                if (consumer.middle_name) fullName += ' ' + consumer.middle_name;
-                fullName += ' ' + (consumer.last_name || '');
-                if (consumer.suffix) fullName += ' ' + consumer.suffix;
-                fullName = fullName.trim();
-                
-                $('#selectedConsumerText').text(fullName);
-                $('#consumer_id').val(consumer.id);
-                $('#type').val(consumer.consumer_type || 'N/A');
-                $('#meterNumber').val(consumer.meter_no || 'N/A');
-                
-                // Fill billing data
-                $('#dueDate').val(billing.due_date.split('T')[0]);
-                $('#previousReading').val(parseFloat(billing.previous_reading).toFixed(2));
-                $('#currentReading').val(parseFloat(billing.current_reading).toFixed(2));
-                $('#consumption').val(parseFloat(billing.consumption).toFixed(2));
-                $('#totalAmount').val(parseFloat(billing.total_amount).toFixed(2));
-                $('#status').val(billing.status || 'unpaid');
-                
-                // Update modal title and button text
-                $('#billingModal .modal-title').text('Edit Billing');
-                $('#saveBilling').html('<i class="bi bi-save me-2"></i> Update Billing');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: xhr.responseJSON?.message || 'Failed to load billing data'
+                });
             }
-        },
-        error: function(xhr) {
-            // Show error message in consumer display
-            $('#selectedConsumerText').text('Error loading consumer');
-            
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: xhr.responseJSON?.message || 'Failed to load billing data'
-            });
-        }
+        });
     });
-});
 
     // Delete billing
     $(document).on('click', '.delete-btn', function() {
@@ -1572,7 +1870,7 @@ $('#printReceiptBtn').click(function() {
                     },
                     success: function(response) {
                         if (response.success) {
-                            table.ajax.reload();
+                            activeTable.ajax.reload();
                             Swal.fire(
                                 'Deleted!',
                                 response.message,
@@ -1591,193 +1889,475 @@ $('#printReceiptBtn').click(function() {
             }
         });
     });
-});
 
-// Handle payment button click
-$(document).on('click', '.payment-btn', function(e) {
-    e.preventDefault();
-    const billingId = $(this).data('id');
-    
-    console.log('Payment button clicked for billing ID:', billingId); // Debug log
+    // Handle payment button click
+    $(document).on('click', '.payment-btn', function(e) {
+        e.preventDefault();
+        const billingId = $(this).data('id');
+        
+        console.log('Payment button clicked for billing ID:', billingId); // Debug log
 
-    // Show modal and reset fields
-    $('#paymentModal').modal('show');
-    $('#paymentAmountDue').val('Loading...');
-    $('#paymentAmount').val('');
-    $('#paymentChange').val('₱0.00');
-    $('#paymentBillingId').val(billingId); // Set the billing ID immediately
-    $('#paymentDate').val(new Date().toISOString().split('T')[0]);
+        // Show modal and reset fields
+        $('#paymentModal').modal('show');
+        $('#paymentAmountDue').val('Loading...');
+        $('#paymentAmount').val('');
+        $('#paymentChange').val('₱0.00');
+        $('#paymentBillingId').val(billingId); // Set the billing ID immediately
+        $('#paymentDate').val(new Date().toISOString().split('T')[0]);
 
-    // Load billing details via AJAX
-    $.ajax({
-        url: `/accountant/billings/${billingId}/details`,
-        type: 'GET',
-        dataType: 'json',
-        success: function(response) {
-            console.log('Billing details response:', response); // Debug log
-            if (response.success) {
-                const billing = response.data;
-                const totalAmount = parseFloat(billing.total_amount);
-                const penaltyAmount = parseFloat(billing.penalty_amount || 0);
-                const totalDue = totalAmount + penaltyAmount;
-                console.log('Total amount:', totalAmount, 'Penalty:', penaltyAmount, 'Total Due:', totalDue); // Debug log
+        // Load billing details via AJAX
+        $.ajax({
+            url: `/accountant/billings/${billingId}/details`,
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                console.log('Billing details response:', response); // Debug log
+                if (response.success) {
+                    const billing = response.data;
+                    const totalAmount = parseFloat(billing.total_amount);
+                    const penaltyAmount = parseFloat(billing.penalty_amount || 0);
+                    const totalDue = totalAmount + penaltyAmount;
+                    console.log('Total amount:', totalAmount, 'Penalty:', penaltyAmount, 'Total Due:', totalDue); // Debug log
 
-                $('#paymentBillingId').val(billing.id);
-                $('#paymentAmountDue').val('₱' + totalDue.toFixed(2));
-            } else {
-                console.error('Failed to load billing details');
+                    $('#paymentBillingId').val(billing.id);
+                    $('#paymentAmountDue').val('₱' + totalDue.toFixed(2));
+                } else {
+                    console.error('Failed to load billing details');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to load billing data.'
+                    });
+                    $('#paymentModal').modal('hide');
+                }
+            },
+            error: function(xhr) {
+                console.error('AJAX error:', xhr.responseText);
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'Failed to load billing data.'
+                    text: xhr.responseJSON?.message || 'Failed to load billing data.'
                 });
                 $('#paymentModal').modal('hide');
             }
-        },
-        error: function(xhr) {
-            console.error('AJAX error:', xhr.responseText);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: xhr.responseJSON?.message || 'Failed to load billing data.'
-            });
-            $('#paymentModal').modal('hide');
-        }
+        });
     });
-});
 
-// Keep track of paid billing IDs
-let paidBillings = new Set();
+    // Keep track of paid billing IDs
+    let paidBillings = new Set();
 
-$('#paymentForm').on('submit', function(e) {
-    e.preventDefault();
+    $('#paymentForm').on('submit', function(e) {
+        e.preventDefault();
 
-    const billingId = $('#paymentBillingId').val();
-    const totalAmount = parseFloat($('#paymentAmountDue').val().replace(/[₱,]/g, '')) || 0;
-    const formData = {
-        billing_id: billingId,
-        payment_amount: parseFloat($('#paymentAmount').val()),
-        payment_date: $('#paymentDate').val(),
-        _token: $('meta[name="csrf-token"]').attr('content')
-    };
+        const billingId = $('#paymentBillingId').val();
+        const totalAmount = parseFloat($('#paymentAmountDue').val().replace(/[₱,]/g, '')) || 0;
+        const formData = {
+            billing_id: billingId,
+            payment_amount: parseFloat($('#paymentAmount').val()),
+            payment_date: $('#paymentDate').val(),
+            _token: $('meta[name="csrf-token"]').attr('content')
+        };
 
-    // ❌ Prevent duplicate payment
-    if (paidBillings.has(billingId)) {
-        Swal.fire('Error', 'This bill has already been paid.', 'error');
-        return;
-    }
+        // Prevent duplicate payment
+        if (paidBillings.has(billingId)) {
+            Swal.fire('Error', 'This bill has already been paid.', 'error');
+            return;
+        }
 
-    // Validate: must be a number and > 0
-    if (isNaN(formData.payment_amount) || formData.payment_amount <= 0) {
-        Swal.fire('Error', 'Please enter a valid amount', 'error');
-        return;
-    }
+        // Validate: must be a number and > 0
+        if (isNaN(formData.payment_amount) || formData.payment_amount <= 0) {
+            Swal.fire('Error', 'Please enter a valid amount', 'error');
+            return;
+        }
 
-    // Validate: must not be less than amount due
-    if (formData.payment_amount < totalAmount) {
-        Swal.fire('Error', 'Payment cannot be less than the total amount due (₱' + totalAmount.toFixed(2) + ')', 'error');
-        return;
-    }
+        // Validate: must not be less than amount due
+        if (formData.payment_amount < totalAmount) {
+            Swal.fire('Error', 'Payment cannot be less than the total amount due (₱' + totalAmount.toFixed(2) + ')', 'error');
+            return;
+        }
 
-    // Submit
-    const submitBtn = $(this).find('[type="submit"]');
-    submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Processing...');
+        // Submit
+        const submitBtn = $(this).find('[type="submit"]');
+        submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Processing...');
 
-    $.ajax({
-        url: '/payments/process',
-        method: 'POST',
-        data: formData,
-        dataType: 'json',
-        success: function(response) {
-            if (response.success) {
-                // Mark this billing as paid
-                paidBillings.add(billingId);
+        $.ajax({
+            url: '/payments/process',
+            method: 'POST',
+            data: formData,
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    // Mark this billing as paid
+                    paidBillings.add(billingId);
 
-                $('#paymentModal').modal('hide');
-                $('#billingTable').DataTable().ajax.reload(null, false);
-                Swal.fire('Success', response.message, 'success');
-            } else {
-                Swal.fire('Error', response.message, 'error');
+                    $('#paymentModal').modal('hide');
+                    $('#billingTable').DataTable().ajax.reload(null, false);
+                    Swal.fire('Success', response.message, 'success');
+                } else {
+                    Swal.fire('Error', response.message, 'error');
+                }
+            },
+            error: function(xhr) {
+                Swal.fire('Error', xhr.responseJSON?.message || 'Payment failed', 'error');
+            },
+            complete: function() {
+                submitBtn.prop('disabled', false).html('Submit Payment');
             }
-        },
-        error: function(xhr) {
-            Swal.fire('Error', xhr.responseJSON?.message || 'Payment failed', 'error');
-        },
-        complete: function() {
-            submitBtn.prop('disabled', false).html('Submit Payment');
-        }
-    });
-});
-
-
-// Handle real-time change calculation
-$(document).on('input', '#paymentAmount', function() {
-    const totalAmount = parseFloat($('#paymentAmountDue').val().replace(/[₱,]/g, '')) || 0;
-    const paymentAmount = parseFloat($(this).val()) || 0;
-    const change = paymentAmount - totalAmount;
-
-    $('#paymentChange').val(change >= 0 ? '₱' + change.toFixed(2) : '₱0.00');
-});
-
-// Optional: Clear change when modal closes
-$('#paymentModal').on('hidden.bs.modal', function () {
-    $('#paymentChange').val('₱0.00');
-    $('#paymentAmount').val('');
-});
-
-// Logout functionality
-$('#logoutBtn').click(function(e) {
-    e.preventDefault();
-    
-    Swal.fire({
-        title: 'Sign Out?',
-        text: 'Are you sure you want to sign out?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Yes, Sign Out',
-        cancelButtonText: 'Cancel'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Perform logout - you can customize this based on your authentication system
-            performLogout();
-        }
-    });
-});
-
-function performLogout() {
-    // Show loading state
-    Swal.fire({
-        title: 'Signing Out...',
-        text: 'Please wait',
-        allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
+        });
     });
 
-    // Example: Send logout request to server
-    // Replace this with your actual logout endpoint
-    $.ajax({
-        url: '/logout', // Your logout route
-        type: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
-        success: function(response) {
-            // Redirect to login page
-            window.location.href = '/admin-login';
-        },
-        error: function(xhr) {
-            // If AJAX fails, still redirect to login
-            window.location.href = '/admin-login';
-        }
+    // Handle real-time change calculation
+    $(document).on('input', '#paymentAmount', function() {
+        const totalAmount = parseFloat($('#paymentAmountDue').val().replace(/[₱,]/g, '')) || 0;
+        const paymentAmount = parseFloat($(this).val()) || 0;
+        const change = paymentAmount - totalAmount;
+
+        $('#paymentChange').val(change >= 0 ? '₱' + change.toFixed(2) : '₱0.00');
     });
-    
-    // Alternative: Simple redirect (if no server-side logout needed)
-    // window.location.href = '/login';
-}
+
+    // Optional: Clear change when modal closes
+    $('#paymentModal').on('hidden.bs.modal', function () {
+        $('#paymentChange').val('₱0.00');
+        $('#paymentAmount').val('');
+    });
+
+    $(document).on('click', '.receipt-btn', function(e) {
+        e.preventDefault();
+        const billingId = $(this).data('id');
+        
+        // Show loading state
+        $('#receiptModal').modal('show');
+        $('#receiptContent').html(`
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Generating receipt...</p>
+            </div>
+        `);
+        
+        // Fetch billing details for receipt
+        $.ajax({
+            url: `/accountant/billings/${billingId}/receipt`,
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    const billing = response.data;
+                    generateReceipt(billing);
+                } else {
+                    $('#receiptContent').html(`
+                        <div class="text-center py-4 text-danger">
+                            <i class="bi bi-exclamation-circle"></i>
+                            <p class="mt-2">Failed to generate receipt: ${response.message}</p>
+                    </div>
+                    `);
+                }
+            },
+            error: function(xhr) {
+                console.error('Error fetching receipt data:', xhr.responseText);
+                $('#receiptContent').html(`
+                    <div class="text-center py-4 text-danger">
+                        <i class="bi bi-exclamation-circle"></i>
+                        <p class="mt-2">Failed to load receipt data. Please try again.</p>
+                    </div>
+                `);
+            }
+        });
+    });
+
+    // Function to generate receipt HTML based on the provided template
+    function generateReceipt(billing) {
+        const paymentDate = billing.payment_date ? new Date(billing.payment_date) : new Date();
+        const readingDate = new Date(billing.reading_date || billing.due_date);
+        
+        // Format dates
+        const formattedPaymentDate = paymentDate.toLocaleDateString('en-PH', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        }).replace(/\//g, '-');
+        
+        const formattedReadingDate = readingDate.toLocaleDateString('en-PH', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        }).replace(/\//g, '-');
+        
+        const nextMonth = new Date(readingDate);
+        nextMonth.setMonth(nextMonth.getMonth() + 1);
+        const formattedNextMonth = nextMonth.toLocaleDateString('en-PH', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        }).replace(/\//g, '-');
+        
+        // Calculate due date (22nd of current month)
+        const dueDate = new Date(readingDate);
+        dueDate.setDate(22);
+        const formattedDueDate = dueDate.toLocaleDateString('en-PH', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        }).replace(/\//g, '-');
+        
+        // Calculate disconnection date (25th of current month)
+        const disconnectionDate = new Date(readingDate);
+        disconnectionDate.setDate(25);
+        const formattedDisconnectionDate = disconnectionDate.toLocaleDateString('en-PH', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        }).replace(/\//g, '-');
+        
+        // Build consumer name
+        const consumer = billing.consumer;
+        let consumerName = consumer.first_name || '';
+        if (consumer.middle_name) consumerName += ' ' + consumer.middle_name;
+        consumerName += ' ' + (consumer.last_name || '');
+        if (consumer.suffix) consumerName += ' ' + consumer.suffix;
+        
+        // Generate bill number starting from 0001
+        // If billing.id is not starting from 1, we'll calculate the sequential number
+        const billNumber = String(billing.sequential_number || billing.id).padStart(4, '0');
+        
+        // Get current month name for bill month
+        const monthNames = ["January", "February", "March", "April", "May", "June",
+                           "July", "August", "September", "October", "November", "December"];
+        const billMonth = `${readingDate.getDate()}-${monthNames[readingDate.getMonth()].substring(0, 3)}`;
+        
+        // Calculate total amount with penalty
+        const totalAmount = parseFloat(billing.total_amount) + (billing.penalty_amount || 0);
+        
+        const receiptHTML = `
+            <div class="receipt-container" style="font-family: Arial, sans-serif; max-width: 400px; margin: 0 auto; padding: 15px; border: 1px solid #000; background-color: white;">
+                <div class="receipt-header" style="text-align: center; margin-bottom: 15px; border-bottom: 2px solid #000; padding-bottom: 10px;">
+                    <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 10px;">
+                        <img src="{{ asset('image/santafe.png') }}" style="width: 60px; height: 60px; margin-right: 15px;" alt="Santa Fe Logo">
+                        <div>
+                            <h4 style="margin: 5px 0; font-size: 18px;">Santa Fe Water System and Management Board</h4>
+                            <p style="margin: 3px 0; font-size: 14px;">Santa Fe New Municipal Hall</p>
+                        </div>
+                    </div>
+                    <p style="margin: 3px 0; font-size: 14px;">PooC, Santa Fe, Cebu 6047</p>
+                    <p style="margin: 3px 0; font-size: 14px;">CONTACT NO. 09469615234/09305694771</p>
+                </div>
+                
+                <div style="text-align: center; margin: 10px 0;">
+                    <h3 style="margin: 5px 0; text-decoration: underline;">STATEMENT OF ACCOUNT</h3>
+                </div>
+                
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 12px;">
+                    <tr>
+                        <td style="width: 30%; padding: 2px;"><strong>Account Type</strong></td>
+                        <td style="width: 35%; padding: 2px;">${consumer.consumer_type || 'RESIDENTIAL'}</td>
+                        <td style="width: 15%; padding: 2px;"><strong>Meter No.</strong></td>
+                        <td style="width: 20%; padding: 2px;">${consumer.meter_no || 'N/A'}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 2px;"><strong>Bill Num</strong></td>
+                        <td style="padding: 2px;">: ${billNumber}</td>
+                        <td style="padding: 2px;"><strong>Brand</strong></td>
+                        <td style="padding: 2px;">:</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 2px;"><strong>Name</strong></td>
+                        <td style="padding: 2px;">: ${consumerName.trim()}</td>
+                        <td style="padding: 2px;"><strong>Bill Month</strong></td>
+                        <td style="padding: 2px;">${billMonth}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 2px;"><strong>Address</strong></td>
+                        <td style="padding: 2px;" colspan="3">: ${consumer.address || 'PooC, Santa Fe, Cebu'}</td>
+                    </tr>
+                </table>
+                
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 12px;">
+                    <tr>
+                        <td colspan="2" style="padding: 2px;"><strong>Reading</strong></td>
+                        <td colspan="2" style="padding: 2px;"><strong>CHARGES</strong></td>
+                    </tr>
+                    <tr>
+                        <td style="width: 15%; padding: 2px;"><strong>From</strong></td>
+                        <td style="width: 35%; padding: 2px;">: ${formattedReadingDate}</td>
+                        <td style="width: 25%; padding: 2px;"><strong>Current :</strong></td>
+                        <td style="width: 25%; padding: 2px; text-align: right;">${parseFloat(billing.total_amount).toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 2px;"><strong>To</strong></td>
+                        <td style="padding: 2px;">: ${formattedNextMonth}</td>
+                        <td style="padding: 2px;"><strong>Past Due :</strong></td>
+                        <td style="padding: 2px; text-align: right;">0.00</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 2px;"><strong>Previous</strong></td>
+                        <td style="padding: 2px;">: ${parseFloat(billing.previous_reading).toFixed(0)}</td>
+                        <td style="padding: 2px;"><strong>Penalty :</strong></td>
+                        <td style="padding: 2px; text-align: right;">${billing.penalty_amount ? parseFloat(billing.penalty_amount).toFixed(2) : '0.00'}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 2px;"><strong>Present</strong></td>
+                        <td style="padding: 2px;">: ${parseFloat(billing.current_reading).toFixed(0)}</td>
+                        <td style="padding: 2px;"></td>
+                        <td style="padding: 2px;"></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 2px;"><strong>Usage</strong></td>
+                        <td style="padding: 2px;">: ${parseFloat(billing.consumption).toFixed(0)}</td>
+                        <td style="padding: 2px;"></td>
+                        <td style="padding: 2px;"></td>
+                    </tr>
+                </table>
+                
+                <div style="text-align: right; margin: 15px 0; border-top: 1px solid #000; padding-top: 5px;">
+                    <p style="margin: 5px 0; font-weight: bold;">TOTAL BEFORE DUE DATE : Php ${parseFloat(billing.total_amount).toFixed(2)}</p>
+                    ${billing.penalty_amount && billing.penalty_amount > 0 ? 
+                    `<p style="margin: 5px 0; font-weight: bold; color: #dc3545;">PENALTY : Php ${parseFloat(billing.penalty_amount).toFixed(2)}</p>
+                    <p style="margin: 5px 0; font-weight: bold;">TOTAL AMOUNT DUE : Php ${totalAmount.toFixed(2)}</p>` : ''}
+                </div>
+                
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 12px;">
+                    <tr>
+                        <td style="padding: 2px;"><strong>DUE DATE</strong></td>
+                        <td style="padding: 2px;">: ${formattedDueDate}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 2px;"><strong>DISCONNECTION DATE</strong></td>
+                        <td style="padding: 2px;">: ${formattedDisconnectionDate}</td>
+                    </tr>
+                </table>
+                
+                <div style="text-align: center; margin: 15px 0; font-style: italic;">
+                    <p style="margin: 5px 0; font-size: 12px;">"AYAW SAYANGI ANG TUBIG KAY ANG TUBIG KINABUHI"</p>
+                </div>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <p style="margin: 3px 0; font-size: 11px; font-weight: bold;">FOR DISCONNECTION</p>
+                    <p style="margin: 3px 0; font-size: 11px;">months</p>
+                </div>
+                
+                <div class="receipt-footer" style="text-align: center; margin-top: 20px; border-top: 1px dashed #000; padding-top: 10px; font-size: 10px;">
+                    <p style="margin: 3px 0;">Thank you for your payment!</p>
+                    <p style="margin: 3px 0;">Santa Fe Water System and Management Board</p>
+                </div>
+            </div>
+        `;
+        
+        $('#receiptContent').html(receiptHTML);
+    }
+
+    // Handle print receipt button
+    $('#printReceiptBtn').click(function() {
+        const printWindow = window.open('', '_blank');
+        const receiptContent = document.getElementById('receiptContent').innerHTML;
+        
+        // For printing, we need to handle the image path differently
+        const printContent = receiptContent.replace(
+            'src="{{ asset('image/santafe.png') }}"',
+            'src="/image/santafe.png"'
+        );
+        
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Print Receipt</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        margin: 0;
+                        padding: 20px;
+                    }
+                    @media print {
+                        body {
+                            padding: 0;
+                        }
+                        .receipt-container {
+                            box-shadow: none;
+                            border: 1px solid #000;
+                            max-width: 100%;
+                        }
+                        img {
+                            max-width: 60px;
+                            height: auto;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                ${printContent}
+                <script>
+                    window.onload = function() {
+                        // Add a small delay to ensure images are loaded before printing
+                        setTimeout(function() {
+                            window.print();
+                            setTimeout(function() {
+                                window.close();
+                            }, 100);
+                        }, 500);
+                    }
+                <\/script>
+            </body>
+            </html>
+        `);
+        
+        printWindow.document.close();
+    });
+
+    // Logout functionality
+    $('#logoutBtn').click(function(e) {
+        e.preventDefault();
+        
+        Swal.fire({
+            title: 'Sign Out?',
+            text: 'Are you sure you want to sign out?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, Sign Out',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Perform logout - you can customize this based on your authentication system
+                performLogout();
+            }
+        });
+    });
+
+    function performLogout() {
+        // Show loading state
+        Swal.fire({
+            title: 'Signing Out...',
+            text: 'Please wait',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // Example: Send logout request to server
+        // Replace this with your actual logout endpoint
+        $.ajax({
+            url: '/logout', // Your logout route
+            type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                // Redirect to login page
+                window.location.href = '/admin-login';
+            },
+            error: function(xhr) {
+                // If AJAX fails, still redirect to login
+                window.location.href = '/admin-login';
+            }
+        });
+        
+        // Alternative: Simple redirect (if no server-side logout needed)
+        // window.location.href = '/login';
+    }
+});
 </script>
 </body>
 </html>

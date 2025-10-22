@@ -4,9 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Billing;
 use App\Models\AdminConsumer;
+use App\Models\AccountantBilling;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-
+use Illuminate\Support\Facades\Auth; // Add this line
 
 class BillingController extends Controller
 {
@@ -268,6 +269,216 @@ public function disconnect(Request $request, $billingId)
             return response()->json([
                 'error' => 'Failed to load consumer information: ' . $e->getMessage()
             ], 500);
+        }
+    }
+     public function getBillingsData(Request $request)
+    {
+        $billings = AccountantBilling::active()
+            ->with('consumer')
+            ->orderBy('due_date', 'desc')
+            ->orderBy('created_at', 'desc');
+
+        return datatables()->of($billings)
+            ->addIndexColumn()
+            ->addColumn('actions', function($billing) {
+                return ''; // Actions will be rendered in the view
+            })
+            ->rawColumns(['actions'])
+            ->make(true);
+    }
+
+    public function getArchivedBillingsData(Request $request)
+    {
+        $billings = AccountantBilling::archived()
+            ->with(['consumer'])
+            ->orderBy('archived_at', 'desc');
+
+        return datatables()->of($billings)
+            ->addIndexColumn()
+            ->addColumn('actions', function($billing) {
+                return ''; // Actions will be rendered in the view
+            })
+            ->rawColumns(['actions'])
+            ->make(true);
+    }
+
+    public function archive(Request $request, $id)
+    {
+        try {
+            $billing = AccountantBilling::findOrFail($id);
+
+            // Check if already archived
+            if ($billing->is_archived) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This billing record is already archived.'
+                ], 400);
+            }
+
+            // Use auth() helper instead of Auth facade for better reliability
+            $billing->update([
+                'is_archived' => true,
+                'archived_at' => now(),
+                'archived_by' => auth()->id(), // Using auth() helper
+                'archive_reason' => $request->reason,
+                'archive_notes' => $request->notes
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Billing record archived successfully.'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Archive error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to archive billing record: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function restore($id)
+    {
+        try {
+            $billing = AccountantBilling::findOrFail($id);
+
+            // Check if actually archived
+            if (!$billing->is_archived) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This billing record is not archived.'
+                ], 400);
+            }
+
+            $billing->update([
+                'is_archived' => false,
+                'archived_at' => null,
+                'archived_by' => null,
+                'archive_reason' => null,
+                'archive_notes' => null
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Billing record restored successfully.'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to restore billing record: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function forceDelete($id)
+    {
+        try {
+            $billing = AccountantBilling::findOrFail($id);
+
+            // Only allow deletion of archived records
+            if (!$billing->is_archived) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Only archived records can be permanently deleted.'
+                ], 400);
+            }
+
+            $billing->forceDelete(); // Use forceDelete for permanent deletion
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Archived billing record permanently deleted.'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete archived record: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function emptyArchive()
+    {
+        try {
+            $archivedCount = AccountantBilling::archived()->count();
+
+            if ($archivedCount === 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Archive is already empty.'
+                ], 400);
+            }
+
+            AccountantBilling::archived()->forceDelete(); // Use forceDelete
+
+            return response()->json([
+                'success' => true,
+                'message' => "Successfully emptied archive. {$archivedCount} records deleted."
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to empty archive: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getArchiveDetails($id)
+    {
+        try {
+            $billing = AccountantBilling::with(['consumer'])
+                ->archived()
+                ->findOrFail($id);
+
+            return response()->json([
+                'success' => true,
+                'data' => $billing
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load archive details.'
+            ], 404);
+        }
+    }
+
+    // Payment and receipt methods
+    public function getBillingDetails($id)
+    {
+        try {
+            $billing = AccountantBilling::with('consumer')->findOrFail($id);
+            
+            return response()->json([
+                'success' => true,
+                'data' => $billing
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load billing details.'
+            ], 404);
+        }
+    }
+
+    public function getReceipt($id)
+    {
+        try {
+            $billing = AccountantBilling::with('consumer')->findOrFail($id);
+            
+            return response()->json([
+                'success' => true,
+                'data' => $billing
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to generate receipt.'
+            ], 404);
         }
     }
 }

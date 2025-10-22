@@ -33,9 +33,5 @@ class Billing extends Model
     {
         return $this->hasMany(Disconnection::class);
     }
-
-    
-
-    
     
 }

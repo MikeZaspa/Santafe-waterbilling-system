@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class AccountantBilling extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
+
     protected $table = 'accountant_billings';
 
     protected $fillable = [
@@ -19,24 +21,49 @@ class AccountantBilling extends Model
         'current_reading',
         'consumption',
         'total_amount',
-        'status'
+        'status',
+        'is_archived',
+        'archived_at',
+        'archived_by',
+        'archive_reason',
+        'archive_notes'
     ];
 
-   protected $casts = [
-    'due_date' => 'date',
-    'previous_reading' => 'float',
-    'current_reading' => 'float',
-    'consumption' => 'float',
-    'total_amount' => 'float',
-];
+    protected $casts = [
+        'due_date' => 'date',
+        'previous_reading' => 'float',
+        'current_reading' => 'float',
+        'consumption' => 'float',
+        'total_amount' => 'float',
+        'is_archived' => 'boolean',
+        'archived_at' => 'datetime'
+    ];
 
     public function consumer()
     {
         return $this->belongsTo(AdminConsumer::class);
     }
- public function onlinePayments()
+
+    public function archivedBy()
+    {
+        return $this->belongsTo(User::class, 'archived_by');
+    }
+
+    public function onlinePayments()
     {
         return $this->hasMany(OnlinePayment::class, 'bill_id');
+    }
+
+    // Add scope for active (non-archived) bills
+    public function scopeActive($query)
+    {
+        return $query->where('is_archived', false);
+    }
+
+    // Add scope for archived bills
+    public function scopeArchived($query)
+    {
+        return $query->where('is_archived', true);
     }
 
     // Add scope for unpaid bills
@@ -50,5 +77,4 @@ class AccountantBilling extends Model
     {
         return $query->where('status', 'pending');
     }
-    
 }

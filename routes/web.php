@@ -349,7 +349,24 @@ Route::prefix('notices')->group(function () {
 
 Route::get('/consumer/notices', [ConsumerAuthController::class, 'getNotices'])->name('consumer.notices');
 
+// routes/web.php
 
+// Billing routes
+Route::get('/accountant/billings/data', [BillingController::class, 'getBillingsData'])->name('accountant.billings.data');
+Route::get('/accountant/billings/archived/data', [BillingController::class, 'getArchivedBillingsData'])->name('accountant.billings.archived.data');
+
+
+// Archive routes
+Route::post('/accountant/billings/{id}/archive', [BillingController::class, 'archive'])->name('accountant.billings.archive');
+Route::post('/accountant/billings/{id}/restore', [BillingController::class, 'restore'])->name('accountant.billings.restore');
+Route::delete('/accountant/billings/{id}/force-delete', [BillingController::class, 'forceDelete'])->name('accountant.billings.force-delete');
+Route::post('/accountant/billings/empty-archive', [BillingController::class, 'emptyArchive'])->name('accountant.billings.empty-archive');
+Route::get('/accountant/billings/{id}/archive-details', [BillingController::class, 'getArchiveDetails'])->name('accountant.billings.archive-details');
+
+// Other billing routes
+Route::get('/billing/last-reading/{consumerId}', [BillingController::class, 'getLastReading']);
+Route::get('/accountant/billings/{id}/details', [BillingController::class, 'getBillingDetails']);
+Route::get('/accountant/billings/{id}/receipt', [BillingController::class, 'getReceipt']);
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/', function () {
