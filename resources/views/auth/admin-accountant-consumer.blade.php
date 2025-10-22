@@ -739,10 +739,7 @@
                         <label class="form-label fw-bold">Reason for Archiving</label>
                         <select class="form-select" id="archiveReason" required>
                             <option value="">Select Reason</option>
-                            <option value="Account Closed">Account Closed</option>
                             <option value="Meter Disconnected">Meter Disconnected</option>
-                            <option value="Duplicate Entry">Duplicate Entry</option>
-                            <option value="Data Correction">Data Correction</option>
                             <option value="Other">Other</option>
                         </select>
                     </div>
