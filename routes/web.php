@@ -349,7 +349,8 @@ Route::prefix('notices')->group(function () {
 
 Route::get('/consumer/notices', [ConsumerAuthController::class, 'getNotices'])->name('consumer.notices');
 
- 
+
+
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/', function () {
     return view('auth.main-form');
