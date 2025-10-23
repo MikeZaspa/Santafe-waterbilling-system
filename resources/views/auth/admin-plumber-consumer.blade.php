@@ -314,6 +314,91 @@
             gap: 8px;
         }
         
+        /* Cut consumer status styling */
+        .status-cut {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        /* Cut button styling */
+        .btn-cut {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
+
+        .btn-cut:hover {
+            background-color: #bb2d3b;
+            border-color: #b02a37;
+        }
+
+        /* Cut consumer table styling */
+        #cutConsumersTable th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
+        #cutConsumersTable .restore-btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        /* Cut Consumers Modal Styles for Mobile */
+        .cut-consumer-card {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .cut-consumer-card-header {
+            background-color: #f8f9fa;
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .cut-consumer-card-body {
+            padding: 15px;
+        }
+        
+        .cut-consumer-card-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f1f1f1;
+        }
+        
+        .cut-consumer-card-row:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .cut-consumer-card-label {
+            font-weight: 500;
+            color: #6c757d;
+            flex: 1;
+        }
+        
+        .cut-consumer-card-value {
+            flex: 2;
+            text-align: right;
+        }
+        
+        .cut-consumer-card-actions {
+            padding: 10px 15px;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+        
         /* Responsive styles */
         @media (min-width: 992px) {
             .sidebar {
@@ -448,6 +533,51 @@
             .billing-card-actions {
                 padding: 8px 12px;
             }
+            
+            /* Cut consumer modal mobile styles */
+            .cut-consumer-card-header {
+                padding: 10px 12px;
+            }
+            
+            .cut-consumer-card-body {
+                padding: 12px;
+            }
+            
+            .cut-consumer-card-actions {
+                padding: 8px 12px;
+            }
+            
+            /* Cut consumer modal full screen on mobile */
+            .cut-consumers-modal .modal-dialog {
+                margin: 0;
+                max-width: 100%;
+                height: 100%;
+            }
+            
+            .cut-consumers-modal .modal-content {
+                height: 100%;
+                border-radius: 0;
+            }
+            
+            .cut-consumers-modal .modal-header {
+                position: sticky;
+                top: 0;
+                z-index: 1;
+                background: white;
+            }
+            
+            .cut-consumers-modal .modal-body {
+                padding: 1rem;
+                overflow-y: auto;
+                max-height: calc(100vh - 120px);
+            }
+            
+            .cut-consumers-modal .modal-footer {
+                position: sticky;
+                bottom: 0;
+                background: white;
+                padding: 1rem;
+            }
         }
         
         /* DataTables responsive */
@@ -485,34 +615,6 @@
         .status-connected {
             color: #198754;
             font-weight: 600;
-        }
-        /* Cut consumer status styling */
-        .status-cut {
-            color: #dc3545;
-            font-weight: 600;
-        }
-
-        /* Cut button styling */
-        .btn-cut {
-            background-color: #dc3545;
-            border-color: #dc3545;
-            color: white;
-        }
-
-        .btn-cut:hover {
-            background-color: #bb2d3b;
-            border-color: #b02a37;
-        }
-
-        /* Cut consumer table styling */
-        #cutConsumersTable th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-        }
-
-        #cutConsumersTable .restore-btn {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.875rem;
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -760,7 +862,6 @@
     </div>
 </div>
 
-<!-- Add this modal after the Disconnection Modal -->
 <!-- Cut Consumer Modal -->
 <div class="modal fade" id="cutConsumerModal" tabindex="-1" aria-labelledby="cutConsumerModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -813,8 +914,50 @@
     </div>
 </div>
 
-
-
+<!-- Cut Consumers List Modal -->
+<div class="modal fade cut-consumers-modal" id="cutConsumersListModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-archive me-2"></i>
+                    <span id="cutConsumersCount">Cut Consumers List</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Desktop Table View -->
+                <div class="table-responsive desktop-table-view">
+                    <table class="table table-hover" id="cutConsumersTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Consumer Name</th>
+                                <th>Type</th>
+                                <th>Meter No.</th>
+                                <th>Cut Date</th>
+                                <th>Reason</th>
+                                <th>Notes</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data will be loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Mobile Card View -->
+                <div class="mobile-card-view" id="cutConsumersCards">
+                    <!-- Cards will be loaded dynamically -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Bootstrap Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -825,7 +968,6 @@
 <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
 <!-- SweetAlert2 for notifications -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 
 <script>
 $(document).ready(function() {
@@ -1009,102 +1151,102 @@ $(document).ready(function() {
     });
 
     // Update the updateMobileCards function to include cut button
-function updateMobileCards(data) {
-    const cardsContainer = $('#mobileBillingCards');
-    cardsContainer.empty();
-    
-    if (!data || data.length === 0) {
-        cardsContainer.html(`
-            <div class="text-center py-5 text-muted">
-                <i class="bi bi-inbox display-4 d-block mb-3"></i>
-                <p>No billing records found</p>
-            </div>
-        `);
-        return;
+    function updateMobileCards(data) {
+        const cardsContainer = $('#mobileBillingCards');
+        cardsContainer.empty();
+        
+        if (!data || data.length === 0) {
+            cardsContainer.html(`
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-inbox display-4 d-block mb-3"></i>
+                    <p>No billing records found</p>
+                </div>
+            `);
+            return;
+        }
+        
+        data.forEach((item, index) => {
+            const consumerName = item.consumer ? 
+                `${item.consumer.first_name || ''} ${item.consumer.middle_name || ''} ${item.consumer.last_name || ''} ${item.consumer.suffix || ''}`.trim() : 
+                'N/A';
+                
+            const readingDate = item.reading_date ? 
+                new Date(item.reading_date).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                }) : 
+                'N/A';
+                
+            const status = item.disconnection_status === 'disconnected' 
+                ? '<span class="status-disconnected">Disconnected</span>' 
+                : '<span class="status-connected">Connected</span>';
+                
+            const disconnectBtn = item.disconnection_status === 'disconnected' 
+                ? `<button class="btn btn-sm btn-success btn-action reconnect-btn" data-id="${item.id}" data-consumer-id="${item.consumer_id}" title="Reconnect">
+                        <i class="bi bi-check-circle"></i>
+                    </button>`
+                : `<button class="btn btn-sm btn-warning btn-action disconnect-btn" data-id="${item.id}" data-consumer-id="${item.consumer_id}" title="Disconnect">
+                        <i class="bi bi-x-circle"></i>
+                    </button>`;
+            
+            // Add cut button to mobile card actions
+            const cutBtn = `<button class="btn btn-sm btn-danger btn-action cut-btn" data-id="${item.id}" data-consumer-id="${item.consumer_id}" title="Cut Consumer">
+                                <i class="bi bi-scissors"></i>
+                            </button>`;
+                
+            const card = `
+                <div class="billing-card" data-id="${item.id}">
+                    <div class="billing-card-header">
+                        <span>#${index + 1}</span>
+                        <span class="badge bg-secondary">${item.consumer_type || 'N/A'}</span>
+                    </div>
+                    <div class="billing-card-body">
+                        <div class="billing-card-row">
+                            <span class="billing-card-label">Consumer:</span>
+                            <span class="billing-card-value">${consumerName}</span>
+                        </div>
+                        <div class="billing-card-row">
+                            <span class="billing-card-label">Meter No:</span>
+                            <span class="billing-card-value">${item.meter_no || 'N/A'}</span>
+                        </div>
+                        <div class="billing-card-row">
+                            <span class="billing-card-label">Previous:</span>
+                            <span class="billing-card-value">${item.previous_reading ? parseFloat(item.previous_reading).toFixed(2) : '0.00'} cu.m</span>
+                        </div>
+                        <div class="billing-card-row">
+                            <span class="billing-card-label">Current:</span>
+                            <span class="billing-card-value">${item.current_reading ? parseFloat(item.current_reading).toFixed(2) : '0.00'} cu.m</span>
+                        </div>
+                        <div class="billing-card-row">
+                            <span class="billing-card-label">Consumption:</span>
+                            <span class="billing-card-value">${item.consumption ? parseFloat(item.consumption).toFixed(2) : '0.00'} cu.m</span>
+                        </div>
+                        <div class="billing-card-row">
+                            <span class="billing-card-label">Reading Date:</span>
+                            <span class="billing-card-value">${readingDate}</span>
+                        </div>
+                        <div class="billing-card-row">
+                            <span class="billing-card-label">Status:</span>
+                            <span class="billing-card-value">${status}</span>
+                        </div>
+                    </div>
+                    <div class="billing-card-actions">
+                        <button class="btn btn-sm btn-primary btn-action edit-btn" data-id="${item.id}" title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        ${disconnectBtn}
+                        ${cutBtn}
+                        <button class="btn btn-sm btn-danger btn-action delete-btn" data-id="${item.id}" title="Delete">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            cardsContainer.append(card);
+        });
     }
-    
-    data.forEach((item, index) => {
-        const consumerName = item.consumer ? 
-            `${item.consumer.first_name || ''} ${item.consumer.middle_name || ''} ${item.consumer.last_name || ''} ${item.consumer.suffix || ''}`.trim() : 
-            'N/A';
-            
-        const readingDate = item.reading_date ? 
-            new Date(item.reading_date).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-            }) : 
-            'N/A';
-            
-        const status = item.disconnection_status === 'disconnected' 
-            ? '<span class="status-disconnected">Disconnected</span>' 
-            : '<span class="status-connected">Connected</span>';
-            
-        const disconnectBtn = item.disconnection_status === 'disconnected' 
-            ? `<button class="btn btn-sm btn-success btn-action reconnect-btn" data-id="${item.id}" data-consumer-id="${item.consumer_id}" title="Reconnect">
-                    <i class="bi bi-check-circle"></i>
-                </button>`
-            : `<button class="btn btn-sm btn-warning btn-action disconnect-btn" data-id="${item.id}" data-consumer-id="${item.consumer_id}" title="Disconnect">
-                    <i class="bi bi-x-circle"></i>
-                </button>`;
-        
-        // Add cut button to mobile card actions
-        const cutBtn = `<button class="btn btn-sm btn-danger btn-action cut-btn" data-id="${item.id}" data-consumer-id="${item.consumer_id}" title="Cut Consumer">
-                            <i class="bi bi-scissors"></i>
-                        </button>`;
-            
-        const card = `
-            <div class="billing-card" data-id="${item.id}">
-                <div class="billing-card-header">
-                    <span>#${index + 1}</span>
-                    <span class="badge bg-secondary">${item.consumer_type || 'N/A'}</span>
-                </div>
-                <div class="billing-card-body">
-                    <div class="billing-card-row">
-                        <span class="billing-card-label">Consumer:</span>
-                        <span class="billing-card-value">${consumerName}</span>
-                    </div>
-                    <div class="billing-card-row">
-                        <span class="billing-card-label">Meter No:</span>
-                        <span class="billing-card-value">${item.meter_no || 'N/A'}</span>
-                    </div>
-                    <div class="billing-card-row">
-                        <span class="billing-card-label">Previous:</span>
-                        <span class="billing-card-value">${item.previous_reading ? parseFloat(item.previous_reading).toFixed(2) : '0.00'} cu.m</span>
-                    </div>
-                    <div class="billing-card-row">
-                        <span class="billing-card-label">Current:</span>
-                        <span class="billing-card-value">${item.current_reading ? parseFloat(item.current_reading).toFixed(2) : '0.00'} cu.m</span>
-                    </div>
-                    <div class="billing-card-row">
-                        <span class="billing-card-label">Consumption:</span>
-                        <span class="billing-card-value">${item.consumption ? parseFloat(item.consumption).toFixed(2) : '0.00'} cu.m</span>
-                    </div>
-                    <div class="billing-card-row">
-                        <span class="billing-card-label">Reading Date:</span>
-                        <span class="billing-card-value">${readingDate}</span>
-                    </div>
-                    <div class="billing-card-row">
-                        <span class="billing-card-label">Status:</span>
-                        <span class="billing-card-value">${status}</span>
-                    </div>
-                </div>
-                <div class="billing-card-actions">
-                    <button class="btn btn-sm btn-primary btn-action edit-btn" data-id="${item.id}" title="Edit">
-                        <i class="bi bi-pencil"></i>
-                    </button>
-                    ${disconnectBtn}
-                    ${cutBtn}
-                    <button class="btn btn-sm btn-danger btn-action delete-btn" data-id="${item.id}" title="Delete">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </div>
-            </div>
-        `;
-        
-        cardsContainer.append(card);
-    });
-}
 
     // Set today's date as default
     $('#readingDate').val(new Date().toISOString().split('T')[0]);
@@ -1501,8 +1643,6 @@ function updateMobileCards(data) {
                 showSuccessAlert('Disconnected!', response.message);
                 $('#disconnectionModal').modal('hide');
                 table.ajax.reload(null, false);
-                
-               
             },
             error: function(xhr) {
                 if (xhr.status === 419) { // CSRF token mismatch
@@ -1517,6 +1657,271 @@ function updateMobileCards(data) {
             }
         });
     });
+
+    // Add cut consumer functionality
+    $(document).on('click', '.cut-btn', function() {
+        const billingId = $(this).data('id');
+        const consumerId = $(this).data('consumer-id');
+        
+         let consumerName = '';
+    
+    // Check if we're in desktop or mobile view and extract consumer name accordingly
+    if ($(window).width() >= 992) {
+        // Desktop view - get from table row
+        const row = $(this).closest('tr');
+        consumerName = row.find('td:eq(1)').text().trim();
+    } else {
+        // Mobile view - get from card
+        const card = $(this).closest('.billing-card');
+        consumerName = card.find('.billing-card-row:first-child .billing-card-value').text().trim();
+    }
+    
+    console.log('Cut consumer:', { billingId, consumerId, consumerName }); // Debug log
+        // Set values in the cut consumer modal
+        $('#cut_consumer_id').val(consumerId);
+        $('#cut_billing_id').val(billingId);
+        $('#cutConsumerInfo').val(consumerName);
+        $('#cutDate').val(new Date().toISOString().split('T')[0]);
+        
+        // Show the cut consumer modal
+        $('#cutConsumerModal').modal('show');
+    });
+
+    // Confirm cut consumer
+    $('#confirmCut').click(function() {
+        const formData = $('#cutConsumerForm').serialize();
+        
+        $.ajax({
+            url: '/cut-consumers',
+            type: 'POST',
+            data: formData,
+            beforeSend: function() {
+                $('#confirmCut').prop('disabled', true).html(
+                    '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...'
+                );
+            },
+            complete: function() {
+                $('#confirmCut').prop('disabled', false).html('Cut Consumer');
+            },
+            success: function(response) {
+                showSuccessAlert('Consumer Cut!', response.message);
+                $('#cutConsumerModal').modal('hide');
+                table.ajax.reload(null, false);
+            },
+            error: function(xhr) {
+                if (xhr.status === 419) { // CSRF token mismatch
+                    showErrorAlert('Session Expired', 'Your session has expired. Please refresh the page and try again.');
+                } else if (xhr.status === 422) {
+                    const errors = xhr.responseJSON.errors;
+                    let errorMessages = Object.values(errors).flat();
+                    showErrorAlert('Validation Error', errorMessages.join('<br>'));
+                } else {
+                    showErrorAlert('Error!', xhr.responseJSON?.message || 'Failed to cut consumer');
+                }
+            }
+        });
+    });
+
+    // View Cut Consumers functionality
+    $('#viewCutConsumersBtn').click(function() {
+        showCutConsumersModal();
+    });
+
+    function showCutConsumersModal() {
+        $.ajax({
+            url: '/cut-consumers',
+            type: 'GET',
+            beforeSend: function() {
+                // Show loading state
+                $('#viewCutConsumersBtn').prop('disabled', true).html(
+                    '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...'
+                );
+            },
+            complete: function() {
+                $('#viewCutConsumersBtn').prop('disabled', false).html(
+                    '<i class="bi bi-archive me-1 me-md-2"></i>View Cut Consumers'
+                );
+            },
+            success: function(response) {
+                if (!response.data || response.data.length === 0) {
+                    showInfoAlert('No Cut Consumers', 'There are no cut consumers to display.');
+                    return;
+                }
+
+                // Update the modal title with count
+                $('#cutConsumersCount').text(`Cut Consumers List (${response.data.length} records)`);
+                
+                // Populate desktop table
+                populateCutConsumersTable(response.data);
+                
+                // Populate mobile cards
+                populateCutConsumersCards(response.data);
+                
+                // Show the modal
+                const modal = new bootstrap.Modal(document.getElementById('cutConsumersListModal'));
+                modal.show();
+                
+                // Initialize DataTable for desktop view
+                if ($(window).width() >= 992) {
+                    $('#cutConsumersTable').DataTable({
+                        pageLength: 10,
+                        order: [[4, 'desc']], // Sort by cut date descending
+                        language: {
+                            search: "Search cut consumers:",
+                            lengthMenu: "Show _MENU_ entries"
+                        }
+                    });
+                }
+            },
+            error: function(xhr) {
+                showErrorAlert('Error!', 'Failed to load cut consumers list');
+            }
+        });
+    }
+
+    function populateCutConsumersTable(data) {
+        const tbody = $('#cutConsumersTable tbody');
+        tbody.empty();
+        
+        data.forEach((consumer, index) => {
+            const row = `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${consumer.name}</td>
+                    <td><span class="badge bg-secondary">${consumer.consumer_type}</span></td>
+                    <td>${consumer.meter_no}</td>
+                    <td class="date-column">${new Date(consumer.cut_date).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    })}</td>
+                    <td>${consumer.reason}</td>
+                    <td>${consumer.notes || '-'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-success restore-btn" data-id="${consumer.id}" title="Restore Consumer">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i>Restore
+                        </button>
+                    </td>
+                </tr>
+            `;
+            tbody.append(row);
+        });
+    }
+
+    function populateCutConsumersCards(data) {
+        const cardsContainer = $('#cutConsumersCards');
+        cardsContainer.empty();
+        
+        data.forEach((consumer, index) => {
+            const card = `
+                <div class="cut-consumer-card" data-id="${consumer.id}">
+                    <div class="cut-consumer-card-header">
+                        <span>#${index + 1}</span>
+                        <span class="badge bg-secondary">${consumer.consumer_type}</span>
+                    </div>
+                    <div class="cut-consumer-card-body">
+                        <div class="cut-consumer-card-row">
+                            <span class="cut-consumer-card-label">Consumer Name:</span>
+                            <span class="cut-consumer-card-value">${consumer.name}</span>
+                        </div>
+                        <div class="cut-consumer-card-row">
+                            <span class="cut-consumer-card-label">Meter No:</span>
+                            <span class="cut-consumer-card-value">${consumer.meter_no}</span>
+                        </div>
+                        <div class="cut-consumer-card-row">
+                            <span class="cut-consumer-card-label">Cut Date:</span>
+                            <span class="cut-consumer-card-value">${new Date(consumer.cut_date).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                            })}</span>
+                        </div>
+                        <div class="cut-consumer-card-row">
+                            <span class="cut-consumer-card-label">Reason:</span>
+                            <span class="cut-consumer-card-value">${consumer.reason}</span>
+                        </div>
+                        <div class="cut-consumer-card-row">
+                            <span class="cut-consumer-card-label">Notes:</span>
+                            <span class="cut-consumer-card-value">${consumer.notes || '-'}</span>
+                        </div>
+                    </div>
+                    <div class="cut-consumer-card-actions">
+                        <button class="btn btn-sm btn-success restore-btn" data-id="${consumer.id}" title="Restore Consumer">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i>Restore
+                        </button>
+                    </div>
+                </div>
+            `;
+            cardsContainer.append(card);
+        });
+    }
+
+    // Restore consumer functionality
+    $(document).on('click', '.restore-btn', function() {
+        const consumerId = $(this).data('id');
+        const consumerName = $(this).closest('tr').find('td:eq(1)').text() || 
+                           $(this).closest('.cut-consumer-card').find('.cut-consumer-card-row:first-child .cut-consumer-card-value').text();
+        
+        restoreConsumer(consumerId, consumerName);
+    });
+
+    function restoreConsumer(consumerId, consumerName) {
+        Swal.fire({
+            title: 'Restore Consumer?',
+            html: `
+                <p>Are you sure you want to restore <strong>${consumerName}</strong>?</p>
+                <p class="text-success"><i class="bi bi-info-circle me-2"></i>This will:</p>
+                <ul class="text-start text-success">
+                    <li>Move the consumer back to active records</li>
+                    <li>Restore their billing information</li>
+                    <li>Make them available for new readings</li>
+                </ul>
+            `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#198754',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, Restore Consumer',
+            cancelButtonText: 'Cancel',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show loading state
+                Swal.fire({
+                    title: 'Restoring Consumer...',
+                    text: 'Please wait while we restore the consumer',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                $.ajax({
+                    url: `/cut-consumers/${consumerId}/restore`,
+                    type: 'POST',
+                    success: function(response) {
+                        Swal.close();
+                        showSuccessAlert('Success!', response.message);
+                        
+                        // Close the cut consumers modal
+                        $('#cutConsumersListModal').modal('hide');
+                        
+                        // Reload the main billing table to show the restored consumer
+                        table.ajax.reload(null, false);
+                        
+                        // Show a success message with the restored consumer's name
+                        showSuccessToast(`${consumerName} has been successfully restored!`);
+                    },
+                    error: function(xhr) {
+                        Swal.close();
+                        const errorMessage = xhr.responseJSON?.message || 'Failed to restore consumer';
+                        showErrorAlert('Restoration Failed!', errorMessage);
+                    }
+                });
+            }
+        });
+    }
+
     // Helper functions for notifications
     function showSuccessAlert(title, message) {
         Swal.fire({
@@ -1547,267 +1952,35 @@ function updateMobileCards(data) {
         });
     }
 
-    // Add cut consumer functionality
-$(document).on('click', '.cut-btn', function() {
-    const billingId = $(this).data('id');
-    const consumerId = $(this).data('consumer-id');
-    
-    // Get consumer info for display
-    const row = $(this).closest('tr');
-    const consumerName = row.find('td:eq(1)').text();
-    
-    // Set values in the cut consumer modal
-    $('#cut_consumer_id').val(consumerId);
-    $('#cut_billing_id').val(billingId);
-    $('#cutConsumerInfo').val(consumerName);
-    $('#cutDate').val(new Date().toISOString().split('T')[0]);
-    
-    // Show the cut consumer modal
-    $('#cutConsumerModal').modal('show');
-});
+    // Add helper function for info alerts
+    function showInfoAlert(title, message) {
+        Swal.fire({
+            icon: 'info',
+            title: title,
+            text: message,
+            confirmButtonColor: '#3085d6'
+        });
+    }
 
-// Confirm cut consumer
-$('#confirmCut').click(function() {
-    const formData = $('#cutConsumerForm').serialize();
-    
-    $.ajax({
-        url: '/cut-consumers',
-        type: 'POST',
-        data: formData,
-        beforeSend: function() {
-            $('#confirmCut').prop('disabled', true).html(
-                '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...'
-            );
-        },
-        complete: function() {
-            $('#confirmCut').prop('disabled', false).html('Cut Consumer');
-        },
-        success: function(response) {
-            showSuccessAlert('Consumer Cut!', response.message);
-            $('#cutConsumerModal').modal('hide');
-            table.ajax.reload(null, false);
-        },
-        error: function(xhr) {
-            if (xhr.status === 419) { // CSRF token mismatch
-                showErrorAlert('Session Expired', 'Your session has expired. Please refresh the page and try again.');
-            } else if (xhr.status === 422) {
-                const errors = xhr.responseJSON.errors;
-                let errorMessages = Object.values(errors).flat();
-                showErrorAlert('Validation Error', errorMessages.join('<br>'));
-            } else {
-                showErrorAlert('Error!', xhr.responseJSON?.message || 'Failed to cut consumer');
+    // Add helper function for success toast
+    function showSuccessToast(message) {
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 4000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
             }
-        }
-    });
-});
+        });
 
-// View Cut Consumers functionality
-$('#viewCutConsumersBtn').click(function() {
-    // You can implement a modal or redirect to show cut consumers
-    // For now, let's show a modal with cut consumers
-    showCutConsumersModal();
-});
-
-function showCutConsumersModal() {
-    $.ajax({
-        url: '/cut-consumers',
-        type: 'GET',
-        beforeSend: function() {
-            // Show loading state
-            $('#viewCutConsumersBtn').prop('disabled', true).html(
-                '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...'
-            );
-        },
-        complete: function() {
-            $('#viewCutConsumersBtn').prop('disabled', false).html(
-                '<i class="bi bi-archive me-1 me-md-2"></i>View Cut Consumers'
-            );
-        },
-        success: function(response) {
-            if (!response.data || response.data.length === 0) {
-                showInfoAlert('No Cut Consumers', 'There are no cut consumers to display.');
-                return;
-            }
-
-            // Create and show modal with cut consumers
-            const cutConsumersModal = `
-                <div class="modal fade" id="cutConsumersListModal" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-xl">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">
-                                    <i class="bi bi-archive me-2"></i>
-                                    Cut Consumers List (${response.data.length} records)
-                                </h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="table-responsive">
-                                    <table class="table table-hover" id="cutConsumersTable">
-                                        <thead>
-                                            <tr>
-                                                <th>#</th>
-                                                <th>Consumer Name</th>
-                                                <th>Type</th>
-                                                <th>Meter No.</th>
-                                                <th>Cut Date</th>
-                                                <th>Reason</th>
-                                                <th>Notes</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            ${response.data.map((consumer, index) => `
-                                                <tr>
-                                                    <td>${index + 1}</td>
-                                                    <td>${consumer.name}</td>
-                                                    <td><span class="badge bg-secondary">${consumer.consumer_type}</span></td>
-                                                    <td>${consumer.meter_no}</td>
-                                                    <td class="date-column">${new Date(consumer.cut_date).toLocaleDateString('en-US', {
-                                                        year: 'numeric',
-                                                        month: 'short',
-                                                        day: 'numeric'
-                                                    })}</td>
-                                                    <td>${consumer.reason}</td>
-                                                    <td>${consumer.notes || '-'}</td>
-                                                    <td>
-                                                        <button class="btn btn-sm btn-success restore-btn" data-id="${consumer.id}" title="Restore Consumer">
-                                                            <i class="bi bi-arrow-counterclockwise me-1"></i>Restore
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            `).join('')}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            // Remove existing modal if any
-            $('#cutConsumersListModal').remove();
-            
-            // Append new modal to body
-            $('body').append(cutConsumersModal);
-            
-            // Show the modal
-            const modal = new bootstrap.Modal(document.getElementById('cutConsumersListModal'));
-            modal.show();
-            
-            // Add restore functionality
-            $('#cutConsumersListModal').on('click', '.restore-btn', function() {
-                const consumerId = $(this).data('id');
-                const consumerName = $(this).closest('tr').find('td:eq(1)').text();
-                restoreConsumer(consumerId, consumerName);
-            });
-
-            // Initialize DataTable for better table functionality
-            $('#cutConsumersTable').DataTable({
-                pageLength: 10,
-                order: [[4, 'desc']], // Sort by cut date descending
-                language: {
-                    search: "Search cut consumers:",
-                    lengthMenu: "Show _MENU_ entries"
-                }
-            });
-        },
-        error: function(xhr) {
-            showErrorAlert('Error!', 'Failed to load cut consumers list');
-        }
-    });
-}
-
-function restoreConsumer(consumerId, consumerName) {
-    Swal.fire({
-        title: 'Restore Consumer?',
-        html: `
-            <p>Are you sure you want to restore <strong>${consumerName}</strong>?</p>
-            <p class="text-success"><i class="bi bi-info-circle me-2"></i>This will:</p>
-            <ul class="text-start text-success">
-                <li>Move the consumer back to active records</li>
-                <li>Restore their billing information</li>
-                <li>Make them available for new readings</li>
-            </ul>
-        `,
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#198754',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Yes, Restore Consumer',
-        cancelButtonText: 'Cancel',
-        reverseButtons: true
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Show loading state
-            Swal.fire({
-                title: 'Restoring Consumer...',
-                text: 'Please wait while we restore the consumer',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-
-            $.ajax({
-                url: `/cut-consumers/${consumerId}/restore`,
-                type: 'POST',
-                success: function(response) {
-                    Swal.close();
-                    showSuccessAlert('Success!', response.message);
-                    
-                    // Close the cut consumers modal
-                    $('#cutConsumersListModal').modal('hide');
-                    
-                    // Reload the main billing table to show the restored consumer
-                    table.ajax.reload(null, false);
-                    
-                    // Show a success message with the restored consumer's name
-                    showSuccessToast(`${consumerName} has been successfully restored!`);
-                },
-                error: function(xhr) {
-                    Swal.close();
-                    const errorMessage = xhr.responseJSON?.message || 'Failed to restore consumer';
-                    showErrorAlert('Restoration Failed!', errorMessage);
-                }
-            });
-        }
-    });
-}
-
-// Add helper function for info alerts
-function showInfoAlert(title, message) {
-    Swal.fire({
-        icon: 'info',
-        title: title,
-        text: message,
-        confirmButtonColor: '#3085d6'
-    });
-}
-
-// Add helper function for success toast
-function showSuccessToast(message) {
-    const Toast = Swal.mixin({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 4000,
-        timerProgressBar: true,
-        didOpen: (toast) => {
-            toast.addEventListener('mouseenter', Swal.stopTimer)
-            toast.addEventListener('mouseleave', Swal.resumeTimer)
-        }
-    });
-
-    Toast.fire({
-        icon: 'success',
-        title: message
-    });
-}
+        Toast.fire({
+            icon: 'success',
+            title: message
+        });
+    }
     
     // Logout functionality
     $('#logoutBtn').click(function(e) {
