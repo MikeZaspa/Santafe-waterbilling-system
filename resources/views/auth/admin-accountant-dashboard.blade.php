@@ -16,25 +16,33 @@
             --primary-color: #d32f2f;
             --primary-light: #ff6659;
             --primary-dark: #9a0007;
-            --sidebar-bg: linear-gradient(180deg, #d32f2f 0%, #9a0007 100%);
-            --sidebar-text: rgba(255,255,255,0.9);
-            --sidebar-hover: rgba(255,255,255,0.1);
+            --sidebar-bg: #f8f9fa;
+            --sidebar-text: rgba(0,0,0,0.8);
+            --sidebar-hover: rgba(0,0,255,0.1);
+            --overlay-color: rgba(7, 7, 7, 0.1);
+            --header-height: 70px;
         }
         
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background-color: #f8f9fa;
+            overflow-x: hidden;
         }
         
        .sidebar {
             width: 280px;
-            background:  #f8f9fa;
+            background: var(--sidebar-bg);
             position: fixed;
-            height: 100%;
+            height: 100vh;
             overflow-y: auto;
             transition: all 0.3s;
-            z-index: 1000;
+            z-index: 1050;
             box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
+            transform: translateX(-100%);
+        }
+        
+        .sidebar.active {
+            transform: translateX(0);
         }
         
         .sidebar-header {
@@ -72,6 +80,8 @@
         }
         
         .sidebar-menu .nav-link.active {
+            color: white;
+            background: blue;
             font-weight: 500;
             position: relative;
         }
@@ -96,19 +106,52 @@
         }
         
         .main-content {
-            margin-left: 280px;
             min-height: 100vh;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            padding: 0;
+            width: 100%;
+            margin-left: 0;
         }
         
         .header {
-            height: 70px;
+            height: var(--header-height);
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 1040;
             background: white;
             padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+        
+        .header-title {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .header-subtitle {
+            margin: 0;
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+        
+        .content-wrapper {
+            padding: 20px;
         }
         
         .btn-primary {
@@ -140,7 +183,46 @@
             object-fit: cover;  
         }
         
-        @media (max-width: 992px) {
+        /* Mobile overlay styles */
+        .mobile-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--overlay-color);
+            z-index: 1040;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Mobile menu toggle button */
+        .mobile-menu-toggle {
+            font-size: 1.5rem;
+            padding: 0.25rem 0.5rem;
+            border: none;
+            background: transparent;
+            color: var(--primary-color);
+        }
+        
+        @media (min-width: 992px) {
+            .sidebar {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 280px;
+                width: calc(100% - 280px);
+            }
+        }
+        
+        @media (max-width: 991px) {
             .sidebar {
                 transform: translateX(-100%);
             }
@@ -149,14 +231,13 @@
                 transform: translateX(0);
             }
             
+            /* Don't move the main content when sidebar is active on mobile */
             .main-content {
                 margin-left: 0;
-            }
-            
-            .main-content.active {
-                margin-left: 280px;
+                width: 100%;
             }
         }
+        
         .card {
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             border-radius: 12px;
@@ -201,10 +282,27 @@
         .graph-card {
             margin-top: 20px;
         }
+        
+        @media (max-width: 576px) {
+            .header-title {
+                font-size: 1rem;
+            }
+            
+            .header-subtitle {
+                display: none;
+            }
+            
+            .dropdown-toggle span {
+                display: none;
+            }
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+
+<!-- Mobile Overlay -->
+<div class="mobile-overlay"></div>
 
 <div class="sidebar">
     <div class="sidebar-header text-center">
@@ -262,19 +360,24 @@
 <div class="main-content">
     
     <!-- Header -->
-    <header class="header bg-white d-flex align-items-center px-3">
-        <button id="sidebarToggle" class="btn d-lg-none me-3">
-            <i class="bi bi-list"></i>
-        </button>
-        <h2 class="h5 mb-0">Billing Dashboard</h2>
+    <header class="header">
+        <div class="header-left">
+            <button id="sidebarToggle" class="btn d-lg-none me-3 mobile-menu-toggle">
+                <i class="bi bi-list"></i>
+            </button>
+            <div>
+                <h2 class="header-title">Billing Dashboard</h2>
+                <p class="header-subtitle">Santa Fe Water Billing System</p>
+            </div>
+        </div>
         
-        <div class="ms-auto d-flex align-items-center">
-            <div class="position-relative me-3">
+        <div class="header-right">
+            <div class="position-relative me-3 d-none d-sm-block">
                 <i class="bi bi-bell fs-5"></i>
             </div>
             <div class="dropdown">
                 <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
-                    <span>Accountant</span>
+                    <span class="d-none d-md-inline">Accountant</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUser">
                     <li><a class="dropdown-item" href="#">Profile</a></li>
@@ -286,7 +389,7 @@
         </div>
     </header>
     
-    <div class="container-fluid p-4">
+    <div class="content-wrapper">
         <div class="row g-4">
             <!-- Paid Bills Card -->
             <div class="col-md-6 col-lg-3">
@@ -400,98 +503,147 @@
 
 <!-- Bootstrap Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- SweetAlert2 for notifications -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
-    // Toggle sidebar on mobile
-    document.getElementById('sidebarToggle').addEventListener('click', function() {
-        document.querySelector('.sidebar').classList.toggle('active');
-        document.querySelector('.main-content').classList.toggle('active');
+ $(document).ready(function() {
+    // Mobile sidebar toggle functionality
+    const sidebar = $('.sidebar');
+    const mainContent = $('.main-content');
+    const header = $('.header');
+    const sidebarToggle = $('#sidebarToggle');
+    const mobileOverlay = $('.mobile-overlay');
+    
+    sidebarToggle.on('click', function() {
+        sidebar.toggleClass('active');
+        mobileOverlay.toggleClass('active');
+        
+        // Add overlay to header when sidebar is active
+        if (sidebar.hasClass('active')) {
+            header.css('background-color', 'var(--overlay-color)');
+            $('body').css('overflow', 'hidden');
+        } else {
+            header.css('background-color', 'white');
+            $('body').css('overflow', '');
+        }
+    });
+    
+    // Close sidebar when clicking on overlay
+    mobileOverlay.on('click', function() {
+        sidebar.removeClass('active');
+        mobileOverlay.removeClass('active');
+        header.css('background-color', 'white');
+        $('body').css('overflow', '');
+    });
+    
+    // Close sidebar when clicking on a nav link (for mobile)
+    $('.sidebar-menu .nav-link').on('click', function() {
+        if ($(window).width() < 992) {
+            sidebar.removeClass('active');
+            mobileOverlay.removeClass('active');
+            header.css('background-color', 'white');
+            $('body').css('overflow', '');
+        }
+    });
+    
+    // Handle window resize
+    $(window).on('resize', function() {
+        // Close sidebar if window is resized to desktop size
+        if ($(window).width() >= 992) {
+            sidebar.removeClass('active');
+            mobileOverlay.removeClass('active');
+            header.css('background-color', 'white');
+            $('body').css('overflow', '');
+        }
     });
 
     // Initialize charts when the page loads
-    document.addEventListener('DOMContentLoaded', function() {
-        // Revenue Trend Chart (Line Chart)
-        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-        const revenueChart = new Chart(revenueCtx, {
-            type: 'line',
-            data: {
-                labels: {!! json_encode($monthlyLabels) !!},
-                datasets: [{
-                    label: 'Monthly Revenue (₱)',
-                    data: {!! json_encode($monthlyRevenue) !!},
-                    backgroundColor: 'rgba(23, 162, 184, 0.1)',
-                    borderColor: 'rgba(23, 162, 184, 1)',
-                    borderWidth: 2,
-                    tension: 0.3,
-                    pointRadius: 4,
-                    pointBackgroundColor: 'rgba(23, 162, 184, 1)',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2
-                }]
+    // Revenue Trend Chart (Line Chart)
+    const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    const revenueChart = new Chart(revenueCtx, {
+        type: 'line',
+        data: {
+            labels: {!! json_encode($monthlyLabels) !!},
+            datasets: [{
+                label: 'Monthly Revenue (₱)',
+                data: {!! json_encode($monthlyRevenue) !!},
+                backgroundColor: 'rgba(23, 162, 184, 0.1)',
+                borderColor: 'rgba(23, 162, 184, 1)',
+                borderWidth: 2,
+                tension: 0.3,
+                pointRadius: 4,
+                pointBackgroundColor: 'rgba(23, 162, 184, 1)',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top'
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        drawBorder: false
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return '₱' + value.toLocaleString();
+                        }
                     }
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            drawBorder: false
-                        },
-                        ticks: {
-                            callback: function(value) {
-                                return '₱' + value.toLocaleString();
-                            }
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        }
+                x: {
+                    grid: {
+                        display: false
                     }
                 }
             }
-        });
-
-        // Payment Status Distribution Chart (Doughnut Chart)
-        const paymentStatusCtx = document.getElementById('paymentStatusChart').getContext('2d');
-        const paymentStatusChart = new Chart(paymentStatusCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Paid', 'Unpaid', 'Overdue'],
-                datasets: [{
-                    data: [{{ $paidCount ?? 0 }}, {{ $unpaidCount ?? 0 }}, {{ $overdueCount ?? 0 }}],
-                    backgroundColor: [
-                        'rgba(40, 167, 69, 0.8)',
-                        'rgba(255, 193, 7, 0.8)',
-                        'rgba(220, 53, 69, 0.8)'
-                    ],
-                    borderColor: [
-                        'rgba(40, 167, 69, 1)',
-                        'rgba(255, 193, 7, 1)',
-                        'rgba(220, 53, 69, 1)'
-                    ],
-                    borderWidth: 1,
-                    hoverOffset: 15
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                },
-                cutout: '70%'
-            }
-        });
+        }
     });
+
+    // Payment Status Distribution Chart (Doughnut Chart)
+    const paymentStatusCtx = document.getElementById('paymentStatusChart').getContext('2d');
+    const paymentStatusChart = new Chart(paymentStatusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Paid', 'Unpaid', 'Overdue'],
+            datasets: [{
+                data: [{{ $paidCount ?? 0 }}, {{ $unpaidCount ?? 0 }}, {{ $overdueCount ?? 0 }}],
+                backgroundColor: [
+                    'rgba(40, 167, 69, 0.8)',
+                    'rgba(255, 193, 7, 0.8)',
+                    'rgba(220, 53, 69, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(40, 167, 69, 1)',
+                    'rgba(255, 193, 7, 1)',
+                    'rgba(220, 53, 69, 1)'
+                ],
+                borderWidth: 1,
+                hoverOffset: 15
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            },
+            cutout: '70%'
+        }
+    });
+});
 </script>
 
 </body>
