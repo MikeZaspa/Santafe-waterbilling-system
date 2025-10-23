@@ -119,6 +119,7 @@
 
         .table-title {
             color: var(--primary-dark);
+            width: 100%;
             padding-bottom: 15px;
             margin-bottom: 20px;
             display: flex;
