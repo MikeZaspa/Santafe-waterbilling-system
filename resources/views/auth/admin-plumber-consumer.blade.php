@@ -1596,9 +1596,30 @@ $(document).ready(function() {
         const billingId = $(this).data('id');
         const consumerId = $(this).data('consumer-id');
         
-        // Get consumer info for display
-        const row = $(this).closest('tr');
-        const consumerName = row.find('td:eq(1)').text();
+        let consumerName = '';
+    
+        // Check if we're in desktop or mobile view and extract consumer name accordingly
+        if ($(window).width() >= 992) {
+            // Desktop view - get from table row
+            const row = $(this).closest('tr');
+            consumerName = row.find('td:eq(1)').text().trim();
+        } else {
+            // Mobile view - get from card
+            const card = $(this).closest('.billing-card');
+            consumerName = card.find('.billing-card-row:first-child .billing-card-value').text().trim();
+            
+            // Fallback: try to find by class if the first method fails
+            if (!consumerName || consumerName === 'N/A') {
+                consumerName = card.find('.consumer-name').text().trim();
+            }
+        }
+        
+        // Final fallback if consumer name is still empty
+        if (!consumerName || consumerName === 'N/A') {
+            consumerName = 'Unknown Consumer';
+        }
+    
+        console.log('Disconnect consumer:', { billingId, consumerId, consumerName });
         
         // Set values in the disconnection modal
         $('#disconnect_consumer_id').val(consumerId);
@@ -1682,6 +1703,7 @@ $(document).ready(function() {
         $('#cut_billing_id').val(billingId);
         $('#cutConsumerInfo').val(consumerName);
         $('#cutDate').val(new Date().toISOString().split('T')[0]);
+    
         
         // Show the cut consumer modal
         $('#cutConsumerModal').modal('show');
@@ -1856,11 +1878,20 @@ $(document).ready(function() {
         });
     }
 
-    // Restore consumer functionality
+    // Restore consumer functionality - IMPROVED FOR BOTH VIEWS
     $(document).on('click', '.restore-btn', function() {
         const consumerId = $(this).data('id');
-        const consumerName = $(this).closest('tr').find('td:eq(1)').text() || 
-                           $(this).closest('.cut-consumer-card').find('.cut-consumer-card-row:first-child .cut-consumer-card-value').text();
+        let consumerName = '';
+        
+        // Get consumer name based on view type
+        if ($(window).width() >= 992) {
+            // Desktop view
+            consumerName = $(this).closest('tr').find('td:eq(1)').text().trim();
+        } else {
+            // Mobile view
+            const card = $(this).closest('.cut-consumer-card');
+            consumerName = card.find('.cut-consumer-card-row:first-child .cut-consumer-card-value').text().trim();
+        }
         
         restoreConsumer(consumerId, consumerName);
     });
