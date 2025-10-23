@@ -1745,61 +1745,76 @@ $(document).ready(function() {
     });
 
     // View Cut Consumers functionality
-    $('#viewCutConsumersBtn').click(function() {
-        showCutConsumersModal();
-    });
+ $('#viewCutConsumersBtn').click(function() {
+    showCutConsumersModal();
+});
 
-    function showCutConsumersModal() {
-        $.ajax({
-            url: '/cut-consumers',
-            type: 'GET',
-            beforeSend: function() {
-                // Show loading state
-                $('#viewCutConsumersBtn').prop('disabled', true).html(
-                    '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...'
-                );
-            },
-            complete: function() {
-                $('#viewCutConsumersBtn').prop('disabled', false).html(
-                    '<i class="bi bi-archive me-1 me-md-2"></i>View Cut Consumers'
-                );
-            },
-            success: function(response) {
-                if (!response.data || response.data.length === 0) {
-                    showInfoAlert('No Cut Consumers', 'There are no cut consumers to display.');
-                    return;
-                }
-
-                // Update the modal title with count
-                $('#cutConsumersCount').text(`Cut Consumers List (${response.data.length} records)`);
-                
-                // Populate desktop table
-                populateCutConsumersTable(response.data);
-                
-                // Populate mobile cards
-                populateCutConsumersCards(response.data);
-                
-                // Show the modal
-                const modal = new bootstrap.Modal(document.getElementById('cutConsumersListModal'));
-                modal.show();
-                
-                // Initialize DataTable for desktop view
-                if ($(window).width() >= 992) {
-                    $('#cutConsumersTable').DataTable({
-                        pageLength: 10,
-                        order: [[4, 'desc']], // Sort by cut date descending
-                        language: {
-                            search: "Search cut consumers:",
-                            lengthMenu: "Show _MENU_ entries"
-                        }
-                    });
-                }
-            },
-            error: function(xhr) {
-                showErrorAlert('Error!', 'Failed to load cut consumers list');
+function showCutConsumersModal() {
+    $.ajax({
+        url: '/cut-consumers',
+        type: 'GET',
+        beforeSend: function() {
+            // Show loading state
+            $('#viewCutConsumersBtn').prop('disabled', true).html(
+                '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...'
+            );
+        },
+        complete: function() {
+            $('#viewCutConsumersBtn').prop('disabled', false).html(
+                '<i class="bi bi-archive me-1 me-md-2"></i>View Cut Consumers'
+            );
+        },
+        success: function(response) {
+            if (!response.data || response.data.length === 0) {
+                showInfoAlert('No Cut Consumers', 'There are no cut consumers to display.');
+                return;
             }
-        });
+
+            // Update the modal title with count
+            $('#cutConsumersCount').text(`Cut Consumers List (${response.data.length} records)`);
+            
+            // Populate desktop table
+            populateCutConsumersTable(response.data);
+            
+            // Populate mobile cards
+            populateCutConsumersCards(response.data);
+            
+            // Show the modal
+            const modal = new bootstrap.Modal(document.getElementById('cutConsumersListModal'));
+            modal.show();
+            
+            // Initialize DataTable for desktop view - FIX IS HERE
+            if ($(window).width() >= 992) {
+                // Check if DataTable already exists
+                if ($.fn.DataTable.isDataTable('#cutConsumersTable')) {
+                    // Destroy the existing DataTable
+                    $('#cutConsumersTable').DataTable().destroy();
+                }
+                
+                // Initialize a new DataTable
+                $('#cutConsumersTable').DataTable({
+                    pageLength: 10,
+                    order: [[4, 'desc']], // Sort by cut date descending
+                    language: {
+                        search: "Search cut consumers:",
+                        lengthMenu: "Show _MENU_ entries"
+                    }
+                });
+            }
+        },
+        error: function(xhr) {
+            showErrorAlert('Error!', 'Failed to load cut consumers list');
+        }
+    });
+}
+
+// Also, we need to clean up the DataTable when the modal is hidden
+ $('#cutConsumersListModal').on('hidden.bs.modal', function () {
+    // Destroy the DataTable if it exists
+    if ($.fn.DataTable.isDataTable('#cutConsumersTable')) {
+        $('#cutConsumersTable').DataTable().destroy();
     }
+});
 
     function populateCutConsumersTable(data) {
         const tbody = $('#cutConsumersTable tbody');
