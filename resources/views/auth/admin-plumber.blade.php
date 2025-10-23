@@ -15,9 +15,11 @@
            --primary-color: #0d6efd;
             --primary-light: #6a59ffff;
             --primary-dark: #9a0007;
-            --sidebar-bg: linear-gradient(180deg, #d32f2f 0%, #9a0007 100%);
-            --sidebar-text: rgba(255,255,255,0.9);
-            --sidebar-hover: rgba(255,255,255,0.1);
+            --sidebar-bg: #f8f9fa;
+            --sidebar-text: rgba(0,0,0,0.8);
+            --sidebar-hover: rgba(0,0,255,0.1);
+            --overlay-color: rgba(7, 7, 7, 0.1);
+            --header-height: 70px;
         }
         
         body {
@@ -28,13 +30,18 @@
         
        .sidebar {
             width: 280px;
-            background:  #f8f9fa;
+            background: var(--sidebar-bg);
             position: fixed;
             height: 100vh;
             overflow-y: auto;
             transition: all 0.3s;
-            z-index: 1000;
+            z-index: 1050;
             box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
+            transform: translateX(-100%);
+        }
+        
+        .sidebar.active {
+            transform: translateX(0);
         }
         
         .sidebar-header {
@@ -73,6 +80,8 @@
         }
         
         .sidebar-menu .nav-link.active {
+            color: white;
+            background: blue;
             font-weight: 500;
             position: relative;
         }
@@ -94,6 +103,55 @@
             width: 20px;
             text-align: center;
             font-size: 1.1rem;
+        }
+
+        .main-content {
+            min-height: 100vh;
+            transition: all 0.3s ease;
+            padding: 0;
+            width: 100%;
+            margin-left: 0;
+        }
+        
+        .header {
+            height: var(--header-height);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 1040;
+            background: white;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+        
+        .header-title {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .header-subtitle {
+            margin: 0;
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+        
+        .content-wrapper {
+            padding: 20px;
         }
 
         /* Add Plumber Button Styles */
@@ -316,24 +374,47 @@
             content: " *";
             color: var(--primary-color);
         }
-        .main-content {
-            margin-left: 280px;
-            min-height: 100vh;
-            transition: all 0.3s;
-            padding: 20px;
-        }
         
-        .header {
-            height: 70px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            position: sticky;
+        /* Mobile overlay styles */
+        .mobile-overlay {
+            position: fixed;
             top: 0;
-            z-index: 100;
-            background: white;
-            padding: 0 20px;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--overlay-color);
+            z-index: 1040;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Mobile menu toggle button */
+        .mobile-menu-toggle {
+            font-size: 1.5rem;
+            padding: 0.25rem 0.5rem;
+            border: none;
+            background: transparent;
+            color: var(--primary-color);
         }
         
-        @media (max-width: 992px) {
+        @media (min-width: 992px) {
+            .sidebar {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 280px;
+                width: calc(100% - 280px);
+            }
+        }
+        
+        @media (max-width: 991px) {
             .sidebar {
                 transform: translateX(-100%);
             }
@@ -342,13 +423,10 @@
                 transform: translateX(0);
             }
             
+            /* Don't move the main content when sidebar is active on mobile */
             .main-content {
                 margin-left: 0;
-                padding: 15px;
-            }
-            
-            .main-content.active {
-                margin-left: 280px;
+                width: 100%;
             }
         }
         
@@ -396,10 +474,27 @@
         .password-confirm-group {
             margin-top: 10px;
         }
+        
+        @media (max-width: 576px) {
+            .header-title {
+                font-size: 1rem;
+            }
+            
+            .header-subtitle {
+                display: none;
+            }
+            
+            .dropdown-toggle span {
+                display: none;
+            }
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+
+<!-- Mobile Overlay -->
+<div class="mobile-overlay"></div>
 
 <!-- Sidebar -->
 <div class="sidebar">
@@ -410,7 +505,7 @@
     <nav class="sidebar-menu">
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a class="nav-link active" href="admin-dashboard">
+                <a class="nav-link" href="admin-dashboard">
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
             </li>
@@ -420,7 +515,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="admin-plumber">
+                <a class="nav-link active" href="admin-plumber">
                     <i class="bi bi-wrench"></i> Manage Plumber
                 </a>
             </li>
@@ -436,17 +531,24 @@
 <!-- Main Content -->
 <div class="main-content">
     <!-- Header -->
-    <header class="header d-flex align-items-center">
-        <button id="sidebarToggle" class="btn d-lg-none me-3">
-            <i class="bi bi-list"></i>
-        </button> 
-        <div class="ms-auto d-flex align-items-center">
-            <div class="position-relative me-3">
+    <header class="header">
+        <div class="header-left">
+            <button id="sidebarToggle" class="btn d-lg-none me-3 mobile-menu-toggle">
+                <i class="bi bi-list"></i>
+            </button>
+            <div>
+                <h2 class="header-title">Plumber Management</h2>
+                <p class="header-subtitle">Santa Fe Water Billing System</p>
+            </div>
+        </div>
+        
+        <div class="header-right">
+            <div class="position-relative me-3 d-none d-sm-block">
                 <i class="bi bi-bell fs-5"></i>
             </div>
             <div class="dropdown">
                 <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
-                    <span>Admin</span>
+                    <span class="d-none d-md-inline">Admin</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUser">
                     <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
@@ -462,68 +564,70 @@
         </div>
     </header>
    
-    <div class="table-container animate-fadein">
-        <div class="table-title">
-            <div class="d-flex justify-content-between align-items-center w-100">
-                <h3 class="mb-0">Plumber Management</h3>
-                <button class="btn btn-primary" id="addPlumberBtn" data-bs-toggle="modal" data-bs-target="#plumberModal">
-                    <i class="bi bi-plus-circle-fill me-2"></i>
-                    Add New Plumber
-                </button>
+    <div class="content-wrapper">
+        <div class="table-container animate-fadein">
+            <div class="table-title">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <h3 class="mb-0">Plumber Management</h3>
+                    <button class="btn btn-primary" id="addPlumberBtn" data-bs-toggle="modal" data-bs-target="#plumberModal">
+                        <i class="bi bi-plus-circle-fill me-2"></i>
+                        Add New Plumber
+                    </button>
+                </div>
             </div>
-        </div>
-        
-        <div class="table-responsive">
-            <table class="table table-hover" id="plumbersTable">
-                <thead>
-                    <tr>
-                        <th width="60">ID</th>
-                        <th>Username</th>
-                        <th>First Name</th>
-                        <th>Last Name</th>
-                        <th>Middle Name</th>
-                        <th>Suffix</th>
-                        <th>Contact Number</th>
-                        <th>Address</th>
-                        <th width="120">Status</th>
-                        <th width="100">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($plumbers as $plumber)
-                    <tr id="plumberRow_{{ $plumber->id }}">
-                        <td class="fw-semibold">{{ $plumber->id }}</td>
-                        <td>{{ $plumber->username }}</td>
-                        <td>{{ $plumber->first_name }}</td>
-                        <td>{{ $plumber->last_name }}</td>
-                        <td>{{ $plumber->middle_name }}</td>
-                        <td>{{ $plumber->suffix }}</td>
-                        <td>{{ $plumber->contact_number }}</td>
-                        <td>{{ $plumber->address }}</td>  
-                        <td>
-                            <span class="badge 
-                                @if($plumber->status == 'active') badge-status-active
-                                @elseif($plumber->status == 'inactive') badge-status-inactive
-                                @else badge-status-busy @endif">
-                                <i class="bi 
-                                    @if($plumber->status == 'active') bi-check-circle
-                                    @elseif($plumber->status == 'inactive') bi-pause-circle
-                                    @else bi-hourglass @endif"></i>
-                                {{ ucfirst($plumber->status) }}
-                            </span>
-                        </td>
-                        <td class="text-nowrap">
-                            <button class="btn btn-action btn-warning edit-plumber" data-id="{{ $plumber->id }}" title="Edit">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-action btn-danger delete-plumber" data-id="{{ $plumber->id }}" title="Delete">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+            
+            <div class="table-responsive">
+                <table class="table table-hover" id="plumbersTable">
+                    <thead>
+                        <tr>
+                            <th width="60">ID</th>
+                            <th>Username</th>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Middle Name</th>
+                            <th>Suffix</th>
+                            <th>Contact Number</th>
+                            <th>Address</th>
+                            <th width="120">Status</th>
+                            <th width="100">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($plumbers as $plumber)
+                        <tr id="plumberRow_{{ $plumber->id }}">
+                            <td class="fw-semibold">{{ $plumber->id }}</td>
+                            <td>{{ $plumber->username }}</td>
+                            <td>{{ $plumber->first_name }}</td>
+                            <td>{{ $plumber->last_name }}</td>
+                            <td>{{ $plumber->middle_name }}</td>
+                            <td>{{ $plumber->suffix }}</td>
+                            <td>{{ $plumber->contact_number }}</td>
+                            <td>{{ $plumber->address }}</td>  
+                            <td>
+                                <span class="badge 
+                                    @if($plumber->status == 'active') badge-status-active
+                                    @elseif($plumber->status == 'inactive') badge-status-inactive
+                                    @else badge-status-busy @endif">
+                                    <i class="bi 
+                                        @if($plumber->status == 'active') bi-check-circle
+                                        @elseif($plumber->status == 'inactive') bi-pause-circle
+                                        @else bi-hourglass @endif"></i>
+                                    {{ ucfirst($plumber->status) }}
+                                </span>
+                            </td>
+                            <td class="text-nowrap">
+                                <button class="btn btn-action btn-warning edit-plumber" data-id="{{ $plumber->id }}" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-action btn-danger delete-plumber" data-id="{{ $plumber->id }}" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -618,7 +722,6 @@
     </div>
 </div>
 
-
 <!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -649,336 +752,372 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    $(document).ready(function() {
-        // Password toggle functionality
-        $('.password-toggle').click(function() {
-            const passwordInput = $('#password');
-            const icon = $(this).find('i');
-            
-            if (passwordInput.attr('type') === 'password') {
-                passwordInput.attr('type', 'text');
-                icon.removeClass('bi-eye').addClass('bi-eye-slash');
-            } else {
-                passwordInput.attr('type', 'password');
-                icon.removeClass('bi-eye-slash').addClass('bi-eye');
-            }
-        });
+ $(document).ready(function() {
+    // Mobile sidebar toggle functionality
+    const sidebar = $('.sidebar');
+    const mainContent = $('.main-content');
+    const header = $('.header');
+    const sidebarToggle = $('#sidebarToggle');
+    const mobileOverlay = $('.mobile-overlay');
+    
+    sidebarToggle.on('click', function() {
+        sidebar.toggleClass('active');
+        mobileOverlay.toggleClass('active');
         
-        // Password confirmation toggle functionality
-        $('.password-toggle-confirm').click(function() {
-            const passwordInput = $('#password_confirmation');
-            const icon = $(this).find('i');
-            
-            if (passwordInput.attr('type') === 'password') {
-                passwordInput.attr('type', 'text');
-                icon.removeClass('bi-eye').addClass('bi-eye-slash');
-            } else {
-                passwordInput.attr('type', 'password');
-                icon.removeClass('bi-eye-slash').addClass('bi-eye');
-            }
-        });
+        // Add overlay to header when sidebar is active
+        if (sidebar.hasClass('active')) {
+            header.css('background-color', 'var(--overlay-color)');
+            $('body').css('overflow', 'hidden');
+        } else {
+            header.css('background-color', 'white');
+            $('body').css('overflow', '');
+        }
+    });
+    
+    // Close sidebar when clicking on overlay
+    mobileOverlay.on('click', function() {
+        sidebar.removeClass('active');
+        mobileOverlay.removeClass('active');
+        header.css('background-color', 'white');
+        $('body').css('overflow', '');
+    });
+    
+    // Close sidebar when clicking on a nav link (for mobile)
+    $('.sidebar-menu .nav-link').on('click', function() {
+        if ($(window).width() < 992) {
+            sidebar.removeClass('active');
+            mobileOverlay.removeClass('active');
+            header.css('background-color', 'white');
+            $('body').css('overflow', '');
+        }
+    });
+    
+    // Handle window resize
+    $(window).on('resize', function() {
+        // Close sidebar if window is resized to desktop size
+        if ($(window).width() >= 992) {
+            sidebar.removeClass('active');
+            mobileOverlay.removeClass('active');
+            header.css('background-color', 'white');
+            $('body').css('overflow', '');
+        }
+    });
 
-        // Initialize DataTable
-        $('#plumbersTable').DataTable({
-            responsive: true,
-            dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-                 "<'row'<'col-sm-12'tr>>" +
-                 "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-            language: {
-                search: "",
-                searchPlaceholder: "Search plumbers...",
-                lengthMenu: "Show _MENU_ entries",
-                info: "Showing _START_ to _END_ of _TOTAL_ entries",
-                infoEmpty: "Showing 0 to 0 of 0 entries",
-                emptyTable: "<div class='text-center'> No data available in table</div>",     
-                infoFiltered: "(filtered from _MAX_ total entries)",
-                paginate: {
-                    first: "First",
-                    last: "Last",
-                    next: "Next",
-                    previous: "Previous"
-                }
+    // Password toggle functionality
+    $('.password-toggle').click(function() {
+        const passwordInput = $('#password');
+        const icon = $(this).find('i');
+        
+        if (passwordInput.attr('type') === 'password') {
+            passwordInput.attr('type', 'text');
+            icon.removeClass('bi-eye').addClass('bi-eye-slash');
+        } else {
+            passwordInput.attr('type', 'password');
+            icon.removeClass('bi-eye-slash').addClass('bi-eye');
+        }
+    });
+    
+    // Password confirmation toggle functionality
+    $('.password-toggle-confirm').click(function() {
+        const passwordInput = $('#password_confirmation');
+        const icon = $(this).find('i');
+        
+        if (passwordInput.attr('type') === 'password') {
+            passwordInput.attr('type', 'text');
+            icon.removeClass('bi-eye').addClass('bi-eye-slash');
+        } else {
+            passwordInput.attr('type', 'password');
+            icon.removeClass('bi-eye-slash').addClass('bi-eye');
+        }
+    });
+
+    // Initialize DataTable
+    $('#plumbersTable').DataTable({
+        responsive: true,
+        dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+             "<'row'<'col-sm-12'tr>>" +
+             "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+        language: {
+            search: "",
+            searchPlaceholder: "Search plumbers...",
+            lengthMenu: "Show _MENU_ entries",
+            info: "Showing _START_ to _END_ of _TOTAL_ entries",
+            infoEmpty: "Showing 0 to 0 of 0 entries",
+            emptyTable: "<div class='text-center'> No data available in table</div>",     
+            infoFiltered: "(filtered from _MAX_ total entries)",
+            paginate: {
+                first: "First",
+                last: "Last",
+                next: "Next",
+                previous: "Previous"
+            }
+        },
+        initComplete: function() {
+            $('.dataTables_filter input').addClass('form-control');
+            $('.dataTables_length select').addClass('form-select');
+        }
+    });
+
+    // Reset form when modal is closed
+    $('#plumberModal').on('hidden.bs.modal', function() {
+        $('#plumberForm')[0].reset();
+        $('#plumberId').val('');
+        $('#modalTitle').text('Add New Plumber');
+        $('#passwordLabel').text('Password');
+        $('#passwordHelp').text('Leave blank to keep current password');
+        $('#password').attr('placeholder', '');
+        $('#passwordConfirmGroup').show();
+    });
+
+    // Add Plumber button click
+    $('#addPlumberBtn').click(function() {
+        $('#modalTitle').text('Add New Plumber');
+        $('#plumberId').val('');
+        $('#passwordLabel').text('Password');
+        $('#passwordHelp').text('');
+        $('#password').attr('placeholder', 'Enter password').prop('required', true);
+        $('#passwordConfirmGroup').show();
+    });
+
+    // Save Plumber (Add/Edit)
+    $('#savePlumber').click(function() {
+        // Get all form values
+        const formData = {
+            username: $('#username').val().trim(),
+            password: $('#password').val(),
+            password_confirmation: $('#password_confirmation').val(),
+            first_name: $('#firstName').val().trim(),
+            middle_name: $('#middleName').val().trim(),
+            last_name: $('#lastName').val().trim(),
+            suffix: $('#suffix').val().trim(),
+            contact_number: $('#contactNumber').val().trim(),
+            address: $('#address').val().trim(),
+            status: $('#status').val(),
+            _token: $('meta[name="csrf-token"]').attr('content')
+        };
+
+        // Basic validation
+        if (!formData.username || !formData.first_name || !formData.last_name || 
+            !formData.contact_number || !formData.address || !formData.status) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Please fill all required fields'
+            });
+            return;
+        }
+
+        // For new plumber, password is required
+        const plumberId = $('#plumberId').val();
+        if (!plumberId && !formData.password) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Password is required for new plumbers'
+            });
+            return;
+        }
+        
+        // For new plumber, password confirmation is required
+        if (!plumberId && formData.password !== formData.password_confirmation) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Password confirmation does not match'
+            });
+            return;
+        }
+
+        // If editing and password is empty, remove it from form data
+        if (plumberId && !formData.password) {
+            delete formData.password;
+            delete formData.password_confirmation;
+        }
+
+        // Username validation (alphanumeric and underscores)
+        const usernameRegex = /^[a-zA-Z0-9_]+$/;
+        if (!usernameRegex.test(formData.username)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Username can only contain letters, numbers, and underscores'
+            });
+            return;
+        }
+
+        // Phone number validation
+        const phoneRegex = /^09\d{9}$/;
+        if (!phoneRegex.test(formData.contact_number)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Please enter a valid phone number (09XXXXXXXXX)'
+            });
+            return;
+        }
+        const url = plumberId ? `/admin-plumber/${plumberId}` : '/admin-plumber';
+        const method = plumberId ? 'PUT' : 'POST';
+
+        $.ajax({
+            url: url,
+            type: method,
+            data: formData,
+            success: function(response) {
+                $('#plumberModal').modal('hide');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: response.message,
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(() => {
+                    location.reload();
+                });
             },
-            initComplete: function() {
-                $('.dataTables_filter input').addClass('form-control');
-                $('.dataTables_length select').addClass('form-select');
+            error: function(xhr) {
+                let errorMessage = xhr.responseJSON?.message || 'Something went wrong!';
+                if (xhr.responseJSON?.errors) {
+                    errorMessage = Object.values(xhr.responseJSON.errors).join('\n');
+                }
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: errorMessage
+                });
             }
         });
+    });
 
-        // Reset form when modal is closed
-        $('#plumberModal').on('hidden.bs.modal', function() {
-            $('#plumberForm')[0].reset();
-            $('#plumberId').val('');
-            $('#modalTitle').text('Add New Plumber');
-            $('#passwordLabel').text('Password');
-            $('#passwordHelp').text('Leave blank to keep current password');
-            $('#password').attr('placeholder', '');
-            $('#passwordConfirmGroup').show();
+    // Edit Plumber
+    $(document).on('click', '.edit-plumber', function() {
+        const plumberId = $(this).data('id');
+        
+        $.ajax({
+            url: `/admin-plumber/${plumberId}/edit`,
+            type: 'GET',
+            success: function(response) {
+                $('#modalTitle').text('Edit Plumber');
+                $('#plumberId').val(response.id);
+                $('#username').val(response.username);
+                $('#firstName').val(response.first_name);
+                $('#middleName').val(response.middle_name);
+                $('#lastName').val(response.last_name);
+                $('#suffix').val(response.suffix);
+                $('#contactNumber').val(response.contact_number);
+                $('#address').val(response.address);
+                $('#status').val(response.status);
+                
+                // Update password field for editing
+                $('#passwordLabel').text('Password');
+                $('#passwordHelp').text('');
+                $('#password').attr('placeholder', 'Enter new password to change').prop('required', false);
+                $('#passwordConfirmGroup').hide();
+                
+                $('#plumberModal').modal('show');
+            },
+            error: function(xhr) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: xhr.responseJSON?.message || 'Failed to fetch plumber data'
+                });
+            }
         });
+    });
 
-        // Add Plumber button click
-        $('#addPlumberBtn').click(function() {
-            $('#modalTitle').text('Add New Plumber');
-            $('#plumberId').val('');
-            $('#passwordLabel').text('Password');
-            $('#passwordHelp').text('');
-            $('#password').attr('placeholder', 'Enter password').prop('required', true);
-            $('#passwordConfirmGroup').show();
-        });
+    // Delete Plumber
+    let deletePlumberId = null;
 
-        // Save Plumber (Add/Edit)
-        $('#savePlumber').click(function() {
-            // Get all form values
-            const formData = {
-                username: $('#username').val().trim(),
-                password: $('#password').val(),
-                password_confirmation: $('#password_confirmation').val(),
-                first_name: $('#firstName').val().trim(),
-                middle_name: $('#middleName').val().trim(),
-                last_name: $('#lastName').val().trim(),
-                suffix: $('#suffix').val().trim(),
-                contact_number: $('#contactNumber').val().trim(),
-                address: $('#address').val().trim(),
-                status: $('#status').val(),
+    $(document).on('click', '.delete-plumber', function() {
+        deletePlumberId = $(this).data('id');
+        $('#deleteModal').modal('show');
+    });
+
+    $('#confirmDelete').click(function() {
+        if (!deletePlumberId) return;
+        
+        $.ajax({
+            url: `/admin-plumber/${deletePlumberId}`,
+            type: 'DELETE',
+            data: {
                 _token: $('meta[name="csrf-token"]').attr('content')
-            };
-
-            // Basic validation
-            if (!formData.username || !formData.first_name || !formData.last_name || 
-                !formData.contact_number || !formData.address || !formData.status) {
+            },
+            success: function(response) {
+                $('#deleteModal').modal('hide');
                 Swal.fire({
-                    icon: 'error',
-                    title: 'Validation Error',
-                    text: 'Please fill all required fields'
+                    icon: 'success',
+                    title: 'Success',
+                    text: response.message,
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(() => {
+                    $('#plumberRow_' + deletePlumberId).remove();
+                    deletePlumberId = null;
                 });
-                return;
-            }
-
-            // For new plumber, password is required
-            const plumberId = $('#plumberId').val();
-            if (!plumberId && !formData.password) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Validation Error',
-                    text: 'Password is required for new plumbers'
-                });
-                return;
-            }
-            
-            // For new plumber, password confirmation is required
-            if (!plumberId && formData.password !== formData.password_confirmation) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Validation Error',
-                    text: 'Password confirmation does not match'
-                });
-                return;
-            }
-
-            // If editing and password is empty, remove it from form data
-            if (plumberId && !formData.password) {
-                delete formData.password;
-                delete formData.password_confirmation;
-            }
-
-            // Username validation (alphanumeric and underscores)
-            const usernameRegex = /^[a-zA-Z0-9_]+$/;
-            if (!usernameRegex.test(formData.username)) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Validation Error',
-                    text: 'Username can only contain letters, numbers, and underscores'
-                });
-                return;
-            }
-
-            // Phone number validation
-            const phoneRegex = /^09\d{9}$/;
-            if (!phoneRegex.test(formData.contact_number)) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Validation Error',
-                    text: 'Please enter a valid phone number (09XXXXXXXXX)'
-                });
-                return;
-            }
-            const url = plumberId ? `/admin-plumber/${plumberId}` : '/admin-plumber';
-            const method = plumberId ? 'PUT' : 'POST';
-
-            $.ajax({
-                url: url,
-                type: method,
-                data: formData,
-                success: function(response) {
-                    $('#plumberModal').modal('hide');
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: response.message,
-                        timer: 2000,
-                        showConfirmButton: false
-                    }).then(() => {
-                        location.reload();
-                    });
-                },
-                error: function(xhr) {
-                    let errorMessage = xhr.responseJSON?.message || 'Something went wrong!';
-                    if (xhr.responseJSON?.errors) {
-                        errorMessage = Object.values(xhr.responseJSON.errors).join('\n');
-                    }
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: errorMessage
-                    });
+            },
+            error: function(xhr) {
+                $('#deleteModal').modal('hide');
+                let errorMessage = xhr.responseJSON?.message || 'Failed to delete plumber';
+                
+                if (xhr.responseJSON?.errors) {
+                    errorMessage = Object.values(xhr.responseJSON.errors).join('\n');
                 }
-            });
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: errorMessage
+                });
+            }
         });
-
-        // Edit Plumber
-        $(document).on('click', '.edit-plumber', function() {
-            const plumberId = $(this).data('id');
-            
-            $.ajax({
-                url: `/admin-plumber/${plumberId}/edit`,
-                type: 'GET',
-                success: function(response) {
-                    $('#modalTitle').text('Edit Plumber');
-                    $('#plumberId').val(response.id);
-                    $('#username').val(response.username);
-                    $('#firstName').val(response.first_name);
-                    $('#middleName').val(response.middle_name);
-                    $('#lastName').val(response.last_name);
-                    $('#suffix').val(response.suffix);
-                    $('#contactNumber').val(response.contact_number);
-                    $('#address').val(response.address);
-                    $('#status').val(response.status);
-                    
-                    // Update password field for editing
-                    $('#passwordLabel').text('Password');
-                    $('#passwordHelp').text('');
-                    $('#password').attr('placeholder', 'Enter new password to change').prop('required', false);
-                    $('#passwordConfirmGroup').hide();
-                    
-                    $('#plumberModal').modal('show');
-                },
-                error: function(xhr) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: xhr.responseJSON?.message || 'Failed to fetch plumber data'
-                    });
-                }
-            });
-        });
-
-        // Delete Plumber
-        let deletePlumberId = null;
-
-        $(document).on('click', '.delete-plumber', function() {
-            deletePlumberId = $(this).data('id');
-            $('#deleteModal').modal('show');
-        });
-
-        $('#confirmDelete').click(function() {
-            if (!deletePlumberId) return;
-            
-            $.ajax({
-                url: `/admin-plumber/${deletePlumberId}`,
-                type: 'DELETE',
-                data: {
-                    _token: $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function(response) {
-                    $('#deleteModal').modal('hide');
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: response.message,
-                        timer: 2000,
-                        showConfirmButton: false
-                    }).then(() => {
-                        $('#plumberRow_' + deletePlumberId).remove();
-                        deletePlumberId = null;
-                    });
-                },
-                error: function(xhr) {
-                    $('#deleteModal').modal('hide');
-                    let errorMessage = xhr.responseJSON?.message || 'Failed to delete plumber';
-                    
-                    if (xhr.responseJSON?.errors) {
-                        errorMessage = Object.values(xhr.responseJSON.errors).join('\n');
-                    }
-                    
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: errorMessage
-                    });
-                }
-            });
-        });
-
-        // Toggle sidebar on mobile
-        $('#sidebarToggle').click(function() {
-            $('.sidebar').toggleClass('active');
-            $('.main-content').toggleClass('active');
-        });
-
-        // Logout functionality
-$('#logoutBtn').click(function(e) {
-    e.preventDefault();
-    
-    Swal.fire({
-        title: 'Sign Out?',
-        text: 'Are you sure you want to sign out?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Yes, Sign Out',
-        cancelButtonText: 'Cancel'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Perform logout - you can customize this based on your authentication system
-            performLogout();
-        }
     });
+
+    // Logout functionality
+    $('#logoutBtn').click(function(e) {
+        e.preventDefault();
+        
+        Swal.fire({
+            title: 'Sign Out?',
+            text: 'Are you sure you want to sign out?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, Sign Out',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                performLogout();
+            }
+        });
+    });
+
+    function performLogout() {
+        // Show loading state
+        Swal.fire({
+            title: 'Signing Out...',
+            text: 'Please wait',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        $.ajax({
+            url: '/logout',
+            type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                window.location.href = '/admin-login';
+            },
+            error: function(xhr) {
+                window.location.href = '/admin-login';
+            }
+        });
+    }
 });
-
-function performLogout() {
-    // Show loading state
-    Swal.fire({
-        title: 'Signing Out...',
-        text: 'Please wait',
-        allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
-    });
-
-    // Example: Send logout request to server
-    // Replace this with your actual logout endpoint
-    $.ajax({
-        url: '/logout', // Your logout route
-        type: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
-        success: function(response) {
-            // Redirect to login page
-            window.location.href = '/admin-login';
-        },
-        error: function(xhr) {
-            // If AJAX fails, still redirect to login
-            window.location.href = '/admin-login';
-        }
-    });
-    
-    // Alternative: Simple redirect (if no server-side logout needed)
-    // window.location.href = '/login';
-}
-    });
 </script>
 
 </body>
