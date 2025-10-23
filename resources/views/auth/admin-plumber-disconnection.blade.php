@@ -215,6 +215,95 @@
             animation: fadeIn 0.6s ease-out forwards;
         }
         
+        /* Mobile Card View Styles */
+        .mobile-card-view {
+            display: none;
+        }
+        
+        .disconnection-card {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+        }
+        
+        .disconnection-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        
+        .disconnection-card-header {
+            background-color: #f8f9fa;
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .disconnection-card-body {
+            padding: 15px;
+        }
+        
+        .disconnection-card-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f1f1f1;
+        }
+        
+        .disconnection-card-row:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .disconnection-card-label {
+            font-weight: 500;
+            color: #6c757d;
+            flex: 1;
+        }
+        
+        .disconnection-card-value {
+            flex: 2;
+            text-align: right;
+        }
+        
+        .disconnection-card-actions {
+            padding: 10px 15px;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+        
+        /* No data message styles */
+        .no-data-container {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+        }
+        
+        .no-data-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #dee2e6;
+        }
+        
+        .no-data-text {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .no-data-subtext {
+            font-size: 0.9rem;
+            color: #adb5bd;
+        }
+        
         /* Responsive styles */
         @media (min-width: 992px) {
             .sidebar {
@@ -228,6 +317,14 @@
         }
         
         @media (max-width: 991px) {
+            .desktop-table-view {
+                display: none;
+            }
+            
+            .mobile-card-view {
+                display: block;
+            }
+            
             .card-header {
                 flex-direction: column;
                 align-items: flex-start;
@@ -314,6 +411,30 @@
             .form-control, .form-select {
                 font-size: 0.9rem;
                 padding: 0.375rem 0.75rem;
+            }
+            
+            .disconnection-card-header {
+                padding: 10px 12px;
+            }
+            
+            .disconnection-card-body {
+                padding: 12px;
+            }
+            
+            .disconnection-card-actions {
+                padding: 8px 12px;
+            }
+            
+            .no-data-container {
+                padding: 1.5rem;
+            }
+            
+            .no-data-icon {
+                font-size: 2.5rem;
+            }
+            
+            .no-data-text {
+                font-size: 1rem;
             }
         }
         
@@ -415,7 +536,7 @@
             </div>
             <div class="dropdown">
                 <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
-                    <span>Admin</span>
+                    <span>Plumber</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUser">
                     <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
@@ -439,7 +560,8 @@
                         <h5 class="mb-0">Disconnection Records</h5>
                     </div>
                     <div class="card-body">
-                        <div class="table-responsive">
+                        <!-- Desktop Table View -->
+                        <div class="table-responsive desktop-table-view">
                             <table class="table table-hover" id="disconnectionTable">
                                 <thead>
                                     <tr>
@@ -455,40 +577,114 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($disconnections as $disconnection)
-                                    <tr>
-                                        <td>{{ $disconnection->id }}</td>
-                                        <td>{{ $disconnection->consumer->first_name }} {{ $disconnection->consumer->last_name }}</td>
-                                        <td>{{ $disconnection->billing->meter_no }}</td>
-                                        <td>{{ $disconnection->reason }}</td>
-                                        <td>{{ $disconnection->disconnection_date->format('M d, Y') }}</td>
-                                        <td>{{ $disconnection->reconnection_date ? $disconnection->reconnection_date->format('M d, Y') : 'N/A' }}</td>
-                                        <td>
-                                            @if($disconnection->status === 'disconnected')
-                                                <span class="status-disconnected">Disconnected</span>
-                                            @else
-                                                <span class="status-reconnected">Reconnected</span>
-                                            @endif
-                                        </td>
-                                        <td>{{ $disconnection->notes ?? 'N/A' }}</td>
-                                        <td>
-                                            <div class="action-buttons">
+                                    @if(count($disconnections) > 0)
+                                        @foreach($disconnections as $disconnection)
+                                        <tr>
+                                            <td>{{ $disconnection->id }}</td>
+                                            <td>{{ $disconnection->consumer->first_name }} {{ $disconnection->consumer->last_name }}</td>
+                                            <td>{{ $disconnection->billing->meter_no }}</td>
+                                            <td>{{ $disconnection->reason }}</td>
+                                            <td>{{ $disconnection->disconnection_date->format('M d, Y') }}</td>
+                                            <td>{{ $disconnection->reconnection_date ? $disconnection->reconnection_date->format('M d, Y') : 'N/A' }}</td>
+                                            <td>
                                                 @if($disconnection->status === 'disconnected')
-                                                <button class="btn btn-success btn-sm reconnect-btn" 
-                                                        data-id="{{ $disconnection->id }}"
-                                                        data-consumer="{{ $disconnection->consumer->first_name }} {{ $disconnection->consumer->last_name }}"
-                                                        data-meter="{{ $disconnection->billing->meter_no }}">
-                                                    <i class="bi bi-plug"></i> Reconnect
-                                                </button>
+                                                    <span class="status-disconnected">Disconnected</span>
                                                 @else
-                                                <span class="text-muted">Reconnected</span>
+                                                    <span class="status-reconnected">Reconnected</span>
                                                 @endif
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    @endforeach
+                                            </td>
+                                            <td>{{ $disconnection->notes ?? 'N/A' }}</td>
+                                            <td>
+                                                <div class="action-buttons">
+                                                    @if($disconnection->status === 'disconnected')
+                                                    <button class="btn btn-success btn-sm reconnect-btn" 
+                                                            data-id="{{ $disconnection->id }}"
+                                                            data-consumer="{{ $disconnection->consumer->first_name }} {{ $disconnection->consumer->last_name }}"
+                                                            data-meter="{{ $disconnection->billing->meter_no }}">
+                                                        <i class="bi bi-plug"></i> Reconnect
+                                                    </button>
+                                                    @else
+                                                    <span class="text-muted">Reconnected</span>
+                                                    @endif
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    @else
+                                        <tr>
+                                            <td colspan="9" class="text-center py-4">
+                                                <div class="no-data-container">
+                                                    <i class="bi bi-inbox no-data-icon"></i>
+                                                    <p class="no-data-text">No disconnection records found</p>
+                                                    <p class="no-data-subtext">There are no disconnection records to display</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endif
                                 </tbody>
                             </table>
+                        </div>
+                        
+                        <!-- Mobile Card View -->
+                        <div class="mobile-card-view" id="mobileDisconnectionCards">
+                            @if(count($disconnections) > 0)
+                                @foreach($disconnections as $disconnection)
+                                <div class="disconnection-card" data-id="{{ $disconnection->id }}">
+                                    <div class="disconnection-card-header">
+                                        <span>ID: {{ $disconnection->id }}</span>
+                                        @if($disconnection->status === 'disconnected')
+                                            <span class="status-disconnected">Disconnected</span>
+                                        @else
+                                            <span class="status-reconnected">Reconnected</span>
+                                        @endif
+                                    </div>
+                                    <div class="disconnection-card-body">
+                                        <div class="disconnection-card-row">
+                                            <span class="disconnection-card-label">Consumer:</span>
+                                            <span class="disconnection-card-value">{{ $disconnection->consumer->first_name }} {{ $disconnection->consumer->last_name }}</span>
+                                        </div>
+                                        <div class="disconnection-card-row">
+                                            <span class="disconnection-card-label">Meter No:</span>
+                                            <span class="disconnection-card-value">{{ $disconnection->billing->meter_no }}</span>
+                                        </div>
+                                        <div class="disconnection-card-row">
+                                            <span class="disconnection-card-label">Reason:</span>
+                                            <span class="disconnection-card-value">{{ $disconnection->reason }}</span>
+                                        </div>
+                                        <div class="disconnection-card-row">
+                                            <span class="disconnection-card-label">Disconnection Date:</span>
+                                            <span class="disconnection-card-value">{{ $disconnection->disconnection_date->format('M d, Y') }}</span>
+                                        </div>
+                                        <div class="disconnection-card-row">
+                                            <span class="disconnection-card-label">Reconnection Date:</span>
+                                            <span class="disconnection-card-value">{{ $disconnection->reconnection_date ? $disconnection->reconnection_date->format('M d, Y') : 'N/A' }}</span>
+                                        </div>
+                                        <div class="disconnection-card-row">
+                                            <span class="disconnection-card-label">Notes:</span>
+                                            <span class="disconnection-card-value">{{ $disconnection->notes ?? 'N/A' }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="disconnection-card-actions">
+                                        @if($disconnection->status === 'disconnected')
+                                        <button class="btn btn-success btn-sm reconnect-btn" 
+                                                data-id="{{ $disconnection->id }}"
+                                                data-consumer="{{ $disconnection->consumer->first_name }} {{ $disconnection->consumer->last_name }}"
+                                                data-meter="{{ $disconnection->billing->meter_no }}">
+                                            <i class="bi bi-plug"></i> Reconnect
+                                        </button>
+                                        @else
+                                        <span class="text-muted">Reconnected</span>
+                                        @endif
+                                    </div>
+                                </div>
+                                @endforeach
+                            @else
+                                <div class="no-data-container">
+                                    <i class="bi bi-inbox no-data-icon"></i>
+                                    <p class="no-data-text">No disconnection records found</p>
+                                    <p class="no-data-subtext">There are no disconnection records to display</p>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -545,7 +741,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-$(document).ready(function() {
+ $(document).ready(function() {
     // Mobile sidebar toggle functionality
     const sidebar = $('.sidebar');
     const mainContent = $('.main-content');
@@ -606,7 +802,8 @@ $(document).ready(function() {
                 last: "Last",
                 next: "Next",
                 previous: "Previous"
-            }
+            },
+            emptyTable: "No disconnection records found"
         }
     });
 
@@ -701,8 +898,8 @@ $(document).ready(function() {
     // Reconnection functionality
     const reconnectionModal = new bootstrap.Modal(document.getElementById('reconnectionModal'));
     
-    // Handle reconnect button clicks
-    $('.reconnect-btn').click(function() {
+    // Handle reconnect button clicks - Updated to work with both table and card views
+    $(document).on('click', '.reconnect-btn', function() {
         const disconnectionId = $(this).data('id');
         const consumerName = $(this).data('consumer');
         const meterNumber = $(this).data('meter');
@@ -724,63 +921,63 @@ $(document).ready(function() {
     });
     
     // Handle confirm reconnection
-$('#confirmReconnection').click(function() {
-    const disconnectionId = $('#disconnectionId').val();
-    const reconnectionDate = $('#reconnectionDate').val();
-    const notes = $('#reconnectionNotes').val();
-    
-    // Validate form
-    if (!reconnectionDate) {
-        showErrorToast('Please select a reconnection date');
-        return;
-    }
-    
-    // Show loading state
-    Swal.fire({
-        title: 'Processing...',
-        text: 'Please wait',
-        allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
+    $('#confirmReconnection').click(function() {
+        const disconnectionId = $('#disconnectionId').val();
+        const reconnectionDate = $('#reconnectionDate').val();
+        const notes = $('#reconnectionNotes').val();
+        
+        // Validate form
+        if (!reconnectionDate) {
+            showErrorToast('Please select a reconnection date');
+            return;
         }
-    });
-    
-    // Send AJAX request to update disconnection - FIXED URL
-    $.ajax({
-        url: '/admin-plumber-disconnection/' + disconnectionId + '/reconnect',
-        type: 'POST',
-        data: {
-            reconnection_date: reconnectionDate,
-            notes: notes,
-            _token: $('meta[name="csrf-token"]').attr('content')
-        },
-        success: function(response) {
-            // Close modal
-            reconnectionModal.hide();
-            
-            if (response.success) {
-                // Show success message
-                showSuccessAlert('Success', response.message);
+        
+        // Show loading state
+        Swal.fire({
+            title: 'Processing...',
+            text: 'Please wait',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+        
+        // Send AJAX request to update disconnection
+        $.ajax({
+            url: '/admin-plumber-disconnection/' + disconnectionId + '/reconnect',
+            type: 'POST',
+            data: {
+                reconnection_date: reconnectionDate,
+                notes: notes,
+                _token: $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                // Close modal
+                reconnectionModal.hide();
                 
-                // Reload page after a short delay to show updated status
-                setTimeout(() => {
-                    location.reload();
-                }, 2000);
-            } else {
-                showErrorAlert('Error', response.message);
+                if (response.success) {
+                    // Show success message
+                    showSuccessAlert('Success', response.message);
+                    
+                    // Reload page after a short delay to show updated status
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    showErrorAlert('Error', response.message);
+                }
+            },
+            error: function(xhr) {
+                let errorMessage = 'An error occurred while processing the reconnection';
+                
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                }
+                
+                showErrorAlert('Error', errorMessage);
             }
-        },
-        error: function(xhr) {
-            let errorMessage = 'An error occurred while processing the reconnection';
-            
-            if (xhr.responseJSON && xhr.responseJSON.message) {
-                errorMessage = xhr.responseJSON.message;
-            }
-            
-            showErrorAlert('Error', errorMessage);
-        }
+        });
     });
-});
 });
 </script>
 </body>
