@@ -20,7 +20,9 @@
             --primary-dark: #9a0007;
             --sidebar-bg: linear-gradient(180deg, #d32f2f 0%, #9a0007 100%);
             --sidebar-text: rgba(255,255,255,0.9);
-            --sidebar-hover: rgba(255,255,255,0.1);
+            --overlay-color: rgba(7, 7, 7, 0.1);
+            --header-height: 70px;
+            --overlay-color: rgba(7, 7, 7, 0.1);
         }
         
         body {
@@ -94,23 +96,50 @@
         .main-content {
             min-height: 100vh;
             transition: all 0.3s ease;
-            padding: 20px;
+            padding: 0;
             width: 100%;
-        }
-        
-        .main-content.active {
-            margin-left: 280px;
-            width: calc(100% - 280px);
+            margin-left: 0;
         }
         
         .header {
-            height: 70px;
+            height: var(--header-height);
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             position: sticky;
             top: 0;
             z-index: 1040;
             background: white;
-            padding: 0 15px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+        
+        .header-title {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .header-subtitle {
+            margin: 0;
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+        
+        .content-wrapper {
+            padding: 20px;
         }
         
         .card {
@@ -175,7 +204,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: var(--overlay-color);
             z-index: 1040;
             opacity: 0;
             visibility: hidden;
@@ -193,6 +222,7 @@
             padding: 0.25rem 0.5rem;
             border: none;
             background: transparent;
+            color: var(--primary-color);
         }
         
         /* Animation */
@@ -460,7 +490,15 @@
         @media (max-width: 576px) {
             .header {
                 height: 60px;
-                padding: 0 10px;
+                padding: 0 15px;
+            }
+            
+            .header-title {
+                font-size: 1rem;
+            }
+            
+            .header-subtitle {
+                display: none;
             }
             
             .sidebar-header {
@@ -655,19 +693,26 @@
 <!-- Main Content -->
 <div class="main-content">
     <!-- Header -->
-    <header class="header d-flex align-items-center">
-        <button id="sidebarToggle" class="btn d-lg-none me-3 mobile-menu-toggle">
-            <i class="bi bi-list"></i>
-        </button>
-        <h2 class="h5 mb-0 mobile-header-title">Reading Dashboard Overview</h2>
+    <header class="header">
+        <div class="header-left">
+            <button id="sidebarToggle" class="btn d-lg-none me-3 mobile-menu-toggle">
+                <i class="bi bi-list"></i>
+            </button>
+            <div>
+                <h2 class="header-title">Reading Consumer</h2>
+                <p class="header-subtitle">Santa Fe Water Billing System</p>
+            </div>
+        </div>
         
-        <div class="ms-auto d-flex align-items-center">
+        <div class="header-right">
             <div class="position-relative me-3 d-none d-sm-block">
                 <i class="bi bi-bell fs-5"></i>
+               
             </div>
             <div class="dropdown">
                 <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
-                    <span>Plumber</span>
+                   
+                    <span class="d-none d-md-inline">Plumber</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUser">
                     <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
@@ -683,49 +728,51 @@
         </div>
     </header>
     
-    <div class="container-fluid mt-3 mt-md-4">
-        <div class="row">
-            <div class="col-12">
-                <div class="card animate-fadein">
-                    <!-- Cut Consumers List Button - Add to card header -->
-                        <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center">
-                            <h5 class="mb-2 mb-md-0">Water Consumption Records</h5>
-                            <div>
-                                <button class="btn btn-primary btn-sm btn-md me-2" data-bs-toggle="modal" data-bs-target="#addBillingModal">
-                                    <i class="bi bi-plus-circle me-1 me-md-2"></i>Add Reading
-                                </button>
-                                <button class="btn btn-outline-danger btn-sm btn-md" id="viewCutConsumersBtn">
-                                    <i class="bi bi-archive me-1 me-md-2"></i>View Cut Consumers
-                                </button>
+    <div class="content-wrapper">
+        <div class="container-fluid mt-3 mt-md-4">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card animate-fadein">
+                        <!-- Cut Consumers List Button - Add to card header -->
+                            <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                                <h5 class="mb-2 mb-md-0">Water Consumption Records</h5>
+                                <div>
+                                    <button class="btn btn-primary btn-sm btn-md me-2" data-bs-toggle="modal" data-bs-target="#addBillingModal">
+                                        <i class="bi bi-plus-circle me-1 me-md-2"></i>Add Reading
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm btn-md" id="viewCutConsumersBtn">
+                                        <i class="bi bi-archive me-1 me-md-2"></i>View Cut Consumers
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    <div class="card-body">
-                        <!-- Desktop Table View -->
-                        <div class="table-responsive desktop-table-view">
-                            <table class="table table-hover" id="billingTable">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Consumer</th>
-                                        <th>Type</th>
-                                        <th>Meter No.</th>
-                                        <th class="decimal-align">Previous</th>
-                                        <th class="decimal-align">Current</th>
-                                        <th class="decimal-align">Consumption</th>
-                                        <th class="date-column">Reading Date</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Data will be loaded via AJAX -->
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <!-- Mobile Card View -->
-                        <div class="mobile-card-view" id="mobileBillingCards">
-                            <!-- Cards will be loaded via AJAX -->
+                        <div class="card-body">
+                            <!-- Desktop Table View -->
+                            <div class="table-responsive desktop-table-view">
+                                <table class="table table-hover" id="billingTable">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Consumer</th>
+                                            <th>Type</th>
+                                            <th>Meter No.</th>
+                                            <th class="decimal-align">Previous</th>
+                                            <th class="decimal-align">Current</th>
+                                            <th class="decimal-align">Consumption</th>
+                                            <th class="date-column">Reading Date</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Data will be loaded via AJAX -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Mobile Card View -->
+                            <div class="mobile-card-view" id="mobileBillingCards">
+                                <!-- Cards will be loaded via AJAX -->
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -970,10 +1017,11 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-$(document).ready(function() {
+ $(document).ready(function() {
     // Mobile sidebar toggle functionality
     const sidebar = $('.sidebar');
     const mainContent = $('.main-content');
+    const header = $('.header');
     const sidebarToggle = $('#sidebarToggle');
     const mobileOverlay = $('.mobile-overlay');
     
@@ -982,10 +1030,12 @@ $(document).ready(function() {
         mainContent.toggleClass('active');
         mobileOverlay.toggleClass('active');
         
-        // Prevent scrolling when sidebar is open
+        // Add overlay to header when sidebar is active
         if (sidebar.hasClass('active')) {
+            header.css('background-color', 'var(--overlay-color)');
             $('body').css('overflow', 'hidden');
         } else {
+            header.css('background-color', 'white');
             $('body').css('overflow', '');
         }
     });
@@ -995,6 +1045,7 @@ $(document).ready(function() {
         sidebar.removeClass('active');
         mainContent.removeClass('active');
         mobileOverlay.removeClass('active');
+        header.css('background-color', 'white');
         $('body').css('overflow', '');
     });
     
@@ -1004,6 +1055,7 @@ $(document).ready(function() {
             sidebar.removeClass('active');
             mainContent.removeClass('active');
             mobileOverlay.removeClass('active');
+            header.css('background-color', 'white');
             $('body').css('overflow', '');
         }
     });
@@ -1015,6 +1067,7 @@ $(document).ready(function() {
             sidebar.removeClass('active');
             mainContent.removeClass('active');
             mobileOverlay.removeClass('active');
+            header.css('background-color', 'white');
             $('body').css('overflow', '');
         }
     });
@@ -1508,7 +1561,7 @@ $(document).ready(function() {
         $('#consumerDropdown').hide();
         $('#consumerDisplayContainer').show().html(`
             <div class="d-flex justify-content-center">
-                <div class="spinner-border text-primary" role="status">
+                <div class="spinner-border text-primary" role="status" aria-hidden="true">
                     <span class="visually-hidden">Loading...</span>
                 </div>
             </div>
@@ -1881,6 +1934,7 @@ function showCutConsumersModal() {
                             <span class="cut-consumer-card-label">Notes:</span>
                             <span class="cut-consumer-card-value">${consumer.notes || '-'}</span>
                         </div>
+                        </div>
                     </div>
                     <div class="cut-consumer-card-actions">
                         <button class="btn btn-sm btn-success restore-btn" data-id="${consumer.id}" title="Restore Consumer">
@@ -2078,6 +2132,7 @@ function showCutConsumersModal() {
             }
         });
     }
+
 });
 </script>
 </body>

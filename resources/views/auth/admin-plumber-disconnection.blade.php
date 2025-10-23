@@ -20,7 +20,8 @@
             --primary-dark: #9a0007;
             --sidebar-bg: linear-gradient(180deg, #d32f2f 0%, #9a0007 100%);
             --sidebar-text: rgba(255,255,255,0.9);
-            --sidebar-hover: rgba(255,255,255,0.1);
+            --overlay-color: rgba(7, 7, 7, 0.1);
+            --header-height: 70px;
         }
         
         body {
@@ -94,23 +95,50 @@
         .main-content {
             min-height: 100vh;
             transition: all 0.3s ease;
-            padding: 20px;
+            padding: 0;
             width: 100%;
-        }
-        
-        .main-content.active {
-            margin-left: 280px;
-            width: calc(100% - 280px);
+            margin-left: 0;
         }
         
         .header {
-            height: 70px;
+            height: var(--header-height);
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             position: sticky;
             top: 0;
             z-index: 1040;
             background: white;
-            padding: 0 15px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+        
+        .header-title {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .header-subtitle {
+            margin: 0;
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+        
+        .content-wrapper {
+            padding: 20px;
         }
         
         .card {
@@ -185,7 +213,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: var(--overlay-color);
             z-index: 1040;
             opacity: 0;
             visibility: hidden;
@@ -203,6 +231,7 @@
             padding: 0.25rem 0.5rem;
             border: none;
             background: transparent;
+            color: var(--primary-color);
         }
         
         /* Animation */
@@ -356,7 +385,15 @@
         @media (max-width: 576px) {
             .header {
                 height: 60px;
-                padding: 0 10px;
+                padding: 0 15px;
+            }
+            
+            .header-title {
+                font-size: 1rem;
+            }
+            
+            .header-subtitle {
+                display: none;
             }
             
             .sidebar-header {
@@ -524,19 +561,24 @@
 <!-- Main Content -->
 <div class="main-content">
     <!-- Header -->
-    <header class="header d-flex align-items-center">
-        <button id="sidebarToggle" class="btn d-lg-none me-3 mobile-menu-toggle">
-            <i class="bi bi-list"></i>
-        </button>
-        <h2 class="h5 mb-0 mobile-header-title">Disconnection Records</h2>
+    <header class="header">
+        <div class="header-left">
+            <button id="sidebarToggle" class="btn d-lg-none me-3 mobile-menu-toggle">
+                <i class="bi bi-list"></i>
+            </button>
+            <div>
+                <h2 class="header-title">Disconnection Records</h2>
+                <p class="header-subtitle">Santa Fe Water Billing System</p>
+            </div>
+        </div>
         
-        <div class="ms-auto d-flex align-items-center">
+        <div class="header-right">
             <div class="position-relative me-3 d-none d-sm-block">
                 <i class="bi bi-bell fs-5"></i>
             </div>
             <div class="dropdown">
                 <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
-                    <span>Plumber</span>
+                    <span class="d-none d-md-inline">Plumber</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUser">
                     <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
@@ -552,139 +594,141 @@
         </div>
     </header>
     
-    <div class="container-fluid mt-3 mt-md-4">
-        <div class="row">
-            <div class="col-12">
-                <div class="card animate-fadein">
-                    <div class="card-header">
-                        <h5 class="mb-0">Disconnection Records</h5>
-                    </div>
-                    <div class="card-body">
-                        <!-- Desktop Table View -->
-                        <div class="table-responsive desktop-table-view">
-                            <table class="table table-hover" id="disconnectionTable">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Consumer</th>
-                                        <th>Meter No.</th>
-                                        <th>Reason</th>
-                                        <th>Disconnection Date</th>
-                                        <th>Reconnection Date</th>
-                                        <th>Status</th>
-                                        <th>Notes</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @if(count($disconnections) > 0)
-                                        @foreach($disconnections as $disconnection)
-                                        <tr>
-                                            <td>{{ $disconnection->id }}</td>
-                                            <td>{{ $disconnection->consumer->first_name }} {{ $disconnection->consumer->last_name }}</td>
-                                            <td>{{ $disconnection->billing->meter_no }}</td>
-                                            <td>{{ $disconnection->reason }}</td>
-                                            <td>{{ $disconnection->disconnection_date->format('M d, Y') }}</td>
-                                            <td>{{ $disconnection->reconnection_date ? $disconnection->reconnection_date->format('M d, Y') : 'N/A' }}</td>
-                                            <td>
-                                                @if($disconnection->status === 'disconnected')
-                                                    <span class="status-disconnected">Disconnected</span>
-                                                @else
-                                                    <span class="status-reconnected">Reconnected</span>
-                                                @endif
-                                            </td>
-                                            <td>{{ $disconnection->notes ?? 'N/A' }}</td>
-                                            <td>
-                                                <div class="action-buttons">
-                                                    @if($disconnection->status === 'disconnected')
-                                                    <button class="btn btn-success btn-sm reconnect-btn" 
-                                                            data-id="{{ $disconnection->id }}"
-                                                            data-consumer="{{ $disconnection->consumer->first_name }} {{ $disconnection->consumer->last_name }}"
-                                                            data-meter="{{ $disconnection->billing->meter_no }}">
-                                                        <i class="bi bi-plug"></i> Reconnect
-                                                    </button>
-                                                    @else
-                                                    <span class="text-muted">Reconnected</span>
-                                                    @endif
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        @endforeach
-                                    @else
-                                        <tr>
-                                            <td colspan="9" class="text-center py-4">
-                                                <div class="no-data-container">
-                                                    <i class="bi bi-inbox no-data-icon"></i>
-                                                    <p class="no-data-text">No disconnection records found</p>
-                                                    <p class="no-data-subtext">There are no disconnection records to display</p>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    @endif
-                                </tbody>
-                            </table>
+    <div class="content-wrapper">
+        <div class="container-fluid mt-3 mt-md-4">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card animate-fadein">
+                        <div class="card-header">
+                            <h5 class="mb-0">Disconnection Records</h5>
                         </div>
-                        
-                        <!-- Mobile Card View -->
-                        <div class="mobile-card-view" id="mobileDisconnectionCards">
-                            @if(count($disconnections) > 0)
-                                @foreach($disconnections as $disconnection)
-                                <div class="disconnection-card" data-id="{{ $disconnection->id }}">
-                                    <div class="disconnection-card-header">
-                                        <span>ID: {{ $disconnection->id }}</span>
-                                        @if($disconnection->status === 'disconnected')
-                                            <span class="status-disconnected">Disconnected</span>
+                        <div class="card-body">
+                            <!-- Desktop Table View -->
+                            <div class="table-responsive desktop-table-view">
+                                <table class="table table-hover" id="disconnectionTable">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Consumer</th>
+                                            <th>Meter No.</th>
+                                            <th>Reason</th>
+                                            <th>Disconnection Date</th>
+                                            <th>Reconnection Date</th>
+                                            <th>Status</th>
+                                            <th>Notes</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if(count($disconnections) > 0)
+                                            @foreach($disconnections as $disconnection)
+                                            <tr>
+                                                <td>{{ $disconnection->id }}</td>
+                                                <td>{{ $disconnection->consumer->first_name }} {{ $disconnection->consumer->last_name }}</td>
+                                                <td>{{ $disconnection->billing->meter_no }}</td>
+                                                <td>{{ $disconnection->reason }}</td>
+                                                <td>{{ $disconnection->disconnection_date->format('M d, Y') }}</td>
+                                                <td>{{ $disconnection->reconnection_date ? $disconnection->reconnection_date->format('M d, Y') : 'N/A' }}</td>
+                                                <td>
+                                                    @if($disconnection->status === 'disconnected')
+                                                        <span class="status-disconnected">Disconnected</span>
+                                                    @else
+                                                        <span class="status-reconnected">Reconnected</span>
+                                                    @endif
+                                                </td>
+                                                <td>{{ $disconnection->notes ?? 'N/A' }}</td>
+                                                <td>
+                                                    <div class="action-buttons">
+                                                        @if($disconnection->status === 'disconnected')
+                                                        <button class="btn btn-success btn-sm reconnect-btn" 
+                                                                data-id="{{ $disconnection->id }}"
+                                                                data-consumer="{{ $disconnection->consumer->first_name }} {{ $disconnection->consumer->last_name }}"
+                                                                data-meter="{{ $disconnection->billing->meter_no }}">
+                                                            <i class="bi bi-plug"></i> Reconnect
+                                                        </button>
+                                                        @else
+                                                        <span class="text-muted">Reconnected</span>
+                                                        @endif
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            @endforeach
                                         @else
-                                            <span class="status-reconnected">Reconnected</span>
+                                            <tr>
+                                                <td colspan="9" class="text-center py-4">
+                                                    <div class="no-data-container">
+                                                        <i class="bi bi-inbox no-data-icon"></i>
+                                                        <p class="no-data-text">No disconnection records found</p>
+                                                        <p class="no-data-subtext">There are no disconnection records to display</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
                                         @endif
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Mobile Card View -->
+                            <div class="mobile-card-view" id="mobileDisconnectionCards">
+                                @if(count($disconnections) > 0)
+                                    @foreach($disconnections as $disconnection)
+                                    <div class="disconnection-card" data-id="{{ $disconnection->id }}">
+                                        <div class="disconnection-card-header">
+                                            <span>ID: {{ $disconnection->id }}</span>
+                                            @if($disconnection->status === 'disconnected')
+                                                <span class="status-disconnected">Disconnected</span>
+                                            @else
+                                                <span class="status-reconnected">Reconnected</span>
+                                            @endif
+                                        </div>
+                                        <div class="disconnection-card-body">
+                                            <div class="disconnection-card-row">
+                                                <span class="disconnection-card-label">Consumer:</span>
+                                                <span class="disconnection-card-value">{{ $disconnection->consumer->first_name }} {{ $disconnection->consumer->last_name }}</span>
+                                            </div>
+                                            <div class="disconnection-card-row">
+                                                <span class="disconnection-card-label">Meter No:</span>
+                                                <span class="disconnection-card-value">{{ $disconnection->billing->meter_no }}</span>
+                                            </div>
+                                            <div class="disconnection-card-row">
+                                                <span class="disconnection-card-label">Reason:</span>
+                                                <span class="disconnection-card-value">{{ $disconnection->reason }}</span>
+                                            </div>
+                                            <div class="disconnection-card-row">
+                                                <span class="disconnection-card-label">Disconnection Date:</span>
+                                                <span class="disconnection-card-value">{{ $disconnection->disconnection_date->format('M d, Y') }}</span>
+                                            </div>
+                                            <div class="disconnection-card-row">
+                                                <span class="disconnection-card-label">Reconnection Date:</span>
+                                                <span class="disconnection-card-value">{{ $disconnection->reconnection_date ? $disconnection->reconnection_date->format('M d, Y') : 'N/A' }}</span>
+                                            </div>
+                                            <div class="disconnection-card-row">
+                                                <span class="disconnection-card-label">Notes:</span>
+                                                <span class="disconnection-card-value">{{ $disconnection->notes ?? 'N/A' }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="disconnection-card-actions">
+                                            @if($disconnection->status === 'disconnected')
+                                            <button class="btn btn-success btn-sm reconnect-btn" 
+                                                    data-id="{{ $disconnection->id }}"
+                                                    data-consumer="{{ $disconnection->consumer->first_name }} {{ $disconnection->consumer->last_name }}"
+                                                    data-meter="{{ $disconnection->billing->meter_no }}">
+                                                <i class="bi bi-plug"></i> Reconnect
+                                            </button>
+                                            @else
+                                            <span class="text-muted">Reconnected</span>
+                                            @endif
+                                        </div>
                                     </div>
-                                    <div class="disconnection-card-body">
-                                        <div class="disconnection-card-row">
-                                            <span class="disconnection-card-label">Consumer:</span>
-                                            <span class="disconnection-card-value">{{ $disconnection->consumer->first_name }} {{ $disconnection->consumer->last_name }}</span>
-                                        </div>
-                                        <div class="disconnection-card-row">
-                                            <span class="disconnection-card-label">Meter No:</span>
-                                            <span class="disconnection-card-value">{{ $disconnection->billing->meter_no }}</span>
-                                        </div>
-                                        <div class="disconnection-card-row">
-                                            <span class="disconnection-card-label">Reason:</span>
-                                            <span class="disconnection-card-value">{{ $disconnection->reason }}</span>
-                                        </div>
-                                        <div class="disconnection-card-row">
-                                            <span class="disconnection-card-label">Disconnection Date:</span>
-                                            <span class="disconnection-card-value">{{ $disconnection->disconnection_date->format('M d, Y') }}</span>
-                                        </div>
-                                        <div class="disconnection-card-row">
-                                            <span class="disconnection-card-label">Reconnection Date:</span>
-                                            <span class="disconnection-card-value">{{ $disconnection->reconnection_date ? $disconnection->reconnection_date->format('M d, Y') : 'N/A' }}</span>
-                                        </div>
-                                        <div class="disconnection-card-row">
-                                            <span class="disconnection-card-label">Notes:</span>
-                                            <span class="disconnection-card-value">{{ $disconnection->notes ?? 'N/A' }}</span>
-                                        </div>
+                                    @endforeach
+                                @else
+                                    <div class="no-data-container">
+                                        <i class="bi bi-inbox no-data-icon"></i>
+                                        <p class="no-data-text">No disconnection records found</p>
+                                        <p class="no-data-subtext">There are no disconnection records to display</p>
                                     </div>
-                                    <div class="disconnection-card-actions">
-                                        @if($disconnection->status === 'disconnected')
-                                        <button class="btn btn-success btn-sm reconnect-btn" 
-                                                data-id="{{ $disconnection->id }}"
-                                                data-consumer="{{ $disconnection->consumer->first_name }} {{ $disconnection->consumer->last_name }}"
-                                                data-meter="{{ $disconnection->billing->meter_no }}">
-                                            <i class="bi bi-plug"></i> Reconnect
-                                        </button>
-                                        @else
-                                        <span class="text-muted">Reconnected</span>
-                                        @endif
-                                    </div>
-                                </div>
-                                @endforeach
-                            @else
-                                <div class="no-data-container">
-                                    <i class="bi bi-inbox no-data-icon"></i>
-                                    <p class="no-data-text">No disconnection records found</p>
-                                    <p class="no-data-subtext">There are no disconnection records to display</p>
-                                </div>
-                            @endif
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -745,6 +789,7 @@
     // Mobile sidebar toggle functionality
     const sidebar = $('.sidebar');
     const mainContent = $('.main-content');
+    const header = $('.header');
     const sidebarToggle = $('#sidebarToggle');
     const mobileOverlay = $('.mobile-overlay');
     
@@ -753,10 +798,12 @@
         mainContent.toggleClass('active');
         mobileOverlay.toggleClass('active');
         
-        // Prevent scrolling when sidebar is open
+        // Add overlay to header when sidebar is active
         if (sidebar.hasClass('active')) {
+            header.css('background-color', 'var(--overlay-color)');
             $('body').css('overflow', 'hidden');
         } else {
+            header.css('background-color', 'white');
             $('body').css('overflow', '');
         }
     });
@@ -766,6 +813,7 @@
         sidebar.removeClass('active');
         mainContent.removeClass('active');
         mobileOverlay.removeClass('active');
+        header.css('background-color', 'white');
         $('body').css('overflow', '');
     });
     
@@ -775,6 +823,7 @@
             sidebar.removeClass('active');
             mainContent.removeClass('active');
             mobileOverlay.removeClass('active');
+            header.css('background-color', 'white');
             $('body').css('overflow', '');
         }
     });
@@ -786,6 +835,7 @@
             sidebar.removeClass('active');
             mainContent.removeClass('active');
             mobileOverlay.removeClass('active');
+            header.css('background-color', 'white');
             $('body').css('overflow', '');
         }
     });
