@@ -765,53 +765,6 @@
                     <i class="bi bi-bell fs-5"></i>
                     
                 </a>
-                <div class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationBell">
-                    <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
-                        <h6 class="mb-0">Notifications</h6>
-                        <button class="btn btn-sm btn-outline-secondary" id="markAllAsRead">Mark all read</button>
-                    </div>
-                    <div id="notificationDropdown" style="max-height: 400px; overflow-y: auto;">
-                        <div class="notification-item unread">
-                            <div class="d-flex">
-                                <div class="notification-icon info">
-                                    <i class="bi bi-info-circle"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <div class="notification-title">New Billing Statement</div>
-                                    <div class="notification-message">Your billing statement for June 2023 is now available.</div>
-                                    <div class="notification-time">2 hours ago</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="notification-item unread">
-                            <div class="d-flex">
-                                <div class="notification-icon success">
-                                    <i class="bi bi-check-circle"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <div class="notification-title">Payment Confirmed</div>
-                                    <div class="notification-message">Your payment for May 2023 has been confirmed.</div>
-                                    <div class="notification-time">1 day ago</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="notification-item">
-                            <div class="d-flex">
-                                <div class="notification-icon warning">
-                                    <i class="bi bi-exclamation-triangle"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <div class="notification-title">Payment Reminder</div>
-                                    <div class="notification-message">Your payment for April 2023 is due in 3 days.</div>
-                                    <div class="notification-time">3 days ago</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="notification-actions">
-                        <a href="#" class="btn btn-sm btn-outline-primary w-100">View All Notifications</a>
-                    </div>
-                </div>
             </div>
             
             <!-- User Dropdown -->
