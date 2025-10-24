@@ -14,12 +14,14 @@
     <!-- Custom CSS -->
     <style>
         :root {
-            --primary-color: #d32f2f;
-            --primary-light: #ff6659;
+            --primary-color: #0d6efd;
+            --primary-light: #6a59ffff;
             --primary-dark: #9a0007;
-            --sidebar-bg: linear-gradient(180deg, #d32f2f 0%, #9a0007 100%);
-            --sidebar-text: rgba(255,255,255,0.9);
-            --sidebar-hover: rgba(255,255,255,0.1);
+            --sidebar-bg: #f8f9fa;
+            --sidebar-text: rgba(0,0,0,0.8);
+            --sidebar-hover: rgba(0,0,255,0.1);
+            --overlay-color: rgba(7, 7, 7, 0.1);
+            --header-height: 70px;
         }
         
         body {
@@ -31,13 +33,18 @@
         /* Sidebar Styles */
         .sidebar {
             width: 280px;
-            background: #f8f9fa;
+            background: var(--sidebar-bg);
             position: fixed;
             height: 100vh;
             overflow-y: auto;
             transition: all 0.3s;
-            z-index: 1000;
+            z-index: 1050;
             box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
+            transform: translateX(-100%);
+        }
+        
+        .sidebar.active {
+            transform: translateX(0);
         }
         
         .sidebar-header {
@@ -66,6 +73,7 @@
             margin: 0 0.5rem;
             border-radius: 6px;
             transition: all 0.3s;
+            position: relative;
         }
         
         .sidebar-menu .nav-link:hover {
@@ -73,10 +81,22 @@
             background: blue;
             transform: translateX(5px);
         }
-         
+        
         .sidebar-menu .nav-link.active {
             color: white;
             background: blue;
+        }
+        
+        .sidebar-menu .nav-link.active::after {
+            content: '';
+            position: absolute;
+            right: -10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 60%;
+            background: white;
+            border-radius: 2px;
         }
         
         .sidebar-menu .nav-link i {
@@ -86,22 +106,53 @@
             font-size: 1.1rem;
         }
 
-        /* Main Content */
         .main-content {
-            margin-left: 280px;
             min-height: 100vh;
-            transition: all 0.3s;
-            padding: 20px;
+            transition: all 0.3s ease;
+            padding: 0;
+            width: 100%;
+            margin-left: 0;
         }
         
         .header {
-            height: 70px;
+            height: var(--header-height);
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 1040;
             background: white;
             padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+        
+        .header-title {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .header-subtitle {
+            margin: 0;
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+        
+        .content-wrapper {
+            padding: 20px;
         }
         
         /* Table Styles */
@@ -163,6 +214,15 @@
             vertical-align: middle;
             border-color: rgba(0, 0, 0, 0.03);
             white-space: nowrap;
+        }
+
+        .table tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        .table tbody tr:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
 
         /* Badge Styles */
@@ -391,147 +451,7 @@
             margin-top: 20px;
         }
         
-        /* Responsive adjustments */
-        @media (max-width: 992px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-            
-            .sidebar.active {
-                transform: translateX(0);
-            }
-            
-            .main-content {
-                margin-left: 0;
-                padding: 15px;
-            }
-            
-            .main-content.active {
-                margin-left: 280px;
-            }
-            
-            .payment-steps {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .payment-steps:before {
-                display: none;
-            }
-            
-            .step {
-                flex-direction: row;
-                margin-bottom: 15px;
-                width: 100%;
-            }
-            
-            .step-number {
-                margin-right: 15px;
-                margin-bottom: 0;
-            }
-        }
-        
-        /* Animation */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .animate-fadein {
-            animation: fadeIn 0.6s ease-out forwards;
-        }
-        
-        .login-logo {
-            width: 100px;       
-            height: 100px;      
-            border-radius: 50%; 
-            object-fit: cover;  
-        }
-
-        /* Responsive Table Styles */
-@media (max-width: 768px) {
-    .table-container {
-        padding: 15px;
-    }
-    
-    /* Hide regular table on mobile */
-    #billingTable_wrapper .dataTables_scrollHead,
-    #billingTable_wrapper .dataTables_scrollBody .table {
-        display: none;
-    }
-    
-    /* Mobile card view */
-    .mobile-billing-cards {
-        display: block;
-    }
-    
-    .billing-card {
-        background: white;
-        border: 1px solid #e9ecef;
-        border-radius: 10px;
-        padding: 20px;
-        margin-bottom: 15px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        transition: all 0.3s ease;
-    }
-    
-    .billing-card:hover {
-        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-        transform: translateY(-2px);
-    }
-    
-    .card-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 8px 0;
-        border-bottom: 1px solid #f8f9fa;
-    }
-    
-    .card-row:last-child {
-        border-bottom: none;
-    }
-    
-    .card-label {
-        font-weight: 600;
-        color: #495057;
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    
-    .card-value {
-        color: #212529;
-        text-align: right;
-        font-size: 0.9rem;
-    }
-    
-    .card-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-        margin-top: 15px;
-        padding-top: 15px;
-        border-top: 1px solid #e9ecef;
-    }
-}
-
-/* Show mobile cards only on mobile */
-.mobile-billing-cards {
-    display: none;
-}
-
-@media (max-width: 768px) {
-    .mobile-billing-cards {
-        display: block;
-    }
-    
-    .table-responsive {
-        display: none;
-    }
-}
-
- /* Notification Styles (same as admin) */
+        /* Notification Styles */
         .notification-badge {
             position: absolute;
             top: -5px;
@@ -633,118 +553,174 @@
             text-align: center;
             color: #6c757d;
         }
-        /* Notification Styles */
-.notification-badge {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background-color: var(--primary-color);
-    color: white;
-    border-radius: 50%;
-    width: 18px;
-    height: 18px;
-    font-size: 0.7rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-}
+        
+        .notification-empty i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #dee2e6;
+        }
+        
+        /* Mobile overlay styles */
+        .mobile-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--overlay-color);
+            z-index: 1040;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
 
-.notification-dropdown {
-    width: 400px;
-    max-width: 90vw;
-}
+        .mobile-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
 
-.notification-item {
-    padding: 12px 15px;
-    border-bottom: 1px solid #f1f1f1;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
+        /* Mobile menu toggle button */
+        .mobile-menu-toggle {
+            font-size: 1.5rem;
+            padding: 0.25rem 0.5rem;
+            border: none;
+            background: transparent;
+            color: var(--primary-color);
+        }
+        
+        /* Responsive Table Styles */
+        @media (max-width: 768px) {
+            .table-container {
+                padding: 15px;
+            }
+            
+            /* Hide regular table on mobile */
+            #billingTable_wrapper .dataTables_scrollHead,
+            #billingTable_wrapper .dataTables_scrollBody .table {
+                display: none;
+            }
+            
+            /* Mobile card view */
+            .mobile-billing-cards {
+                display: block;
+            }
+            
+            .billing-card {
+                background: white;
+                border: 1px solid #e9ecef;
+                border-radius: 10px;
+                padding: 20px;
+                margin-bottom: 15px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                transition: all 0.3s ease;
+            }
+            
+            .billing-card:hover {
+                box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+                transform: translateY(-2px);
+            }
+            
+            .card-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 0;
+                border-bottom: 1px solid #f8f9fa;
+            }
+            
+            .card-row:last-child {
+                border-bottom: none;
+            }
+            
+            .card-label {
+                font-weight: 600;
+                color: #495057;
+                font-size: 0.85rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            
+            .card-value {
+                color: #212529;
+                text-align: right;
+                font-size: 0.9rem;
+            }
+            
+            .card-actions {
+                display: flex;
+                justify-content: flex-end;
+                gap: 10px;
+                margin-top: 15px;
+                padding-top: 15px;
+                border-top: 1px solid #e9ecef;
+            }
+        }
 
-.notification-item:hover {
-    background-color: #f8f9fa;
-}
+        /* Show mobile cards only on mobile */
+        .mobile-billing-cards {
+            display: none;
+        }
 
-.notification-item.unread {
-    background-color: rgba(211, 47, 47, 0.05);
-}
-
-.notification-item:last-child {
-    border-bottom: none;
-}
-
-.notification-title {
-    font-weight: 600;
-    margin-bottom: 4px;
-    font-size: 0.9rem;
-}
-
-.notification-message {
-    font-size: 0.85rem;
-    color: #6c757d;
-    margin-bottom: 5px;
-    line-height: 1.4;
-}
-
-.notification-time {
-    font-size: 0.75rem;
-    color: #adb5bd;
-}
-
-.notification-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 12px;
-    flex-shrink: 0;
-}
-
-.notification-icon.success {
-    background-color: rgba(40, 167, 69, 0.1);
-    color: #28a745;
-}
-
-.notification-icon.warning {
-    background-color: rgba(255, 193, 7, 0.1);
-    color: #ffc107;
-}
-
-.notification-icon.info {
-    background-color: rgba(0, 123, 255, 0.1);
-    color: #007bff;
-}
-
-.notification-icon.danger {
-    background-color: rgba(220, 53, 69, 0.1);
-    color: #dc3545;
-}
-
-.notification-actions {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 15px;
-    border-top: 1px solid #e9ecef;
-}
-
-.notification-empty {
-    padding: 30px 20px;
-    text-align: center;
-    color: #6c757d;
-}
-
-.notification-empty i {
-    font-size: 2rem;
-    margin-bottom: 10px;
-    color: #dee2e6;
-}
+        @media (max-width: 768px) {
+            .mobile-billing-cards {
+                display: block;
+            }
+            
+            .table-responsive {
+                display: none;
+            }
+        }
+        
+        @media (min-width: 992px) {
+            .sidebar {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 280px;
+                width: calc(100% - 280px);
+            }
+        }
+        
+        @media (max-width: 991px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            /* Don't move the main content when sidebar is active on mobile */
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+        }
+        
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fadein {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+        
+        .login-logo {
+            width: 100px;       
+            height: 100px;      
+            border-radius: 50%; 
+            object-fit: cover;  
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+
+<!-- Mobile Overlay -->
+<div class="mobile-overlay"></div>
 
 <!-- Sidebar -->
 <div class="sidebar">
@@ -772,177 +748,224 @@
 <!-- Main Content -->
 <div class="main-content">
     <!-- Header -->
-    <header class="header d-flex align-items-center">
-    <div class="ms-auto d-flex align-items-center">
-           <!-- Add to consumer dashboard header -->
-<div class="position-relative me-3">
-    <a href="#" class="text-decoration-none text-dark position-relative" id="notificationBell" data-bs-toggle="dropdown" aria-expanded="false">
-        <i class="bi bi-bell fs-5"></i>
-    </a>
-    <div class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationBell">
-        <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
-            <h6 class="mb-0">Notifications</h6>
-            <button class="btn btn-sm btn-outline-secondary" id="markAllAsRead">Mark all read</button>
-        </div>
-        <div id="notificationDropdown" style="max-height: 400px; overflow-y: auto;">
-            <div class="text-center p-3">
-                <div class="spinner-border spinner-border-sm"></div>
-                <span>Loading notifications...</span>
+    <header class="header">
+        <div class="header-left">
+            <button id="sidebarToggle" class="btn d-lg-none me-3 mobile-menu-toggle">
+                <i class="bi bi-list"></i>
+            </button>
+            <div>
+                <h2 class="header-title">Billing Management</h2>
             </div>
         </div>
-        <div class="notification-actions">
-            <a href="#" class="btn btn-sm btn-outline-primary w-100">View All Notifications</a>
-        </div>
-    </div>
-</div>
-        
-        <!-- User Dropdown -->
-        <div class="dropdown">
-            <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
-                <span>Consumer</span>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUser">
-                <li><a class="dropdown-item" href="#">Profile</a></li>
-                <li><a class="dropdown-item" href="#">Settings</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="admin-logout">Sign out</a></li>
-            </ul>
-        </div>
-    </div>
-</header>
-   
-    <!-- Billing History -->
-<div class="table-container">
-    <div class="table-title">
-        <h3>Billing History</h3>
-        <div>
-            <select class="form-select form-select-sm" id="statusFilter">
-                <option value="">All Status</option>
-                <option value="paid">Paid</option>
-                <option value="unpaid">Unpaid</option>
-                <option value="overdue">Overdue</option>
-            </select>
-        </div>
-    </div>
-    
-    <!-- Desktop Table View -->
-    <div class="table-responsive">
-        <table class="table table-hover" id="billingTable">
-            <!-- Your existing table content -->
-            <thead>
-                <tr>
-                    <th>Billing ID</th>
-                    <th>Billing Month</th>
-                    <th>Due Date</th>
-                    <th>Consumption (m³)</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($bills as $bill)
-                <tr>
-                    <td class="fw-medium">#{{ $loop->iteration }}</td>
-                    <td>{{ \Carbon\Carbon::parse($bill->reading_date)->format('F Y') }}</td>
-                    <td>{{ \Carbon\Carbon::parse($bill->due_date)->format('M d, Y') }}</td>
-                    <td>{{ $bill->consumption }} m³</td>
-                    <td class="fw-medium">₱{{ number_format($bill->total_amount, 2) }}</td>
-                    <td>
-                        @if($bill->status === 'paid')
-                            <span class="badge badge-paid">
-                                <i class="bi bi-check-circle-fill me-1"></i> Paid
-                            </span>
-                        @elseif($bill->status === 'unpaid')
-                            <span class="badge badge-unpaid">
-                                <i class="bi bi-exclamation-circle-fill me-1"></i> Unpaid
-                            </span>
-                        @else
-                            <span class="badge badge-overdue">
-                                <i class="bi bi-clock-fill me-1"></i> Overdue
-                            </span>
-                        @endif
-                    </td>
-                    <td>
-                        <div class="d-flex">
-                            @if($bill->status !== 'paid')
-                                <button class="btn btn-sm btn-success payment-btn me-1"
-                                    data-id="{{ $bill->id }}"
-                                    data-amount="{{ $bill->total_amount }}"
-                                    data-billno="{{ $loop->iteration }}">
-                                    <i class="bi bi-credit-card me-1"></i> Pay
-                                </button>
-                            @endif
-                            <button class="btn btn-sm btn-outline-primary receipt-btn" data-id="{{ $bill->id }}">
-                                <i class="bi bi-receipt"></i>
-                            </button>
+       
+        <div class="header-right">
+            <!-- Notifications -->
+            <div class="position-relative me-3">
+                <a href="#" class="text-decoration-none text-dark position-relative" id="notificationBell" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-bell fs-5"></i>
+                    
+                </a>
+                <div class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationBell">
+                    <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                        <h6 class="mb-0">Notifications</h6>
+                        <button class="btn btn-sm btn-outline-secondary" id="markAllAsRead">Mark all read</button>
+                    </div>
+                    <div id="notificationDropdown" style="max-height: 400px; overflow-y: auto;">
+                        <div class="notification-item unread">
+                            <div class="d-flex">
+                                <div class="notification-icon info">
+                                    <i class="bi bi-info-circle"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="notification-title">New Billing Statement</div>
+                                    <div class="notification-message">Your billing statement for June 2023 is now available.</div>
+                                    <div class="notification-time">2 hours ago</div>
+                                </div>
+                            </div>
                         </div>
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-    
-    <!-- Mobile Card View -->
-    <div class="mobile-billing-cards" id="mobileBillingCards">
-        @foreach($bills as $bill)
-        <div class="billing-card" data-bill-id="{{ $bill->id }}">
-            <div class="card-row">
-                <span class="card-label">Billing ID</span>
-                <span class="card-value fw-medium">#{{ $loop->iteration }}</span>
+                        <div class="notification-item unread">
+                            <div class="d-flex">
+                                <div class="notification-icon success">
+                                    <i class="bi bi-check-circle"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="notification-title">Payment Confirmed</div>
+                                    <div class="notification-message">Your payment for May 2023 has been confirmed.</div>
+                                    <div class="notification-time">1 day ago</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="notification-item">
+                            <div class="d-flex">
+                                <div class="notification-icon warning">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="notification-title">Payment Reminder</div>
+                                    <div class="notification-message">Your payment for April 2023 is due in 3 days.</div>
+                                    <div class="notification-time">3 days ago</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="notification-actions">
+                        <a href="#" class="btn btn-sm btn-outline-primary w-100">View All Notifications</a>
+                    </div>
+                </div>
             </div>
-            <div class="card-row">
-                <span class="card-label">Billing Month</span>
-                <span class="card-value">{{ \Carbon\Carbon::parse($bill->reading_date)->format('F Y') }}</span>
-            </div>
-            <div class="card-row">
-                <span class="card-label">Due Date</span>
-                <span class="card-value">{{ \Carbon\Carbon::parse($bill->due_date)->format('M d, Y') }}</span>
-            </div>
-            <div class="card-row">
-                <span class="card-label">Consumption</span>
-                <span class="card-value">{{ $bill->consumption }} m³</span>
-            </div>
-            <div class="card-row">
-                <span class="card-label">Amount</span>
-                <span class="card-value fw-medium">₱{{ number_format($bill->total_amount, 2) }}</span>
-            </div>
-            <div class="card-row">
-                <span class="card-label">Status</span>
-                <span class="card-value">
-                    @if($bill->status === 'paid')
-                        <span class="badge badge-paid">
-                            <i class="bi bi-check-circle-fill me-1"></i> Paid
-                        </span>
-                    @elseif($bill->status === 'unpaid')
-                        <span class="badge badge-unpaid">
-                            <i class="bi bi-exclamation-circle-fill me-1"></i> Unpaid
-                        </span>
-                    @else
-                        <span class="badge badge-overdue">
-                            <i class="bi bi-clock-fill me-1"></i> Overdue
-                        </span>
-                    @endif
-                </span>
-            </div>
-            <div class="card-actions">
-                @if($bill->status !== 'paid')
-                    <button class="btn btn-sm btn-success payment-btn"
-                        data-id="{{ $bill->id }}"
-                        data-amount="{{ $bill->total_amount }}"
-                        data-billno="{{ $loop->iteration }}">
-                        <i class="bi bi-credit-card me-1"></i> Pay
-                    </button>
-                @endif
-                <button class="btn btn-sm btn-outline-primary receipt-btn" data-id="{{ $bill->id }}">
-                    <i class="bi bi-receipt"></i> Receipt
-                </button>
+            
+            <!-- User Dropdown -->
+            <div class="dropdown">
+                <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                    <span>Consumer</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUser">
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item text-danger" href="admin-logout">
+                            <i class="bi bi-box-arrow-right me-2"></i>Sign Out
+                        </a>
+                    </li>
+                </ul>
             </div>
         </div>
-        @endforeach
+    </header>
+   
+    <div class="content-wrapper">
+        <!-- Billing History -->
+        <div class="table-container animate-fadein">
+            <div class="table-title">
+                <h3>Billing History</h3>
+                <div>
+                    <select class="form-select form-select-sm" id="statusFilter">
+                        <option value="">All Status</option>
+                        <option value="paid">Paid</option>
+                        <option value="unpaid">Unpaid</option>
+                        <option value="overdue">Overdue</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Desktop Table View -->
+            <div class="table-responsive">
+                <table class="table table-hover" id="billingTable">
+                    <thead>
+                        <tr>
+                            <th>Billing ID</th>
+                            <th>Billing Month</th>
+                            <th>Due Date</th>
+                            <th>Consumption (m³)</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($bills as $bill)
+                        <tr>
+                            <td class="fw-medium">#{{ $loop->iteration }}</td>
+                            <td>{{ \Carbon\Carbon::parse($bill->reading_date)->format('F Y') }}</td>
+                            <td>{{ \Carbon\Carbon::parse($bill->due_date)->format('M d, Y') }}</td>
+                            <td>{{ $bill->consumption }} m³</td>
+                            <td class="fw-medium">₱{{ number_format($bill->total_amount, 2) }}</td>
+                            <td>
+                                @if($bill->status === 'paid')
+                                    <span class="badge badge-paid">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Paid
+                                    </span>
+                                @elseif($bill->status === 'unpaid')
+                                    <span class="badge badge-unpaid">
+                                        <i class="bi bi-exclamation-circle-fill me-1"></i> Unpaid
+                                    </span>
+                                @else
+                                    <span class="badge badge-overdue">
+                                        <i class="bi bi-clock-fill me-1"></i> Overdue
+                                    </span>
+                                @endif
+                            </td>
+                            <td>
+                                <div class="d-flex">
+                                    @if($bill->status !== 'paid')
+                                        <button class="btn btn-sm btn-success payment-btn me-1"
+                                            data-id="{{ $bill->id }}"
+                                            data-amount="{{ $bill->total_amount }}"
+                                            data-billno="{{ $loop->iteration }}">
+                                            <i class="bi bi-credit-card me-1"></i> Pay
+                                        </button>
+                                    @endif
+                                    <button class="btn btn-sm btn-outline-primary receipt-btn" data-id="{{ $bill->id }}">
+                                        <i class="bi bi-receipt"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Mobile Card View -->
+            <div class="mobile-billing-cards" id="mobileBillingCards">
+                @foreach($bills as $bill)
+                <div class="billing-card" data-bill-id="{{ $bill->id }}">
+                    <div class="card-row">
+                        <span class="card-label">Billing ID</span>
+                        <span class="card-value fw-medium">#{{ $loop->iteration }}</span>
+                    </div>
+                    <div class="card-row">
+                        <span class="card-label">Billing Month</span>
+                        <span class="card-value">{{ \Carbon\Carbon::parse($bill->reading_date)->format('F Y') }}</span>
+                    </div>
+                    <div class="card-row">
+                        <span class="card-label">Due Date</span>
+                        <span class="card-value">{{ \Carbon\Carbon::parse($bill->due_date)->format('M d, Y') }}</span>
+                    </div>
+                    <div class="card-row">
+                        <span class="card-label">Consumption</span>
+                        <span class="card-value">{{ $bill->consumption }} m³</span>
+                    </div>
+                    <div class="card-row">
+                        <span class="card-label">Amount</span>
+                        <span class="card-value fw-medium">₱{{ number_format($bill->total_amount, 2) }}</span>
+                    </div>
+                    <div class="card-row">
+                        <span class="card-label">Status</span>
+                        <span class="card-value">
+                            @if($bill->status === 'paid')
+                                <span class="badge badge-paid">
+                                    <i class="bi bi-check-circle-fill me-1"></i> Paid
+                                </span>
+                            @elseif($bill->status === 'unpaid')
+                                <span class="badge badge-unpaid">
+                                    <i class="bi bi-exclamation-circle-fill me-1"></i> Unpaid
+                                </span>
+                            @else
+                                <span class="badge badge-overdue">
+                                    <i class="bi bi-clock-fill me-1"></i> Overdue
+                                </span>
+                            @endif
+                        </span>
+                    </div>
+                    <div class="card-actions">
+                        @if($bill->status !== 'paid')
+                            <button class="btn btn-sm btn-success payment-btn"
+                                data-id="{{ $bill->id }}"
+                                data-amount="{{ $bill->total_amount }}"
+                                data-billno="{{ $loop->iteration }}">
+                                <i class="bi bi-credit-card me-1"></i> Pay
+                            </button>
+                        @endif
+                        <button class="btn btn-sm btn-outline-primary receipt-btn" data-id="{{ $bill->id }}">
+                            <i class="bi bi-receipt"></i> Receipt
+                        </button>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
     </div>
-</div>
 
     <!-- Payment Modal -->
     <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
@@ -1104,89 +1127,126 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <!-- Add to CSS section -->
-<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.0/css/responsive.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.0/css/responsive.bootstrap5.min.css">
 
-<!-- Add before closing body tag -->
-<script src="https://cdn.datatables.net/responsive/2.4.0/js/dataTables.responsive.min.js"></script>
-<script src="https://cdn.datatables.net/responsive/2.4.0/js/responsive.bootstrap5.min.js"></script>
+    <!-- Add before closing body tag -->
+    <script src="https://cdn.datatables.net/responsive/2.4.0/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.4.0/js/responsive.bootstrap5.min.js"></script>
     
     <script>
     $(document).ready(function() {
-        // Initialize DataTable
-            const table = $('#billingTable').DataTable({
-        ordering: true,
-        searching: true,
-        responsive: true,
-        language: {
-            search: "_INPUT_",
-            searchPlaceholder: "Search bills...",
-            lengthMenu: "Show _MENU_ entries",
-            info: "Showing _START_ to _END_ of _TOTAL_ entries",
-        }
-    });
-    
-    // Apply status filter to both table and mobile cards
-    $('#statusFilter').change(function() {
-        const status = $(this).val();
+        // Mobile sidebar toggle functionality
+        const sidebar = $('.sidebar');
+        const mainContent = $('.main-content');
+        const header = $('.header');
+        const sidebarToggle = $('#sidebarToggle');
+        const mobileOverlay = $('.mobile-overlay');
         
-        if (status) {
-            // Filter desktop table
-            table.column(5).search(status).draw();
+        sidebarToggle.on('click', function() {
+            sidebar.toggleClass('active');
+            mobileOverlay.toggleClass('active');
             
-            // Filter mobile cards
-            $('.billing-card').show();
-            if (status !== '') {
-                $('.billing-card').each(function() {
-                    const $card = $(this);
-                    const statusBadge = $card.find('.badge').attr('class');
-                    let cardStatus = '';
-                    
-                    if (statusBadge.includes('badge-paid')) cardStatus = 'paid';
-                    else if (statusBadge.includes('badge-unpaid')) cardStatus = 'unpaid';
-                    else if (statusBadge.includes('badge-overdue')) cardStatus = 'overdue';
-                    
-                    if (cardStatus !== status) {
-                        $card.hide();
-                    }
-                });
+            // Add overlay to header when sidebar is active
+            if (sidebar.hasClass('active')) {
+                header.css('background-color', 'var(--overlay-color)');
+                $('body').css('overflow', 'hidden');
+            } else {
+                header.css('background-color', 'white');
+                $('body').css('overflow', '');
             }
-        } else {
-            // Show all
-            table.column(5).search('').draw();
-            $('.billing-card').show();
-        }
-    });
-    
-    // Handle window resize to toggle between table and cards
-    function checkViewMode() {
-        if ($(window).width() <= 768) {
-            $('.table-responsive').hide();
-            $('.mobile-billing-cards').show();
-        } else {
-            $('.table-responsive').show();
-            $('.mobile-billing-cards').hide();
-        }
-    }
-    
-    // Initial check
-    checkViewMode();
-    
-    // Check on resize
-    $(window).resize(function() {
-        checkViewMode();
-    });
-
+        });
         
-        // Apply status filter
+        // Close sidebar when clicking on overlay
+        mobileOverlay.on('click', function() {
+            sidebar.removeClass('active');
+            mobileOverlay.removeClass('active');
+            header.css('background-color', 'white');
+            $('body').css('overflow', '');
+        });
+        
+        // Close sidebar when clicking on a nav link (for mobile)
+        $('.sidebar-menu .nav-link').on('click', function() {
+            if ($(window).width() < 992) {
+                sidebar.removeClass('active');
+                mobileOverlay.removeClass('active');
+                header.css('background-color', 'white');
+                $('body').css('overflow', '');
+            }
+        });
+        
+        // Handle window resize
+        $(window).on('resize', function() {
+            // Close sidebar if window is resized to desktop size
+            if ($(window).width() >= 992) {
+                sidebar.removeClass('active');
+                mobileOverlay.removeClass('active');
+                header.css('background-color', 'white');
+                $('body').css('overflow', '');
+            }
+        });
+        
+        // Initialize DataTable
+        const table = $('#billingTable').DataTable({
+            ordering: true,
+            searching: true,
+            responsive: true,
+            language: {
+                search: "_INPUT_",
+                searchPlaceholder: "Search bills...",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ entries",
+            }
+        });
+        
+        // Apply status filter to both table and mobile cards
         $('#statusFilter').change(function() {
             const status = $(this).val();
-            const table = $('#billingTable').DataTable();
             
             if (status) {
+                // Filter desktop table
                 table.column(5).search(status).draw();
+                
+                // Filter mobile cards
+                $('.billing-card').show();
+                if (status !== '') {
+                    $('.billing-card').each(function() {
+                        const $card = $(this);
+                        const statusBadge = $card.find('.badge').attr('class');
+                        let cardStatus = '';
+                        
+                        if (statusBadge.includes('badge-paid')) cardStatus = 'paid';
+                        else if (statusBadge.includes('badge-unpaid')) cardStatus = 'unpaid';
+                        else if (statusBadge.includes('badge-overdue')) cardStatus = 'overdue';
+                        
+                        if (cardStatus !== status) {
+                            $card.hide();
+                        }
+                    });
+                }
             } else {
+                // Show all
                 table.column(5).search('').draw();
+                $('.billing-card').show();
             }
+        });
+        
+        // Handle window resize to toggle between table and cards
+        function checkViewMode() {
+            if ($(window).width() <= 768) {
+                $('.table-responsive').hide();
+                $('.mobile-billing-cards').show();
+            } else {
+                $('.table-responsive').show();
+                $('.mobile-billing-cards').hide();
+            }
+        }
+        
+        // Initial check
+        checkViewMode();
+        
+        // Check on resize
+        $(window).resize(function() {
+            checkViewMode();
         });
         
         // Variables to track payment process
@@ -1457,16 +1517,7 @@
                 }
             });
         });
-        
-        // Sidebar toggle for mobile
-        $('#sidebarToggle').click(function() {
-            $('.sidebar').toggleClass('active');
-            $('.main-content').toggleClass('active');
-        });
-
     });
-
-    
     </script>
 </body>
 </html>
