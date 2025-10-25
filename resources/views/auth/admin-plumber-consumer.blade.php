@@ -781,11 +781,7 @@
                     <i class="bi bi-people"></i> Reading
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="admin-plumber-disconnection">
-                    <i class="bi bi-x-circle"></i> Disconnection
-                </a>
-            </li>
+            
         </ul>
     </nav>
 </div>
