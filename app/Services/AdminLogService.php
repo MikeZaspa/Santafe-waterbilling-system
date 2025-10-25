@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Http;
 
 class AdminLogService
 {
-    public function logLogin(Admin $admin, Request $request, string $activity = 'login')
+    public function logLogin(Admin $admin, Request $request, string $activity = 'admin-login')
     {
         $ip = $request->ip();
         $geolocation = $this->getGeolocation($ip);

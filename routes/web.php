@@ -385,6 +385,7 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/admin-logs/filter', [AdminLogController::class, 'filter'])->name('admin.logs.filter');
     Route::get('/admin-logs/{log}', [AdminLogController::class, 'show'])->name('admin.logs.show');
 });
+
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/', function () {
     return view('auth.admin-login');
