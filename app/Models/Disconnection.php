@@ -12,23 +12,40 @@ class Disconnection extends Model
     protected $fillable = [
         'consumer_id',
         'billing_id',
+        'name',
+        'consumer_type',
+        'meter_no',
+        'previous_reading',
+        'current_reading',
+        'consumption',
+        'reading_date',
         'reason',
-        'notes',
         'disconnection_date',
+        'notes',
+        'disconnected_by',
+        'status',
         'reconnection_date',
-        'status'
+        'reconnection_fee'
     ];
 
     protected $casts = [
         'disconnection_date' => 'date',
+        'reading_date' => 'date',
         'reconnection_date' => 'date',
+        'reconnection_fee' => 'decimal:2'
     ];
 
+    /**
+     * Get the consumer that owns the disconnection.
+     */
     public function consumer()
     {
         return $this->belongsTo(AdminConsumer::class);
     }
 
+    /**
+     * Get the billing record that was disconnected.
+     */
     public function billing()
     {
         return $this->belongsTo(Billing::class);

@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
     <!-- Custom CSS -->
     <link rel="icon" type="image/png" href="image/santafe.png">
-   <style>
+    <style>
         :root {
             --primary-color: #d32f2f;
             --primary-light: #ff6659;
@@ -22,7 +22,6 @@
             --sidebar-text: rgba(255,255,255,0.9);
             --overlay-color: rgba(7, 7, 7, 0.1);
             --header-height: 70px;
-            --overlay-color: rgba(7, 7, 7, 0.1);
         }
         
         body {
@@ -344,6 +343,73 @@
             gap: 8px;
         }
         
+        /* Disconnection status styling */
+        .status-disconnected {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        
+        .status-connected {
+            color: #198754;
+            font-weight: 600;
+        }
+        
+        /* Disconnected consumer modal styles */
+        .disconnected-consumer-card {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .disconnected-consumer-card-header {
+            background-color: #fff3cd;
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .disconnected-consumer-card-body {
+            padding: 15px;
+        }
+        
+        .disconnected-consumer-card-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f1f1f1;
+        }
+        
+        .disconnected-consumer-card-row:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .disconnected-consumer-card-label {
+            font-weight: 500;
+            color: #6c757d;
+            flex: 1;
+        }
+        
+        .disconnected-consumer-card-value {
+            flex: 2;
+            text-align: right;
+        }
+        
+        .disconnected-consumer-card-actions {
+            padding: 10px 15px;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+        
         /* Cut consumer status styling */
         .status-cut {
             color: #dc3545;
@@ -585,6 +651,19 @@
                 padding: 8px 12px;
             }
             
+            /* Disconnected consumer modal mobile styles */
+            .disconnected-consumer-card-header {
+                padding: 10px 12px;
+            }
+            
+            .disconnected-consumer-card-body {
+                padding: 12px;
+            }
+            
+            .disconnected-consumer-card-actions {
+                padding: 8px 12px;
+            }
+            
             /* Cut consumer modal full screen on mobile */
             .cut-consumers-modal .modal-dialog {
                 margin: 0;
@@ -616,6 +695,38 @@
                 background: white;
                 padding: 1rem;
             }
+            
+            /* Disconnected consumer modal full screen on mobile */
+            .disconnected-consumers-modal .modal-dialog {
+                margin: 0;
+                max-width: 100%;
+                height: 100%;
+            }
+            
+            .disconnected-consumers-modal .modal-content {
+                height: 100%;
+                border-radius: 0;
+            }
+            
+            .disconnected-consumers-modal .modal-header {
+                position: sticky;
+                top: 0;
+                z-index: 1;
+                background: white;
+            }
+            
+            .disconnected-consumers-modal .modal-body {
+                padding: 1rem;
+                overflow-y: auto;
+                max-height: calc(100vh - 120px);
+            }
+            
+            .disconnected-consumers-modal .modal-footer {
+                position: sticky;
+                bottom: 0;
+                background: white;
+                padding: 1rem;
+            }
         }
         
         /* DataTables responsive */
@@ -642,17 +753,6 @@
                 float: none;
                 text-align: center;
             }
-        }
-        
-        /* Disconnection status styling */
-        .status-disconnected {
-            color: #dc3545;
-            font-weight: 600;
-        }
-        
-        .status-connected {
-            color: #198754;
-            font-weight: 600;
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -733,18 +833,20 @@
             <div class="row">
                 <div class="col-12">
                     <div class="card animate-fadein">
-                        <!-- Cut Consumers List Button - Add to card header -->
-                            <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center">
-                                <h5 class="mb-2 mb-md-0">Water Consumption Records</h5>
-                                <div>
-                                    <button class="btn btn-primary btn-sm btn-md me-2" data-bs-toggle="modal" data-bs-target="#addBillingModal">
-                                        <i class="bi bi-plus-circle me-1 me-md-2"></i>Add Reading
-                                    </button>
-                                    <button class="btn btn-outline-danger btn-sm btn-md" id="viewCutConsumersBtn">
-                                        <i class="bi bi-archive me-1 me-md-2"></i>View Cut Consumers
-                                    </button>
-                                </div>
+                        <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                            <h5 class="mb-2 mb-md-0">Water Consumption Records</h5>
+                            <div>
+                                <button class="btn btn-primary btn-sm btn-md me-2" data-bs-toggle="modal" data-bs-target="#addBillingModal">
+                                    <i class="bi bi-plus-circle me-1 me-md-2"></i>Add Reading
+                                </button>
+                                <button class="btn btn-outline-warning btn-sm btn-md me-2" id="viewDisconnectedConsumersBtn">
+                                    <i class="bi bi-x-circle me-1 me-md-2"></i>View Disconnected
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm btn-md" id="viewCutConsumersBtn">
+                                    <i class="bi bi-archive me-1 me-md-2"></i>View Cut Consumers
+                                </button>
                             </div>
+                        </div>
                         <div class="card-body">
                             <!-- Desktop Table View -->
                             <div class="table-responsive desktop-table-view">
@@ -961,6 +1063,55 @@
     </div>
 </div>
 
+<!-- Disconnected Consumers List Modal -->
+<div class="modal fade disconnected-consumers-modal" id="disconnectedConsumersListModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-x-circle me-2"></i>
+                    <span id="disconnectedConsumersCount">Disconnected Consumers List</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Desktop Table View -->
+                <div class="table-responsive desktop-table-view">
+                    <table class="table table-hover" id="disconnectedConsumersTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Consumer Name</th>
+                                <th>Type</th>
+                                <th>Meter No.</th>
+                                <th>Previous</th>
+                                <th>Current</th>
+                                <th>Consumption</th>
+                                <th>Reading Date</th>
+                                <th>Disconnection Date</th>
+                                <th>Reason</th>
+                                <th>Notes</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data will be loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Mobile Card View -->
+                <div class="mobile-card-view" id="disconnectedConsumersCards">
+                    <!-- Cards will be loaded dynamically -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Cut Consumers List Modal -->
 <div class="modal fade cut-consumers-modal" id="cutConsumersListModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl">
@@ -1141,10 +1292,12 @@
                 }
             },
             {
-                data: 'disconnection_status',
-                name: 'disconnection_status',
+                data: 'id',
+                name: 'status',
                 render: function(data, type, row) {
-                    if (data === 'disconnected') {
+                    // Check if consumer is disconnected
+                    const consumer = row.consumer;
+                    if (consumer && consumer.status === 'disconnected') {
                         return '<span class="status-disconnected">Disconnected</span>';
                     } else {
                         return '<span class="status-connected">Connected</span>';
@@ -1157,28 +1310,37 @@
                 orderable: false,
                 searchable: false,
                 render: function(data, type, row) {
-                    const disconnectBtn = row.disconnection_status === 'disconnected' 
-                        ? `<button class="btn btn-sm btn-success btn-action reconnect-btn" data-id="${data}" data-consumer-id="${row.consumer_id}" title="Reconnect">
-                                <i class="bi bi-check-circle"></i>
-                            </button>`
-                        : `<button class="btn btn-sm btn-warning btn-action disconnect-btn" data-id="${data}" data-consumer-id="${row.consumer_id}" title="Disconnect">
-                                <i class="bi bi-x-circle"></i>
-                            </button>`;
-                    
-                    return `
-                        <div class="btn-group">
-                            <button class="btn btn-sm btn-primary btn-action edit-btn" data-id="${data}" title="Edit">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            ${disconnectBtn}
-                            <button class="btn btn-sm btn-danger btn-action cut-btn" data-id="${data}" data-consumer-id="${row.consumer_id}" title="Cut Consumer">
-                                <i class="bi bi-scissors"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger btn-action delete-btn" data-id="${data}" title="Delete">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
-                    `;
+                    // Check if consumer is disconnected
+                    const consumer = row.consumer;
+                    if (consumer && consumer.status === 'disconnected') {
+                        return `
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-success btn-action reconnect-btn" data-id="${data}" data-consumer-id="${row.consumer_id}" title="Reconnect">
+                                    <i class="bi bi-check-circle"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger btn-action cut-btn" data-id="${data}" data-consumer-id="${row.consumer_id}" title="Cut Consumer">
+                                    <i class="bi bi-scissors"></i>
+                                </button>
+                            </div>
+                        `;
+                    } else {
+                        return `
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-primary btn-action edit-btn" data-id="${data}" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-warning btn-action disconnect-btn" data-id="${data}" data-consumer-id="${row.consumer_id}" title="Disconnect">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger btn-action cut-btn" data-id="${data}" data-consumer-id="${row.consumer_id}" title="Cut Consumer">
+                                    <i class="bi bi-scissors"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger btn-action delete-btn" data-id="${data}" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        `;
+                    }
                 }
             }
         ],
@@ -1231,23 +1393,38 @@
                 }) : 
                 'N/A';
                 
-            const status = item.disconnection_status === 'disconnected' 
-                ? '<span class="status-disconnected">Disconnected</span>' 
-                : '<span class="status-connected">Connected</span>';
-                
-            const disconnectBtn = item.disconnection_status === 'disconnected' 
-                ? `<button class="btn btn-sm btn-success btn-action reconnect-btn" data-id="${item.id}" data-consumer-id="${item.consumer_id}" title="Reconnect">
-                        <i class="bi bi-check-circle"></i>
-                    </button>`
-                : `<button class="btn btn-sm btn-warning btn-action disconnect-btn" data-id="${item.id}" data-consumer-id="${item.consumer_id}" title="Disconnect">
-                        <i class="bi bi-x-circle"></i>
-                    </button>`;
+            // Check if consumer is disconnected
+            const consumer = item.consumer;
+            let status, actions;
             
-            // Add cut button to mobile card actions
-            const cutBtn = `<button class="btn btn-sm btn-danger btn-action cut-btn" data-id="${item.id}" data-consumer-id="${item.consumer_id}" title="Cut Consumer">
-                                <i class="bi bi-scissors"></i>
-                            </button>`;
-                
+            if (consumer && consumer.status === 'disconnected') {
+                status = '<span class="status-disconnected">Disconnected</span>';
+                actions = `
+                    <button class="btn btn-sm btn-success btn-action reconnect-btn" data-id="${item.id}" data-consumer-id="${item.consumer_id}" title="Reconnect">
+                        <i class="bi bi-check-circle"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger btn-action cut-btn" data-id="${item.id}" data-consumer-id="${item.consumer_id}" title="Cut Consumer">
+                        <i class="bi bi-scissors"></i>
+                    </button>
+                `;
+            } else {
+                status = '<span class="status-connected">Connected</span>';
+                actions = `
+                    <button class="btn btn-sm btn-primary btn-action edit-btn" data-id="${item.id}" title="Edit">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-warning btn-action disconnect-btn" data-id="${item.id}" data-consumer-id="${item.consumer_id}" title="Disconnect">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger btn-action cut-btn" data-id="${item.id}" data-consumer-id="${item.consumer_id}" title="Cut Consumer">
+                        <i class="bi bi-scissors"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger btn-action delete-btn" data-id="${item.id}" title="Delete">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                `;
+            }
+            
             const card = `
                 <div class="billing-card" data-id="${item.id}">
                     <div class="billing-card-header">
@@ -1285,14 +1462,7 @@
                         </div>
                     </div>
                     <div class="billing-card-actions">
-                        <button class="btn btn-sm btn-primary btn-action edit-btn" data-id="${item.id}" title="Edit">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        ${disconnectBtn}
-                        ${cutBtn}
-                        <button class="btn btn-sm btn-danger btn-action delete-btn" data-id="${item.id}" title="Delete">
-                            <i class="bi bi-trash"></i>
-                        </button>
+                        ${actions}
                     </div>
                 </div>
             `;
@@ -1327,7 +1497,7 @@
     // Function to fetch consumers and populate dropdown
     function fetchConsumers() {
         $.ajax({
-            url: '/admin-consumer/create',
+            url: '/billings/create',
             type: 'GET',
             dataType: 'json',
             beforeSend: function() {
@@ -1610,7 +1780,6 @@
         });
     });
     
-
     // Delete billing record
     $(document).on('click', '.delete-btn', function() {
         const billingId = $(this).data('id');
@@ -1672,7 +1841,7 @@
             consumerName = 'Unknown Consumer';
         }
     
-        console.log('Disconnect consumer:', { billingId, consumerId, consumerName });
+        console.log('Disconnect consumer:', { billingId, consumerId, consumerName }); // Debug log
         
         // Set values in the disconnection modal
         $('#disconnect_consumer_id').val(consumerId);
@@ -1680,24 +1849,11 @@
         $('#consumerInfo').val(consumerName);
         $('#disconnectionDate').val(new Date().toISOString().split('T')[0]);
         
-        // Show confirmation dialog
-        Swal.fire({
-            title: 'Disconnect Consumer?',
-            text: `Are you sure you want to disconnect ${consumerName}?`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#fd7e14',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Yes, Disconnect',
-            cancelButtonText: 'Cancel'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Show the disconnection modal for additional details
-                $('#disconnectionModal').modal('show');
-            }
-        });
+        // Show the disconnection modal
+        $('#disconnectionModal').modal('show');
     });
 
+    // Confirm disconnection
     $('#confirmDisconnect').click(function() {
         const formData = $('#disconnectionForm').serialize();
         
@@ -1797,77 +1953,318 @@
         });
     });
 
-    // View Cut Consumers functionality
- $('#viewCutConsumersBtn').click(function() {
-    showCutConsumersModal();
+    // View Disconnected Consumers functionality
+    $('#viewDisconnectedConsumersBtn').click(function() {
+        showDisconnectedConsumersModal();
+    });
+
+    function showDisconnectedConsumersModal() {
+        $.ajax({
+            url: '/disconnections',
+            type: 'GET',
+            beforeSend: function() {
+                // Show loading state
+                $('#viewDisconnectedConsumersBtn').prop('disabled', true).html(
+                    '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...'
+                );
+            },
+            complete: function() {
+                $('#viewDisconnectedConsumersBtn').prop('disabled', false).html(
+                    '<i class="bi bi-x-circle me-1 me-md-2"></i>View Disconnected'
+                );
+            },
+            success: function(response) {
+                if (!response.data || response.data.length === 0) {
+                    showInfoAlert('No Disconnected Consumers', 'There are no disconnected consumers to display.');
+                    return;
+                }
+
+                // Update the modal title with count
+                $('#disconnectedConsumersCount').text(`Disconnected Consumers List (${response.data.length} records)`);
+                
+                // Populate desktop table
+                populateDisconnectedConsumersTable(response.data);
+                
+                // Populate mobile cards
+                populateDisconnectedConsumersCards(response.data);
+                
+                // Show the modal
+                const modal = new bootstrap.Modal(document.getElementById('disconnectedConsumersListModal'));
+                modal.show();
+                
+                // Initialize DataTable for desktop view
+                if ($(window).width() >= 992) {
+                    // Check if DataTable already exists
+                    if ($.fn.DataTable.isDataTable('#disconnectedConsumersTable')) {
+                        // Destroy the existing DataTable
+                        $('#disconnectedConsumersTable').DataTable().destroy();
+                    }
+                    
+                    // Initialize a new DataTable
+                    $('#disconnectedConsumersTable').DataTable({
+                        pageLength: 10,
+                        order: [[8, 'desc']], // Sort by disconnection date descending
+                        language: {
+                            search: "Search disconnected consumers:",
+                            lengthMenu: "Show _MENU_ entries"
+                        }
+                    });
+                }
+            },
+            error: function(xhr) {
+                showErrorAlert('Error!', 'Failed to load disconnected consumers list');
+            }
+        });
+    }
+
+    function populateDisconnectedConsumersTable(data) {
+        const tbody = $('#disconnectedConsumersTable tbody');
+        tbody.empty();
+        
+        data.forEach((consumer, index) => {
+            const row = `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${consumer.name}</td>
+                    <td><span class="badge bg-secondary">${consumer.consumer_type}</span></td>
+                    <td>${consumer.meter_no}</td>
+                    <td class="decimal-align">${consumer.previous_reading ? parseFloat(consumer.previous_reading).toFixed(2) : '0.00'}</td>
+                    <td class="decimal-align">${consumer.current_reading ? parseFloat(consumer.current_reading).toFixed(2) : '0.00'}</td>
+                    <td class="decimal-align">${consumer.consumption ? parseFloat(consumer.consumption).toFixed(2) : '0.00'}</td>
+                    <td class="date-column">${new Date(consumer.reading_date).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    })}</td>
+                    <td class="date-column">${new Date(consumer.disconnection_date).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    })}</td>
+                    <td>${consumer.reason}</td>
+                    <td>${consumer.notes || '-'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-success restore-disconnected-btn" data-id="${consumer.id}" title="Restore Consumer">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i>Restore
+                        </button>
+                    </td>
+                </tr>
+            `;
+            tbody.append(row);
+        });
+    }
+
+    function populateDisconnectedConsumersCards(data) {
+        const cardsContainer = $('#disconnectedConsumersCards');
+        cardsContainer.empty();
+        
+        data.forEach((consumer, index) => {
+            const card = `
+                <div class="disconnected-consumer-card" data-id="${consumer.id}">
+                    <div class="disconnected-consumer-card-header">
+                        <span>#${index + 1}</span>
+                        <span class="badge bg-secondary">${consumer.consumer_type}</span>
+                    </div>
+                    <div class="disconnected-consumer-card-body">
+                        <div class="disconnected-consumer-card-row">
+                            <span class="disconnected-consumer-card-label">Consumer Name:</span>
+                            <span class="disconnected-consumer-card-value">${consumer.name}</span>
+                        </div>
+                        <div class="disconnected-consumer-card-row">
+                            <span class="disconnected-consumer-card-label">Meter No:</span>
+                            <span class="disconnected-consumer-card-value">${consumer.meter_no}</span>
+                        </div>
+                        <div class="disconnected-consumer-card-row">
+                            <span class="disconnected-consumer-card-label">Previous:</span>
+                            <span class="disconnected-consumer-card-value">${consumer.previous_reading ? parseFloat(consumer.previous_reading).toFixed(2) : '0.00'} cu.m</span>
+                        </div>
+                        <div class="disconnected-consumer-card-row">
+                            <span class="disconnected-consumer-card-label">Current:</span>
+                            <span class="disconnected-consumer-card-value">${consumer.current_reading ? parseFloat(consumer.current_reading).toFixed(2) : '0.00'} cu.m</span>
+                        </div>
+                        <div class="disconnected-consumer-card-row">
+                            <span class="disconnected-consumer-card-label">Consumption:</span>
+                            <span class="disconnected-consumer-card-value">${consumer.consumption ? parseFloat(consumer.consumption).toFixed(2) : '0.00'} cu.m</span>
+                        </div>
+                        <div class="disconnected-consumer-card-row">
+                            <span class="disconnected-consumer-card-label">Reading Date:</span>
+                            <span class="disconnected-consumer-card-value">${new Date(consumer.reading_date).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                            })}</span>
+                        </div>
+                        <div class="disconnected-consumer-card-row">
+                            <span class="disconnected-consumer-card-label">Disconnection Date:</span>
+                            <span class="disconnected-consumer-card-value">${new Date(consumer.disconnection_date).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                            })}</span>
+                        </div>
+                        <div class="disconnected-consumer-card-row">
+                            <span class="disconnected-consumer-card-label">Reason:</span>
+                            <span class="disconnected-consumer-card-value">${consumer.reason}</span>
+                        </div>
+                        <div class="disconnected-consumer-card-row">
+                            <span class="disconnected-consumer-card-label">Notes:</span>
+                            <span class="disconnected-consumer-card-value">${consumer.notes || '-'}</span>
+                        </div>
+                    </div>
+                    <div class="disconnected-consumer-card-actions">
+                        <button class="btn btn-sm btn-success restore-disconnected-btn" data-id="${consumer.id}" title="Restore Consumer">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i>Restore
+                        </button>
+                    </div>
+                </div>
+            `;
+            cardsContainer.append(card);
+        });
+    }
+
+    // Restore disconnected consumer functionality
+ $(document).on('click', '.restore-disconnected-btn', function() {
+    const consumerId = $(this).data('id');
+    let consumerName = '';
+    
+    // Get consumer name based on view type
+    if ($(window).width() >= 992) {
+        // Desktop view
+        consumerName = $(this).closest('tr').find('td:eq(1)').text().trim();
+    } else {
+        // Mobile view
+        const card = $(this).closest('.disconnected-consumer-card');
+        consumerName = card.find('.disconnected-consumer-card-row:first-child .disconnected-consumer-card-value').text().trim();
+    }
+    
+    restoreDisconnectedConsumer(consumerId, consumerName);
 });
 
-function showCutConsumersModal() {
-    $.ajax({
-        url: '/cut-consumers',
-        type: 'GET',
-        beforeSend: function() {
+function restoreDisconnectedConsumer(consumerId, consumerName) {
+    Swal.fire({
+        title: 'Restore Consumer?',
+        html: `
+            <p>Are you sure you want to restore <strong>${consumerName}</strong>?</p>
+            <p class="text-info"><i class="bi bi-info-circle me-2"></i>A reconnection fee of ₱500 will be applied.</p>
+            <div class="form-group mt-3">
+                <label for="reconnectionNotes" class="form-label">Notes (Optional)</label>
+                <textarea id="reconnectionNotes" class="form-control" rows="3" placeholder="Add any notes about this reconnection..."></textarea>
+            </div>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#198754',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, Restore Consumer',
+        cancelButtonText: 'Cancel',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const notes = document.getElementById('reconnectionNotes').value;
+            
             // Show loading state
-            $('#viewCutConsumersBtn').prop('disabled', true).html(
-                '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...'
-            );
-        },
-        complete: function() {
-            $('#viewCutConsumersBtn').prop('disabled', false).html(
-                '<i class="bi bi-archive me-1 me-md-2"></i>View Cut Consumers'
-            );
-        },
-        success: function(response) {
-            if (!response.data || response.data.length === 0) {
-                showInfoAlert('No Cut Consumers', 'There are no cut consumers to display.');
-                return;
-            }
-
-            // Update the modal title with count
-            $('#cutConsumersCount').text(`Cut Consumers List (${response.data.length} records)`);
-            
-            // Populate desktop table
-            populateCutConsumersTable(response.data);
-            
-            // Populate mobile cards
-            populateCutConsumersCards(response.data);
-            
-            // Show the modal
-            const modal = new bootstrap.Modal(document.getElementById('cutConsumersListModal'));
-            modal.show();
-            
-            // Initialize DataTable for desktop view - FIX IS HERE
-            if ($(window).width() >= 992) {
-                // Check if DataTable already exists
-                if ($.fn.DataTable.isDataTable('#cutConsumersTable')) {
-                    // Destroy the existing DataTable
-                    $('#cutConsumersTable').DataTable().destroy();
+            Swal.fire({
+                title: 'Restoring Consumer...',
+                text: 'Please wait while we restore the consumer',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
                 }
-                
-                // Initialize a new DataTable
-                $('#cutConsumersTable').DataTable({
-                    pageLength: 10,
-                    order: [[4, 'desc']], // Sort by cut date descending
-                    language: {
-                        search: "Search cut consumers:",
-                        lengthMenu: "Show _MENU_ entries"
-                    }
-                });
-            }
-        },
-        error: function(xhr) {
-            showErrorAlert('Error!', 'Failed to load cut consumers list');
+            });
+
+            $.ajax({
+                url: `/disconnections/${consumerId}/restore`,
+                type: 'POST',
+                data: {
+                    notes: notes,
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    Swal.close();
+                    showSuccessAlert('Success!', response.message);
+                    
+                    // Close the disconnected consumers modal
+                    $('#disconnectedConsumersListModal').modal('hide');
+                    
+                    // Reload the main billing table to show the restored consumer
+                    table.ajax.reload(null, false);
+                    
+                    // Show a success message with the restored consumer's name
+                    showSuccessToast(`${consumerName} has been successfully restored!`);
+                },
+                error: function(xhr) {
+                    Swal.close();
+                    const errorMessage = xhr.responseJSON?.message || 'Failed to restore consumer';
+                    showErrorAlert('Restoration Failed!', errorMessage);
+                }
+            });
         }
     });
 }
 
-// Also, we need to clean up the DataTable when the modal is hidden
- $('#cutConsumersListModal').on('hidden.bs.modal', function () {
-    // Destroy the DataTable if it exists
-    if ($.fn.DataTable.isDataTable('#cutConsumersTable')) {
-        $('#cutConsumersTable').DataTable().destroy();
+    // View Cut Consumers functionality
+    $('#viewCutConsumersBtn').click(function() {
+        showCutConsumersModal();
+    });
+
+    function showCutConsumersModal() {
+        $.ajax({
+            url: '/cut-consumers',
+            type: 'GET',
+            beforeSend: function() {
+                // Show loading state
+                $('#viewCutConsumersBtn').prop('disabled', true).html(
+                    '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...'
+                );
+            },
+            complete: function() {
+                $('#viewCutConsumersBtn').prop('disabled', false).html(
+                    '<i class="bi bi-archive me-1 me-md-2"></i>View Cut Consumers'
+                );
+            },
+            success: function(response) {
+                if (!response.data || response.data.length === 0) {
+                    showInfoAlert('No Cut Consumers', 'There are no cut consumers to display.');
+                    return;
+                }
+
+                // Update the modal title with count
+                $('#cutConsumersCount').text(`Cut Consumers List (${response.data.length} records)`);
+                
+                // Populate desktop table
+                populateCutConsumersTable(response.data);
+                
+                // Populate mobile cards
+                populateCutConsumersCards(response.data);
+                
+                // Show the modal
+                const modal = new bootstrap.Modal(document.getElementById('cutConsumersListModal'));
+                modal.show();
+                
+                // Initialize DataTable for desktop view
+                if ($(window).width() >= 992) {
+                    // Check if DataTable already exists
+                    if ($.fn.DataTable.isDataTable('#cutConsumersTable')) {
+                        // Destroy the existing DataTable
+                        $('#cutConsumersTable').DataTable().destroy();
+                    }
+                    
+                    // Initialize a new DataTable
+                    $('#cutConsumersTable').DataTable({
+                        pageLength: 10,
+                        order: [[4, 'desc']], // Sort by cut date descending
+                        language: {
+                            search: "Search cut consumers:",
+                            lengthMenu: "Show _MENU_ entries"
+                        }
+                    });
+                }
+            },
+            error: function(xhr) {
+                showErrorAlert('Error!', 'Failed to load cut consumers list');
+            }
+        });
     }
-});
 
     function populateCutConsumersTable(data) {
         const tbody = $('#cutConsumersTable tbody');
@@ -1934,7 +2331,6 @@ function showCutConsumersModal() {
                             <span class="cut-consumer-card-label">Notes:</span>
                             <span class="cut-consumer-card-value">${consumer.notes || '-'}</span>
                         </div>
-                        </div>
                     </div>
                     <div class="cut-consumer-card-actions">
                         <button class="btn btn-sm btn-success restore-btn" data-id="${consumer.id}" title="Restore Consumer">
@@ -1947,7 +2343,7 @@ function showCutConsumersModal() {
         });
     }
 
-    // Restore consumer functionality - IMPROVED FOR BOTH VIEWS
+    // Restore consumer functionality
     $(document).on('click', '.restore-btn', function() {
         const consumerId = $(this).data('id');
         let consumerName = '';
@@ -2133,6 +2529,20 @@ function showCutConsumersModal() {
         });
     }
 
+    // Clean up DataTables when modals are hidden
+    $('#disconnectedConsumersListModal').on('hidden.bs.modal', function () {
+        // Destroy the DataTable if it exists
+        if ($.fn.DataTable.isDataTable('#disconnectedConsumersTable')) {
+            $('#disconnectedConsumersTable').DataTable().destroy();
+        }
+    });
+
+    $('#cutConsumersListModal').on('hidden.bs.modal', function () {
+        // Destroy the DataTable if it exists
+        if ($.fn.DataTable.isDataTable('#cutConsumersTable')) {
+            $('#cutConsumersTable').DataTable().destroy();
+        }
+    });
 });
 </script>
 </body>

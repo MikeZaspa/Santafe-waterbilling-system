@@ -289,12 +289,16 @@ Route::get('/consumer-information', [AuthController::class, 'showInformation'])-
 Route::get('/admin-plumber-disconnection', [AuthController::class, 'showDisconnectionForm'])->name('admin-plumber-disconnection');
 Route::post('/admin-plumber-disconnection', [AuthController::class,'admindisconnection']);
 
-Route::post('/disconnections', [DisconnectionController::class, 'store']);
-Route::post('/disconnections/{billing}/reconnect', [DisconnectionController::class, 'reconnect']);
-Route::get('/admin-plumber-disconnection', [DisconnectionController::class, 'index']);
+// Disconnection routes
+Route::get('/disconnections', [BillingController::class, 'getDisconnectedConsumers']);
+Route::post('/disconnections', [BillingController::class, 'disconnect']);
+Route::post('/disconnections/{id}/restore', [BillingController::class, 'restoreDisconnectedConsumer']);
 
 // Fix: Add the missing route for plumber reconnection
 Route::post('/admin-plumber-disconnection/{disconnection}/reconnect', [DisconnectionController::class, 'reconnect'])->name('admin.plumber.disconnection.reconnect');
+// In your routes/web.php
+
+Route::post('/disconnections/{id}/restore', [ReadingController::class, 'reconnect']);
 
 Route::get('/main-form', [AuthController::class, 'showMainForm'])->name('main-form');
 Route::post('/main-form', [AuthController::class, 'main']);
