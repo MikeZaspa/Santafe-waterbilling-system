@@ -259,29 +259,37 @@ public function disconnect(Request $request)
 
     /**
      * Get all disconnected consumers
-     */
-    public function getDisconnectedConsumers()
-    {
-        try {
-            $disconnectedConsumers = Disconnection::orderBy('disconnection_date', 'desc')->get();
+     *//**
+ * Get all disconnected consumers
+ */
+public function getDisconnectedConsumers()
+{
+    try {
+        // Only get consumers that are still disconnected (not reconnected)
+        $disconnectedConsumers = Disconnection::where('status', 'disconnected')
+            ->orderBy('disconnection_date', 'desc')
+            ->get();
 
-            return response()->json([
-                'success' => true,
-                'data' => $disconnectedConsumers
-            ]);
+        return response()->json([
+            'success' => true,
+            'data' => $disconnectedConsumers
+        ]);
 
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load disconnected consumers: ' . $e->getMessage()
-            ], 500);
-        }
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to load disconnected consumers: ' . $e->getMessage()
+        ], 500);
     }
+}
 
     /**
      * Restore a disconnected consumer
      */
     /**
+ * Restore a disconnected consumer and move back to billing records
+ */
+/**
  * Restore a disconnected consumer and move back to billing records
  */
 public function restoreDisconnectedConsumer(Request $request, $id)
