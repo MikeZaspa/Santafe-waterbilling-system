@@ -316,12 +316,6 @@
                 <span>Log In</span>
             </button>
             
-            <div class="recaptcha-info">
-                This site is protected by reCAPTCHA and the Google 
-                <a href="https://policies.google.com/privacy" target="_blank">Privacy Policy</a> and
-                <a href="https://policies.google.com/terms" target="_blank">Terms of Service</a> apply.
-            </div>
-            
             <div class="text-center mt-3">
                 <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#portalModal">
                     Access Other Portals
