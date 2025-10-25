@@ -32,6 +32,7 @@ use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\NoticeController;
+use App\Http\Controllers\AdminLogController;
 
 Route::get('/admin-register', [AuthController::class, 'showRegistrationForm'])->name('admin-register');
 Route::post('/admin-register', [AuthController::class, 'register']);
@@ -374,8 +375,12 @@ Route::post('/cut-consumers', [BillingController::class, 'cutConsumer'])->name('
 Route::get('/cut-consumers', [BillingController::class, 'getCutConsumers'])->name('cut-consumers.index');
 Route::post('/cut-consumers/{id}/restore', [BillingController::class, 'restoreConsumer'])->name('cut-consumers.restore');
 
-
-
+// Admin log routes
+Route::middleware(['auth:admin'])->group(function () {
+    Route::get('/admin-logs', [AdminLogController::class, 'index'])->name('admin.logs');
+    Route::get('/admin-logs/filter', [AdminLogController::class, 'filter'])->name('admin.logs.filter');
+    Route::get('/admin-logs/{log}', [AdminLogController::class, 'show'])->name('admin.logs.show');
+});
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/', function () {
     return view('auth.admin-login');

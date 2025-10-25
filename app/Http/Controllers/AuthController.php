@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Admin;
+use App\Services\AdminLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -13,6 +14,14 @@ use App\Mail\VerificationCodeMail;
 
 class AuthController extends Controller
 {
+
+     protected $adminLogService;
+
+    public function __construct(AdminLogService $adminLogService)
+    {
+        $this->adminLogService = $adminLogService;
+    }
+
     public function showRegistrationForm()
     {
         return view('auth.admin-register');
@@ -287,56 +296,97 @@ class AuthController extends Controller
     }
     
     public function login(Request $request)
-{
-    $validator = Validator::make($request->all(), [
-        'email' => 'required|email',
-        'password' => 'required',
-    ]);
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
 
-    if ($validator->fails()) {
-        return redirect()->back()
-            ->withErrors($validator)
-            ->withInput();
-    }
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
 
-    $credentials = $request->only('email', 'password');
+        $credentials = $request->only('email', 'password');
 
-    // Check if admin exists first
-    $admin = Admin::where('email', $request->email)->first();
+        // Check if admin exists first
+        $admin = Admin::where('email', $request->email)->first();
 
-    if (!$admin) {
-        return back()->withErrors([
-            'email' => 'The provided email does not exist in our system.',
-        ])->onlyInput('email');
-    }
-    
-    // Check if email is verified
-    if (!$admin->email_verified_at) {
-        // Store email in session for verification
-        $request->session()->put('verification_email', $admin->email);
+        if (!$admin) {
+            // Log failed login attempt
+            $this->adminLogService->logActivity(
+                null, 
+                'failed_login_attempt - email_not_found', 
+                $request
+            );
+
+            return back()->withErrors([
+                'email' => 'The provided email does not exist in our system.',
+            ])->onlyInput('email');
+        }
         
-        return redirect()->route('verify')
-            ->with('error', 'Please verify your email address before logging in.');
-    }
+        // Check if email is verified
+        if (!$admin->email_verified_at) {
+            // Store email in session for verification
+            $request->session()->put('verification_email', $admin->email);
+            
+            return redirect()->route('verify')
+                ->with('error', 'Please verify your email address before logging in.');
+        }
 
-    // Check if admin is active
-    if (!$admin->active) {
+        // Check if admin is active
+        if (!$admin->active) {
+            // Log attempted login to inactive account
+            $this->adminLogService->logActivity(
+                $admin, 
+                'failed_login_attempt - account_inactive', 
+                $request
+            );
+
+            return back()->withErrors([
+                'email' => 'Your account is inactive. Please contact administrator.',
+            ])->onlyInput('email');
+        }
+
+        // Attempt authentication
+        if (Auth::guard('admin')->attempt($credentials)) {
+            $admin = Auth::guard('admin')->user();
+            
+            // Log successful login
+            $this->adminLogService->logLogin($admin, $request, 'login_successful');
+            
+            $request->session()->regenerate();
+
+            // Redirect all admins to the same dashboard
+            return redirect()->intended('/admin-dashboard');
+        }
+
+        // Log failed login attempt (wrong password)
+        $this->adminLogService->logActivity(
+            $admin, 
+            'failed_login_attempt - wrong_password', 
+            $request
+        );
+
         return back()->withErrors([
-            'email' => 'Your account is inactive. Please contact administrator.',
+            'password' => 'The provided password is incorrect.',
         ])->onlyInput('email');
     }
 
-    // Attempt authentication
-    if (Auth::guard('admin')->attempt($credentials)) {
-        $request->session()->regenerate();
+    public function logout(Request $request)
+    {
+        $admin = Auth::guard('admin')->user();
+        
+        if ($admin) {
+            // Log logout activity
+            $this->adminLogService->logLogout($admin);
+        }
 
-        // Redirect all admins to the same dashboard
-        return redirect()->intended('/admin-dashboard');
+        Auth::guard('admin')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/admin-login');
     }
-
-    // If authentication failed (wrong password)
-    return back()->withErrors([
-        'password' => 'The provided password is incorrect.',
-    ])->onlyInput('email');
-}
 }
