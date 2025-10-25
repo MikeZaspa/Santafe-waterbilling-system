@@ -2339,80 +2339,90 @@ function restoreDisconnectedConsumer(consumerId, consumerName) {
         });
     }
 
-    // Restore consumer functionality
-    $(document).on('click', '.restore-btn', function() {
-        const consumerId = $(this).data('id');
-        let consumerName = '';
-        
-        // Get consumer name based on view type
-        if ($(window).width() >= 992) {
-            // Desktop view
-            consumerName = $(this).closest('tr').find('td:eq(1)').text().trim();
-        } else {
-            // Mobile view
-            const card = $(this).closest('.cut-consumer-card');
-            consumerName = card.find('.cut-consumer-card-row:first-child .cut-consumer-card-value').text().trim();
-        }
-        
-        restoreConsumer(consumerId, consumerName);
-    });
-
-    function restoreConsumer(consumerId, consumerName) {
-        Swal.fire({
-            title: 'Restore Consumer?',
-            html: `
-                <p>Are you sure you want to restore <strong>${consumerName}</strong>?</p>
-                <p class="text-success"><i class="bi bi-info-circle me-2"></i>This will:</p>
-                <ul class="text-start text-success">
-                    <li>Move the consumer back to active records</li>
-                    <li>Restore their billing information</li>
-                    <li>Make them available for new readings</li>
-                </ul>
-            `,
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#198754',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Yes, Restore Consumer',
-            cancelButtonText: 'Cancel',
-            reverseButtons: true
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Show loading state
-                Swal.fire({
-                    title: 'Restoring Consumer...',
-                    text: 'Please wait while we restore the consumer',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-
-                $.ajax({
-                    url: `/cut-consumers/${consumerId}/restore`,
-                    type: 'POST',
-                    success: function(response) {
-                        Swal.close();
-                        showSuccessAlert('Success!', response.message);
-                        
-                        // Close the cut consumers modal
-                        $('#cutConsumersListModal').modal('hide');
-                        
-                        // Reload the main billing table to show the restored consumer
-                        table.ajax.reload(null, false);
-                        
-                        // Show a success message with the restored consumer's name
-                        showSuccessToast(`${consumerName} has been successfully restored!`);
-                    },
-                    error: function(xhr) {
-                        Swal.close();
-                        const errorMessage = xhr.responseJSON?.message || 'Failed to restore consumer';
-                        showErrorAlert('Restoration Failed!', errorMessage);
-                    }
-                });
-            }
-        });
+    // Restore disconnected consumer functionality - UPDATED
+$(document).on('click', '.restore-disconnected-btn', function() {
+    const disconnectionId = $(this).data('id');
+    let consumerName = '';
+    
+    // Get consumer name based on view type
+    if ($(window).width() >= 992) {
+        // Desktop view
+        consumerName = $(this).closest('tr').find('td:eq(1)').text().trim();
+    } else {
+        // Mobile view
+        const card = $(this).closest('.disconnected-consumer-card');
+        consumerName = card.find('.disconnected-consumer-card-row:first-child .disconnected-consumer-card-value').text().trim();
     }
+    
+    restoreDisconnectedConsumer(disconnectionId, consumerName, $(this));
+});
+
+function restoreDisconnectedConsumer(disconnectionId, consumerName, buttonElement) {
+    Swal.fire({
+        title: 'Restore Consumer?',
+        html: `
+            <p>Are you sure you want to restore <strong>${consumerName}</strong>?</p>
+            <p class="text-success"><i class="bi bi-info-circle me-2"></i>This will:</p>
+            <ul class="text-start text-success">
+                <li>Move the consumer back to active records</li>
+                <li>Restore their billing information</li>
+                <li>Make them available for new readings</li>
+            </ul>
+            <div class="form-group mt-3">
+                <label for="reconnectionNotes" class="form-label">Notes (Optional)</label>
+                <textarea id="reconnectionNotes" class="form-control" rows="3" placeholder="Add any notes about this reconnection..."></textarea>
+            </div>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#198754',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, Restore Consumer',
+        cancelButtonText: 'Cancel',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const notes = document.getElementById('reconnectionNotes').value;
+            
+            // Show loading state and disable button immediately
+            buttonElement.prop('disabled', true).html(
+                '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Restoring...'
+            );
+
+            $.ajax({
+                url: `/disconnections/${disconnectionId}/restore`,
+                type: 'POST',
+                data: {
+                    notes: notes,
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    // Update button to show "Reconnected" and disable it
+                    buttonElement.removeClass('btn-success').addClass('btn-secondary')
+                        .html('<i class="bi bi-check-circle me-1"></i>Reconnected')
+                        .prop('disabled', true);
+                    
+                    showSuccessAlert('Success!', response.message);
+                    
+                    // Show a success message with the restored consumer's name
+                    showSuccessToast(`${consumerName} has been successfully restored to active records!`);
+                    
+                    // Reload the main billing table to show the restored consumer
+                    table.ajax.reload(null, false);
+                },
+                error: function(xhr) {
+                    // Re-enable button on error
+                    buttonElement.prop('disabled', false).html(
+                        '<i class="bi bi-arrow-counterclockwise me-1"></i>Restore'
+                    );
+                    
+                    const errorMessage = xhr.responseJSON?.message || 'Failed to restore consumer';
+                    showErrorAlert('Restoration Failed!', errorMessage);
+                }
+            });
+        }
+    });
+}
 
     // Helper functions for notifications
     function showSuccessAlert(title, message) {

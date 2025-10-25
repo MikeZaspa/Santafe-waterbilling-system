@@ -281,56 +281,77 @@ public function disconnect(Request $request)
     /**
      * Restore a disconnected consumer
      */
-    public function restoreDisconnectedConsumer($id)
-    {
-        DB::beginTransaction();
-        try {
-            $disconnection = Disconnection::findOrFail($id);
-            $consumer = AdminConsumer::find($disconnection->consumer_id);
+    /**
+ * Restore a disconnected consumer and move back to billing records
+ */
+public function restoreDisconnectedConsumer(Request $request, $id)
+{
+    DB::beginTransaction();
+    try {
+        $disconnection = Disconnection::findOrFail($id);
+        $consumer = AdminConsumer::find($disconnection->consumer_id);
 
-            if (!$consumer) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Original consumer record not found'
-                ], 404);
-            }
-
-            // Restore consumer status to active
-            $consumer->update([
-                'status' => 'active'
-            ]);
-
-            // Restore the billing record
-            Billing::create([
-                'consumer_id' => $disconnection->consumer_id,
-                'consumer_type' => $disconnection->consumer_type,
-                'meter_no' => $disconnection->meter_no,
-                'previous_reading' => $disconnection->previous_reading,
-                'current_reading' => $disconnection->current_reading,
-                'consumption' => $disconnection->consumption,
-                'reading_date' => $disconnection->reading_date,
-            ]);
-
-            // Delete the disconnection record
-            $disconnection->delete();
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Consumer successfully restored to active records.'
-            ]);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            \Log::error('Restore consumer error: ' . $e->getMessage());
+        if (!$consumer) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to restore consumer: ' . $e->getMessage()
-            ], 500);
+                'message' => 'Original consumer record not found'
+            ], 404);
         }
-    }
 
+        // Check if already restored
+        if ($consumer->status === 'active') {
+            return response()->json([
+                'success' => false,
+                'message' => 'This consumer is already active'
+            ], 400);
+        }
+
+        // Restore consumer status to active
+        $consumer->update([
+            'status' => 'active'
+        ]);
+
+        // Restore the billing record with all original data
+        $billing = Billing::create([
+            'consumer_id' => $disconnection->consumer_id,
+            'consumer_type' => $disconnection->consumer_type,
+            'meter_no' => $disconnection->meter_no,
+            'previous_reading' => $disconnection->previous_reading,
+            'current_reading' => $disconnection->current_reading,
+            'consumption' => $disconnection->consumption,
+            'reading_date' => $disconnection->reading_date,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Update the disconnection record with reconnection info
+        $reconnectionNotes = $request->notes ? "Reconnected: " . $request->notes : "Reconnected on " . now()->format('Y-m-d H:i:s');
+        
+        $disconnection->update([
+            'status' => 'reconnected',
+            'reconnection_notes' => $reconnectionNotes,
+            'reconnected_at' => now(),
+            'reconnected_by' => auth()->id() ?? 1
+        ]);
+
+        DB::commit();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Consumer successfully restored to active records and billing information has been recovered.',
+            'billing' => $billing,
+            'reconnected_at' => now()->format('Y-m-d H:i:s')
+        ]);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        \Log::error('Restore consumer error: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to restore consumer: ' . $e->getMessage()
+        ], 500);
+    }
+}
     // Add this method to get consumers for dropdown
     public function getConsumers()
     {
