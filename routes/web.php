@@ -378,6 +378,6 @@ Route::post('/cut-consumers/{id}/restore', [BillingController::class, 'restoreCo
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/', function () {
-    return view('auth.main-form');
+    return view('auth.admin-login');
 
 });
