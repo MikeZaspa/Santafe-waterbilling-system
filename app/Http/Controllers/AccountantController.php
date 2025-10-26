@@ -62,47 +62,115 @@ class AccountantController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-{
-    $validator = Validator::make($request->all(), [
-        'consumer_id' => 'required|exists:admin_consumers,id',
-        'current_reading' => 'required|numeric|min:0',
-        'payment_method' => 'nullable|string|in:cash,gcash,maya',
-        'due_date' => 'required|date',
-        'status' => 'required|in:paid,unpaid,overdue',
-    ]);
+    {
+        $validator = Validator::make($request->all(), [
+            'consumer_id' => 'required|exists:admin_consumers,id',
+            'current_reading' => 'required|numeric|min:0',
+            'due_date' => 'required|date',
+            'status' => 'required|in:paid,unpaid,overdue',
+        ]);
 
-    if ($validator->fails()) {
-        return response()->json([
-            'success' => false,
-            'errors' => $validator->errors()
-        ], 422);
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $consumer = AdminConsumer::findOrFail($request->consumer_id);
+            $dueDate = Carbon::parse($request->due_date);
+            
+            // 🔹 Check for existing billing in the same month/year
+            $existingBilling = AccountantBilling::where('consumer_id', $consumer->id)
+                ->whereMonth('due_date', $dueDate->month)
+                ->whereYear('due_date', $dueDate->year)
+                ->first();
+
+            if ($existingBilling) {
+                // If existing billing is PAID, prevent creation of new billing
+                if ($existingBilling->status === 'paid') {
+                    return response()->json([
+                        'success' => false,
+                        'type' => 'paid',
+                        'data' => $existingBilling->load('consumer'),
+                        'errors' => [
+                            'duplicate' => [
+                                'This consumer has already PAID for ' . $dueDate->format('F Y') . '.',
+                                'Please create billing for next month.'
+                            ]
+                        ]
+                    ], 422);
+                } else {
+                    // If existing billing is UNPAID, update it with new readings
+                    return $this->updateExistingBilling($existingBilling, $request, $consumer);
+                }
+            }
+
+            // 🔹 Create new billing if no existing billing found
+            return $this->createNewBilling($request, $consumer);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Error creating billing: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
-    try {
-        DB::beginTransaction();
-
-        $consumer = AdminConsumer::findOrFail($request->consumer_id);
-
-        // 🔹 Prevent duplicate billing (same consumer, same month/year)
-        $existingBilling = AccountantBilling::where('consumer_id', $consumer->id)
-            ->whereMonth('due_date', Carbon::parse($request->due_date)->month)
-            ->whereYear('due_date', Carbon::parse($request->due_date)->year)
-            ->first();
-
-        if ($existingBilling) {
+    /**
+     * Update existing unpaid billing with new readings
+     */
+    private function updateExistingBilling($existingBilling, $request, $consumer)
+    {
+        // 🔹 Validate reading
+        if ($request->current_reading < $existingBilling->previous_reading) {
             return response()->json([
                 'success' => false,
                 'errors' => [
-                    'duplicate' => ['A billing record already exists.']
+                    'reading' => ['Current reading cannot be less than the previous reading (' . $existingBilling->previous_reading . ').']
                 ]
             ], 422);
         }
 
-        // 🔹 Validate reading
+        // 🔹 Calculate consumption & total
+        $consumption = $request->current_reading - $existingBilling->previous_reading;
+        $totalAmount = $this->calculateWaterBill($consumer->consumer_type, $consumption);
+
+        // Update the existing billing
+        $existingBilling->update([
+            'current_reading' => $request->current_reading,
+            'consumption' => $consumption,
+            'total_amount' => $totalAmount,
+            'due_date' => $request->due_date,
+            'status' => $request->status,
+            'updated_at' => now(),
+        ]);
+
+        DB::commit();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Billing record updated successfully',
+            'data' => $existingBilling,
+            'action' => 'updated'
+        ]);
+    }
+
+    /**
+     * Create new billing record
+     */
+    private function createNewBilling($request, $consumer)
+    {
+        // 🔹 Get previous reading from last billing or default to 0
         $previousReading = AccountantBilling::where('consumer_id', $consumer->id)
             ->latest()
             ->value('current_reading') ?? 0;
 
+        // 🔹 Validate reading
         if ($request->current_reading < $previousReading) {
             return response()->json([
                 'success' => false,
@@ -124,7 +192,6 @@ class AccountantController extends Controller
             'previous_reading' => $previousReading,
             'current_reading' => $request->current_reading,
             'consumption' => $consumption,
-            'payment_method' => $request->payment_method,
             'total_amount' => $totalAmount,
             'status' => $request->status,
         ]);
@@ -134,17 +201,55 @@ class AccountantController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Billing record created successfully',
-            'data' => $billing
+            'data' => $billing,
+            'action' => 'created'
+        ]);
+    }
+
+    /**
+     * Check existing billing before creating new one
+     */
+    public function checkExistingBilling(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'consumer_id' => 'required|exists:admin_consumers,id',
+            'due_date' => 'required|date',
         ]);
 
-    } catch (\Exception $e) {
-        DB::rollBack();
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $dueDate = Carbon::parse($request->due_date);
+        $existingBilling = AccountantBilling::where('consumer_id', $request->consumer_id)
+            ->whereMonth('due_date', $dueDate->month)
+            ->whereYear('due_date', $dueDate->year)
+            ->first();
+
+        if ($existingBilling) {
+            $nextMonth = $dueDate->copy()->addMonth();
+            
+            return response()->json([
+                'success' => false,
+                'exists' => true,
+                'billing_status' => $existingBilling->status,
+                'billing_data' => $existingBilling->load('consumer'),
+                'message' => $existingBilling->status === 'paid' 
+                    ? 'This consumer has already PAID for ' . $dueDate->format('F Y') . '. Please create billing for next month: ' . $nextMonth->format('F Y')
+                    : 'This consumer already has an UNPAID billing for ' . $dueDate->format('F Y') . '. Do you want to update it?',
+                'next_month' => $nextMonth->format('Y-m')
+            ]);
+        }
+
         return response()->json([
-            'success' => false,
-            'message' => 'Error creating billing: ' . $e->getMessage()
-        ], 500);
+            'success' => true,
+            'exists' => false,
+            'message' => 'No existing billing found for this month'
+        ]);
     }
-}
 
 
     /**
@@ -276,24 +381,36 @@ public function edit($id)
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($id)
-    {
-        try {
-            $billing = AccountantBilling::findOrFail($id);
-            $billing->delete();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Billing deleted successfully!'
-            ]);
-
-        } catch (\Exception $e) {
+    /**
+ * Remove the specified resource from storage.
+ */
+public function destroy($id)
+{
+    try {
+        $billing = AccountantBilling::findOrFail($id);
+        
+        // Check if billing is paid
+        if ($billing->status === 'paid') {
             return response()->json([
                 'success' => false,
-                'message' => 'Error deleting billing: ' . $e->getMessage()
-            ], 500);
+                'message' => 'Cannot delete paid billing records. Please archive instead.'
+            ], 422);
         }
+
+        $billing->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Billing deleted successfully!'
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error deleting billing: ' . $e->getMessage()
+        ], 500);
     }
+}
 
     /**
      * Get last reading for a consumer
@@ -478,5 +595,30 @@ public function calculatePenalty($dueDate, $paymentDate = null)
     }
     
     return 0.00;
+}
+
+
+public function getExistingBilling(Request $request)
+{
+    $consumerId = $request->consumer_id;
+    $dueDate = Carbon::parse($request->due_date);
+    
+    $existingBilling = AccountantBilling::where('consumer_id', $consumerId)
+        ->whereMonth('due_date', $dueDate->month)
+        ->whereYear('due_date', $dueDate->year)
+        ->first();
+    
+    if ($existingBilling) {
+        return response()->json([
+            'success' => true,
+            'data' => $existingBilling,
+            'type' => $existingBilling->status === 'paid' ? 'paid' : 'unpaid'
+        ]);
+    }
+    
+    return response()->json([
+        'success' => false,
+        'message' => 'No existing billing found for this month'
+    ]);
 }
 }

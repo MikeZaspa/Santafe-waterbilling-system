@@ -1724,46 +1724,66 @@
         });
     }
 
-    // Save billing (create or update)
-    $('#saveBilling').click(function() {
-        const formData = {
-            consumer_id: $('#consumer_id').val(),
-            current_reading: $('#currentReading').val(),
-            due_date: $('#dueDate').val(),
-            status: $('#status').val(),
-            _token: $('meta[name="csrf-token"]').attr('content')
-        };
+     $('#saveBilling').click(function() {
+    const formData = {
+        consumer_id: $('#consumer_id').val(),
+        current_reading: $('#currentReading').val(),
+        due_date: $('#dueDate').val(),
+        status: $('#status').val(),
+        _token: $('meta[name="csrf-token"]').attr('content')
+    };
 
-        const billingId = $('#billingId').val();
-        const url = billingId ? `/accountant/billings/${billingId}` : '/accountant/billings';
-        const method = billingId ? 'PUT' : 'POST';
+    const billingId = $('#billingId').val();
+    const url = billingId ? `/accountant/billings/${billingId}` : '/accountant/billings';
+    const method = billingId ? 'PUT' : 'POST';
 
-        $.ajax({
-            url: url,
-            type: method,
-            data: formData,
-            dataType: 'json',
-            success: function(response) {
-                if (response.success) {
-                    $('#billingModal').modal('hide');
-                    activeTable.ajax.reload();
+    $.ajax({
+        url: url,
+        type: method,
+        data: formData,
+        dataType: 'json',
+        success: function(response) {
+            if (response.success) {
+                $('#billingModal').modal('hide');
+                activeTable.ajax.reload();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: response.message
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: response.message
+                });
+            }
+        },
+        error: function(xhr) {
+            if (xhr.status === 422) {
+                const errors = xhr.responseJSON.errors;
+                const errorType = xhr.responseJSON.type;
+                
+                if (errorType === 'paid') {
+                    // Show the paid billing details using SweetAlert
+                    const billing = xhr.responseJSON.data;
+                    showPaidBillingDetails(billing);
+                } else if (errorType === 'unpaid') {
+                    // Show specific message for unpaid billing with OK button
                     Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: response.message
+                        icon: 'warning',
+                        title: 'Unpaid Billing Exists',
+                        html: errors.unpaid.join('<br>'),
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#3085d6'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Close the billing modal
+                            $('#billingModal').modal('hide');
+                        }
                     });
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: response.message
-                    });
-                }
-            },
-            error: function(xhr) {
-                if (xhr.status === 422) {
-                    // Validation errors
-                    const errors = xhr.responseJSON.errors;
+                    // Handle other validation errors
                     let errorMessages = '';
                     for (const field in errors) {
                         errorMessages += errors[field].join('<br>') + '<br>';
@@ -1773,16 +1793,151 @@
                         title: 'Validation Error',
                         html: errorMessages
                     });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: xhr.responseJSON.message || 'An error occurred'
-                    });
                 }
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: xhr.responseJSON?.message || 'An error occurred'
+                });
+            }
+        }
+    });
+});
+
+
+  // Function to show paid billing details
+function showPaidBillingDetails(billing) {
+    // Build consumer name
+    const consumer = billing.consumer;
+    let consumerName = consumer.first_name || '';
+    if (consumer.middle_name) consumerName += ' ' + consumer.middle_name;
+    consumerName += ' ' + (consumer.last_name || '');
+    if (consumer.suffix) consumerName += ' ' + consumer.suffix;
+    
+    // Check if payment_date exists and format it
+    let paymentDate = 'N/A';
+    if (billing.payment_date) {
+        paymentDate = moment(billing.payment_date).format('MMM D, YYYY');
+    } else if (billing.updated_at && billing.status === 'paid') {
+        // If payment_date is not available but status is paid, use updated_at as fallback
+        paymentDate = moment(billing.updated_at).format('MMM D, YYYY');
+    }
+    
+    // Create HTML for billing details
+    const billingDetails = `
+        <div class="text-start">
+            <div class="alert alert-info">
+                <h6><i class="bi bi-info-circle me-2"></i>Billing Information</h6>
+                <p>This consumer has already paid for this billing period.</p>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Consumer:</strong> ${consumerName}</p>
+                    <p><strong>Meter No:</strong> ${billing.meter_no}</p>
+                    <p><strong>Type:</strong> ${billing.consumer_type}</p>
+                    <p><strong>Due Date:</strong> ${moment(billing.due_date).format('MMM D, YYYY')}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Previous Reading:</strong> ${billing.previous_reading} m³</p>
+                    <p><strong>Current Reading:</strong> ${billing.current_reading} m³</p>
+                    <p><strong>Consumption:</strong> ${billing.consumption} m³</p>
+                    <p><strong>Total Amount:</strong> ₱${parseFloat(billing.total_amount).toFixed(2)}</p>
+                </div>
+            </div>
+            <div class="mt-3">
+                <p><strong>Payment Date:</strong> ${paymentDate}</p>
+            </div>
+        </div>
+    `;
+    
+    // Show SweetAlert with billing details
+    Swal.fire({
+        title: 'Paid Billing Details',
+        html: billingDetails,
+        icon: 'info',
+        showCloseButton: true, // Adds the X icon in the top right corner
+        showCancelButton: true,
+        confirmButtonText: 'Create Billing for Next Month',
+        cancelButtonText: 'View Receipt',
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#17a2b8',
+        width: '700px',
+        // Custom styling for the close button
+        customClass: {
+            closeButton: 'swal2-close-button-custom'
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Set due date to next month
+            const nextMonth = new Date(billing.due_date);
+            nextMonth.setMonth(nextMonth.getMonth() + 1);
+            $('#dueDate').val(nextMonth.toISOString().split('T')[0]);
+            
+            // Open the billing modal
+            $('#billingModal').modal('show');
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+            // Show the receipt modal
+            generateReceipt(billing);
+            $('#receiptModal').modal('show');
+        } else if (result.dismiss === Swal.DismissReason.close) {
+            // User clicked the X button, just close the modal
+            console.log('Modal closed with X button');
+        }
+    });
+}
+
+
+ $('#addBillingBtn').click(function() {
+    // Check if a consumer is selected
+    const consumerId = $('#consumer_id').val();
+    
+    if (consumerId) {
+        const dueDate = $('#dueDate').val();
+        
+        $.ajax({
+            url: '/accountant/billings/existing',
+            type: 'GET',
+            data: {
+                consumer_id: consumerId,
+                due_date: dueDate
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    if (response.type === 'paid') {
+                        // For paid billing, show the billing details in a SweetAlert
+                        showPaidBillingDetails(response.data);
+                    } else {
+                        // For unpaid billing, show the update option
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Unpaid Billing Exists',
+                            html: 'This consumer already has an unpaid billing for this month.<br><br>' +
+                                  '<button class="btn btn-primary" id="updateExistingBtn">Update Existing Billing</button>',
+                            showConfirmButton: false
+                        });
+                        
+                        $('#updateExistingBtn').click(function() {
+                            // Open the existing billing for editing
+                            editBilling(response.data.id);
+                        });
+                    }
+                } else {
+                    // No existing billing, open the modal
+                    $('#billingModal').modal('show');
+                }
+            },
+            error: function() {
+                // Error checking, open the modal anyway
+                $('#billingModal').modal('show');
             }
         });
-    });
+    } else {
+        // No consumer selected, just open the modal
+        $('#billingModal').modal('show');
+    }
+});
 
     $(document).on('click', '.edit-btn', function() {
         const billingId = $(this).data('id');
@@ -1847,47 +2002,90 @@
         });
     });
 
-    // Delete billing
-    $(document).on('click', '.delete-btn', function() {
-        const billingId = $(this).data('id');
-        
+    // Delete billing - with validation for paid billings
+$(document).on('click', '.delete-btn', function() {
+    const billingId = $(this).data('id');
+    const $row = $(this).closest('tr');
+    
+    // Get billing status from the row data
+    const status = $row.find('.badge').text().trim().toLowerCase();
+    
+    // Check if billing is paid
+    if (status === 'paid') {
         Swal.fire({
-            title: 'Are you sure?',
-            text: "You won't be able to revert this!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, delete it!'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: `/accountant/billings/${billingId}`,
-                    type: 'DELETE',
-                    data: {
-                        _token: $('meta[name="csrf-token"]').attr('content')
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            activeTable.ajax.reload();
-                            Swal.fire(
-                                'Deleted!',
-                                response.message,
-                                'success'
-                            );
-                        }
-                    },
-                    error: function(xhr) {
+            icon: 'error',
+            title: 'Cannot Delete Paid Billing',
+            html: `
+                <p>This billing record has been paid and cannot be deleted.</p>
+            `,
+            confirmButtonText: 'Okay',
+            confirmButtonColor: '#3085d6'
+        });
+        return;
+    }
+
+    // For unpaid/overdue billings, proceed with confirmation
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: `/accountant/billings/${billingId}`,
+                type: 'DELETE',
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    if (response.success) {
+                        activeTable.ajax.reload();
+                        Swal.fire(
+                            'Deleted!',
+                            response.message,
+                            'success'
+                        );
+                    } else {
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
-                            text: xhr.responseJSON.message || 'Failed to delete billing'
+                            text: response.message
                         });
                     }
-                });
-            }
-        });
+                },
+                error: function(xhr) {
+                    if (xhr.status === 422) {
+                        // Validation error (paid billing)
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Cannot Delete',
+                            html: `
+                                <p>${xhr.responseJSON.message}</p>
+                                <p class="text-info mt-2">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    Please use the <strong>Archive</strong> button to maintain financial records.
+                                </p>
+                            `,
+                            confirmButtonText: 'Okay',
+                            confirmButtonColor: '#3085d6'
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: xhr.responseJSON?.message || 'Failed to delete billing'
+                        });
+                    }
+                }
+            });
+        }
     });
+});
 
     // Handle payment button click
     $(document).on('click', '.payment-btn', function(e) {

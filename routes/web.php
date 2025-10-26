@@ -169,6 +169,7 @@ Route::prefix('accountant')->group(function() {
     Route::put('/billings/{id}', [AccountantController::class, 'update'])->name('accountant.billings.update');
     Route::delete('/billings/{id}', [AccountantController::class, 'destroy'])->name('accountant.billings.destroy');
 });
+Route::get('/accountant/billings/existing', [AccountantController::class, 'getExistingBilling']);
 
 Route::middleware(['auth'])->group(function () {
     // Consumer billing routes
@@ -293,12 +294,13 @@ Route::post('/admin-plumber-disconnection', [AuthController::class,'admindisconn
 Route::get('/disconnections', [BillingController::class, 'getDisconnectedConsumers']);
 Route::post('/disconnections', [BillingController::class, 'disconnect']);
 Route::post('/disconnections/{id}/restore', [BillingController::class, 'restoreDisconnectedConsumer']);
-
-// Fix: Add the missing route for plumber reconnection
 Route::post('/admin-plumber-disconnection/{disconnection}/reconnect', [DisconnectionController::class, 'reconnect'])->name('admin.plumber.disconnection.reconnect');
-// In your routes/web.php
 
+Route::get('/reconnected-consumers', [ReadingController::class, 'getReconnectedConsumers']);
+Route::get('/all-reconnected-consumers', [ReadingController::class, 'getAllReconnectedConsumers']);
 Route::post('/disconnections/{id}/restore', [ReadingController::class, 'reconnect']);
+Route::get('/dashboard-data', [ReadingController::class, 'getDashboardData'])->name('dashboard.data');
+Route::get('/reconnected-consumers', [ReadingController::class, 'getReconnectedConsumers'])->name('reconnected.consumers');
 
 Route::get('/main-form', [AuthController::class, 'showMainForm'])->name('main-form');
 Route::post('/main-form', [AuthController::class, 'main']);

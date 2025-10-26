@@ -387,6 +387,7 @@
             .card-body {
                 padding: 1rem;
             }
+            
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -617,6 +618,56 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Recently Reconnected -->
+            <div class="col-12">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title d-flex justify-content-between align-items-center mb-3">
+                            <span>Recently Reconnected Consumers</span>
+                            <span class="badge bg-success" id="reconnectedCount">{{ $reconnectionCount }}</span>
+                        </h5>
+                        
+                        <!-- Search Box -->
+                        <div class="mb-3">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text">
+                                    <i class="bi bi-search"></i>
+                                </span>
+                                <input type="text" class="form-control" id="searchReconnected" placeholder="Search by name or meter number...">
+                                <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Reconnected Consumers List -->
+                        <div id="reconnectedConsumersList" class="flex-grow-1" style="max-height: 200px; overflow-y: auto;">
+                            <!-- Loading state -->
+                            <div class="text-center text-muted py-4" id="loadingReconnected">
+                                <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                                Loading reconnected consumers...
+                            </div>
+                            
+                            <!-- Empty state -->
+                            <div class="text-center text-muted py-4 d-none" id="emptyReconnected">
+                                <i class="bi bi-arrow-repeat display-4 d-block mb-2"></i>
+                                <p class="mb-0">No recent reconnections</p>
+                                <small>Reconnected consumers will appear here</small>
+                            </div>
+                            
+                            <!-- Consumers will be populated here -->
+                        </div>
+                        
+                        <!-- Refresh Button -->
+                        <div class="mt-3 pt-3 border-top">
+                            <button class="btn btn-sm btn-outline-success w-100" id="refreshReconnectedBtn">
+                                <i class="bi bi-arrow-clockwise me-1"></i> Refresh List
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -627,7 +678,6 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <!-- SweetAlert2 for notifications -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
  $(document).ready(function() {
     // Mobile sidebar toggle functionality
@@ -651,6 +701,157 @@
             $('body').css('overflow', '');
         }
     });
+
+    let allReconnectedConsumers = [];
+
+    function loadReconnectedConsumers() {
+        // Show loading state
+        $('#loadingReconnected').removeClass('d-none');
+        $('#emptyReconnected').addClass('d-none');
+        
+        $.ajax({
+            url: '/reconnected-consumers',
+            type: 'GET',
+            success: function(response) {
+                // Hide loading state
+                $('#loadingReconnected').addClass('d-none');
+                
+                if (response.success) {
+                    allReconnectedConsumers = response.reconnected_consumers;
+                    filterAndDisplayConsumers($('#searchReconnected').val());
+                } else {
+                    showNoReconnectedConsumers();
+                }
+            },
+            error: function(xhr) {
+                $('#loadingReconnected').addClass('d-none');
+                console.error('Failed to load reconnected consumers');
+                showErrorState();
+            }
+        });
+    }
+
+    function filterAndDisplayConsumers(searchTerm = '') {
+        let filteredConsumers = allReconnectedConsumers;
+        
+        if (searchTerm) {
+            const searchLower = searchTerm.toLowerCase();
+            filteredConsumers = allReconnectedConsumers.filter(consumer => 
+                consumer.consumer_name.toLowerCase().includes(searchLower) ||
+                consumer.meter_no.toLowerCase().includes(searchLower)
+            );
+        }
+        
+        if (filteredConsumers.length > 0) {
+            updateReconnectedList(filteredConsumers);
+            $('#emptyReconnected').addClass('d-none');
+        } else {
+            showNoReconnectedConsumers(searchTerm);
+        }
+    }
+
+    // Real-time search with client-side filtering
+    $('#searchReconnected').on('input', function() {
+        const searchTerm = $(this).val().trim();
+        const $clearBtn = $('#clearSearch');
+        
+        if (searchTerm.length > 0) {
+            $clearBtn.show();
+        } else {
+            $clearBtn.hide();
+        }
+        
+        filterAndDisplayConsumers(searchTerm);
+    });
+
+    function updateReconnectedList(consumers) {
+        const container = $('#reconnectedConsumersList');
+        container.empty();
+        
+        consumers.forEach(consumer => {
+            const item = `
+                <div class="reconnection-item mb-3 p-3 border-start border-success border-3">
+                    <div class="consumer-name fw-bold text-success">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        ${consumer.consumer_name}
+                    </div>
+                    <div class="reconnection-date small text-muted">
+                        <i class="bi bi-calendar-event me-1"></i>
+                        ${new Date(consumer.reconnection_date).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        })}
+                    </div>
+                    <div class="meter-info small text-muted">
+                        <i class="bi bi-speedometer2 me-1"></i>
+                        Meter: ${consumer.meter_no}
+                    </div>
+                </div>
+            `;
+            container.append(item);
+        });
+        
+        // Update the count badge
+        $('#reconnectedCount').text(consumers.length);
+    }
+
+    function showNoReconnectedConsumers() {
+        const container = $('#reconnectedConsumersList');
+        container.html(`
+            <div class="text-center text-muted py-5" id="emptyReconnected">
+                <i class="bi bi-arrow-repeat display-4 d-block mb-3 text-muted"></i>
+                <h6 class="text-muted mb-2">No Reconnected Consumers</h6>
+            </div>
+        `);
+        
+        // Update the count badge to 0
+        $('#reconnectedCount').text('0');
+    }
+
+    function showErrorState() {
+        const container = $('#reconnectedConsumersList');
+        container.html(`
+            <div class="text-center text-danger py-5">
+                <i class="bi bi-exclamation-triangle display-4 d-block mb-3"></i>
+                <h6 class="text-danger mb-2">Failed to Load Data</h6>
+                <p class="small text-muted mb-3">Unable to load reconnected consumers at this time.</p>
+                <button class="btn btn-sm btn-outline-danger" onclick="loadReconnectedConsumers()">
+                    <i class="bi bi-arrow-clockwise me-1"></i> Try Again
+                </button>
+            </div>
+        `);
+    }
+
+    // Refresh button click handler
+    $('#refreshReconnectedBtn').click(function() {
+        const $btn = $(this);
+        const originalText = $btn.html();
+        
+        $btn.html('<span class="spinner-border spinner-border-sm me-1" role="status"></span> Refreshing...');
+        $btn.prop('disabled', true);
+        
+        loadReconnectedConsumers();
+        
+        // Re-enable button after 2 seconds
+        setTimeout(() => {
+            $btn.html(originalText);
+            $btn.prop('disabled', false);
+        }, 2000);
+    });
+
+    // Clear search button
+    $('#clearSearch').click(function() {
+        $('#searchReconnected').val('');
+        loadReconnectedConsumers();
+    });
+
+    // Load reconnected consumers on page load
+    loadReconnectedConsumers();
+
+    // Auto-refresh reconnected consumers every 30 seconds
+    setInterval(loadReconnectedConsumers, 30000);
     
     // Close sidebar when clicking on overlay
     mobileOverlay.on('click', function() {
@@ -789,6 +990,224 @@
         consumptionChart.resize();
         completedChart.resize();
     });
+
+    // DASHBOARD UPDATE FUNCTIONS - INSERTED HERE
+
+    // Function to update dashboard charts and data after reconnection
+    function updateDashboardAfterReconnection() {
+        // Show loading state
+        const loadingToast = Swal.fire({
+            title: 'Updating Dashboard...',
+            text: 'Refreshing consumption data',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // Reload the page to get updated data (simple approach)
+        setTimeout(() => {
+            window.location.reload();
+        }, 1500);
+
+        // Alternative: AJAX approach to update charts without page reload
+        // updateDashboardCharts();
+    }
+
+    // AJAX function to update charts without page reload
+    function updateDashboardCharts() {
+        $.ajax({
+            url: '/dashboard-data',
+            type: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    // Update consumption chart
+                    updateConsumptionChart(response.data.current_month_consumption);
+                    
+                    // Update completed readings count
+                    updateCompletedReadings(response.data.current_month_completed);
+                    
+                    // Update reconnection fees
+                    updateReconnectionFees(response.data.current_month_reconnection_fees);
+                    
+                    Swal.close();
+                    showSuccessToast('Dashboard updated successfully!');
+                }
+            },
+            error: function(xhr) {
+                Swal.close();
+                console.error('Failed to update dashboard data');
+                // Fallback to page reload
+                window.location.reload();
+            }
+        });
+    }
+
+    // Function to update consumption chart
+    function updateConsumptionChart(newConsumption) {
+        const consumptionChart = Chart.getChart('consumptionTrendChart');
+        if (consumptionChart) {
+            const currentMonth = new Date().getMonth();
+            const data = consumptionChart.data.datasets[0].data;
+            
+            // Update current month's consumption
+            data[currentMonth] = newConsumption;
+            
+            consumptionChart.update('active');
+        }
+    }
+
+    // Function to update completed readings
+    function updateCompletedReadings(newCount) {
+        const completedChart = Chart.getChart('completedReadingsChart');
+        if (completedChart) {
+            const currentMonth = new Date().getMonth();
+            const data = completedChart.data.datasets[0].data;
+            
+            // Update current month's completed readings
+            data[currentMonth] = newCount;
+            
+            completedChart.update('active');
+        }
+    }
+
+    // Function to update reconnection fees display
+    function updateReconnectionFees(newFees) {
+        // Update the reconnection fees card
+        $('.card:has(.fa-cash-coin) h3').text('₱' + newFees.toLocaleString());
+    }
+
+    // Modify the reconnect function to call dashboard update
+    function restoreDisconnectedConsumer(consumerId, consumerName, isFromMainView = false) {
+        Swal.fire({
+            title: 'Reconnect Consumer?',
+            html: `
+                <p>Are you sure you want to reconnect <strong>${consumerName}</strong>?</p>
+                <p class="text-info"><i class="bi bi-info-circle me-2"></i>A reconnection fee of ₱500 will be applied.</p>
+                <div class="form-group mt-3">
+                    <label for="reconnectionNotes" class="form-label">Notes (Optional)</label>
+                    <textarea id="reconnectionNotes" class="form-control" rows="3" placeholder="Add any notes about this reconnection..."></textarea>
+                </div>
+            `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#198754',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, Reconnect Consumer',
+            cancelButtonText: 'Cancel',
+            reverseButtons: true,
+            width: '500px'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const notes = document.getElementById('reconnectionNotes').value;
+                
+                // Show loading state
+                Swal.fire({
+                    title: 'Reconnecting Consumer...',
+                    text: 'Please wait while we reconnect the consumer',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                $.ajax({
+                    url: `/disconnections/${consumerId}/restore`,
+                    type: 'POST',
+                    data: {
+                        notes: notes,
+                        _token: $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        Swal.close();
+                        
+                        if (response.success) {
+                            showSuccessAlert('Success!', response.message);
+                            
+                            // Update dashboard data after successful reconnection
+                            updateDashboardAfterReconnection();
+                            
+                            // Reload the main billing table to show the reconnected consumer
+                            if (typeof table !== 'undefined') {
+                                table.ajax.reload(null, false);
+                            }
+                            
+                            // If we're in the disconnected consumers modal, close it
+                            if ($('#disconnectedConsumersListModal').is(':visible')) {
+                                $('#disconnectedConsumersListModal').modal('hide');
+                            }
+                            
+                            // Show success message
+                            showSuccessToast(`${consumerName} has been successfully reconnected!`);
+                        } else {
+                            showErrorAlert('Reconnection Failed!', response.message);
+                        }
+                    },
+                    error: function(xhr) {
+                        Swal.close();
+                        const errorMessage = xhr.responseJSON?.message || 'Failed to reconnect consumer';
+                        showErrorAlert('Reconnection Failed!', errorMessage);
+                    }
+                });
+            }
+        });
+    }
+
+    // Auto-refresh dashboard data every 30 seconds
+    setInterval(function() {
+        if (!$('.modal').is(':visible')) { // Only refresh if no modal is open
+            updateDashboardCharts();
+        }
+    }, 30000);
+
+    // Helper functions for notifications
+    function showSuccessAlert(title, message) {
+        Swal.fire({
+            icon: 'success',
+            title: title,
+            text: message,
+            timer: 3000
+        });
+    }
+
+    function showErrorAlert(title, message) {
+        Swal.fire({
+            icon: 'error',
+            title: title,
+            html: message
+        });
+    }
+
+    function showErrorToast(message) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: message,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+    }
+
+    function showSuccessToast(message) {
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 4000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        });
+
+        Toast.fire({
+            icon: 'success',
+            title: message
+        });
+    }
 
     // Logout functionality
     $('#logoutBtn').click(function(e) {

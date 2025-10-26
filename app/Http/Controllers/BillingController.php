@@ -292,6 +292,9 @@ public function getDisconnectedConsumers()
 /**
  * Restore a disconnected consumer and move back to billing records
  */
+/**
+ * Restore a disconnected consumer and move back to billing records
+ */
 public function restoreDisconnectedConsumer(Request $request, $id)
 {
     DB::beginTransaction();
@@ -319,7 +322,7 @@ public function restoreDisconnectedConsumer(Request $request, $id)
             'status' => 'active'
         ]);
 
-        // Restore the billing record with all original data
+        // Create a new billing record with the disconnection data
         $billing = Billing::create([
             'consumer_id' => $disconnection->consumer_id,
             'consumer_type' => $disconnection->consumer_type,
@@ -337,8 +340,9 @@ public function restoreDisconnectedConsumer(Request $request, $id)
         
         $disconnection->update([
             'status' => 'reconnected',
+            'reconnection_date' => now()->format('Y-m-d H:i:s'),
             'reconnection_notes' => $reconnectionNotes,
-            'reconnected_at' => now(),
+            'reconnection_fee' => 500.00, // Set the reconnection fee
             'reconnected_by' => auth()->id() ?? 1
         ]);
 
