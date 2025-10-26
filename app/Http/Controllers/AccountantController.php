@@ -61,116 +61,82 @@ class AccountantController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'consumer_id' => 'required|exists:admin_consumers,id',
-            'current_reading' => 'required|numeric|min:0',
-            'due_date' => 'required|date',
-            'status' => 'required|in:paid,unpaid,overdue',
-        ]);
+   public function store(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'consumer_id' => 'required|exists:admin_consumers,id',
+        'current_reading' => 'required|numeric|min:0',
+        'payment_method' => 'nullable|string|in:cash,gcash,maya',
+        'due_date' => 'required|date',
+        'status' => 'required|in:paid,unpaid,overdue',
+    ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        try {
-            DB::beginTransaction();
-
-            $consumer = AdminConsumer::findOrFail($request->consumer_id);
-            $dueDate = Carbon::parse($request->due_date);
-            
-            // 🔹 Check for existing billing in the same month/year
-            $existingBilling = AccountantBilling::where('consumer_id', $consumer->id)
-                ->whereMonth('due_date', $dueDate->month)
-                ->whereYear('due_date', $dueDate->year)
-                ->first();
-
-            if ($existingBilling) {
-                // If existing billing is PAID, prevent creation of new billing
-                if ($existingBilling->status === 'paid') {
-                    return response()->json([
-                        'success' => false,
-                        'type' => 'paid',
-                        'data' => $existingBilling->load('consumer'),
-                        'errors' => [
-                            'duplicate' => [
-                                'This consumer has already PAID for ' . $dueDate->format('F Y') . '.',
-                                'Please create billing for next month.'
-                            ]
-                        ]
-                    ], 422);
-                } else {
-                    // If existing billing is UNPAID, update it with new readings
-                    return $this->updateExistingBilling($existingBilling, $request, $consumer);
-                }
-            }
-
-            // 🔹 Create new billing if no existing billing found
-            return $this->createNewBilling($request, $consumer);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => 'Error creating billing: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Update existing unpaid billing with new readings
-     */
-    private function updateExistingBilling($existingBilling, $request, $consumer)
-    {
-        // 🔹 Validate reading
-        if ($request->current_reading < $existingBilling->previous_reading) {
-            return response()->json([
-                'success' => false,
-                'errors' => [
-                    'reading' => ['Current reading cannot be less than the previous reading (' . $existingBilling->previous_reading . ').']
-                ]
-            ], 422);
-        }
-
-        // 🔹 Calculate consumption & total
-        $consumption = $request->current_reading - $existingBilling->previous_reading;
-        $totalAmount = $this->calculateWaterBill($consumer->consumer_type, $consumption);
-
-        // Update the existing billing
-        $existingBilling->update([
-            'current_reading' => $request->current_reading,
-            'consumption' => $consumption,
-            'total_amount' => $totalAmount,
-            'due_date' => $request->due_date,
-            'status' => $request->status,
-            'updated_at' => now(),
-        ]);
-
-        DB::commit();
-
+    if ($validator->fails()) {
         return response()->json([
-            'success' => true,
-            'message' => 'Billing record updated successfully',
-            'data' => $existingBilling,
-            'action' => 'updated'
-        ]);
+            'success' => false,
+            'errors' => $validator->errors()
+        ], 422);
     }
 
-    /**
-     * Create new billing record
-     */
-    private function createNewBilling($request, $consumer)
-    {
-        // 🔹 Get previous reading from last billing or default to 0
+    try {
+        DB::beginTransaction();
+
+        $consumer = AdminConsumer::findOrFail($request->consumer_id);
+        $dueDate = Carbon::parse($request->due_date);
+        
+        // Check if there's already a billing for this consumer in the same month/year
+        $existingBilling = AccountantBilling::where('consumer_id', $consumer->id)
+            ->whereMonth('due_date', $dueDate->month)
+            ->whereYear('due_date', $dueDate->year)
+            ->first();
+
+        if ($existingBilling) {
+            // If the existing billing is paid, return the billing details
+            if ($existingBilling->status === 'paid') {
+                $billingWithConsumer = AccountantBilling::with('consumer')->find($existingBilling->id);
+                
+                // Calculate next month due date
+                $nextMonthDueDate = Carbon::parse($existingBilling->due_date);
+                $nextMonthDueDate->addMonth();
+                
+                return response()->json([
+                    'success' => false,
+                    'errors' => [
+                        'paid' => ['This consumer has already paid for this month.']
+                    ],
+                    'type' => 'paid',
+                    'data' => $billingWithConsumer,
+                    'next_month_due_date' => $nextMonthDueDate->format('Y-m-d')
+                ], 422);
+            } else {
+                // If the existing billing is unpaid or overdue
+                return response()->json([
+                    'success' => false,
+                    'errors' => [
+                        'unpaid' => ['This consumer already has an unpaid billing for this month.']
+                    ],
+                    'type' => 'unpaid',
+                    'data' => $existingBilling
+                ], 422);
+            }
+        }
+
+        // Get previous reading
         $previousReading = AccountantBilling::where('consumer_id', $consumer->id)
             ->latest()
             ->value('current_reading') ?? 0;
 
-        // 🔹 Validate reading
+        // Validate that we have a valid previous reading
+        if ($previousReading === null || $previousReading === '') {
+            return response()->json([
+                'success' => false,
+                'errors' => [
+                    'reading' => ['Previous reading data is not available. Please check the consumer\'s billing history.']
+                ]
+            ], 422);
+        }
+
+        // Validate current reading
         if ($request->current_reading < $previousReading) {
             return response()->json([
                 'success' => false,
@@ -180,11 +146,28 @@ class AccountantController extends Controller
             ], 422);
         }
 
-        // 🔹 Calculate consumption & total
+        // Calculate consumption & total
         $consumption = $request->current_reading - $previousReading;
         $totalAmount = $this->calculateWaterBill($consumer->consumer_type, $consumption);
+        
+        // Calculate penalty if status is overdue
+        $penaltyAmount = 0.00;
+        if ($request->status === 'overdue') {
+            $penaltyAmount = $this->calculatePenalty($request->due_date);
+        }
+        
+        // Validate that not all readings are zero and total amount is not zero
+        if ($previousReading == 0 && $request->current_reading == 0 && $consumption == 0 && $totalAmount == 0) {
+            return response()->json([
+                'success' => false,
+                'errors' => [
+                    'reading' => ['Cannot create billing with zero readings and zero amount. Please enter valid meter readings.']
+                ]
+            ], 422);
+        }
 
-        $billing = AccountantBilling::create([
+        // Prepare billing data
+        $billingData = [
             'consumer_id' => $consumer->id,
             'consumer_type' => $consumer->consumer_type,
             'meter_no' => $consumer->meter_no,
@@ -192,65 +175,40 @@ class AccountantController extends Controller
             'previous_reading' => $previousReading,
             'current_reading' => $request->current_reading,
             'consumption' => $consumption,
+            'payment_method' => $request->payment_method,
             'total_amount' => $totalAmount,
+            'penalty_amount' => $penaltyAmount,
             'status' => $request->status,
-        ]);
+        ];
+
+        // Set payment date if status is paid
+        if ($request->status === 'paid') {
+            $billingData['payment_date'] = Carbon::now();
+            
+            // If paid after due date, add penalty
+            if (Carbon::now()->greaterThan(Carbon::parse($request->due_date))) {
+                $billingData['penalty_amount'] = $this->calculatePenalty($request->due_date, Carbon::now());
+            }
+        }
+
+        $billing = AccountantBilling::create($billingData);
 
         DB::commit();
 
         return response()->json([
             'success' => true,
             'message' => 'Billing record created successfully',
-            'data' => $billing,
-            'action' => 'created'
-        ]);
-    }
-
-    /**
-     * Check existing billing before creating new one
-     */
-    public function checkExistingBilling(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'consumer_id' => 'required|exists:admin_consumers,id',
-            'due_date' => 'required|date',
+            'data' => $billing
         ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $dueDate = Carbon::parse($request->due_date);
-        $existingBilling = AccountantBilling::where('consumer_id', $request->consumer_id)
-            ->whereMonth('due_date', $dueDate->month)
-            ->whereYear('due_date', $dueDate->year)
-            ->first();
-
-        if ($existingBilling) {
-            $nextMonth = $dueDate->copy()->addMonth();
-            
-            return response()->json([
-                'success' => false,
-                'exists' => true,
-                'billing_status' => $existingBilling->status,
-                'billing_data' => $existingBilling->load('consumer'),
-                'message' => $existingBilling->status === 'paid' 
-                    ? 'This consumer has already PAID for ' . $dueDate->format('F Y') . '. Please create billing for next month: ' . $nextMonth->format('F Y')
-                    : 'This consumer already has an UNPAID billing for ' . $dueDate->format('F Y') . '. Do you want to update it?',
-                'next_month' => $nextMonth->format('Y-m')
-            ]);
-        }
-
+    } catch (\Exception $e) {
+        DB::rollBack();
         return response()->json([
-            'success' => true,
-            'exists' => false,
-            'message' => 'No existing billing found for this month'
-        ]);
+            'success' => false,
+            'message' => 'Error creating billing: ' . $e->getMessage()
+        ], 500);
     }
-
+}
 
     /**
      * Display the specified resource.
@@ -314,69 +272,90 @@ public function edit($id)
      * Update the specified resource in storage.
      */
     public function update(Request $request, $id)
-    {
-        $validator = Validator::make($request->all(), [
-            'current_reading' => 'required|numeric|min:0',
-            'due_date' => 'required|date',
-            'status' => 'required|in:paid,unpaid,overdue',
-        ]);
+{
+    $validator = Validator::make($request->all(), [
+        'current_reading' => 'required|numeric|min:0',
+        'due_date' => 'required|date',
+        'status' => 'required|in:paid,unpaid,overdue',
+    ]);
 
-        if ($validator->fails()) {
+    if ($validator->fails()) {
+        return response()->json([
+            'success' => false,
+            'errors' => $validator->errors()
+        ], 422);
+    }
+
+    try {
+        DB::beginTransaction();
+
+        $billing = AccountantBilling::findOrFail($id);
+        $consumer = $billing->consumer;
+
+        $previousReading = $billing->previous_reading;
+        $currentReading = $request->current_reading;
+        
+        // Validate current reading is not less than previous
+        if ($currentReading < $previousReading) {
             return response()->json([
                 'success' => false,
-                'errors' => $validator->errors()
+                'message' => 'Current reading cannot be less than previous reading'
             ], 422);
         }
 
-        try {
-            DB::beginTransaction();
+        $consumption = $currentReading - $previousReading;
 
-            $billing = AccountantBilling::findOrFail($id);
-            $consumer = $billing->consumer;
-
-            $previousReading = $billing->previous_reading;
-            $currentReading = $request->current_reading;
-            
-            // Validate current reading is not less than previous
-            if ($currentReading < $previousReading) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Current reading cannot be less than previous reading'
-                ], 422);
-            }
-
-            $consumption = $currentReading - $previousReading;
-
-            // Recalculate total amount if reading changed
-            if ($currentReading != $billing->current_reading) {
-                $totalAmount = $this->calculateWaterBill($consumer->consumer_type, $consumption);
-            } else {
-                $totalAmount = $billing->total_amount;
-            }
-
-            $billing->update([
-                'due_date' => $request->due_date,
-                'current_reading' => $currentReading,
-                'consumption' => $consumption,
-                'total_amount' => $totalAmount,
-                'status' => $request->status,
-            ]);
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Billing updated successfully!'
-            ]);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => 'Error updating billing: ' . $e->getMessage()
-            ], 500);
+        // Recalculate total amount if reading changed
+        if ($currentReading != $billing->current_reading) {
+            $totalAmount = $this->calculateWaterBill($consumer->consumer_type, $consumption);
+        } else {
+            $totalAmount = $billing->total_amount;
         }
+
+        // Calculate penalty
+        $penaltyAmount = 0.00;
+        if ($request->status === 'overdue') {
+            $penaltyAmount = $this->calculatePenalty($request->due_date);
+        } elseif ($request->status === 'paid') {
+            // If changing to paid status after due date, add penalty
+            if (Carbon::now()->greaterThan(Carbon::parse($request->due_date))) {
+                $penaltyAmount = $this->calculatePenalty($request->due_date, Carbon::now());
+            }
+        }
+
+        $updateData = [
+            'due_date' => $request->due_date,
+            'current_reading' => $currentReading,
+            'consumption' => $consumption,
+            'total_amount' => $totalAmount,
+            'penalty_amount' => $penaltyAmount,
+            'status' => $request->status,
+        ];
+
+        // Set payment date if status is paid
+        if ($request->status === 'paid') {
+            $updateData['payment_date'] = Carbon::now();
+        } else {
+            $updateData['payment_date'] = null;
+        }
+
+        $billing->update($updateData);
+
+        DB::commit();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Billing updated successfully!'
+        ]);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return response()->json([
+            'success' => false,
+            'message' => 'Error updating billing: ' . $e->getMessage()
+        ], 500);
     }
+}
 
     /**
      * Remove the specified resource from storage.

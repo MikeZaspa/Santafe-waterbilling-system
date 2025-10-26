@@ -389,7 +389,7 @@
                         <tr>
                             <th>ID</th>
                             <th>Consumer</th>
-                            <th>Username</th>
+                            <th>Meter no.</th>
                             <th>Password</th>
                             <th>Actions</th>
                         </tr>

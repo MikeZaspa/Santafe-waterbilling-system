@@ -1724,7 +1724,7 @@
         });
     }
 
-     $('#saveBilling').click(function() {
+$('#saveBilling').click(function() {
     const formData = {
         consumer_id: $('#consumer_id').val(),
         current_reading: $('#currentReading').val(),
@@ -1806,7 +1806,7 @@
 });
 
 
-  // Function to show paid billing details
+   // Function to show paid billing details
 function showPaidBillingDetails(billing) {
     // Build consumer name
     const consumer = billing.consumer;
@@ -1824,12 +1824,28 @@ function showPaidBillingDetails(billing) {
         paymentDate = moment(billing.updated_at).format('MMM D, YYYY');
     }
     
+    // Calculate total amount with penalty
+    const totalAmount = parseFloat(billing.total_amount);
+    const penaltyAmount = parseFloat(billing.penalty_amount || 0);
+    const totalWithPenalty = totalAmount + penaltyAmount;
+    
+    // Check if payment was late
+    const dueDate = moment(billing.due_date);
+    const paidDate = moment(billing.payment_date || billing.updated_at);
+    const isLatePayment = paidDate.isAfter(dueDate);
+    
+    // Calculate next month due date
+    const nextMonth = new Date(billing.due_date);
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+    const formattedNextMonth = moment(nextMonth).format('MMMM YYYY');
+    
     // Create HTML for billing details
     const billingDetails = `
         <div class="text-start">
             <div class="alert alert-info">
                 <h6><i class="bi bi-info-circle me-2"></i>Billing Information</h6>
                 <p>This consumer has already paid for this billing period.</p>
+                ${isLatePayment ? '<p class="text-warning mb-0"><i class="bi bi-exclamation-triangle me-2"></i>This payment was made after the due date.</p>' : ''}
             </div>
             <div class="row">
                 <div class="col-md-6">
@@ -1842,102 +1858,55 @@ function showPaidBillingDetails(billing) {
                     <p><strong>Previous Reading:</strong> ${billing.previous_reading} m³</p>
                     <p><strong>Current Reading:</strong> ${billing.current_reading} m³</p>
                     <p><strong>Consumption:</strong> ${billing.consumption} m³</p>
-                    <p><strong>Total Amount:</strong> ₱${parseFloat(billing.total_amount).toFixed(2)}</p>
+                    <p><strong>Base Amount:</strong> ₱${totalAmount.toFixed(2)}</p>
                 </div>
             </div>
-            <div class="mt-3">
-                <p><strong>Payment Date:</strong> ${paymentDate}</p>
+            
+            ${penaltyAmount > 0 ? `
+            <div class="row mt-2">
+                <div class="col-12">
+                    <div class="alert alert-warning">
+                        <h6><i class="bi bi-clock me-2"></i>Late Payment Penalty</h6>
+                        <p class="mb-1"><strong>Penalty Fee:</strong> ₱${penaltyAmount.toFixed(2)}</p>
+                        <p class="mb-0"><strong>Total Amount Paid:</strong> ₱${totalWithPenalty.toFixed(2)}</p>
+                    </div>
+                </div>
+            </div>
+            ` : `
+            <div class="row mt-2">
+                <div class="col-12">
+                    <p><strong>Total Amount Paid:</strong> ₱${totalAmount.toFixed(2)}</p>
+                </div>
+            </div>
+            `}
+            
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <p><strong>Payment Date:</strong> ${paymentDate}</p>
+                    ${isLatePayment ? `<p class="text-danger"><strong>Days Late:</strong> ${paidDate.diff(dueDate, 'days')} days</p>` : ''}
+                </div>
+            </div>
+            
+            <div class="alert alert-warning mt-3">
+                <p class="mb-0"><i class="bi bi-calendar me-2"></i>Next billing period: <strong>${formattedNextMonth}</strong></p>
             </div>
         </div>
     `;
     
-    // Show SweetAlert with billing details
+    // Show SweetAlert with billing details (only OK button)
     Swal.fire({
         title: 'Paid Billing Details',
         html: billingDetails,
         icon: 'info',
-        showCloseButton: true, // Adds the X icon in the top right corner
-        showCancelButton: true,
-        confirmButtonText: 'Create Billing for Next Month',
-        cancelButtonText: 'View Receipt',
+        showCloseButton: true,
+        confirmButtonText: 'OK',
         confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#17a2b8',
         width: '700px',
-        // Custom styling for the close button
         customClass: {
             closeButton: 'swal2-close-button-custom'
         }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Set due date to next month
-            const nextMonth = new Date(billing.due_date);
-            nextMonth.setMonth(nextMonth.getMonth() + 1);
-            $('#dueDate').val(nextMonth.toISOString().split('T')[0]);
-            
-            // Open the billing modal
-            $('#billingModal').modal('show');
-        } else if (result.dismiss === Swal.DismissReason.cancel) {
-            // Show the receipt modal
-            generateReceipt(billing);
-            $('#receiptModal').modal('show');
-        } else if (result.dismiss === Swal.DismissReason.close) {
-            // User clicked the X button, just close the modal
-            console.log('Modal closed with X button');
-        }
     });
 }
-
-
- $('#addBillingBtn').click(function() {
-    // Check if a consumer is selected
-    const consumerId = $('#consumer_id').val();
-    
-    if (consumerId) {
-        const dueDate = $('#dueDate').val();
-        
-        $.ajax({
-            url: '/accountant/billings/existing',
-            type: 'GET',
-            data: {
-                consumer_id: consumerId,
-                due_date: dueDate
-            },
-            dataType: 'json',
-            success: function(response) {
-                if (response.success) {
-                    if (response.type === 'paid') {
-                        // For paid billing, show the billing details in a SweetAlert
-                        showPaidBillingDetails(response.data);
-                    } else {
-                        // For unpaid billing, show the update option
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Unpaid Billing Exists',
-                            html: 'This consumer already has an unpaid billing for this month.<br><br>' +
-                                  '<button class="btn btn-primary" id="updateExistingBtn">Update Existing Billing</button>',
-                            showConfirmButton: false
-                        });
-                        
-                        $('#updateExistingBtn').click(function() {
-                            // Open the existing billing for editing
-                            editBilling(response.data.id);
-                        });
-                    }
-                } else {
-                    // No existing billing, open the modal
-                    $('#billingModal').modal('show');
-                }
-            },
-            error: function() {
-                // Error checking, open the modal anyway
-                $('#billingModal').modal('show');
-            }
-        });
-    } else {
-        // No consumer selected, just open the modal
-        $('#billingModal').modal('show');
-    }
-});
 
     $(document).on('click', '.edit-btn', function() {
         const billingId = $(this).data('id');
@@ -2088,58 +2057,70 @@ $(document).on('click', '.delete-btn', function() {
 });
 
     // Handle payment button click
-    $(document).on('click', '.payment-btn', function(e) {
-        e.preventDefault();
-        const billingId = $(this).data('id');
-        
-        console.log('Payment button clicked for billing ID:', billingId); // Debug log
+$(document).on('click', '.payment-btn', function(e) {
+    e.preventDefault();
+    const billingId = $(this).data('id');
+    
+    console.log('Payment button clicked for billing ID:', billingId);
 
-        // Show modal and reset fields
-        $('#paymentModal').modal('show');
-        $('#paymentAmountDue').val('Loading...');
-        $('#paymentAmount').val('');
-        $('#paymentChange').val('₱0.00');
-        $('#paymentBillingId').val(billingId); // Set the billing ID immediately
-        $('#paymentDate').val(new Date().toISOString().split('T')[0]);
+    // Show modal and reset fields
+    $('#paymentModal').modal('show');
+    $('#paymentAmountDue').val('Loading...');
+    $('#paymentAmount').val('');
+    $('#paymentChange').val('₱0.00');
+    $('#paymentBillingId').val(billingId);
+    $('#paymentDate').val(new Date().toISOString().split('T')[0]);
 
-        // Load billing details via AJAX
-        $.ajax({
-            url: `/accountant/billings/${billingId}/details`,
-            type: 'GET',
-            dataType: 'json',
-            success: function(response) {
-                console.log('Billing details response:', response); // Debug log
-                if (response.success) {
-                    const billing = response.data;
-                    const totalAmount = parseFloat(billing.total_amount);
-                    const penaltyAmount = parseFloat(billing.penalty_amount || 0);
-                    const totalDue = totalAmount + penaltyAmount;
-                    console.log('Total amount:', totalAmount, 'Penalty:', penaltyAmount, 'Total Due:', totalDue); // Debug log
+    // Load billing details via AJAX
+    $.ajax({
+        url: `/accountant/billings/${billingId}/details`,
+        type: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            console.log('Billing details response:', response);
+            if (response.success) {
+                const billing = response.data;
+                const totalAmount = parseFloat(billing.total_amount);
+                const penaltyAmount = parseFloat(billing.penalty_amount || 0);
+                const totalDue = totalAmount + penaltyAmount;
+                
+                console.log('Total amount:', totalAmount, 'Penalty:', penaltyAmount, 'Total Due:', totalDue);
 
-                    $('#paymentBillingId').val(billing.id);
-                    $('#paymentAmountDue').val('₱' + totalDue.toFixed(2));
-                } else {
-                    console.error('Failed to load billing details');
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Failed to load billing data.'
-                    });
-                    $('#paymentModal').modal('hide');
+                $('#paymentBillingId').val(billing.id);
+                $('#paymentAmountDue').val('₱' + totalDue.toFixed(2));
+                
+                // Show penalty information if applicable
+                if (penaltyAmount > 0) {
+                    $('#paymentAmountDue').after(`
+                        <div class="alert alert-warning mt-2 mb-2 p-2">
+                            <small>
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                Includes ₱${penaltyAmount.toFixed(2)} late payment penalty
+                            </small>
+                        </div>
+                    `);
                 }
-            },
-            error: function(xhr) {
-                console.error('AJAX error:', xhr.responseText);
+            } else {
+                console.error('Failed to load billing details');
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: xhr.responseJSON?.message || 'Failed to load billing data.'
+                    text: 'Failed to load billing data.'
                 });
                 $('#paymentModal').modal('hide');
             }
-        });
+        },
+        error: function(xhr) {
+            console.error('AJAX error:', xhr.responseText);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: xhr.responseJSON?.message || 'Failed to load billing data.'
+            });
+            $('#paymentModal').modal('hide');
+        }
     });
-
+});
     // Keep track of paid billing IDs
     let paidBillings = new Set();
 

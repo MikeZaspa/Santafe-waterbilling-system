@@ -283,18 +283,7 @@ public function getDisconnectedConsumers()
     }
 }
 
-    /**
-     * Restore a disconnected consumer
-     */
-    /**
- * Restore a disconnected consumer and move back to billing records
- */
-/**
- * Restore a disconnected consumer and move back to billing records
- */
-/**
- * Restore a disconnected consumer and move back to billing records
- */
+ 
 public function restoreDisconnectedConsumer(Request $request, $id)
 {
     DB::beginTransaction();

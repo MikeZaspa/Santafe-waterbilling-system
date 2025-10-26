@@ -171,6 +171,7 @@ Route::prefix('accountant')->group(function() {
 });
 Route::get('/accountant/billings/existing', [AccountantController::class, 'getExistingBilling']);
 
+
 Route::middleware(['auth'])->group(function () {
     // Consumer billing routes
     Route::get('/consumer/billings/data', [ConsumerBillingController::class, 'getBillingsData'])->name('consumer.billings.data');
