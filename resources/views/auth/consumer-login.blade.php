@@ -731,14 +731,19 @@
     
     <nav class="sidebar-menu">
         <ul class="nav flex-column">
+             <li class="nav-item">
+                <a class="nav-link" href="{{ url('/consumer-profile') }}">
+                    <i class="bi bi-person"></i> Profile
+                </a>
+            </li>
             <li class="nav-item">
-                <a class="nav-link" href="information">
-                    <i class="bi bi-speedometer2"></i> Consumer Information
+                <a class="nav-link" href="{{ url('/consumer-dashboard') }}">
+                    <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link active" href="dashboard">
-                    <i class="bi bi-people"></i> Billing
+                    <i class="bi bi-receipt"></i> Billing
                 </a>
             </li>
         </ul>
@@ -776,10 +781,14 @@
                     <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
                     <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
                     <li><hr class="dropdown-divider"></li>
+                    <!-- In the dropdown menu -->
                     <li>
-                        <a class="dropdown-item text-danger" href="admin-logout">
+                        <a class="dropdown-item text-danger" href="#" id="logout-btn">
                             <i class="bi bi-box-arrow-right me-2"></i>Sign Out
                         </a>
+                        <form id="logout-form" action="/logout" method="POST" style="display: none;">
+                            @csrf
+                        </form>
                     </li>
                 </ul>
             </div>
@@ -858,6 +867,8 @@
                     </tbody>
                 </table>
             </div>
+
+            
             
             <!-- Mobile Card View -->
             <div class="mobile-billing-cards" id="mobileBillingCards">
@@ -918,6 +929,41 @@
                 @endforeach
             </div>
         </div>
+        <!-- Notices Section -->
+<div class="table-container animate-fadein">
+    <div class="table-title">
+        <h3 class="mb-0">Recent Notices</h3>
+        <span class="badge bg-primary">{{ count($notices) }} Notice(s)</span>
+    </div>
+    
+    @if($notices->count() > 0)
+        <div class="notices-container">
+            @foreach($notices as $notice)
+            <div class="notice-card mb-3 p-3 border rounded" style="background-color: #f8f9fa;">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h6 class="mb-0 text-primary">Notice #{{ $loop->iteration }}</h6>
+                    <small class="text-muted">{{ \Carbon\Carbon::parse($notice->created_at)->format('M d, Y h:i A') }}</small>
+                </div>
+                <div class="notice-content mb-2">
+                    <strong>Content:</strong> 
+                    <p class="mb-1">{{ $notice->notice }}</p>
+                </div>
+                @if($notice->description)
+                <div class="notice-description">
+                    <strong>Description:</strong>
+                    <p class="mb-0 text-muted">{{ $notice->description }}</p>
+                </div>
+                @endif
+            </div>
+            @endforeach
+        </div>
+    @else
+        <div class="text-center py-4">
+            <i class="bi bi-bell-slash fs-1 text-muted"></i>
+            <p class="text-muted mt-2">No notices available</p>
+        </div>
+    @endif
+</div>
     </div>
 
     <!-- Payment Modal -->
@@ -1467,6 +1513,50 @@
                         text: errorMessage
                     });
                     submitBtn.html('Submit Payment').prop('disabled', false);
+                }
+            });
+        });
+        // SweetAlert2 Logout Confirmation
+        $('#logout-btn').on('click', function(e) {
+            e.preventDefault();
+            
+            Swal.fire({
+                title: 'Logout Confirmation',
+                text: "Are you sure you want to logout?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#d32f2f',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, Logout!',
+                cancelButtonText: 'Cancel',
+                reverseButtons: false,
+                customClass: {
+                    confirmButton: 'btn btn-danger',
+                    cancelButton: 'btn btn-secondary'
+                },
+                buttonsStyling: false,
+                showClass: {
+                    popup: 'animate__animated animate__fadeInDown'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__fadeOutUp'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading state
+                    Swal.fire({
+                        title: 'Logging out...',
+                        text: 'Please wait while we securely log you out.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    
+                    // Submit the logout form after a brief delay for better UX
+                    setTimeout(() => {
+                        document.getElementById('logout-form').submit();
+                    }, 1000);
                 }
             });
         });
