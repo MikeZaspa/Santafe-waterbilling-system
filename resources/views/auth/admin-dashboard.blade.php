@@ -345,10 +345,14 @@
                     <li><a class="dropdown-item" href="#">Profile</a></li>
                     <li><a class="dropdown-item" href="#">Settings</a></li>
                     <li><hr class="dropdown-divider"></li>
+                    <!-- In the dropdown menu -->
                     <li>
-                        <a class="dropdown-item text-danger" href="/logout">
+                        <a class="dropdown-item text-danger" href="#" id="logout-btn">
                             <i class="bi bi-box-arrow-right me-2"></i>Sign Out
                         </a>
+                        <form id="logout-form" action="/logout" method="POST" style="display: none;">
+                            @csrf
+                        </form>
                     </li>
                 </ul>
             </div>
@@ -602,7 +606,48 @@
             }
         }
     }); 
+
+        // SweetAlert2 Logout Confirmation - With reversed buttons
+    $('#logout-btn').on('click', function(e) {
+        e.preventDefault();
+        
+        Swal.fire({
+            title: 'Logout Confirmation',
+            text: 'Are you sure you want to logout?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#d32f2f',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, Logout!',
+            cancelButtonText: 'Cancel',
+            reverseButtons: false, // This reverses the button order
+            customClass: {
+                confirmButton: 'btn btn-danger',
+                cancelButton: 'btn btn-secondary'
+            },
+            buttonsStyling: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show loading state
+                Swal.fire({
+                    title: 'Logging out...',
+                    text: 'Please wait while we securely log you out.',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                // Submit the logout form
+                setTimeout(() => {
+                    document.getElementById('logout-form').submit();
+                }, 1000);
+            }
+        });
+    });
 });
+
+
 </script>
 
 </body>
