@@ -732,12 +732,12 @@
     <nav class="sidebar-menu">
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a class="nav-link" href="consumer-information">
+                <a class="nav-link" href="information">
                     <i class="bi bi-speedometer2"></i> Consumer Information
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link active" href="consumer-login">
+                <a class="nav-link active" href="dashboard">
                     <i class="bi bi-people"></i> Billing
                 </a>
             </li>

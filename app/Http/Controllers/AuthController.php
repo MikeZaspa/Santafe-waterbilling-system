@@ -296,83 +296,132 @@ class AuthController extends Controller
     }
     
     public function login(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
+{
+    $validator = Validator::make($request->all(), [
+        'email' => 'required|email',
+        'password' => 'required',
+    ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        $credentials = $request->only('email', 'password');
-
-        // Check if admin exists first
-        $admin = Admin::where('email', $request->email)->first();
-
-        if (!$admin) {
-            // Log failed login attempt
-            $this->adminLogService->logActivity(
-                null, 
-                'failed_login_attempt - email_not_found', 
-                $request
-            );
-
-            return back()->withErrors([
-                'email' => 'The provided email does not exist in our system.',
-            ])->onlyInput('email');
+    if ($validator->fails()) {
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
         }
         
-        // Check if email is verified
-        if (!$admin->email_verified_at) {
-            // Store email in session for verification
-            $request->session()->put('verification_email', $admin->email);
-            
-            return redirect()->route('verify')
-                ->with('error', 'Please verify your email address before logging in.');
-        }
+        return redirect()->back()
+            ->withErrors($validator)
+            ->withInput();
+    }
 
-        // Check if admin is active
-        if (!$admin->active) {
-            // Log attempted login to inactive account
-            $this->adminLogService->logActivity(
-                $admin, 
-                'failed_login_attempt - account_inactive', 
-                $request
-            );
+    $credentials = $request->only('email', 'password');
 
-            return back()->withErrors([
-                'email' => 'Your account is inactive. Please contact administrator.',
-            ])->onlyInput('email');
-        }
+    // Check if admin exists first
+    $admin = Admin::where('email', $request->email)->first();
 
-        // Attempt authentication
-        if (Auth::guard('admin')->attempt($credentials)) {
-            $admin = Auth::guard('admin')->user();
-            
-            // Log successful login
-            $this->adminLogService->logLogin($admin, $request, 'login_successful');
-            
-            $request->session()->regenerate();
-
-            // Redirect all admins to the same dashboard
-            return redirect()->intended('/admin-dashboard');
-        }
-
-        // Log failed login attempt (wrong password)
+    if (!$admin) {
+        // Log failed login attempt
         $this->adminLogService->logActivity(
-            $admin, 
-            'failed_login_attempt - wrong_password', 
+            null, 
+            'failed_login_attempt - email_not_found', 
             $request
         );
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => false,
+                'errors' => [
+                    'email' => 'The provided email does not exist in our system.'
+                ]
+            ], 401);
+        }
+
         return back()->withErrors([
-            'password' => 'The provided password is incorrect.',
+            'email' => 'The provided email does not exist in our system.',
         ])->onlyInput('email');
     }
+    
+    // Check if email is verified
+    if (!$admin->email_verified_at) {
+        // Store email in session for verification
+        $request->session()->put('verification_email', $admin->email);
+        
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => false,
+                'redirect' => route('verify'),
+                'message' => 'Please verify your email address before logging in.'
+            ], 403);
+        }
+        
+        return redirect()->route('verify')
+            ->with('error', 'Please verify your email address before logging in.');
+    }
+
+    // Check if admin is active
+    if (!$admin->active) {
+        // Log attempted login to inactive account
+        $this->adminLogService->logActivity(
+            $admin, 
+            'failed_login_attempt - account_inactive', 
+            $request
+        );
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => false,
+                'errors' => [
+                    'email' => 'Your account is inactive. Please contact administrator.'
+                ]
+            ], 403);
+        }
+
+        return back()->withErrors([
+            'email' => 'Your account is inactive. Please contact administrator.',
+        ])->onlyInput('email');
+    }
+
+    // Attempt authentication
+    if (Auth::guard('admin')->attempt($credentials)) {
+        $admin = Auth::guard('admin')->user();
+        
+        // Log successful login
+        $this->adminLogService->logLogin($admin, $request, 'login_successful');
+        
+        $request->session()->regenerate();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'redirect' => '/admin-dashboard'
+            ]);
+        }
+
+        // Redirect all admins to the same dashboard
+        return redirect()->intended('/admin-dashboard');
+    }
+
+    // Log failed login attempt (wrong password)
+    $this->adminLogService->logActivity(
+        $admin, 
+        'failed_login_attempt - wrong_password', 
+        $request
+    );
+
+    if ($request->expectsJson()) {
+        return response()->json([
+            'success' => false,
+            'errors' => [
+                'password' => 'The provided password is incorrect.'
+            ]
+        ], 401);
+    }
+
+    return back()->withErrors([
+        'password' => 'The provided password is incorrect.',
+    ])->onlyInput('email');
+}
 
     public function logout(Request $request)
     {
