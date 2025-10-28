@@ -272,202 +272,56 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-        
-        /* Sliding Puzzle Captcha Styles */
-        .captcha-container {
-            position: relative;
-            width: 100%;
-            height: 300px;
-            margin: 0 auto;
-            overflow: hidden;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            background-color: #f0f0f0;
-        }
-        
-        .puzzle-image {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-        }
-        
-        .puzzle-piece {
-            position: absolute;
-            width: 60px;
-            height: 60px;
-            background-size: 400px 300px;
-            border: 1px solid #fff;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-            cursor: move;
-            z-index: 10;
-        }
-        
-        .puzzle-slot {
-            position: absolute;
-            width: 60px;
-            height: 60px;
-            border: 2px dashed rgba(255, 255, 255, 0.7);
-            background-color: rgba(0, 0, 0, 0.2);
-        }
-        
-        .puzzle-slider {
-            width: 100%;
-            margin-top: 20px;
-        }
-        
-        .slider-track {
-            width: 100%;
-            height: 40px;
-            background-color: #f1f3f4;
-            border-radius: 20px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .slider-progress {
-            height: 100%;
-            width: 0;
-            background-color: var(--primary);
-            border-radius: 20px;
-            transition: width 0.3s ease;
-        }
-        
-        .slider-button {
-            position: absolute;
-            top: 50%;
-            left: 10px;
-            transform: translateY(-50%);
-            width: 50px;
-            height: 50px;
-            background-color: var(--white);
-            border-radius: 50%;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-            cursor: grab;
+
+        /* Two-factor authentication styles */
+        .verification-code-inputs {
             display: flex;
-            align-items: center;
             justify-content: center;
-            z-index: 5;
+            gap: 10px;
+            margin: 20px 0;
         }
-        
-        .slider-button:active {
-            cursor: grabbing;
-        }
-        
-        .slider-button i {
-            color: var(--primary);
+
+        .verification-code-inputs input {
+            width: 45px;
+            height: 45px;
+            text-align: center;
             font-size: 20px;
+            font-weight: 600;
+            border: 1px solid var(--border);
+            border-radius: 4px;
         }
-        
-        .slider-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: var(--text-light);
-            font-size: 14px;
-            pointer-events: none;
-            z-index: 1;
+
+        .verification-code-inputs input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
         }
-        
-        .captcha-refresh {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: rgba(255, 255, 255, 0.8);
-            border: none;
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 20;
-            transition: all 0.2s ease;
-        }
-        
-        .captcha-refresh:hover {
-            background-color: rgba(255, 255, 255, 1);
-            transform: rotate(90deg);
-        }
-        
-        .captcha-success {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(6, 214, 160, 0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 30;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        .captcha-success.show {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        .captcha-success i {
-            color: white;
-            font-size: 48px;
-        }
-        
-        .captcha-instructions {
+
+        .resend-code {
             margin-top: 15px;
-            font-size: 14px;
-            color: var(--text-light);
+            font-size: 0.9rem;
         }
-        
-        .captcha-error {
-            color: var(--error);
-            font-size: 14px;
-            margin-top: 10px;
-            height: 20px;
-        }
-        
-        /* Loading indicator for puzzle image */
-        .puzzle-loading {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.9);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 25;
-        }
-        
-        .puzzle-loading i {
+
+        .resend-code button {
+            background: none;
+            border: none;
             color: var(--primary);
-            font-size: 24px;
-            animation: spin 1s linear infinite;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 0;
         }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+
+        .resend-code button:hover {
+            text-decoration: underline;
         }
-        
-        /* Fallback image styling */
-        .puzzle-fallback {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #1a73e8, #4285f4);
-            color: white;
-            font-size: 24px;
+
+        .resend-code button:disabled {
+            color: var(--text-light);
+            cursor: not-allowed;
+        }
+
+        .countdown {
+            color: var(--warning);
             font-weight: 600;
         }
     </style>
@@ -520,6 +374,54 @@
                 </button>
             </div>
         </form>
+
+        <!-- Two-Factor Authentication Modal -->
+        <div class="modal fade" id="twoFactorModal" tabindex="-1" aria-labelledby="twoFactorModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content shadow-lg border-0 rounded-4">
+                    <div class="modal-header bg-primary text-white rounded-top-4">
+                        <h5 class="modal-title" id="twoFactorModalLabel">Two-Factor Authentication</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
+                            <p class="mb-2">We've sent a verification code to your email</p>
+                            <p class="text-muted small" id="twoFactorEmail"></p>
+                        </div>
+                        
+                        <form id="twoFactorForm">
+                            @csrf
+                            <input type="hidden" id="twoFactorEmailInput" name="email">
+                            <input type="hidden" id="twoFactorPasswordInput" name="password">
+                            <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response-2fa">
+                            
+                            <div class="verification-code-inputs">
+                                <input type="text" maxlength="1" class="form-control" id="digit1" name="digit1" required>
+                                <input type="text" maxlength="1" class="form-control" id="digit2" name="digit2" required>
+                                <input type="text" maxlength="1" class="form-control" id="digit3" name="digit3" required>
+                                <input type="text" maxlength="1" class="form-control" id="digit4" name="digit4" required>
+                                <input type="text" maxlength="1" class="form-control" id="digit5" name="digit5" required>
+                                <input type="text" maxlength="1" class="form-control" id="digit6" name="digit6" required>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary" id="verifyCodeBtn">
+                                    <i class="fas fa-check-circle me-2"></i>Verify Code
+                                </button>
+                            </div>
+                            
+                            <div class="resend-code text-center">
+                                <p>Didn't receive the code? 
+                                    <button type="button" id="resendCodeBtn">Resend</button>
+                                </p>
+                                <p class="countdown" id="countdown" style="display: none;">Resend code in <span id="countdownTime">60</span> seconds</p>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Portal Modal -->
         <div class="modal fade" id="portalModal" tabindex="-1" aria-labelledby="portalModalLabel" aria-hidden="true">
@@ -577,55 +479,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Sliding Puzzle Captcha Modal -->
-        <div class="modal fade" id="captchaModal" tabindex="-1" aria-labelledby="captchaModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content shadow-lg border-0 rounded-4">
-                    <div class="modal-header bg-primary text-white rounded-top-4">
-                        <h5 class="modal-title" id="captchaModalLabel">Security Verification</h5>
-                    </div>
-                    <div class="modal-body">
-                        <p class="text-center mb-3">Please complete the puzzle to verify you're human</p>
-                        
-                        <div class="captcha-container">
-                            <div class="puzzle-image" id="puzzleImage">
-                                <div class="puzzle-loading" id="puzzleLoading">
-                                    <i class="fas fa-spinner fa-spin"></i>
-                                </div>
-                                <div class="puzzle-slot" id="puzzleSlot"></div>
-                                <div class="puzzle-piece" id="puzzlePiece"></div>
-                                <div class="captcha-success" id="captchaSuccess">
-                                    <i class="fas fa-check-circle"></i>
-                                </div>
-                            </div>
-                            <button class="captcha-refresh" id="refreshCaptcha">
-                                <i class="fas fa-sync-alt"></i>
-                            </button>
-                        </div>
-                        
-                        <div class="puzzle-slider">
-                            <div class="slider-track">
-                                <div class="slider-progress" id="sliderProgress"></div>
-                                <div class="slider-button" id="sliderButton">
-                                    <i class="fas fa-arrow-right"></i>
-                                </div>
-                                <div class="slider-text">Slide to complete</div>
-                            </div>
-                        </div>
-                        
-                        <div class="captcha-instructions">
-                            Drag the puzzle piece to the correct position
-                        </div>
-                        
-                        <div class="captcha-error" id="captchaError"></div>
-                    </div>
-                    <div class="modal-footer border-0">
-                        <button type="button" class="btn btn-secondary" id="cancelCaptcha">Cancel</button>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -637,19 +490,16 @@
         const loginBtn = document.getElementById('loginBtn');
         const togglePassword = document.getElementById('togglePassword');
         const recaptchaResponse = document.getElementById('g-recaptcha-response');
-        
-        // Captcha elements
-        const captchaModal = new bootstrap.Modal(document.getElementById('captchaModal'));
-        const puzzlePiece = document.getElementById('puzzlePiece');
-        const puzzleSlot = document.getElementById('puzzleSlot');
-        const puzzleImage = document.getElementById('puzzleImage');
-        const puzzleLoading = document.getElementById('puzzleLoading');
-        const sliderButton = document.getElementById('sliderButton');
-        const sliderProgress = document.getElementById('sliderProgress');
-        const refreshCaptcha = document.getElementById('refreshCaptcha');
-        const captchaSuccess = document.getElementById('captchaSuccess');
-        const captchaError = document.getElementById('captchaError');
-        const cancelCaptcha = document.getElementById('cancelCaptcha');
+        const twoFactorModal = new bootstrap.Modal(document.getElementById('twoFactorModal'));
+        const twoFactorForm = document.getElementById('twoFactorForm');
+        const twoFactorEmailInput = document.getElementById('twoFactorEmailInput');
+        const twoFactorPasswordInput = document.getElementById('twoFactorPasswordInput');
+        const twoFactorEmailDisplay = document.getElementById('twoFactorEmail');
+        const verifyCodeBtn = document.getElementById('verifyCodeBtn');
+        const resendCodeBtn = document.getElementById('resendCodeBtn');
+        const countdownElement = document.getElementById('countdown');
+        const countdownTimeElement = document.getElementById('countdownTime');
+        const recaptchaResponse2FA = document.getElementById('g-recaptcha-response-2fa');
         
         // Track login attempts
         let loginAttempts = 0;
@@ -657,136 +507,7 @@
         let lockoutTime = 30; // seconds
         let isLocked = false;
         let countdownInterval;
-        
-        // Puzzle variables
-        let puzzlePosition = { x: 0, y: 0 };
-        let slotPosition = { x: 0, y: 0 };
-        let isDragging = false;
-        let isSliding = false;
-        let puzzleSolved = false;
-        let tolerance = 10; // Tolerance for puzzle solution in pixels
-        let captchaVerified = false; // Track if captcha has been verified
-        
-        // Array of water-related images for the puzzle
-        const waterImages = [
-            'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-            'https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-            'https://images.unsplash.com/photo-1519904981063-b0cf448d479e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-            'https://images.unsplash.com/photo-1559827260-dc66d52bef19?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-            'https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-            'https://images.unsplash.com/photo-1516972810927-8038500ca84e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80'
-        ];
-        
-        // Initialize puzzle
-        function initPuzzle() {
-            // Reset puzzle state
-            puzzleSolved = false;
-            captchaVerified = false;
-            captchaSuccess.classList.remove('show');
-            captchaError.textContent = '';
-            
-            // Show loading indicator
-            puzzleLoading.style.display = 'flex';
-            
-            // Select a random water-related image
-            const randomIndex = Math.floor(Math.random() * waterImages.length);
-            const selectedImage = waterImages[randomIndex];
-            
-            // Preload the image
-            const img = new Image();
-            img.crossOrigin = "Anonymous"; // This helps with CORS issues
-            
-            img.onload = function() {
-                // Hide loading indicator
-                puzzleLoading.style.display = 'none';
-                
-                // Set the background image
-                puzzleImage.style.backgroundImage = `url('${selectedImage}')`;
-                puzzlePiece.style.backgroundImage = `url('${selectedImage}')`;
-                
-                // Generate random positions
-                const maxX = 340; // Maximum X position (container width - piece width)
-                const maxY = 240; // Maximum Y position (container height - piece height)
-                
-                // Set random position for the slot
-                slotPosition.x = Math.floor(Math.random() * maxX) + 30;
-                slotPosition.y = Math.floor(Math.random() * maxY) + 30;
-                
-                // Set initial position for the piece (left side)
-                puzzlePosition.x = 30;
-                puzzlePosition.y = slotPosition.y;
-                
-                // Apply positions
-                puzzleSlot.style.left = slotPosition.x + 'px';
-                puzzleSlot.style.top = slotPosition.y + 'px';
-                puzzlePiece.style.left = puzzlePosition.x + 'px';
-                puzzlePiece.style.top = puzzlePosition.y + 'px';
-                
-                // Set background position for the piece to match the slot
-                puzzlePiece.style.backgroundPosition = `-${slotPosition.x}px -${slotPosition.y}px`;
-                
-                // Reset slider
-                sliderButton.style.left = '10px';
-                sliderProgress.style.width = '0px';
-            };
-            
-            img.onerror = function() {
-                // Fallback to a default image if the selected one fails to load
-                console.error('Image failed to load, using fallback');
-                puzzleLoading.style.display = 'none';
-                
-                // Create a fallback gradient background
-                puzzleImage.style.background = 'linear-gradient(135deg, #1a73e8, #4285f4)';
-                puzzleImage.style.backgroundImage = 'none';
-                
-                // Add a water icon as fallback
-                puzzleImage.innerHTML = '<div class="puzzle-fallback"><i class="fas fa-tint"></i></div>';
-                
-                // Re-add the puzzle elements
-                puzzleImage.innerHTML += `
-                    <div class="puzzle-loading" id="puzzleLoading" style="display:none;">
-                        <i class="fas fa-spinner fa-spin"></i>
-                    </div>
-                    <div class="puzzle-slot" id="puzzleSlot"></div>
-                    <div class="puzzle-piece" id="puzzlePiece"></div>
-                    <div class="captcha-success" id="captchaSuccess">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                `;
-                
-                // Re-select the elements after modifying the DOM
-                const newPuzzleSlot = document.getElementById('puzzleSlot');
-                const newPuzzlePiece = document.getElementById('puzzlePiece');
-                
-                // Generate random positions
-                const maxX = 340; // Maximum X position (container width - piece width)
-                const maxY = 240; // Maximum Y position (container height - piece height)
-                
-                // Set random position for the slot
-                slotPosition.x = Math.floor(Math.random() * maxX) + 30;
-                slotPosition.y = Math.floor(Math.random() * maxY) + 30;
-                
-                // Set initial position for the piece (left side)
-                puzzlePosition.x = 30;
-                puzzlePosition.y = slotPosition.y;
-                
-                // Apply positions
-                newPuzzleSlot.style.left = slotPosition.x + 'px';
-                newPuzzleSlot.style.top = slotPosition.y + 'px';
-                newPuzzlePiece.style.left = puzzlePosition.x + 'px';
-                newPuzzlePiece.style.top = puzzlePosition.y + 'px';
-                
-                // Create a simple gradient for the puzzle piece
-                newPuzzlePiece.style.background = 'linear-gradient(135deg, #1a73e8, #4285f4)';
-                
-                // Reset slider
-                sliderButton.style.left = '10px';
-                sliderProgress.style.width = '0px';
-            };
-            
-            // Start loading the image
-            img.src = selectedImage;
-        }
+        let resendCountdownInterval;
         
         // Toggle password visibility
         togglePassword.addEventListener('click', function() {
@@ -794,176 +515,6 @@
             passwordInput.setAttribute('type', type);
             this.classList.toggle('fa-eye');
             this.classList.toggle('fa-eye-slash');
-        });
-        
-        // Puzzle piece dragging
-        puzzlePiece.addEventListener('mousedown', startDragging);
-        document.addEventListener('mousemove', drag);
-        document.addEventListener('mouseup', stopDragging);
-        
-        // Touch events for mobile
-        puzzlePiece.addEventListener('touchstart', startDragging);
-        document.addEventListener('touchmove', drag);
-        document.addEventListener('touchend', stopDragging);
-        
-        function startDragging(e) {
-            if (puzzleSolved) return;
-            
-            isDragging = true;
-            
-            const touch = e.touches ? e.touches[0] : e;
-            const rect = puzzlePiece.getBoundingClientRect();
-            const containerRect = puzzlePiece.parentElement.getBoundingClientRect();
-            
-            // Store the initial offset
-            puzzlePiece.dataset.offsetX = touch.clientX - rect.left;
-            puzzlePiece.dataset.offsetY = touch.clientY - rect.top;
-            
-            e.preventDefault();
-        }
-        
-        function drag(e) {
-            if (!isDragging || puzzleSolved) return;
-            
-            const touch = e.touches ? e.touches[0] : e;
-            const containerRect = puzzlePiece.parentElement.getBoundingClientRect();
-            
-            // Calculate new position
-            let newX = touch.clientX - containerRect.left - parseInt(puzzlePiece.dataset.offsetX);
-            let newY = touch.clientY - containerRect.top - parseInt(puzzlePiece.dataset.offsetY);
-            
-            // Constrain to container
-            newX = Math.max(0, Math.min(newX, containerRect.width - puzzlePiece.offsetWidth));
-            newY = Math.max(0, Math.min(newY, containerRect.height - puzzlePiece.offsetHeight));
-            
-            // Update position
-            puzzlePosition.x = newX;
-            puzzlePosition.y = newY;
-            puzzlePiece.style.left = newX + 'px';
-            puzzlePiece.style.top = newY + 'px';
-            
-            e.preventDefault();
-        }
-        
-        function stopDragging() {
-            if (!isDragging || puzzleSolved) return;
-            
-            isDragging = false;
-            
-            // Check if puzzle is solved
-            checkPuzzleSolution();
-        }
-        
-        // Slider functionality
-        sliderButton.addEventListener('mousedown', startSliding);
-        document.addEventListener('mousemove', slide);
-        document.addEventListener('mouseup', stopSliding);
-        
-        // Touch events for mobile
-        sliderButton.addEventListener('touchstart', startSliding);
-        document.addEventListener('touchmove', slide);
-        document.addEventListener('touchend', stopSliding);
-        
-        function startSliding(e) {
-            if (puzzleSolved) return;
-            
-            isSliding = true;
-            
-            const touch = e.touches ? e.touches[0] : e;
-            const rect = sliderButton.getBoundingClientRect();
-            const containerRect = sliderButton.parentElement.getBoundingClientRect();
-            
-            // Store the initial offset
-            sliderButton.dataset.offsetX = touch.clientX - rect.left;
-            
-            e.preventDefault();
-        }
-        
-        function slide(e) {
-            if (!isSliding || puzzleSolved) return;
-            
-            const touch = e.touches ? e.touches[0] : e;
-            const containerRect = sliderButton.parentElement.getBoundingClientRect();
-            
-            // Calculate new position
-            let newX = touch.clientX - containerRect.left - parseInt(sliderButton.dataset.offsetX);
-            
-            // Constrain to container
-            newX = Math.max(10, Math.min(newX, containerRect.width - sliderButton.offsetWidth - 10));
-            
-            // Update position
-            sliderButton.style.left = newX + 'px';
-            
-            // Update progress bar
-            const progress = ((newX - 10) / (containerRect.width - sliderButton.offsetWidth - 20)) * 100;
-            sliderProgress.style.width = progress + '%';
-            
-            // Move puzzle piece proportionally
-            const puzzleContainer = document.querySelector('.puzzle-image');
-            const puzzleMaxX = puzzleContainer.offsetWidth - puzzlePiece.offsetWidth;
-            const puzzleNewX = (progress / 100) * puzzleMaxX;
-            
-            puzzlePosition.x = puzzleNewX;
-            puzzlePiece.style.left = puzzleNewX + 'px';
-            
-            e.preventDefault();
-        }
-        
-        function stopSliding() {
-            if (!isSliding || puzzleSolved) return;
-            
-            isSliding = false;
-            
-            // Check if puzzle is solved
-            checkPuzzleSolution();
-        }
-        
-        function checkPuzzleSolution() {
-            // Calculate distance between piece and slot
-            const distance = Math.sqrt(
-                Math.pow(puzzlePosition.x - slotPosition.x, 2) + 
-                Math.pow(puzzlePosition.y - slotPosition.y, 2)
-            );
-            
-            if (distance <= tolerance) {
-                // Puzzle solved
-                puzzleSolved = true;
-                captchaVerified = true;
-                captchaSuccess.classList.add('show');
-                
-                // Snap piece to slot
-                puzzlePiece.style.left = slotPosition.x + 'px';
-                puzzlePiece.style.top = slotPosition.y + 'px';
-                
-                // After a short delay, close modal
-                setTimeout(() => {
-                    captchaModal.hide();
-                }, 1000);
-            } else {
-                // Show error
-                captchaError.textContent = 'Please try again. The puzzle piece is not in the correct position.';
-                
-                // Reset after a short delay
-                setTimeout(() => {
-                    puzzlePosition.x = 30;
-                    puzzlePosition.y = slotPosition.y;
-                    puzzlePiece.style.left = '30px';
-                    puzzlePiece.style.top = slotPosition.y + 'px';
-                    
-                    sliderButton.style.left = '10px';
-                    sliderProgress.style.width = '0px';
-                    
-                    captchaError.textContent = '';
-                }, 1000);
-            }
-        }
-        
-        // Refresh captcha
-        refreshCaptcha.addEventListener('click', initPuzzle);
-        
-        // Cancel captcha
-        cancelCaptcha.addEventListener('click', function() {
-            captchaModal.hide();
         });
         
         // Form validation
@@ -1011,34 +562,26 @@
                 return;
             }
             
-            // Check if captcha has been verified
-            if (!captchaVerified) {
-                // Show captcha modal
-                captchaModal.show();
-                initPuzzle();
-                return;
-            }
-            
             // Execute reCAPTCHA
             grecaptcha.ready(function() {
                 grecaptcha.execute('<?php echo env('NOCAPTCHA_SITEKEY'); ?>', {action: 'login'}).then(function(token) {
                     // Set the token in the hidden input
                     recaptchaResponse.value = token;
                     
-                    // Submit the form via AJAX to handle failed attempts
-                    submitFormWithAjax();
+                    // Submit the form via AJAX to check credentials
+                    checkCredentials();
                 });
             });
         });
         
-        function submitFormWithAjax() {
+        function checkCredentials() {
             const formData = new FormData(form);
             
             // Show loading state
             loginBtn.disabled = true;
-            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying credentials...';
             
-            fetch(form.action, {
+            fetch('/admin-check-credentials', {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -1049,14 +592,26 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Login successful, redirect
-                    window.location.href = data.redirect || '/admin-dashboard';
+                    // Credentials are correct, show 2FA modal
+                    twoFactorEmailInput.value = emailInput.value;
+                    twoFactorPasswordInput.value = passwordInput.value;
+                    twoFactorEmailDisplay.textContent = emailInput.value;
+                    
+                    // Reset button state
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = '<span>Log In</span>';
+                    
+                    // Show 2FA modal
+                    twoFactorModal.show();
+                    
+                    // Focus on first digit input
+                    document.getElementById('digit1').focus();
+                    
+                    // Start resend countdown
+                    startResendCountdown();
                 } else {
                     // Login failed
                     loginAttempts++;
-                    
-                    // Reset captcha verification
-                    captchaVerified = false;
                     
                     // Reset button state
                     loginBtn.disabled = false;
@@ -1109,6 +664,197 @@
                 });
             });
         }
+        
+        // Two-factor form submission
+        twoFactorForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Execute reCAPTCHA
+            grecaptcha.ready(function() {
+                grecaptcha.execute('<?php echo env('NOCAPTCHA_SITEKEY'); ?>', {action: '2fa'}).then(function(token) {
+                    // Set the token in the hidden input
+                    recaptchaResponse2FA.value = token;
+                    
+                    // Submit the form via AJAX
+                    submitTwoFactorForm();
+                });
+            });
+        });
+        
+        function submitTwoFactorForm() {
+            const formData = new FormData(twoFactorForm);
+            
+            // Show loading state
+            verifyCodeBtn.disabled = true;
+            verifyCodeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
+            
+            fetch('/admin-verify-2fa', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // 2FA successful, redirect
+                    window.location.href = data.redirect || '/admin-dashboard';
+                } else {
+                    // 2FA failed
+                    verifyCodeBtn.disabled = false;
+                    verifyCodeBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Verify Code';
+                    
+                    // Show error message
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Verification Failed',
+                        text: data.message || 'Invalid verification code. Please try again.',
+                        confirmButtonColor: '#1a73e8'
+                    });
+                    
+                    // Clear the inputs
+                    document.querySelectorAll('.verification-code-inputs input').forEach(input => {
+                        input.value = '';
+                    });
+                    
+                    // Focus on first digit input
+                    document.getElementById('digit1').focus();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                verifyCodeBtn.disabled = false;
+                verifyCodeBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Verify Code';
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred. Please try again.',
+                    confirmButtonColor: '#1a73e8'
+                });
+            });
+        }
+        
+        // Resend code functionality
+        resendCodeBtn.addEventListener('click', function() {
+            const email = twoFactorEmailInput.value;
+            
+            // Show loading state
+            resendCodeBtn.disabled = true;
+            resendCodeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            
+            fetch('/admin-resend-2fa', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ email: email })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Start countdown
+                    startResendCountdown();
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Code Sent',
+                        text: 'A new verification code has been sent to your email.',
+                        confirmButtonColor: '#1a73e8',
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                } else {
+                    resendCodeBtn.disabled = false;
+                    resendCodeBtn.innerHTML = 'Resend';
+                    
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Failed to resend code. Please try again.',
+                        confirmButtonColor: '#1a73e8'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                resendCodeBtn.disabled = false;
+                resendCodeBtn.innerHTML = 'Resend';
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred. Please try again.',
+                    confirmButtonColor: '#1a73e8'
+                });
+            });
+        });
+        
+        function startResendCountdown() {
+            let timeLeft = 60;
+            
+            // Show countdown, hide resend button
+            countdownElement.style.display = 'block';
+            resendCodeBtn.style.display = 'none';
+            countdownTimeElement.textContent = timeLeft;
+            
+            // Clear any existing countdown
+            if (resendCountdownInterval) {
+                clearInterval(resendCountdownInterval);
+            }
+            
+            // Start countdown
+            resendCountdownInterval = setInterval(() => {
+                timeLeft--;
+                countdownTimeElement.textContent = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(resendCountdownInterval);
+                    countdownElement.style.display = 'none';
+                    resendCodeBtn.style.display = 'inline';
+                    resendCodeBtn.disabled = false;
+                    resendCodeBtn.innerHTML = 'Resend';
+                }
+            }, 1000);
+        }
+        
+        // Auto-focus next input when a digit is entered
+        document.querySelectorAll('.verification-code-inputs input').forEach((input, index) => {
+            input.addEventListener('input', function() {
+                if (this.value.length === 1) {
+                    if (index < 5) {
+                        document.getElementById(`digit${index + 2}`).focus();
+                    }
+                }
+            });
+            
+            // Handle backspace
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Backspace' && this.value === '' && index > 0) {
+                    document.getElementById(`digit${index}`).focus();
+                }
+            });
+            
+            // Handle paste
+            input.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const pastedData = e.clipboardData.getData('text').trim();
+                
+                if (pastedData.length === 6 && /^\d{6}$/.test(pastedData)) {
+                    // Fill all inputs with pasted data
+                    for (let i = 0; i < 6; i++) {
+                        document.getElementById(`digit${i + 1}`).value = pastedData[i];
+                    }
+                    
+                    // Focus on last input
+                    document.getElementById('digit6').focus();
+                }
+            });
+        });
         
         function lockAccount() {
             isLocked = true;

@@ -170,11 +170,12 @@
                         <i class="bi bi-box-arrow-in-right me-2"></i> Login
                     </button>
                 </form>
-            </div>
-            
-            <div class="login-footer">
-                <p class="mb-0">&copy; <span id="currentYear"></span> Santa Fe Water Billing System. All rights reserved.</p>
-            </div>
+
+                <div class="portal-links d-flex flex-column gap-3">
+                    <a href="admin-login" class="btn btn-outline-secondary d-flex align-items-center justify-content-center gap-2">
+                         <i class="fas fa-tools"></i> Back to Main Login
+                    </a>              
+               </div>
         </div>
     </div>
     

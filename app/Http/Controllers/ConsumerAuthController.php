@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\ConsumerAccount;
 use App\Models\Billing;
+use App\Models\Notice;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
@@ -40,7 +41,7 @@ class ConsumerAuthController extends Controller
             ])->onlyInput('username');
         }
         
-        // ✅ FIXED: Actually log in the user
+        // Log in the user
         Auth::guard('consumer')->login($account);
         
         // Redirect to dashboard
@@ -61,9 +62,24 @@ class ConsumerAuthController extends Controller
         // Get the consumer's bills
         $bills = $consumer->billings()->with('consumer')->orderBy('created_at', 'desc')->get();
         
+        // Calculate bill counts
+        $paidCount = $bills->where('status', 'paid')->count();
+        $unpaidCount = $bills->where('status', 'unpaid')->count();
+        $overdueCount = $bills->where('status', 'overdue')->count();
+        
+        // Get notices for this consumer
+        $notices = Notice::with('consumer')
+            ->where('consumer_id', $consumer->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
         return view('auth.consumer-login', [
             'consumer' => $consumer,
-            'bills' => $bills
+            'bills' => $bills,
+            'notices' => $notices,
+            'paidCount' => $paidCount,
+            'unpaidCount' => $unpaidCount,
+            'overdueCount' => $overdueCount
         ]);
     }
     

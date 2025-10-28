@@ -155,6 +155,81 @@
             padding: 20px;
         }
         
+        /* Dashboard Cards */
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .dashboard-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            padding: 25px;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            transition: all 0.3s ease;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+        
+        .dashboard-card-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            font-size: 24px;
+            color: white;
+        }
+        
+        .dashboard-card-title {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+        
+        .dashboard-card-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .dashboard-card-change {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+        
+        .card-paid {
+            border-left: 4px solid #28a745;
+        }
+        
+        .card-paid .dashboard-card-icon {
+            background-color: #28a745;
+        }
+        
+        .card-unpaid {
+            border-left: 4px solid #dc3545;
+        }
+        
+        .card-unpaid .dashboard-card-icon {
+            background-color: #dc3545;
+        }
+        
+        .card-overdue {
+            border-left: 4px solid #ffc107;
+        }
+        
+        .card-overdue .dashboard-card-icon {
+            background-color: #ffc107;
+        }
+        
         /* Table Styles */
         .table-container {
             background: white;
@@ -736,11 +811,12 @@
                     <i class="bi bi-person"></i> Profile
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url('/consumer-dashboard') }}">
+             <li class="nav-item">
+                <a class="nav-link" href="{{ url('/dashboard-consumer') }}">
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
             </li>
+            
             <li class="nav-item">
                 <a class="nav-link active" href="dashboard">
                     <i class="bi bi-receipt"></i> Billing
@@ -796,6 +872,8 @@
     </header>
    
     <div class="content-wrapper">
+        
+        
         <!-- Billing History -->
         <div class="table-container animate-fadein">
             <div class="table-title">

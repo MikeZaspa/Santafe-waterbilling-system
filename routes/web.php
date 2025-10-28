@@ -34,6 +34,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\AdminLogController;
 
+
 Route::get('/admin-register', [AuthController::class, 'showRegistrationForm'])->name('admin-register');
 Route::post('/admin-register', [AuthController::class, 'register']);
 
@@ -388,6 +389,26 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/admin-logs/filter', [AdminLogController::class, 'filter'])->name('admin.logs.filter');
     Route::get('/admin-logs/{log}', [AdminLogController::class, 'show'])->name('admin.logs.show');
 });
+
+Route::get('/consumer-dashboard', [AuthController::class, 'consumerDashboard']);
+Route::get('/consumer-profile', [AuthController::class, 'consumerprofile']);
+
+// Add these routes to your web.php file
+Route::get('/consumer-profile', [ConsumerController::class, 'profile'])->name('consumer.profile');
+
+// routes/web.php
+
+
+// In routes/web.php, add or update this route
+Route::get('/dashboard-consumer', [ConsumerDashboardController::class, 'index'])->name('consumer.dashboard');
+
+// In your routes/web.php file
+
+// Add these routes to your existing authentication routes
+Route::post('/admin-check-credentials', [AuthController::class, 'checkCredentials'])->name('admin.check-credentials');
+Route::post('/admin-verify-2fa', [AuthController::class, 'verifyTwoFactor'])->name('admin.verify-2fa');
+Route::post('/admin-resend-2fa', [AuthController::class, 'resendTwoFactor'])->name('admin.resend-2fa');
+
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/', function () {
