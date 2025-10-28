@@ -11,11 +11,11 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\VerificationCodeMail;
+use App\Mail\TwoFactorCodeMail;
 
 class AuthController extends Controller
 {
-
-     protected $adminLogService;
+    protected $adminLogService;
 
     public function __construct(AdminLogService $adminLogService)
     {
@@ -102,19 +102,22 @@ class AuthController extends Controller
         return view('auth.consumer-paid');
     }
 
-     public function showOnlineBillingForm()
+    public function showOnlineBillingForm()
     {
         return view('auth.online-billing');
     }
-     public function showPaymentVerificationForm()
+    
+    public function showPaymentVerificationForm()
     {
         return view('auth.paymentVerificationSection');
     }
+    
     public function showAdminAccountant()
     {
         return view('auth.admin-accountant');
     }
-     public function showDisconnectionForm()
+    
+    public function showDisconnectionForm()
     {
         return view('auth.admin-plumber-disconnection');
     }
@@ -128,22 +131,27 @@ class AuthController extends Controller
     {
         return view('auth.main-form');
     }
+    
     public function showNotice()
     {
         return view('auth.admin-accountant-notice');
     }
+    
     public function showConsumerNotice()
     {
         return view('auth.consumer/consumer-notice');
     }
+    
     public function consumerDashboard()
     {
         return view('auth.dashboard-consumer');
     }
+    
     public function consumerprofile()
     {
         return view('auth.consumer-profile');
     }
+    
     public function showVerifyForm()
     {
         $email = session('verification_email');
