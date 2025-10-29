@@ -416,6 +416,7 @@ Route::post('/consumer/notifications/read-all', [ConsumerAuthController::class, 
 // In routes/web.php
 Route::post('/consumer/notifications/create', [ConsumerAuthController::class, 'createNotification']);
 
+
 // In ConsumerAuthController
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
