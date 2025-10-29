@@ -5,15 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class ConsumerAccount extends Authenticatable
+class ConsumerAccount extends Model
 {
     use HasFactory, SoftDeletes;
-    
-    protected $guard = 'consumer';
 
     protected $fillable = [
         'consumer_id',
@@ -23,39 +18,21 @@ class ConsumerAccount extends Authenticatable
         'updated_by'
     ];
 
-    protected $hidden = [
-        'password'
-    ];
-
+    // Relationship with consumer
     public function consumer()
     {
         return $this->belongsTo(AdminConsumer::class, 'consumer_id');
     }
 
+    // Relationship with creator
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    // Relationship with updater
     public function updater()
     {
         return $this->belongsTo(User::class, 'updated_by');
-    }
-    
-    /**
-     * Get the notifications for the consumer.
-     */
-    public function notifications(): HasMany
-    {
-        return $this->hasMany(Notification::class, 'notifiable_id')
-                    ->where('notifiable_type', ConsumerAccount::class);
-    }
-
-    /**
-     * Get the unread notifications for the consumer.
-     */
-    public function unreadNotifications(): HasMany
-    {
-        return $this->notifications()->unread();
     }
 }

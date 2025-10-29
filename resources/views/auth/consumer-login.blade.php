@@ -635,6 +635,80 @@
             color: #dee2e6;
         }
         
+        /* Notice Modal Styles */
+        .notice-card {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary-color);
+            transition: all 0.3s ease;
+        }
+        
+        .notice-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .notice-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .notice-title {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin: 0;
+        }
+        
+        .notice-date {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+        
+        .notice-content {
+            margin-bottom: 10px;
+        }
+        
+        .notice-description {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        /* Notices Button */
+        .notices-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        
+        .notices-btn:hover {
+            transform: scale(1.1);
+            background-color: var(--primary-dark);
+        }
+        
+        .notices-btn .badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            transform: translate(25%, -25%);
+        }
+        
         /* Mobile overlay styles */
         .mobile-overlay {
             position: fixed;
@@ -1041,41 +1115,6 @@
                 @endforeach
             </div>
         </div>
-        <!-- Notices Section -->
-<div class="table-container animate-fadein">
-    <div class="table-title">
-        <h3 class="mb-0">Recent Notices</h3>
-        <span class="badge bg-primary">{{ count($notices) }} Notice(s)</span>
-    </div>
-    
-    @if($notices->count() > 0)
-        <div class="notices-container">
-            @foreach($notices as $notice)
-            <div class="notice-card mb-3 p-3 border rounded" style="background-color: #f8f9fa;">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <h6 class="mb-0 text-primary">Notice #{{ $loop->iteration }}</h6>
-                    <small class="text-muted">{{ \Carbon\Carbon::parse($notice->created_at)->format('M d, Y h:i A') }}</small>
-                </div>
-                <div class="notice-content mb-2">
-                    <strong>Content:</strong> 
-                    <p class="mb-1">{{ $notice->notice }}</p>
-                </div>
-                @if($notice->description)
-                <div class="notice-description">
-                    <strong>Description:</strong>
-                    <p class="mb-0 text-muted">{{ $notice->description }}</p>
-                </div>
-                @endif
-            </div>
-            @endforeach
-        </div>
-    @else
-        <div class="text-center py-4">
-            <i class="bi bi-bell-slash fs-1 text-muted"></i>
-            <p class="text-muted mt-2">No notices available</p>
-        </div>
-    @endif
-</div>
     </div>
 
     <!-- Payment Modal -->
@@ -1226,6 +1265,60 @@
             </div>
         </div>
     </div>
+
+    <!-- Notices Modal -->
+    <div class="modal fade" id="noticesModal" tabindex="-1" aria-labelledby="noticesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="noticesModalLabel">
+                        <i class="bi bi-megaphone me-2"></i>Recent Notices
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    @if($notices->count() > 0)
+                        <div class="notices-container">
+                            @foreach($notices as $notice)
+                            <div class="notice-card">
+                                <div class="notice-header">
+                                    <h6 class="notice-title">Notice #{{ $loop->iteration }}</h6>
+                                    <span class="notice-date">{{ \Carbon\Carbon::parse($notice->created_at)->format('M d, Y h:i A') }}</span>
+                                </div>
+                                <div class="notice-content">
+                                    <strong>Content:</strong> 
+                                    <p>{{ $notice->notice }}</p>
+                                </div>
+                                @if($notice->description)
+                                <div class="notice-description">
+                                    <strong>Description:</strong>
+                                    <p>{{ $notice->description }}</p>
+                                </div>
+                                @endif
+                            </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="text-center py-4">
+                            <i class="bi bi-megaphone fs-1 text-muted"></i>
+                            <p class="text-muted mt-2">No notices available</p>
+                        </div>
+                    @endif
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notices Button -->
+    <button class="notices-btn" data-bs-toggle="modal" data-bs-target="#noticesModal">
+        <i class="bi bi-megaphone"></i>
+        @if($notices->count() > 0)
+        <span class="badge bg-danger">{{ $notices->count() }}</span>
+        @endif
+    </button>
 </div>
     
     <!-- Bootstrap Bundle with Popper -->

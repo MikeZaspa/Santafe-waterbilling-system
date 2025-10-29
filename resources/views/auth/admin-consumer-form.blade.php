@@ -689,34 +689,34 @@ $(document).ready(function() {
     });
 
     $('#confirmDelete').click(function() {
-        const accountId = $('#deleteAccountId').val();
-        $.ajax({
-            url: `/account-management/${accountId}`,
-            type: 'DELETE',
-            data: {
-                _token: $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success!',
-                    text: response.message,
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-                table.ajax.reload();
-                $('#deleteModal').modal('hide');
-            },
-            error: function(xhr) {
-                const errorMsg = xhr.responseJSON?.message || 'An error occurred';
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: errorMsg
-                });
-            }
-        });
+    const accountId = $('#deleteAccountId').val();
+    $.ajax({
+        url: `/account-management/${accountId}`,
+        type: 'DELETE',
+        data: {
+            _token: $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function(response) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: response.message,
+                timer: 2000,
+                showConfirmButton: false
+            });
+            table.ajax.reload();
+            $('#deleteModal').modal('hide');
+        },
+        error: function(xhr) {
+            const errorMsg = xhr.responseJSON?.message || 'An error occurred';
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: errorMsg
+            });
+        }
     });
+});
 
     // Function to fetch consumers
     function fetchConsumers() {

@@ -33,7 +33,7 @@ use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\AdminLogController;
-
+use App\Http\Controllers\AccountantNotificationController;
 
 Route::get('/admin-register', [AuthController::class, 'showRegistrationForm'])->name('admin-register');
 Route::post('/admin-register', [AuthController::class, 'register']);
@@ -312,8 +312,8 @@ Route::get('/plumber/login', [PlumberAuthController::class, 'showLoginForm'])->n
 Route::post('/plumber/login', [PlumberAuthController::class, 'login'])->name('plumber.login.submit');
 
 // Accountant Login Routes  
-Route::get('/accountant/login', [AccountantAuthController::class, 'showLoginForm'])->name('accountant.login');
-Route::post('/accountant/login', [AccountantAuthController::class, 'login'])->name('accountant.login.submit');
+Route::get('/accountant-portal', [AccountantAuthController::class, 'showLoginForm'])->name('accountant.login');
+Route::post('/accountant-portal', [AccountantAuthController::class, 'portal'])->name('accountant.login.submit');
 
 // Password Reset Routes
 Route::prefix('admin')->group(function () {
@@ -412,12 +412,16 @@ Route::post('/admin-resend-2fa', [AuthController::class, 'resendTwoFactor'])->na
 // Add these routes for consumer notifications
 Route::post('/consumer/notifications/{id}/read', [ConsumerAuthController::class, 'markNotificationAsRead']);
 Route::post('/consumer/notifications/read-all', [ConsumerAuthController::class, 'markAllNotificationsAsRead']);
-
-// In routes/web.php
 Route::post('/consumer/notifications/create', [ConsumerAuthController::class, 'createNotification']);
 
-
-// In ConsumerAuthController
+// Accountant notification routes
+Route::prefix('admin')->name('admin.')->middleware('auth:admin')->group(function() {
+    Route::get('/notifications', [AccountantNotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{id}/read', [AccountantNotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [AccountantNotificationController::class, 'markAllAsRead'])->name('notifications.readAll');
+    Route::get('/notifications/unread-count', [AccountantNotificationController::class, 'unreadCount'])->name('notifications.unreadCount');
+    Route::post('/notifications/create', [AccountantNotificationController::class, 'create'])->name('notifications.create');
+});
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/', function () {
