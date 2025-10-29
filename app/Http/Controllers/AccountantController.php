@@ -512,10 +512,10 @@ public function destroy($id)
                 }
 
                 // Add posos charge for residential (with safety check)
-                if ($consumption > 0) {
-                    $pososCharge = floor($consumption / 11) * 2;
-                    $totalAmount += $pososCharge;
-                }
+               // if ($consumption > 0) {
+                    //$pososCharge = floor($consumption / 11) * 2;
+                //    $totalAmount += $pososCharge;
+              //  }
             }
 
             return round($totalAmount, 2);
