@@ -839,6 +839,28 @@
     const header = $('.header');
     const sidebarToggle = $('#sidebarToggle');
     const mobileOverlay = $('.mobile-overlay');
+
+
+     $('#firstName, #middleName, #lastName, #suffix').on('input', function() {
+    const originalValue = this.value;
+    // Allow only letters, spaces, hyphens, apostrophes, and periods
+    this.value = this.value.replace(/[^a-zA-Z\s\-\.\']/g, '');
+    
+    // Show a brief notification if characters were removed
+    if (originalValue !== this.value) {
+        const fieldName = $(this).attr('id').replace(/([A-Z])/g, ' $1').trim();
+        fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
+        
+        // Create a temporary tooltip
+        $(this).attr('title', 'Numbers are not allowed in ' + fieldName)
+               .tooltip('show');
+        
+        // Hide the tooltip after 2 seconds
+        setTimeout(() => {
+            $(this).tooltip('hide');
+        }, 2000);
+    }
+});
     
     sidebarToggle.on('click', function() {
         sidebar.toggleClass('active');
