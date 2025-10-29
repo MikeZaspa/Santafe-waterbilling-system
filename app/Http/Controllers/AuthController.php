@@ -151,7 +151,10 @@ class AuthController extends Controller
     {
         return view('auth.consumer-profile');
     }
-    
+     public function Showadminlogs()
+    {
+        return view('auth.admin-logs');
+    }
     public function showVerifyForm()
     {
         $email = session('verification_email');

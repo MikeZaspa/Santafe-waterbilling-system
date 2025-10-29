@@ -390,6 +390,7 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/admin-logs/{log}', [AdminLogController::class, 'show'])->name('admin.logs.show');
 });
 
+
 Route::get('/consumer-dashboard', [AuthController::class, 'consumerDashboard']);
 Route::get('/consumer-profile', [AuthController::class, 'consumerprofile']);
 
