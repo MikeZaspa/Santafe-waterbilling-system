@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Carbon;
-
+use App\Models\Notification;
 class AccountantController extends Controller
 {
     /**
@@ -192,6 +192,16 @@ class AccountantController extends Controller
         }
 
         $billing = AccountantBilling::create($billingData);
+
+        // Create notification for the consumer
+        Notification::create([
+            'consumer_id' => $consumer->id,
+            'billing_id' => $billing->id,
+            'title' => 'New Billing Available',
+            'message' => "A new billing for {$dueDate->format('F Y')} has been generated. Amount due: ₱" . number_format($totalAmount, 2),
+            'type' => 'billing',
+            'is_read' => false
+        ]);
 
         DB::commit();
 

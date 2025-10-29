@@ -840,13 +840,47 @@
         </div>
        
         <div class="header-right">
-            <!-- Notifications -->
-            <div class="position-relative me-3">
-                <a href="#" class="text-decoration-none text-dark position-relative" id="notificationBell" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-bell fs-5"></i>
-                    
-                </a>
+            <!-- In the header section of the consumer dashboard -->
+<div class="position-relative me-3">
+    <a href="#" class="text-decoration-none text-dark position-relative" id="notificationBell" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-bell fs-5"></i>
+        @if($notifications->where('is_read', false)->count() > 0)
+        <span class="notification-badge">{{ $notifications->where('is_read', false)->count() }}</span>
+        @endif
+    </a>
+    
+    <!-- Notification Dropdown -->
+    <div class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationBell">
+        <div class="notification-actions">
+            <h6 class="mb-0">Notifications</h6>
+            @if($notifications->where('is_read', false)->count() > 0)
+            <button class="btn btn-sm btn-outline-primary mark-all-read-btn">Mark all as read</button>
+            @endif
+        </div>
+        
+        @if($notifications->count() > 0)
+        @foreach($notifications as $notification)
+        <div class="notification-item {{ !$notification->is_read ? 'unread' : '' }}" data-id="{{ $notification->id }}">
+            <div class="d-flex">
+                <div class="notification-icon {{ $notification->type === 'billing' ? 'info' : ($notification->type === 'payment' ? 'success' : 'warning') }}">
+                    <i class="bi {{ $notification->type === 'billing' ? 'bi-receipt' : ($notification->type === 'payment' ? 'bi-check-circle' : 'bi-info-circle') }}"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="notification-title">{{ $notification->title }}</div>
+                    <div class="notification-message">{{ $notification->message }}</div>
+                    <div class="notification-time">{{ $notification->created_at->diffForHumans() }}</div>
+                </div>
             </div>
+        </div>
+        @endforeach
+        @else
+        <div class="notification-empty">
+            <i class="bi bi-bell-slash"></i>
+            <p>No notifications</p>
+        </div>
+        @endif
+    </div>
+</div>
             
             <!-- User Dropdown -->
             <div class="dropdown">
@@ -1212,6 +1246,64 @@
     
     <script>
     $(document).ready(function() {
+
+
+        // Mark notification as read when clicked
+    $('.notification-item').click(function() {
+        const notificationId = $(this).data('id');
+        const $item = $(this);
+        
+        if ($item.hasClass('unread')) {
+            $.ajax({
+                url: `/consumer/notifications/${notificationId}/read`,
+                type: 'POST',
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $item.removeClass('unread');
+                        updateNotificationBadge();
+                    }
+                }
+            });
+        }
+    });
+    
+    // Mark all notifications as read
+    $('.mark-all-read-btn').click(function(e) {
+        e.stopPropagation();
+        
+        $.ajax({
+            url: '/consumer/notifications/read-all',
+            type: 'POST',
+            data: {
+                _token: $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                if (response.success) {
+                    $('.notification-item').removeClass('unread');
+                    updateNotificationBadge();
+                }
+            }
+        });
+    });
+    
+    // Function to update notification badge
+    function updateNotificationBadge() {
+        const unreadCount = $('.notification-item.unread').length;
+        const $badge = $('.notification-badge');
+        
+        if (unreadCount > 0) {
+            if ($badge.length === 0) {
+                $('#notificationBell').append('<span class="notification-badge">' + unreadCount + '</span>');
+            } else {
+                $badge.text(unreadCount);
+            }
+        } else {
+            $badge.remove();
+        }
+    }
         // Mobile sidebar toggle functionality
         const sidebar = $('.sidebar');
         const mainContent = $('.main-content');

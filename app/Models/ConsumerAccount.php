@@ -7,13 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ConsumerAccount extends Authenticatable
 {
+    use HasFactory, SoftDeletes;
     
-   use HasFactory, SoftDeletes;
-   
-   protected $guard = 'consumer';
+    protected $guard = 'consumer';
 
     protected $fillable = [
         'consumer_id',
@@ -42,4 +42,20 @@ class ConsumerAccount extends Authenticatable
         return $this->belongsTo(User::class, 'updated_by');
     }
     
+    /**
+     * Get the notifications for the consumer.
+     */
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(Notification::class, 'notifiable_id')
+                    ->where('notifiable_type', ConsumerAccount::class);
+    }
+
+    /**
+     * Get the unread notifications for the consumer.
+     */
+    public function unreadNotifications(): HasMany
+    {
+        return $this->notifications()->unread();
+    }
 }

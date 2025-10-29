@@ -73,14 +73,20 @@ class ConsumerAuthController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
         
-        return view('auth.consumer-login', [
-            'consumer' => $consumer,
-            'bills' => $bills,
-            'notices' => $notices,
-            'paidCount' => $paidCount,
-            'unpaidCount' => $unpaidCount,
-            'overdueCount' => $overdueCount
-        ]);
+        // Get notifications for this consumer
+    $notifications = \App\Models\Notification::where('consumer_id', $consumer->id)
+        ->orderBy('created_at', 'desc')
+        ->get();
+    
+    return view('auth.consumer-login', [
+        'consumer' => $consumer,
+        'bills' => $bills,
+        'notices' => $notices,
+        'notifications' => $notifications,
+        'paidCount' => $paidCount,
+        'unpaidCount' => $unpaidCount,
+        'overdueCount' => $overdueCount
+    ]);
     }
     
     // Logout method
@@ -90,6 +96,48 @@ class ConsumerAuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         
-        return redirect('/consumer/login');
+        return redirect('/consumer-portal');
     }
+
+    // Add these methods to ConsumerAuthController
+public function markNotificationAsRead($id)
+{
+    $notification = Notification::findOrFail($id);
+    
+    // Check if the notification belongs to the authenticated consumer
+    if ($notification->consumer_id !== Auth::guard('consumer')->user()->consumer->id) {
+        return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+    }
+    
+    $notification->is_read = true;
+    $notification->save();
+    
+    return response()->json(['success' => true]);
+}
+
+public function markAllNotificationsAsRead()
+{
+    $consumerId = Auth::guard('consumer')->user()->consumer->id;
+    
+    Notification::where('consumer_id', $consumerId)
+        ->where('is_read', false)
+        ->update(['is_read' => true]);
+    
+    return response()->json(['success' => true]);
+}
+
+public function createNotification(Request $request)
+{
+    $consumerId = Auth::guard('consumer')->user()->consumer->id;
+    
+    Notification::create([
+        'consumer_id' => $consumerId,
+        'title' => $request->title,
+        'message' => $request->message,
+        'type' => $request->type,
+        'is_read' => false
+    ]);
+    
+    return response()->json(['success' => true]);
+}
 }

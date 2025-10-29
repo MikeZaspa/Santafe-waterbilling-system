@@ -409,6 +409,14 @@ Route::post('/admin-check-credentials', [AuthController::class, 'checkCredential
 Route::post('/admin-verify-2fa', [AuthController::class, 'verifyTwoFactor'])->name('admin.verify-2fa');
 Route::post('/admin-resend-2fa', [AuthController::class, 'resendTwoFactor'])->name('admin.resend-2fa');
 
+// Add these routes for consumer notifications
+Route::post('/consumer/notifications/{id}/read', [ConsumerAuthController::class, 'markNotificationAsRead']);
+Route::post('/consumer/notifications/read-all', [ConsumerAuthController::class, 'markAllNotificationsAsRead']);
+
+// In routes/web.php
+Route::post('/consumer/notifications/create', [ConsumerAuthController::class, 'createNotification']);
+
+// In ConsumerAuthController
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/', function () {
