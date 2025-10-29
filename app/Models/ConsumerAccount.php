@@ -5,10 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class ConsumerAccount extends Model
+class ConsumerAccount extends Authenticatable
 {
-    use HasFactory, SoftDeletes;
+    
+   use HasFactory, SoftDeletes;
+   
+   protected $guard = 'consumer';
 
     protected $fillable = [
         'consumer_id',
@@ -18,21 +23,23 @@ class ConsumerAccount extends Model
         'updated_by'
     ];
 
-    // Relationship with consumer
+    protected $hidden = [
+        'password'
+    ];
+
     public function consumer()
     {
         return $this->belongsTo(AdminConsumer::class, 'consumer_id');
     }
 
-    // Relationship with creator
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    // Relationship with updater
     public function updater()
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
+    
 }

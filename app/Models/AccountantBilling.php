@@ -44,6 +44,7 @@ class AccountantBilling extends Model
         return $this->belongsTo(AdminConsumer::class);
     }
 
+
     public function archivedBy()
     {
         return $this->belongsTo(User::class, 'archived_by');

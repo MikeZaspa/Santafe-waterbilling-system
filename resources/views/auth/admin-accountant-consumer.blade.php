@@ -2013,7 +2013,7 @@ $(document).on('click', '.delete-btn', function() {
                 },
                 success: function(response) {
                     if (response.success) {
-                        activeTable.ajax.reload();
+                        activeTable.ajax.reload(); // This refreshes the table
                         Swal.fire(
                             'Deleted!',
                             response.message,

@@ -22,11 +22,17 @@ class AccountantController extends Controller
     /**z
      * Get billings data for DataTables
      */
-    public function getBillings(Request $request)
+    /**
+ * Get billings data for DataTables
+ */
+public function getBillings(Request $request)
 {
+    // Add whereNull('deleted_at') to exclude soft deleted records
     $query = AccountantBilling::with(['consumer' => function($query) {
         $query->select('id', 'first_name', 'last_name');
-    }])->orderBy('created_at', 'desc');
+    }])
+    ->whereNull('deleted_at') // This excludes soft deleted records
+    ->orderBy('created_at', 'desc');
 
     // Apply filters
     if ($request->has('status') && $request->status) {
@@ -50,10 +56,10 @@ class AccountantController extends Controller
             return '₱' . number_format($billing->total_amount, 2);
         })
         ->editColumn('status', function($billing) {
-            return $billing->status; // Make sure this returns the status string
+            return $billing->status;
         })
         ->addColumn('actions', function($billing) {
-            return $billing->id; // This will be handled by frontend JavaScript
+            return $billing->id;
         })
         ->rawColumns(['status', 'actions'])
         ->toJson();
@@ -373,6 +379,9 @@ public function edit($id)
     /**
  * Remove the specified resource from storage.
  */
+/**
+ * Remove the specified resource from storage.
+ */
 public function destroy($id)
 {
     try {
@@ -386,7 +395,8 @@ public function destroy($id)
             ], 422);
         }
 
-        $billing->delete();
+        // Use forceDelete to permanently remove from database
+        $billing->forceDelete();
 
         return response()->json([
             'success' => true,

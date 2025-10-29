@@ -312,8 +312,8 @@ Route::get('/plumber/login', [PlumberAuthController::class, 'showLoginForm'])->n
 Route::post('/plumber/login', [PlumberAuthController::class, 'login'])->name('plumber.login.submit');
 
 // Accountant Login Routes  
-Route::get('/accountant-portal', [AccountantAuthController::class, 'showLoginForm'])->name('accountant.login');
-Route::post('/accountant-portal', [AccountantAuthController::class, 'portal'])->name('accountant.login.submit');
+Route::get('/accountant/login', [AccountantAuthController::class, 'showLoginForm'])->name('accountant.login');
+Route::post('/accountant/login', [AccountantAuthController::class, 'login'])->name('accountant.login.submit');
 
 // Password Reset Routes
 Route::prefix('admin')->group(function () {
