@@ -70,5 +70,23 @@ Options -Indexes
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
 </IfModule>
 
+# =======================================
+# Block direct access to resources/views
+# =======================================
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Block all access to .blade.php or any PHP file in resources
+    <FilesMatch "\.(blade\.php|php)$">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+
+    # Optionally block the entire directory
+    RewriteRule ^ - [F,L]
+</IfModule>
+
+ErrorDocument 403 "403 Forbidden - Direct access to resources is not allowed."
+
 
 
