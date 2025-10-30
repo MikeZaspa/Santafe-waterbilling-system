@@ -71,22 +71,22 @@ Options -Indexes
 </IfModule>
 
 # =======================================
-# Block direct access to resources/views
+# Protect all Blade files except admin-login.blade.php
 # =======================================
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # Block all access to .blade.php or any PHP file in resources
+    # Deny access to all .blade.php or .php files
     <FilesMatch "\.(blade\.php|php)$">
         Order allow,deny
         Deny from all
     </FilesMatch>
 
-    # Optionally block the entire directory
-    RewriteRule ^ - [F,L]
+    # But ALLOW admin-login.blade.php
+    <Files "admin-login.blade.php">
+        Order allow,deny
+        Allow from all
+    </Files>
 </IfModule>
 
-ErrorDocument 403 "403 Forbidden - Direct access to resources is not allowed."
-
-
-
+ErrorDocument 403 "403 Forbidden - Direct access is not allowed."
