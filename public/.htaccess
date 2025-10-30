@@ -70,23 +70,16 @@ Options -Indexes
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
 </IfModule>
 
-# =======================================
-# Protect all Blade files except admin-login.blade.php
-# =======================================
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # Deny access to all .blade.php or .php files
-    <FilesMatch "\.(blade\.php|php)$">
-        Order allow,deny
-        Deny from all
-    </FilesMatch>
+    # Allow admin-login directly
+    RewriteCond %{REQUEST_URI} ^/admin/login$ [OR]
+    RewriteCond %{REQUEST_URI} ^/admin-login(\.php|\.blade\.php)?$ [NC]
+    RewriteRule .* - [L]
 
-    # But ALLOW admin-login.blade.php
-    <Files "auth.admin-login.blade.php">
-        Order allow,deny
-        Allow from all
-    </Files>
+    # If not logged in, block direct access to protected files
+    RewriteCond %{REQUEST_URI} !^/admin-login$
+    RewriteCond %{HTTP_COOKIE} !laravel_session
+    RewriteRule ^(.*)$ - [F,L]
 </IfModule>
-
-ErrorDocument 403 "403 Forbidden - Direct access is not allowed."
