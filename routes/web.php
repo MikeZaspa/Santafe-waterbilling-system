@@ -425,7 +425,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth:admin')->group(function
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-Route::get('/', function () {
+Route::get('/auth.admin-login', function () {
     return view('auth.admin-login');
 
 });
