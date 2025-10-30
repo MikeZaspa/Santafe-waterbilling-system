@@ -749,10 +749,13 @@
                         <label for="contactNumber" class="form-label required">Contact Number</label>
                         <input type="tel" class="form-control" id="contactNumber" required>
                     </div>
-                    <div class="mb-3">
+                        <div class="mb-3">
                         <label for="meterNo" class="form-label required">Meter Number</label>
-                        <input type="text" class="form-control" id="meter_no" name="meter_no" required>
-                        <small class="text-muted">Unique identifier for the water meter</small>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="meter_no" name="meter_no" required>
+                            <span class="input-group-text" id="meterCount">0/8</span>
+                        </div>
+                        <small class="text-muted">Enter at least 8 digits (hyphens are allowed, e.g., 1234-5678)</small>
                     </div>
                     <div class="mb-3">
                         <label for="address" class="form-label required">Address (Barangay)</label>
@@ -947,10 +950,37 @@
         this.value = this.value.replace(/\D/g, '').slice(0, 11);
     });
 
-    $('#meter_no').on('input', function() {
-        this.value = this.value.replace(/\D/g, '');
-    });
-
+     $('#meter_no').on('input', function() {
+    // Allow only numbers and hyphens
+    this.value = this.value.replace(/[^0-9-]/g, '');
+    
+    // Update the counter
+    const digitsOnly = this.value.replace(/-/g, '');
+    $('#meterCount').text(digitsOnly.length + '/8');
+    
+    // Change color based on whether minimum is met
+    if (digitsOnly.length >= 8) {
+        $('#meterCount').removeClass('text-danger').addClass('text-success');
+    } else {
+        $('#meterCount').removeClass('text-success').addClass('text-danger');
+    }
+    
+    // Show a brief notification if invalid characters were removed
+    const originalValue = this.getAttribute('data-original-value') || '';
+    if (originalValue !== this.value) {
+        // Create a temporary tooltip
+        $(this).attr('title', 'Only numbers and hyphens are allowed in meter number')
+               .tooltip('show');
+        
+        // Hide the tooltip after 2 seconds
+        setTimeout(() => {
+            $(this).tooltip('hide');
+        }, 2000);
+    }
+    
+    // Store the current value for next comparison
+    this.setAttribute('data-original-value', this.value);
+});
     // Get current date
     function getCurrentDate() {
         const today = new Date();
