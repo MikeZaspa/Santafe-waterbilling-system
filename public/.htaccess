@@ -72,19 +72,28 @@ Options -Indexes
 
 
 
-# Block all direct access to sensitive Laravel folders
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # Allow access only to /public directory
-    RewriteCond %{REQUEST_URI} !^/public/
-    RewriteRule ^(resources|routes|storage|vendor|config|database|bootstrap) - [F,L]
+    # ✅ ALLOW admin-login route
+    RewriteCond %{REQUEST_URI} ^/admin-login$
+    RewriteRule ^ - [L,NC]
+
+    # ❌ BLOCK direct access to sensitive folders
+    RewriteCond %{REQUEST_URI} ^/(resources|routes|storage|vendor|config|database|bootstrap) [NC]
+    RewriteRule ^ - [F,L]
+
+    # ❌ BLOCK direct access to .env and system files
+    <FilesMatch "(\.env|composer\.(json|lock)|artisan|\.git|\.env\.example)$">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+
+    # ❌ BLOCK direct access to .php and .blade.php files
+    <FilesMatch "\.(php|blade\.php)$">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+
+    ErrorDocument 403 "403 Forbidden - Access denied."
 </IfModule>
-
-# Deny direct access to all PHP and Blade files
-<FilesMatch "\.(php|blade\.php)$">
-    Order allow,deny
-    Deny from all
-</FilesMatch>
-
-ErrorDocument 403 "403 Forbidden - Direct access not allowed."
