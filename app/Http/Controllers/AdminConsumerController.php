@@ -34,34 +34,34 @@ public function create()
     /**
      * Store a newly created resource in storage.
      */
-     public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'first_name' => 'required|string|max:255',
-            'middle_name' => 'nullable|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'suffix' => 'nullable|string|max:20',
-            'contact_number' => 'required|string|max:20|regex:/^09\d{9}$/',
-            'meter_no' => 'required|string|unique:admin_consumers|max:50|regex:/^[\d-]+$/',
-            'address' => 'required|string|max:500',
-            'address_information' => 'nullable|string|max:1000',
-            'connection_date' => 'required|date',
-            'consumer_type' => 'required|in:residential,commercial,institutional',
-            'status' => 'required|in:active,inactive',
-        ]);
+    public function store(Request $request)
+{
+    $validated = $request->validate([
+        'first_name' => 'required|string|max:255',
+        'middle_name' => 'nullable|string|max:255',
+        'last_name' => 'required|string|max:255',
+        'suffix' => 'nullable|string|max:20',
+        'contact_number' => 'required|string|max:20|regex:/^09\d{9}$/',
+        'meter_no' => 'required|string|min:8|max:50|regex:/^[\d-]+$/|unique:admin_consumers',
+        'address' => 'required|string|max:500',
+        'address_information' => 'nullable|string|max:1000',
+        'connection_date' => 'required|date',
+        'consumer_type' => 'required|in:residential,commercial,institutional',
+        'status' => 'required|in:active,inactive',
+    ]);
 
-        // Set default connection date if empty
-        if (empty($validated['connection_date'])) {
-            $validated['connection_date'] = Carbon::now()->format('Y-m-d');
-        }
-
-        $consumer = AdminConsumer::create($validated);
-         
-        return response()->json([
-            'message' => 'Consumer created successfully',
-            'consumer' => $consumer
-        ]);
+    // Set default connection date if empty
+    if (empty($validated['connection_date'])) {
+        $validated['connection_date'] = Carbon::now()->format('Y-m-d');
     }
+
+    $consumer = AdminConsumer::create($validated);
+     
+    return response()->json([
+        'message' => 'Consumer created successfully',
+        'consumer' => $consumer
+    ]);
+}
     /**
      * Display the specified resource.
      */
@@ -91,7 +91,7 @@ public function create()
         'last_name' => 'required|string|max:255',
         'suffix' => 'nullable|string|max:10',
         'contact_number' => 'required|string|max:20',
-        'meter_no' => 'required|string|max:50|unique:admin_consumers,meter_no,'.$adminConsumer->id,
+        'meter_no' => 'required|string|min:8|max:50|regex:/^[\d-]+$/|unique:admin_consumers,meter_no,'.$adminConsumer->id,
         'address' => 'required|string',
         'address_information' => 'nullable|string',
         'connection_date' => 'required|date',
