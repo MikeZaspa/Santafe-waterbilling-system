@@ -76,7 +76,6 @@ Options -Indexes
     RewriteEngine On
 
     # Allow public folder and admin-login route
-    RewriteCond %{REQUEST_URI} !^/public/
     RewriteCond %{REQUEST_URI} !^/admin-login$
     RewriteRule ^(resources|routes|storage|vendor|config|database|bootstrap) - [F,L]
 </IfModule>
