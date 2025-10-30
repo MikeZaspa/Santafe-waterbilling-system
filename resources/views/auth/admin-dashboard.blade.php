@@ -363,7 +363,7 @@
     <div class="content-wrapper">
         <div class="row g-4">
             <!-- Total Consumers Card -->
-            <div class="col-md-6 col-lg-4">
+            <div class="col-md-6 col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
@@ -383,7 +383,7 @@
             </div>
 
             <!-- Active Consumers Card -->
-            <div class="col-md-6 col-lg-4">
+            <div class="col-md-6 col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
@@ -401,26 +401,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Inactive Consumers Card -->
-            <div class="col-md-6 col-lg-4">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="text-muted mb-2">Inactive Consumers</h6>
-                                <h3 class="mb-0 text-warning" id="inactiveConsumersCount">{{ $inactiveConsumers }}</h3>
-                                <small class="text-warning">
-                                    <i class="bi bi-pause-circle"></i> Temporarily inactive
-                                </small>
-                            </div>
-                            <div class="bg-warning bg-opacity-10 p-3 rounded">
-                                <i class="bi bi-pause-circle-fill text-warning fs-4"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- Charts Section -->
@@ -429,7 +409,7 @@
             <div class="col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white border-0">
-                        <h5 class="mb-0">Consumer Status Distribution</h5>
+                        <h5 class="mb-0">Active Consumers</h5>
                     </div>
                     <div class="card-body">
                         <div class="chart-container">
@@ -517,17 +497,16 @@
         }
     });
 
-    // Consumer Status Pie Chart
+    // Consumer Status Pie Chart - Now showing only active consumers
     const consumerStatusCtx = document.getElementById('consumerStatusChart').getContext('2d');
     const consumerStatusChart = new Chart(consumerStatusCtx, {
-        type: 'pie',
+        type: 'doughnut',
         data: {
-            labels: ['Active', 'Inactive'],
+            labels: ['Active Consumers'],
             datasets: [{
-                data: [{{ $activeConsumers }}, {{ $inactiveConsumers }}],
+                data: [{{ $activeConsumers }}],
                 backgroundColor: [
                     '#28a745', // Green for active
-                    '#ffc107', // Yellow for inactive
                 ],
                 borderWidth: 1
             }]
@@ -544,9 +523,7 @@
                         label: function(context) {
                             const label = context.label || '';
                             const value = context.raw || 0;
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = Math.round((value / total) * 100);
-                            return `${label}: ${value} (${percentage}%)`;
+                            return `${label}: ${value}`;
                         }
                     }
                 }

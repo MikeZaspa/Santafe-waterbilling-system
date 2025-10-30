@@ -788,7 +788,6 @@
                         <select class="form-select" id="status" required>
                             <option value="" selected disabled>Select status</option>
                             <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>  
                             <option value="cut">Cut</option>
                         </select>
                     </div>
