@@ -863,6 +863,32 @@
             border-radius: 50%; 
             object-fit: cover;  
         }
+        
+        /* Reference number input validation styles */
+        .reference-number-input {
+            position: relative;
+        }
+        
+        .reference-number-input .form-text {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+        
+        .reference-number-input .invalid-feedback {
+            display: none;
+            font-size: 0.875rem;
+            color: #dc3545;
+            margin-top: 0.25rem;
+        }
+        
+        .reference-number-input.is-invalid .form-control {
+            border-color: #dc3545;
+        }
+        
+        .reference-number-input.is-invalid .invalid-feedback {
+            display: block;
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -1231,10 +1257,12 @@
                             <div class="form-text" id="fileValidation"></div>
                         </div>
                         
-                        <div class="mb-3">
+                        <div class="mb-3 reference-number-input">
                             <label for="referenceNumber" class="form-label">Reference Number</label>
                             <input type="text" class="form-control" id="referenceNumber" 
-                                placeholder="Enter your transaction reference number" required>
+                                placeholder="Enter your transaction reference number" maxlength="13" required>
+                            <div class="form-text">Enter numbers only (max 13 digits)</div>
+                            <div class="invalid-feedback">Please enter numbers only</div>
                         </div>
                         
                         <div id="proofPreviewContainer" class="text-center mt-3" style="display: none;">
@@ -1666,42 +1694,77 @@
             }
         }
         
-        // Proof upload functionality with file type validation
-        $('#proofInput').on('change', function(e) {
-            const file = e.target.files[0];
-            const fileValidation = $('#fileValidation');
-            
-            // Reset validation message
-            fileValidation.text('');
-            
-            if (file) {
-                // Check file type
-                const validTypes = ['image/png', 'image/jpeg', 'image/jpg'];
-                if (!validTypes.includes(file.type)) {
-                    fileValidation.text('Only PNG and JPEG files are allowed.');
-                    $(this).val('');
-                    $('#proofPreviewContainer').hide();
-                    return;
-                }
-                
-                // Check file size (max 5MB)
-                if (file.size > 5 * 1024 * 1024) {
-                    fileValidation.text('File size must be less than 5MB.');
-                    $(this).val('');
-                    $('#proofPreviewContainer').hide();
-                    return;
-                }
-                
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    $('#proofPreview').attr('src', event.target.result);
-                    $('#proofPreviewContainer').show();
-                };
-                reader.readAsDataURL(file);
-            } else {
+    // Proof upload functionality with file type validation
+    $('#proofInput').on('change', function(e) {
+        const file = e.target.files[0];
+        const fileValidation = $('#fileValidation');
+        
+        // Reset validation message
+        fileValidation.text('');
+        
+        if (file) {
+            // Check file type
+            const validTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+            if (!validTypes.includes(file.type)) {
+                fileValidation.text('Only PNG and JPEG files are allowed.');
+                $(this).val('');
                 $('#proofPreviewContainer').hide();
+                return;
             }
-        });
+            
+            // Check file size (max 2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                fileValidation.text('File size must be less than 2MB.');
+                $(this).val('');
+                $('#proofPreviewContainer').hide();
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                $('#proofPreview').attr('src', event.target.result);
+                $('#proofPreviewContainer').show();
+            };
+            reader.readAsDataURL(file);
+        } else {
+            $('#proofPreviewContainer').hide();
+        }
+    });
+    
+    // Reference number validation - only numbers allowed, max 13 digits
+    $('#referenceNumber').on('input', function() {
+        const $input = $(this);
+        const $container = $input.closest('.reference-number-input');
+        let value = $input.val();
+        
+        // Remove any non-numeric characters
+        value = value.replace(/[^0-9]/g, '');
+        
+        // Update the input value
+        $input.val(value);
+        
+        // Validate length
+        if (value.length > 0 && value.length <= 13) {
+            $container.removeClass('is-invalid');
+        } else if (value.length > 13) {
+            // Truncate to 13 digits
+            $input.val(value.substring(0, 13));
+            $container.removeClass('is-invalid');
+        }
+    });
+    
+    // Reference number validation on blur
+    $('#referenceNumber').on('blur', function() {
+        const $input = $(this);
+        const $container = $input.closest('.reference-number-input');
+        const value = $input.val();
+        
+        if (value.length > 0 && value.length <= 13) {
+            $container.removeClass('is-invalid');
+        } else if (value.length > 0) {
+            $container.addClass('is-invalid');
+        }
+    });
         
         // Submit payment button
         $('#submitPaymentBtn').click(function() {
@@ -1710,8 +1773,16 @@
             const referenceNumber = $('#referenceNumber').val().trim();
             const proofFile = $('#proofInput')[0].files[0];
             
+            // Validate reference number
             if (!referenceNumber) {
+                $('#referenceNumber').closest('.reference-number-input').addClass('is-invalid');
                 alert('Please enter your reference number');
+                return;
+            }
+            
+            if (referenceNumber.length > 13) {
+                $('#referenceNumber').closest('.reference-number-input').addClass('is-invalid');
+                alert('Reference number must be 13 digits or less');
                 return;
             }
             
