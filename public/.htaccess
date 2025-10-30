@@ -70,16 +70,34 @@ Options -Indexes
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
 </IfModule>
 
+
+
+# =======================================
+# Laravel Security Rules with Login Exception
+# =======================================
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # Allow admin-login directly
-    RewriteCond %{REQUEST_URI} ^/admin-login$ [OR]
-    RewriteCond %{REQUEST_URI} ^/admin-login(\.php|\.blade\.php)?$ [NC]
+    # ✅ Allow direct access to admin login page
+    RewriteCond %{REQUEST_URI} ^/auth\.admin-login$ [NC]
     RewriteRule .* - [L]
 
-    # If not logged in, block direct access to protected files
-    RewriteCond %{REQUEST_URI} !^/admin-login$
+    # ❌ Block direct access to non-public folders & files
+    RewriteRule ^(storage|resources|bootstrap|config|routes|vendor|node_modules) - [F,L]
+
+    # ❌ Block all direct access if not logged in (no Laravel session cookie)
+    RewriteCond %{REQUEST_URI} !^/auth\.admin-login$ [NC]
     RewriteCond %{HTTP_COOKIE} !laravel_session
     RewriteRule ^(.*)$ - [F,L]
+
+    # Laravel default routing (keep at the bottom)
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
 </IfModule>
+
+# Disable directory listing
+Options -Indexes
+
+# Custom forbidden message
+ErrorDocument 403 "403 Forbidden - Direct access not allowed."
