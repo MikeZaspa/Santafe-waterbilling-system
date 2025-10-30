@@ -74,7 +74,7 @@ Options -Indexes
     RewriteEngine On
 
     # Allow admin-login directly
-    RewriteCond %{REQUEST_URI} ^/admin/login$ [OR]
+    RewriteCond %{REQUEST_URI} ^/admin-login$ [OR]
     RewriteCond %{REQUEST_URI} ^/admin-login(\.php|\.blade\.php)?$ [NC]
     RewriteRule .* - [L]
 
