@@ -72,17 +72,17 @@ Options -Indexes
 
 
 
-# Block direct access to sensitive Laravel folders
+# Block all direct access to sensitive Laravel folders
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # Deny access to everything except /public
+    # Allow access only to /public directory
     RewriteCond %{REQUEST_URI} !^/public/
     RewriteRule ^(resources|routes|storage|vendor|config|database|bootstrap) - [F,L]
 </IfModule>
 
-# Block PHP or Blade files
-<FilesMatch "\.(blade\.php|php)$">
+# Deny direct access to all PHP and Blade files
+<FilesMatch "\.(php|blade\.php)$">
     Order allow,deny
     Deny from all
 </FilesMatch>
