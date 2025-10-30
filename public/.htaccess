@@ -83,7 +83,7 @@ Options -Indexes
     </FilesMatch>
 
     # But ALLOW admin-login.blade.php
-    <Files "admin-login.blade.php">
+    <Files "auth.admin-login.blade.php">
         Order allow,deny
         Allow from all
     </Files>
