@@ -72,17 +72,3 @@ Options -Indexes
 
 
 
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-
-    # Allow public folder and admin-login route
-    RewriteCond %{REQUEST_URI} !^/auth.admin-login$
-    RewriteRule ^(resources|routes|storage|vendor|config|database|bootstrap) - [F,L]
-</IfModule>
-
-<FilesMatch "\.(env|php|blade\.php|gitignore|composer\.(json|lock))$">
-    Order allow,deny
-    Deny from all
-</FilesMatch>
-
-ErrorDocument 403 "403 Forbidden - Access denied."
