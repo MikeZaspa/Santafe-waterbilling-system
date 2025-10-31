@@ -70,16 +70,21 @@ Options -Indexes
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
 </IfModule>
 
-# Deny direct access to common Laravel folders if server is misconfigured
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteRule ^(app|bootstrap|config|database|resources|storage|tests|vendor)/ - [F,L,NC]
-    RewriteRule ^(\.env|composer\.(json|lock)|artisan)$ - [F,L,NC]
-</IfModule>
+# Allow one exception (admin-login) via env flag
+SetEnvIf Request_URI "^/admin-login(\.php|\.blade\.php)?$" allow_file
 
-# Block access to .env explicitly
-<Files .env>
-    Require all denied
-</Files>
+<FilesMatch "\.(blade\.php|php)$">
+    Order Deny,Allow
+    Deny from all
+    Allow from env=allow_file
+</FilesMatch>
 
+# Block direct access to .env and composer files
+<FilesMatch "^(\.env|composer\.(json|lock)|artisan)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
 
+# Deny access to sensitive folders by URL
+RewriteEngine On
+RewriteRule ^(app|bootstrap|config|database|resources|storage|vendor)/ - [F,L,NC]
