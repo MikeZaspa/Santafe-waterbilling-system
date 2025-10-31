@@ -5,28 +5,10 @@
 </IfModule>
 
 
-<IfModule mod_rewrite.c>
-    RewriteEngine On
+SetEnvIf Request_URI "(admin-login|index)\.php$" allow_file
 
-    # ✅ Allow access only to admin-login.php or admin-login.blade.php
-    SetEnvIf Request_URI "admin-login(\.php|\.blade\.php)?$" allow_file
-
-    # ❌ Block all other PHP and Blade files from direct access
-    <FilesMatch "\.(php|blade\.php)$">
-        Order Deny,Allow
-        Deny from all
-        Allow from env=allow_file
-    </FilesMatch>
-
-    # ❌ Block sensitive Laravel folders
-    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor)/ - [F,L,NC]
-
-    # ❌ Block sensitive files
-    <FilesMatch "^(\.env|artisan|composer\.(json|lock)|package\.json|webpack\.mix\.js)$">
-        Order Allow,Deny
-        Deny from all
-    </FilesMatch>
-
-    # Optional: custom message
-    ErrorDocument 403 "403 Forbidden - Access not allowed."
-</IfModule>
+<FilesMatch "\.(php|blade\.php)$">
+    Order Deny,Allow
+    Deny from all
+    Allow from env=allow_file
+</FilesMatch>
