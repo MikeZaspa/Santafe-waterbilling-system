@@ -70,8 +70,14 @@ Options -Indexes
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
 </IfModule>
 
-# If these files are in specific directories, block the entire directory
-<DirectoryMatch "/views/|/blade/|/templates/">
+# Block direct access to admin and account related files
+<FilesMatch "^(admin-|accountant-|consumer-|2fa-).*\.(php|blade\.php)$">
     Order Allow,Deny
     Deny from all
-</DirectoryMatch>
+</FilesMatch>
+
+# Alternative using mod_rewrite
+RewriteEngine On
+RewriteCond %{REQUEST_URI} \.(blade\.php|php)$ [NC]
+RewriteCond %{HTTP_REFERER} !^https?://(www\.)?santafe-waterbilling\.com [NC]
+RewriteRule .* - [F,L]
