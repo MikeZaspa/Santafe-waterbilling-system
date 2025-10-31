@@ -70,21 +70,13 @@ Options -Indexes
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
 </IfModule>
 
-# Existing rules here...
-
 # ========================
 # BLOCK DIRECT FILE ACCESS
 # ========================
 
-# Block all direct access to PHP and Blade files except when accessed through proper routes
-<FilesMatch "\.(php|blade\.php)$">
-    SetEnvIf Request_URI "admin-login\.blade\.php$" allow_file
-    SetEnvIf Request_URI "^/admin-login$" allow_route
+# Block direct access to .blade.php files only (safe for Laravel)
+<FilesMatch "\.blade\.php$">
     Order Deny,Allow
     Deny from all
-    Allow from env=allow_file
-    Allow from env=allow_route
 </FilesMatch>
-
-# Other existing rules...
 
