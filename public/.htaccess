@@ -74,24 +74,25 @@ Options -Indexes
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # Allow admin-login and index.php
-    SetEnvIf Request_URI "admin-login\.php$" allow_file
-    SetEnvIf Request_URI "index\.php$" allow_file
-
-    # Block direct access to all PHP files except the allowed ones
+    # Allow only index.php and admin-login.php
     <FilesMatch "\.php$">
-        Order Deny,Allow
-        Deny from all
-        Allow from env=allow_file
+        Require all denied
     </FilesMatch>
 
-    # Protect Laravel sensitive folders
+    <Files "index.php">
+        Require all granted
+    </Files>
+
+    <Files "admin-login.php">
+        Require all granted
+    </Files>
+
+    # Protect sensitive Laravel folders
     RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor)/ - [F,L,NC]
 
     # Block sensitive files
     <FilesMatch "^(\.env|artisan|composer\.(json|lock)|package\.json|webpack\.mix\.js)$">
-        Order Allow,Deny
-        Deny from all
+        Require all denied
     </FilesMatch>
 
     # Laravel route handling
