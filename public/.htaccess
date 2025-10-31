@@ -71,4 +71,37 @@ Options -Indexes
 </IfModule>
 
 
+# public/.htaccess
+RewriteEngine On
+
+# Block direct access to specific admin routes
+RewriteCond %{REQUEST_URI} ^/admin-consumer [OR]
+RewriteCond %{REQUEST_URI} ^/admin-dashboard [OR]
+RewriteCond %{REQUEST_URI} ^/admin-plumber [OR]
+RewriteCond %{REQUEST_URI} ^/admin-accountant [OR]
+RewriteCond %{REQUEST_URI} ^/admin-plumber-consumer [OR]
+RewriteCond %{REQUEST_URI} ^/admin-plumber-dashboard [OR]
+RewriteCond %{REQUEST_URI} ^/admin-accountant-dashboard [OR]
+RewriteCond %{REQUEST_URI} ^/admin-accountant-consumer [OR]
+RewriteCond %{REQUEST_URI} ^/consumer-portal [OR]
+RewriteRewriteCond %{REQUEST_URI} ^/accountant-portal [OR]
+RewriteCond %{REQUEST_URI} ^/plumber-portal [OR]
+RewriteCond %{REQUEST_URI} ^/dashboard-consumer [OR]
+RewriteCond %{REQUESTURI} ^/admin-logs [OR]
+RewriteCond %{REQUEST_URI} ^/admin-register
+RewriteRule ^ - [F]
+
+# Allow access to login pages
+RewriteCond %{REQUEST_URI} ^/admin-login [OR]
+RewriteCond %{REQUEST_URI} ^/consumer-login [OR]
+RewriteCond %{REQUEST_URI} ^/plumber-login [OR]
+RewriteCond %{REQUEST_URI} ^/accountant-login
+RewriteRule ^ - [L]
+
+# Laravel default handling
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^ index.php [L]
+
+
 
