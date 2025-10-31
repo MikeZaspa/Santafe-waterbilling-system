@@ -4,10 +4,18 @@
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
 
-# Redirect /admin-consumer to /admin-login
+# Start the rewrite engine
 <IfModule mod_rewrite.c>
-RewriteEngine On
+    RewriteEngine On
 
-# Redirect a specific fake admin path to the real one
-RewriteRule ^admin-consumer/?$ admin-login [L,R=301]
+    # --- SPECIFIC RULES GO HERE ---
+    # Redirect a specific fake admin path to the real one
+    # This rule MUST be placed before the general public folder rule.
+    RewriteRule ^admin-consumer/?$ admin-login [L,R=301]
+
+    # --- GENERAL RULES GO HERE ---
+    # Redirect all requests that are not already for the /public folder
+    RewriteCond %{REQUEST_URI} !^/public
+    RewriteRule ^(.*)$ public/$1 [L]
+
 </IfModule>
