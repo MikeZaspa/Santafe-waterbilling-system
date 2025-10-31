@@ -423,7 +423,13 @@ Route::prefix('admin')->name('admin.')->middleware('auth:admin')->group(function
     Route::get('/notifications/unread-count', [AccountantNotificationController::class, 'unreadCount'])->name('notifications.unreadCount');
     Route::post('/notifications/create', [AccountantNotificationController::class, 'create'])->name('notifications.create');
 });
-
+// Protected routes - kinahanglan naka-login
+Route::middleware(['auth'])->group(function () {
+    Route::get('/admin-consumer', [AdminController::class, 'consumer'])->name('admin.consumer');
+    Route::get('/admin-dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+    Route::get('/accountant-portal', [AccountantController::class, 'portal'])->name('accountant.portal');
+    // Add all other protected routes here
+});
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/', function () {
     return view('auth.admin-login');
