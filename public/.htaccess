@@ -70,21 +70,19 @@ Options -Indexes
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
 </IfModule>
 
-# Allow one exception (admin-login) via env flag
-SetEnvIf Request_URI "^/admin-login(\.php|\.blade\.php)?$" allow_file
-
+# Block direct access to sensitive files/folders
 <FilesMatch "\.(blade\.php|php)$">
     Order Deny,Allow
     Deny from all
     Allow from env=allow_file
 </FilesMatch>
 
-# Block direct access to .env and composer files
+SetEnvIf Request_URI "^/admin-login(\.php|\.blade\.php)?$" allow_file
+
 <FilesMatch "^(\.env|composer\.(json|lock)|artisan)$">
     Order Deny,Allow
     Deny from all
 </FilesMatch>
 
-# Deny access to sensitive folders by URL
 RewriteEngine On
 RewriteRule ^(app|bootstrap|config|database|resources|storage|vendor)/ - [F,L,NC]
