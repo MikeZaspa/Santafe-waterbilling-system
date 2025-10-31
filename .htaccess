@@ -4,3 +4,11 @@
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
 
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+
+RewriteCond %{REQUEST_URI} !^/admin-login [NC]
+RewriteCond %{REQUEST_URI} !^/$
+RewriteRule ^.*$ /admin-login [R=302,L]
+</IfModule>
