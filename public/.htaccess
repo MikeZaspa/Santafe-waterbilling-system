@@ -70,13 +70,12 @@ Options -Indexes
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
 </IfModule>
 
-# Block all direct access to PHP and Blade files except admin-login.php
+# Block all direct access to PHP and Blade files except admin-login.blade.php
 <FilesMatch "\.(php|blade\.php)$">
-    SetEnvIf Request_URI "admin-login.blade.php$" allow_file
+    SetEnvIf Request_URI "admin-login\.blade\.php$" allow_file
     Order Deny,Allow
     Deny from all
     Allow from env=allow_file
 </FilesMatch>
-
 
 
