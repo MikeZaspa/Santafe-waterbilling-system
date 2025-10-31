@@ -4,16 +4,29 @@
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
 
-# Allow index.php and admin-login via env flag
-SetEnvIf Request_URI "^/(index|admin-login)(\.php|\.blade\.php)?$" allow_file
+# Ang .htaccess nga naa sa public folder sa Laravel (default)
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
 
-<FilesMatch "\.(blade\.php|php)$">
-    Order Deny,Allow
-    Deny from all
-    Allow from env=allow_file
-</FilesMatch>
+    RewriteEngine On
 
-# (Ibalik ang uban nga rules sa ubos)
+    # Handle Authorization Header
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Redirect Trailing Slashes If Not A Folder...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$     RewriteRule ^ %1 [L,R=301]
+
+    # Send Requests To Front Controller...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+# I-add lang ang imong gusto i-block na files/folders sa ubos
 # Block direct access to .env and composer files
 <FilesMatch "^(\.env|composer\.(json|lock)|artisan)$">
     Order Deny,Allow
@@ -21,5 +34,4 @@ SetEnvIf Request_URI "^/(index|admin-login)(\.php|\.blade\.php)?$" allow_file
 </FilesMatch>
 
 # Deny access to sensitive folders by URL
-RewriteEngine On
 RewriteRule ^(app|bootstrap|config|database|resources|storage|vendor)/ - [F,L,NC]
