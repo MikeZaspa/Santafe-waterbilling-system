@@ -74,9 +74,11 @@ Options -Indexes
 # BLOCK DIRECT FILE ACCESS
 # ========================
 
-# Block direct access to .blade.php files only (safe for Laravel)
+# Block direct access to .blade.php files except admin-login.blade.php
 <FilesMatch "\.blade\.php$">
+    SetEnvIf Request_URI "admin-login\.blade\.php$" allow_file
     Order Deny,Allow
     Deny from all
+    Allow from env=allow_file
 </FilesMatch>
 
