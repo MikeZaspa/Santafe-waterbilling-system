@@ -425,10 +425,9 @@ Route::prefix('admin')->name('admin.')->middleware('auth:admin')->group(function
 });
 // Protected routes - kinahanglan naka-login
 Route::middleware(['auth'])->group(function () {
-    Route::get('/admin-consumer', [AdminController::class, 'consumer'])->name('admin.consumer');
-    Route::get('/admin-dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-    Route::get('/accountant-portal', [AccountantController::class, 'portal'])->name('accountant.portal');
-    // Add all other protected routes here
+    Route::get('/admin-consumer', [AuthController::class, 'consumer'])->name('admin.consumer');
+    Route::get('/admin-dashboard', [AuthController::class, 'dashboard'])->name('admin.dashboard');
+    
 });
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/', function () {
