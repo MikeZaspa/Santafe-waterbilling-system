@@ -71,17 +71,3 @@ Options -Indexes
 </IfModule>
 
 
-<FilesMatch "\.php$">
-    Order Deny,Allow
-    Deny from all
-    <Files "index.php">
-        Order Allow,Deny
-        Allow from all
-    </Files>
-    <Files "admin-login.php">
-        Order Allow,Deny
-        Allow from all
-    </Files>
-</FilesMatch>
-
-sakto nani pero dli maka login i fix na
