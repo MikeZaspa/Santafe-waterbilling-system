@@ -8,7 +8,7 @@
 RewriteEngine On
 RewriteBase /
 
-RewriteCond %{REQUEST_URI} !^/admin-login [NC]
-RewriteCond %{REQUEST_URI} !^/$
-RewriteRule ^.*$ /admin-login [R=302,L]
+# Redirect /admin-consumer to /admin-login
+RewriteRule ^admin-consumer/?$ admin-login [L,R=301]
 </IfModule>
+
