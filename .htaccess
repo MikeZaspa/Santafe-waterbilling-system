@@ -4,3 +4,10 @@
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
 
+# Redirect /admin-consumer to /admin-login
+<IfModule mod_rewrite.c>
+RewriteEngine On
+
+# Redirect a specific fake admin path to the real one
+RewriteRule ^admin-consumer/?$ admin-login [L,R=301]
+</IfModule>
