@@ -72,13 +72,12 @@ Options -Indexes
 
 RewriteEngine On
 
-# Allow Laravel routing
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^ index.php [L]
+# Allow access to admin-login route and the actual admin-login.blade.php file
+RewriteCond %{REQUEST_URI} ^/admin-login [NC,OR]
+RewriteCond %{REQUEST_URI} admin-login\.blade\.php$ [NC]
+RewriteRule .* - [L]
 
-# Block direct access to .blade.php files with redirect
+# Redirect direct blade file access to admin-login
 RewriteCond %{REQUEST_URI} \.blade\.php$ [NC]
-RewriteCond %{REQUEST_URI} !admin-login\.blade\.php [NC]
 RewriteRule .* /admin-login [R=302,L]
 
