@@ -70,34 +70,16 @@ Options -Indexes
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
 </IfModule>
 
-
+# Deny direct access to common Laravel folders if server is misconfigured
 <IfModule mod_rewrite.c>
     RewriteEngine On
-
-    # Allow admin-login and index.php
-    SetEnvIf Request_URI "admin-login\.php$" allow_file
-    SetEnvIf Request_URI "index\.php$" allow_file
-
-    # Block direct access to all PHP files except the allowed ones
-    <FilesMatch "\.php$">
-        Order Deny,Allow
-        Deny from all
-        Allow from env=allow_file
-    </FilesMatch>
-
-    # Protect Laravel sensitive folders
-    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor)/ - [F,L,NC]
-
-    # Block sensitive files
-    <FilesMatch "^(\.env|artisan|composer\.(json|lock)|package\.json|webpack\.mix\.js)$">
-        Order Allow,Deny
-        Deny from all
-    </FilesMatch>
-
-    # Laravel route handling
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^ index.php [L]
+    RewriteRule ^(app|bootstrap|config|database|resources|storage|tests|vendor)/ - [F,L,NC]
+    RewriteRule ^(\.env|composer\.(json|lock)|artisan)$ - [F,L,NC]
 </IfModule>
 
-ErrorDocument 403 "403 Forbidden - Access Denied."
+# Block access to .env explicitly
+<Files .env>
+    Require all denied
+</Files>
+
+
