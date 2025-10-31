@@ -5,22 +5,7 @@
 </IfModule>
 
 
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    
-    # Redirect everything to public folder except existing files
-    RewriteCond %{REQUEST_URI} !^/public/
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^(.*)$ public/$1 [L]
-</IfModule>
 
-# Allow access to necessary PHP files for login
-<FilesMatch "\.(php)$">
-    # Allow all PHP files for now to test login
-    Order Allow,Deny
-    Allow from all
-</FilesMatch>
 
 
 
