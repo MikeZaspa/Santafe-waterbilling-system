@@ -71,36 +71,18 @@ Options -Indexes
 </IfModule>
 
 
-<IfModule mod_rewrite.c>
-    RewriteEngine On
+<FilesMatch "\.php$">
+    Order Deny,Allow
+    Deny from all
+    <Files "index.php">
+        Order Allow,Deny
+        Allow from all
+    </Files>
+    <Files "admin-login.php">
+        Order Allow,Deny
+        Allow from all
+    </Files>
+</
+FilesMatch>
 
-    # ============================
-    # 1️⃣ Allow only index.php & admin-login.php
-    # ============================
-    <FilesMatch "\.php$">
-        Require all denied
-    </FilesMatch>
-
-    <Files "index.php">
-        Require all granted
-    </Files>
-
-    <Files "admin-login.php">
-        Require all granted
-    </Files>
-
-    # ============================
-    # 2️⃣ Protect sensitive Laravel folders
-    # ============================
-    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor)/ - [F,L,NC]
-
-    # ============================
-    # 3️⃣ Block direct access to specific sensitive files
-    # ============================
-    <FilesMatch "^(\.env|artisan|composer\.(json|lock)|package\.json|webpack\.mix\.js)$">
-        Require all denied
-    </FilesMatch>
-
-    # ============================
-    # 4️⃣ Laravel routing (normal web requests)
-    # =========================
+sakto nani pero dli maka login i fix na
