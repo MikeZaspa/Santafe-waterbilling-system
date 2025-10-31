@@ -71,24 +71,10 @@ Options -Indexes
 </IfModule>
 
 
+# Redirect /admin-consumer to /admin-login
 <IfModule mod_rewrite.c>
-    RewriteEngine On
+RewriteEngine On
 
-    # =====================================
-    # 1️⃣ Allow admin-login and root index
-    # =====================================
-    RewriteCond %{REQUEST_URI} !^/admin-login [NC]
-    RewriteCond %{REQUEST_URI} !^/$
-
-    # =====================================
-    # 2️⃣ Redirect all other direct requests to admin-login
-    # =====================================
-    RewriteRule ^.*$ /admin-login [R=302,L]
-
-    # =====================================
-    # 3️⃣ Laravel routing (normal traffic)
-    # =====================================
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^ index.php [L]
+# Redirect a specific fake admin path to the real one
+RewriteRule ^admin-consumer/?$ admin-login [L,R=301]
 </IfModule>
