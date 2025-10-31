@@ -4,18 +4,15 @@
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
 
-<FilesMatch "\.php$">
-    Order Deny,Allow
-    Deny from all
-    <Files "index.php">
-        Order Allow,Deny
-        Allow from all
-    </Files>
-    <Files "admin-login.php">
-        Order Allow,Deny
-        Allow from all
-    </Files>
-</FilesMatch>
+# Deny direct access to common Laravel folders if server is misconfigured
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(app|bootstrap|config|database|resources|storage|tests|vendor)/ - [F,L,NC]
+    RewriteRule ^(\.env|composer\.(json|lock)|artisan)$ - [F,L,NC]
+</IfModule>
 
-sakto nani pero dli maka login i fix na
+# Block access to .env explicitly
+<Files .env>
+    Require all denied
+</Files>
 
