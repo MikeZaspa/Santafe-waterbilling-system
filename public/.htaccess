@@ -70,6 +70,8 @@ Options -Indexes
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
 </IfModule>
 
+# Existing rules here...
+
 # ========================
 # BLOCK DIRECT FILE ACCESS
 # ========================
@@ -83,4 +85,6 @@ Options -Indexes
     Allow from env=allow_file
     Allow from env=allow_route
 </FilesMatch>
+
+# Other existing rules...
 
