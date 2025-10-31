@@ -70,14 +70,12 @@ Options -Indexes
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
 </IfModule>
 
-# Block direct access to admin and account related files
-<FilesMatch "^(admin-|accountant-|consumer-|2fa-).*\.(php|blade\.php)$">
-    Order Allow,Deny
-    Deny from all
-</FilesMatch>
+# Block PHP or Blade files, except admin-login.php
+<FilesMatch "\.(blade\.php|php)$">
+    SetEnvIf Request_URI "admin-login\.php$" allow_file
+    Order allow,deny
+    Allow from env=allow_file
+    Deny from all
+</Files
+Match>
 
-# Alternative using mod_rewrite
-RewriteEngine On
-RewriteCond %{REQUEST_URI} \.(blade\.php|php)$ [NC]
-RewriteCond %{HTTP_REFERER} !^https?://(www\.)?santafe-waterbilling\.com [NC]
-RewriteRule .* - [F,L]
