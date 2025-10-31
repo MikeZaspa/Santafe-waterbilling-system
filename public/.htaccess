@@ -72,12 +72,14 @@ Options -Indexes
 
 RewriteEngine On
 
-# Redirect direct PHP/Blade file access to admin-login
-RewriteCond %{REQUEST_URI} \.(php|blade\.php)$ [NC]
+RewriteEngine On
+
+# Redirect direct blade file access to admin-login
+RewriteCond %{REQUEST_URI} \.blade\.php$ [NC]
 RewriteCond %{REQUEST_URI} !admin-login\.blade\.php [NC]
 RewriteRule .* /admin-login [R=302,L]
 
-# Block direct access to PHP and Blade files (security backup)
+# Block with redirect (alternative)
 <FilesMatch "\.(php|blade\.php)$">
     SetEnvIf Request_URI "admin-login\.blade\.php$" allow_file
     SetEnvIf Request_URI "^/admin-login$" allow_route
@@ -85,5 +87,8 @@ RewriteRule .* /admin-login [R=302,L]
     Deny from all
     Allow from env=allow_file
     Allow from env=allow_route
+    
+    # If denied, redirect to admin-login
+    ErrorDocument 403 /admin-login
 </FilesMatch>
 
