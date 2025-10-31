@@ -72,12 +72,12 @@ Options -Indexes
 
 RewriteEngine On
 
-# Allow access to admin-login route and the actual admin-login.blade.php file
-RewriteCond %{REQUEST_URI} ^/admin-login [NC,OR]
+# Allow direct access to admin-login.blade.php when accessed through the route
 RewriteCond %{REQUEST_URI} admin-login\.blade\.php$ [NC]
+RewriteCond %{HTTP_REFERER} !^https?://%{HTTP_HOST}/admin-login [NC]
 RewriteRule .* - [L]
 
-# Redirect direct blade file access to admin-login
+# Redirect all other direct blade file accesses to admin-login
 RewriteCond %{REQUEST_URI} \.blade\.php$ [NC]
 RewriteRule .* /admin-login [R=302,L]
 
