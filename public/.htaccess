@@ -77,7 +77,8 @@ Options -Indexes
     # Deny access to system folders
     RewriteRule ^(vendor|storage|bootstrap|config|database|resources|routes)/ - [F,L]
 
-    # Redirect all requests to index.php (Laravel entry point)
+    # Allow only /admin-login route or any Laravel route to go through index.php
+    RewriteCond %{REQUEST_URI} ^/admin-login$ [OR]
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^ index.php [L]
@@ -90,5 +91,6 @@ Options -Indexes
     Deny from all
     Allow from env=allow_file
 </FilesMatch>
+
 
 
