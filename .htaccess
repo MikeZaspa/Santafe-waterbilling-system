@@ -5,26 +5,28 @@
 </IfModule>
 
 
-# Allow one exception (admin-login) via env flag
-SetEnvIf Request_URI "^/admin-login(\.php|\.blade\.php)?$" allow_file
+<IfModule mod_rewrite.c>
+    RewriteEngine On
 
-<FilesMatch "\.(blade\.php|php)$">
-    Order Deny,Allow
-    Deny from all
-    Allow from env=allow_file
-</FilesMatch>
+    # ✅ Allow access only to admin-login.php or admin-login.blade.php
+    SetEnvIf Request_URI "admin-login(\.php|\.blade\.php)?$" allow_file
 
-# Block direct access to .env and composer files
-<FilesMatch "^(\.env|composer\.(json|lock)|artisan)$">
-    Order Deny,Allow
-    Deny from all
-</FilesMatch>
+    # ❌ Block all other PHP and Blade files from direct access
+    <FilesMatch "\.(php|blade\.php)$">
+        Order Deny,Allow
+        Deny from all
+        Allow from env=allow_file
+    </FilesMatch>
 
-# Deny access to sensitive folders by URL
-RewriteEngine On
-RewriteRule ^(app|bootstrap|config|database|resources|storage|vendor)/ - [F,L,NC]
+    # ❌ Block sensitive Laravel folders
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor)/ - [F,L,NC]
 
+    # ❌ Block sensitive files
+    <FilesMatch "^(\.env|artisan|composer\.(json|lock)|package\.json|webpack\.mix\.js)$">
+        Order Allow,Deny
+        Deny from all
+    </FilesMatch>
 
-
-
-
+    # Optional: custom message
+    ErrorDocument 403 "403 Forbidden - Access not allowed."
+</IfModule>
