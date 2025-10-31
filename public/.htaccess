@@ -70,3 +70,15 @@ Options -Indexes
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
 </IfModule>
 
+RewriteEngine On
+
+# Block all .blade.php files EXCEPT admin-consumer and admin-login
+RewriteCond %{REQUEST_URI} !admin-consumer [NC]
+RewriteCond %{REQUEST_URI} !admin-login [NC]
+RewriteRule \.blade\.php$ - [F,L]
+
+# Block specific PHP files EXCEPT admin-consumer and admin-login
+RewriteCond %{REQUEST_URI} (admin-|accountant-|consumer-|2fa-) [NC]
+RewriteCond %{REQUEST_URI} !admin-consumer [NC]
+RewriteCond %{REQUEST_URI} !admin-login [NC]
+RewriteRule \.php$ - [F,L]
