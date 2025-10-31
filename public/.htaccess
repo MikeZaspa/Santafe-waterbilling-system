@@ -71,16 +71,3 @@ Options -Indexes
 </IfModule>
 
 
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-
-    # ✅ Allow admin-login route only
-    RewriteCond %{REQUEST_URI} ^/admin-login$ [NC]
-    RewriteRule ^ index.php [L]
-
-    # ❌ Block all other Laravel routes
-    RewriteCond %{REQUEST_URI} !\.(css|js|jpg|jpeg|png|gif|svg|ico|woff|woff2|ttf|map)$
-    RewriteRule .* - [F,L]
-
-    ErrorDocument 403 "403 Forbidden - Access denied."
-</IfModule>
