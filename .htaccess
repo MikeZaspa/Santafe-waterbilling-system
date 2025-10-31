@@ -5,24 +5,22 @@
 </IfModule>
 
 
-RewriteEngine On
-
-# Redirect direct blade file access to admin-login
-RewriteCond %{REQUEST_URI} \.blade\.php$ [NC]
-RewriteCond %{REQUEST_URI} !admin-login\.blade\.php [NC]
-RewriteRule .* /admin-login [R=302,L]
-
-# Block with redirect (alternative)
-<FilesMatch "\.(php|blade\.php)$">
-    SetEnvIf Request_URI "admin-login\.blade\.php$" allow_file
-    SetEnvIf Request_URI "^/admin-login$" allow_route
-    Order Deny,Allow
-    Deny from all
-    Allow from env=allow_file
-    Allow from env=allow_route
+<IfModule mod_rewrite.c>
+    RewriteEngine On
     
-    # If denied, redirect to admin-login
-    ErrorDocument 403 /admin-login
+    # Redirect everything to public folder except existing files
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# Allow access to necessary PHP files for login
+<FilesMatch "\.(php)$">
+    # Allow all PHP files for now to test login
+    Order Allow,Deny
+    Allow from all
 </FilesMatch>
 
-dapat ma block ang direct search file pero dapat maka login pud
+
+
