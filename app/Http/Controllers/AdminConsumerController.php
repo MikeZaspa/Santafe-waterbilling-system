@@ -97,6 +97,7 @@ public function create()
         'connection_date' => 'required|date',
         'consumer_type' => 'required|string',
         'status' => 'required|string'
+        
     ]);
 
     $adminConsumer->update($validated);
