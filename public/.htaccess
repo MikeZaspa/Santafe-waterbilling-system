@@ -72,7 +72,7 @@ Options -Indexes
 
 RewriteEngine On
 
-# IMPORTANT: Allow Laravel to process routes first
+# IMPORTANT: Allow Laravel routing FIRST
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^ index.php [L]
@@ -82,7 +82,7 @@ RewriteCond %{REQUEST_URI} \.blade\.php$ [NC]
 RewriteCond %{REQUEST_URI} !admin-login\.blade\.php [NC]
 RewriteRule .* /admin-login [R=302,L]
 
-# Block only .blade.php files (safe version)
+# Block only .blade.php files (dili PHP files)
 <FilesMatch "\.blade\.php$">
     SetEnvIf Request_URI "admin-login\.blade\.php$" allow_file
     Order Deny,Allow
