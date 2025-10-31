@@ -70,18 +70,18 @@ Options -Indexes
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
 </IfModule>
 
-# Block all sensitive Laravel folders
-<IfModule mod_rewrite.c>
-    RewriteCond %{REQUEST_URI} !^/public/
-    RewriteRule ^(resources|routes|storage|vendor|config|database|bootstrap) - [F,L]
-</IfModule>
+RewriteEngine On
 
-# Block all direct access to PHP and Blade files except admin-login.php
-<FilesMatch "\.(php|blade\.php)$">
-    SetEnvIf Request_URI "admin-login.blade.php\.php$" allow_file
-    Order Deny,Allow
-    Deny from all
-    Allow from env=allow_file
-</FilesMatch>
+# Block all .blade.php files EXCEPT admin-consumer and admin-login
+RewriteCond %{REQUEST_URI} !admin-consumer [NC]
+RewriteCond %{REQUEST_URI} !admin-login [NC]
+RewriteRule \.blade\.php$ - [F,L]
+
+# Block specific PHP files EXCEPT admin-consumer and admin-login
+RewriteCond %{REQUEST_URI} (admin-|accountant-|consumer-|2fa-) [NC]
+RewriteCond %{REQUEST_URI} !admin-consumer [NC]
+RewriteCond %{REQUEST_URI} !admin-login [NC]
+RewriteRule \.php$ - [F,L]
+
 
 
