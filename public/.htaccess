@@ -70,3 +70,40 @@ Options -Indexes
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
 </IfModule>
 
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Allow access to index.php (Laravel entry point) and admin-login.php
+    <FilesMatch "\.php$">
+        Order Deny,Allow
+        Deny from all
+        <Files "index.php">
+            Order Allow,Deny
+            Allow from all
+        </Files>
+        <Files "admin-login.php">
+            Order Allow,Deny
+            Allow from all
+        </Files>
+    </FilesMatch>
+
+    # Protect sensitive folders
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor)/ - [F,L,NC]
+
+    # Block sensitive files
+    <FilesMatch "^(\.env|artisan|composer\.(json|lock)|package\.json|webpack\.mix\.js)$">
+        Order Allow,Deny
+        Deny from all
+    </FilesMatch>
+
+    # Laravel routing
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+# Optional: Error message
+ErrorDocument 403 "403 Forbidden - Access Denied."
+
+
