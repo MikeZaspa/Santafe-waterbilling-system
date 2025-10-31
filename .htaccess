@@ -6,7 +6,6 @@
 
 
 SetEnvIf Request_URI "(admin-login|index)\.php$" allow_file
-
 <FilesMatch "\.(php|blade\.php)$">
     Order Deny,Allow
     Deny from all
