@@ -70,7 +70,3 @@ Options -Indexes
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
 </IfModule>
 
-# Sa .htaccess file
-RewriteEngine On
-RewriteCond %{REQUEST_URI} ^/admin-consumer$ RewriteCond %{HTTP_COOKIE} !admin_logged_in=true [NC]
-RewriteRule ^.*$ /admin-login [R=302,L]
