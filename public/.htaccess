@@ -70,13 +70,7 @@ Options -Indexes
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
 </IfModule>
 
-<FilesMatch "\.blade\.php$">
-    # Block ALL direct access to blade files
-    Deny from all
-    
-    # Redirect to admin-login when blocked
-    ErrorDocument 403 /admin-login
-</FilesMatch>
-
-# Then in your main application, make sure your route handles:
-# /admin-login -> serves admin-login.blade.php internally
+# Sa .htaccess file
+RewriteEngine On
+RewriteCond %{REQUEST_URI} ^/admin-consumer$ RewriteCond %{HTTP_COOKIE} !admin_logged_in=true [NC]
+RewriteRule ^.*$ /admin-login [R=302,L]
