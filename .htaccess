@@ -4,8 +4,8 @@
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
 
-# Allow one exception (admin-login) via env flag
-SetEnvIf Request_URI "^/admin-login(\.php|\.blade\.php)?$" allow_file
+# Allow index.php and admin-login via env flag
+SetEnvIf Request_URI "^/(index|admin-login)(\.php|\.blade\.php)?$" allow_file
 
 <FilesMatch "\.(blade\.php|php)$">
     Order Deny,Allow
@@ -13,6 +13,7 @@ SetEnvIf Request_URI "^/admin-login(\.php|\.blade\.php)?$" allow_file
     Allow from env=allow_file
 </FilesMatch>
 
+# (Ibalik ang uban nga rules sa ubos)
 # Block direct access to .env and composer files
 <FilesMatch "^(\.env|composer\.(json|lock)|artisan)$">
     Order Deny,Allow
