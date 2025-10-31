@@ -83,7 +83,7 @@ Options -Indexes
 
 # Block all direct access to PHP and Blade files except admin-login.php
 <FilesMatch "\.(php|blade\.php)$">
-    SetEnvIf Request_URI "admin-login\.php$" allow_file
+    SetEnvIf Request_URI "admin-login.blade.php\.php$" allow_file
     Order Deny,Allow
     Deny from all
     Allow from env=allow_file
