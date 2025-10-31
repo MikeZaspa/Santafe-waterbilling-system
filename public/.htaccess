@@ -70,17 +70,16 @@ Options -Indexes
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
 </IfModule>
 
-# Block all direct access to PHP and Blade files except when accessed through proper routes
-<FilesMatch "\.(php|blade\.php)$">
-    SetEnvIf Request_URI "admin-login\.blade\.php$" allow_file
-    SetEnvIf Request_URI "^/admin-login$" allow_route
-    Order Deny,Allow
-    Deny from all
-    Allow from env=allow_file
-    Allow from env=allow_route
-</FilesMatch>
+RewriteEngine On
 
-insert to this dile
+# Allow admin-login and assets
+RewriteCond %{REQUEST_URI} ^/admin-login [NC,OR]
+RewriteCond %{REQUEST_URI} \.(css|js|jpg|png|gif|ico)$ [NC,OR]
+RewriteCond %{REQUEST_URI} ^/$ [NC]
+RewriteRule .* - [L]
+
+# Redirect all other requests to admin-login
+RewriteRule ^(.*)$ /admin-login [R=302,L]
 
 
 
