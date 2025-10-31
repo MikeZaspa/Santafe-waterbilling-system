@@ -74,36 +74,40 @@ Options -Indexes
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # Protect all PHP files except index.php and admin-login.php
+    # -------------------------------
+    # ✅ 1. Allow only index.php and admin-login.php
+    # -------------------------------
     <FilesMatch "\.php$">
-        Order Deny,Allow
-        Deny from all
+        Require all denied
     </FilesMatch>
 
     <Files "index.php">
-        Order Allow,Deny
-        Allow from all
+        Require all granted
     </Files>
 
     <Files "admin-login.php">
-        Order Allow,Deny
-        Allow from all
+        Require all granted
     </Files>
 
-    # Protect sensitive Laravel directories
+    # -------------------------------
+    # ✅ 2. Block direct access to sensitive Laravel folders
+    # -------------------------------
     RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor)/ - [F,L,NC]
 
-    # Block sensitive files
+    # -------------------------------
+    # ✅ 3. Block critical files
+    # -------------------------------
     <FilesMatch "^(\.env|artisan|composer\.(json|lock)|package\.json|webpack\.mix\.js)$">
-        Order Allow,Deny
-        Deny from all
+        Require all denied
     </FilesMatch>
 
-    # Laravel routing
+    # -------------------------------
+    # ✅ 4. Laravel routing (all URLs go through index.php)
+    # -------------------------------
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^ index.php [L]
 </IfModule>
 
-# Custom error message
-ErrorDocument 403 "403 Forbidden - Access Denied."
+# Optional custom error message
+ErrorDocument 403 "403 Forbidden - Access Denied"
