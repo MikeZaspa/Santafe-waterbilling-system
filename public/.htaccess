@@ -70,16 +70,19 @@ Options -Indexes
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
 </IfModule>
 
+# Block direct access to sensitive Laravel folders
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # ✅ Allow admin-login route only
-    RewriteCond %{REQUEST_URI} ^/admin-login$ [NC]
-    RewriteRule ^ index.php [L]
-
-    # ❌ Block all other Laravel routes
-    RewriteCond %{REQUEST_URI} !\.(css|js|jpg|jpeg|png|gif|svg|ico|woff|woff2|ttf|map)$
-    RewriteRule .* - [F,L]
-
-    ErrorDocument 403 "403 Forbidden - Access denied."
+    # Deny access to everything except /public
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(resources|routes|storage|vendor|config|database|bootstrap) - [F,L]
 </IfModule>
+
+# Block PHP or Blade files
+<FilesMatch "\.(blade\.php|php)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+ErrorDocument 403 "403 Forbidden - Direct access not allowed."
