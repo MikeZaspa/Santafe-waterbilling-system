@@ -71,9 +71,24 @@ Options -Indexes
 </IfModule>
 
 
-RewriteEngine On
-# I-redirect ang homepage ngadto sa admin-login sa sulod sa project folder
-RewriteRule ^$ /my-project/public/admin-login [L,R=301]
+<IfModule mod_rewrite.c>
+    RewriteEngine On
 
-# I-redirect usab ang requests sa my-project folder ngadto sa ilang public folder
-RewriteRule ^my-project/(.*)$ my-project/public/$1 [L]
+    # =====================================
+    # 1️⃣ Allow admin-login and root index
+    # =====================================
+    RewriteCond %{REQUEST_URI} !^/admin-login [NC]
+    RewriteCond %{REQUEST_URI} !^/$
+
+    # =====================================
+    # 2️⃣ Redirect all other direct requests to admin-login
+    # =====================================
+    RewriteRule ^.*$ /admin-login [R=302,L]
+
+    # =====================================
+    # 3️⃣ Laravel routing (normal traffic)
+    # =====================================
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [L]
+</IfModule>
