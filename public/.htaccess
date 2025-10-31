@@ -81,15 +81,10 @@ Options -Indexes
     RewriteRule ^(resources|routes|storage|vendor|config|database|bootstrap) - [F,L]
 </IfModule>
 
-# Allow only admin-login.php, block all other PHP or Blade files
-<FilesMatch "\.(blade\.php|php)$">
-    <If "%{REQUEST_URI} =~ /admin-login\.php$/">
-        Require all granted
-    </If>
-    <Else>
-        Require all denied
-    </Else>
+# Block all direct access to PHP and Blade files except admin-login.php
+<FilesMatch "\.(php|blade\.php)$">
+    SetEnvIf Request_URI "admin-login\.php$" allow_file
+    Order Deny,Allow
+    Deny from all
+    Allow from env=allow_file
 </FilesMatch>
-
-# Custom error message
-ErrorDocument 403 "403 Forbidden - Direct access not allowed."
