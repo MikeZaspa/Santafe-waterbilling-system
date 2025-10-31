@@ -82,7 +82,6 @@ Options -Indexes
         Order Allow,Deny
         Allow from all
     </Files>
-</
-FilesMatch>
+</FilesMatch>
 
 sakto nani pero dli maka login i fix na
