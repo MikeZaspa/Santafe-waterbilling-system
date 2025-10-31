@@ -72,23 +72,21 @@ Options -Indexes
 
 RewriteEngine On
 
-RewriteEngine On
+# IMPORTANT: Allow Laravel to process routes first
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [L]
 
 # Redirect direct blade file access to admin-login
 RewriteCond %{REQUEST_URI} \.blade\.php$ [NC]
 RewriteCond %{REQUEST_URI} !admin-login\.blade\.php [NC]
 RewriteRule .* /admin-login [R=302,L]
 
-# Block with redirect (alternative)
-<FilesMatch "\.(php|blade\.php)$">
+# Block only .blade.php files (safe version)
+<FilesMatch "\.blade\.php$">
     SetEnvIf Request_URI "admin-login\.blade\.php$" allow_file
-    SetEnvIf Request_URI "^/admin-login$" allow_route
     Order Deny,Allow
     Deny from all
     Allow from env=allow_file
-    Allow from env=allow_route
-    
-    # If denied, redirect to admin-login
-    ErrorDocument 403 /admin-login
 </FilesMatch>
 
