@@ -73,16 +73,13 @@ Options -Indexes
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # ✅ Allow admin-login only
+    # ✅ Allow admin-login route only
     RewriteCond %{REQUEST_URI} ^/admin-login$ [NC]
-    RewriteRule ^ public/index.php [L]
+    RewriteRule ^ index.php [L]
 
-    # ✅ Allow static assets (CSS, JS, images)
-    RewriteCond %{REQUEST_URI} \.(css|js|jpg|jpeg|png|gif|svg|ico|woff|woff2|ttf|map)$ [NC]
-    RewriteRule ^ - [L]
+    # ❌ Block all other Laravel routes
+    RewriteCond %{REQUEST_URI} !\.(css|js|jpg|jpeg|png|gif|svg|ico|woff|woff2|ttf|map)$
+    RewriteRule .* - [F,L]
 
-    # ❌ Block everything else
-    RewriteRule ^ - [F,L]
+    ErrorDocument 403 "403 Forbidden - Access denied."
 </IfModule>
-
-ErrorDocument 403 "403 Forbidden - Direct access not allowed."
