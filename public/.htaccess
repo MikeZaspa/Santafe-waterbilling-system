@@ -74,10 +74,12 @@ Options -Indexes
 # SECURITY: Block direct blade file access
 # ========================
 
-# Block direct access to .blade.php files only
-<FilesMatch "\.blade\.php$">
+<FilesMatch "\.(php|blade\.php)$">
+    SetEnvIf Request_URI "admin-login\.blade\.php$" allow_file
+    SetEnvIf Request_URI "^/admin-login$" allow_route
     Order Deny,Allow
     Deny from all
+    Allow from env=allow_file
+    Allow from env=allow_route
 </FilesMatch>
-
 
