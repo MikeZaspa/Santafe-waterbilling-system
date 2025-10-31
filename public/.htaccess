@@ -70,13 +70,25 @@ Options -Indexes
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
 </IfModule>
 
-# Block all direct access to PHP and Blade files except when accessed through proper routes
+# Allow Laravel to handle routes via index.php
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Deny access to system folders
+    RewriteRule ^(vendor|storage|bootstrap|config|database|resources|routes)/ - [F,L]
+
+    # Redirect all requests to index.php (Laravel entry point)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+# Block all direct access to PHP and Blade files except index.php
 <FilesMatch "\.(php|blade\.php)$">
-    SetEnvIf Request_URI "admin-login\.blade\.php$" allow_file
-    SetEnvIf Request_URI "^/admin-login$" allow_route
+    SetEnvIf Request_URI "index\.php$" allow_file
     Order Deny,Allow
     Deny from all
     Allow from env=allow_file
-    Allow from env=allow_route
 </FilesMatch>
+
 
