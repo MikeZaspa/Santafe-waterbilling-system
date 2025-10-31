@@ -74,24 +74,13 @@ Options -Indexes
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # ✅ Allow only admin-login route and public directory
+    # ✅ Allow admin-login route only
     RewriteCond %{REQUEST_URI} ^/admin-login$ [NC]
-    RewriteRule ^ - [L]
+    RewriteRule ^ index.php [L]
 
-    RewriteCond %{REQUEST_URI} ^/public/ [NC]
-    RewriteRule ^ - [L]
-
-    # ❌ Block sensitive folders
-    RewriteCond %{REQUEST_URI} ^/(app|bootstrap|config|database|resources|routes|storage|tests|vendor) [NC]
-    RewriteRule ^ - [F,L]
-
-    # ❌ Block sensitive files
-    <FilesMatch "(\.env|composer\.(json|lock)|artisan|server\.php|package\.json)$">
-        Order allow,deny
-        Deny from all
-    </FilesMatch>
+    # ❌ Block all other Laravel routes
+    RewriteCond %{REQUEST_URI} !\.(css|js|jpg|jpeg|png|gif|svg|ico|woff|woff2|ttf|map)$
+    RewriteRule .* - [F,L]
 
     ErrorDocument 403 "403 Forbidden - Access denied."
 </IfModule>
-
-
