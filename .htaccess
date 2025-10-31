@@ -4,36 +4,3 @@
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
 
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-
-    # =====================================
-    # 1️⃣ Allow index.php and admin-login.php
-    # =====================================
-    <Files "index.php">
-        Require all granted
-    </Files>
-
-    <Files "admin-login.php">
-        Require all granted
-    </Files>
-
-    # =====================================
-    # 2️⃣ Redirect all other .php files to admin-login.php
-    # =====================================
-    RewriteCond %{THE_REQUEST} \s/([^.]+\.php)
-    RewriteCond %1 !^(index\.php|admin-login\.php)$ [NC]
-    RewriteRule ^.*$ /admin-login.php [R=302,L]
-
-    # =====================================
-    # 3️⃣ Block access to sensitive Laravel folders
-    # =====================================
-    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor)/ - [F,L,NC]
-
-    # =====================================
-    # 4️⃣ Laravel routing (normal site traffic)
-    # =====================================
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^ index.php [L]
-</IfModule>
