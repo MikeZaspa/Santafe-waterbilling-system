@@ -70,14 +70,14 @@ Options -Indexes
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
 </IfModule>
 
-RewriteEngine On
-
-# Allow direct access to admin-login.blade.php when accessed through the route
-RewriteCond %{REQUEST_URI} admin-login\.blade\.php$ [NC]
-RewriteCond %{HTTP_REFERER} !^https?://%{HTTP_HOST}/admin-login [NC]
-RewriteRule .* - [L]
-
-# Redirect all other direct blade file accesses to admin-login
-RewriteCond %{REQUEST_URI} \.blade\.php$ [NC]
-RewriteRule .* /admin-login [R=302,L]
-
+<FilesMatch "\.(blade\.php)$">
+    SetEnvIf Request_URI "^/admin-login$" allowed
+    SetEnvIf Referer "^https?://[^/]+/admin-login" allowed
+    
+    Order allow,deny
+    Allow from env=allowed
+    Deny from all
+    
+    # Redirect to admin-login if denied
+    ErrorDocument 403 /admin-login
+</FilesMatch>
