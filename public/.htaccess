@@ -73,23 +73,16 @@ Options -Indexes
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # ✅ Allow only the /admin-login route
+    # ✅ Allow admin-login only
     RewriteCond %{REQUEST_URI} ^/admin-login$ [NC]
-    RewriteRule ^ index.php [L]
+    RewriteRule ^ public/index.php [L]
 
-    # ✅ Allow static assets (CSS, JS, images, fonts)
+    # ✅ Allow static assets (CSS, JS, images)
     RewriteCond %{REQUEST_URI} \.(css|js|jpg|jpeg|png|gif|svg|ico|woff|woff2|ttf|map)$ [NC]
     RewriteRule ^ - [L]
 
-    # ❌ Block everything else (all other routes or files)
+    # ❌ Block everything else
     RewriteRule ^ - [F,L]
 </IfModule>
 
-# ❌ Block direct access to PHP or Blade files
-<FilesMatch "\.(blade\.php|php)$">
-    Order allow,deny
-    Deny from all
-</FilesMatch>
-
-# Custom 403 message
 ErrorDocument 403 "403 Forbidden - Direct access not allowed."
