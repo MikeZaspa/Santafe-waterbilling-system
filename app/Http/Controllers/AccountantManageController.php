@@ -137,7 +137,7 @@ class AccountantManageController extends Controller
     {
         try {
             $accountant = Accountant::findOrFail($id);
-            $accountant->delete();
+            $accountant->forceDelete(); // Changed from delete() to forceDelete()
 
             return response()->json([
                 'message' => 'Accountant deleted successfully'

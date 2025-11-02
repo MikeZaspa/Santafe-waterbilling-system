@@ -843,33 +843,94 @@
         }
     });
 
-    // Initialize DataTable
-    $('#accountantsTable').DataTable({
-        responsive: true,
-        dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-             "<'row'<'col-sm-12'tr>>" +
-             "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-        language: {
-            search: "",
-            searchPlaceholder: "Search accountants...",
-            lengthMenu: "Show _MENU_ entries",
-            info: "Showing _START_ to _END_ of _TOTAL_ entries",
-            infoEmpty: "Showing 0 to 0 of 0 entries",
-            emptyTable: "<div class='text-center'>No data available in table</div>",
-            infoFiltered: "(filtered from _MAX_ total entries)",
-            paginate: {
-                first: "First",
-                last: "Last",
-                next: "Next",
-                previous: "Previous"
+    // Prevent numbers in name fields
+    $('#firstName, #middleName, #lastName, #suffix').on('input', function() {
+        // Remove any numbers from the input
+        this.value = this.value.replace(/[0-9]/g, '');
+    });
+
+    // Enhanced contact number validation
+    $('#contactNumber').on('input', function() {
+        // Remove any non-numeric characters
+        this.value = this.value.replace(/[^0-9]/g, '');
+        
+        // Ensure it starts with 09 and limit to 11 digits
+        if (this.value.length > 0 && !this.value.startsWith('09')) {
+            // If it doesn't start with 09, prepend 09
+            this.value = '09' + this.value.substring(2);
+        }
+        
+        // Limit to 11 digits
+        if (this.value.length > 11) {
+            this.value = this.value.substring(0, 11);
+        }
+        
+        // Visual feedback for validation
+        if (this.value.length > 0 && this.value.length < 11) {
+            $(this).addClass('is-invalid');
+            if (!$(this).next('.invalid-feedback').length) {
+                $(this).after('<div class="invalid-feedback">Phone number must be 11 digits starting with 09</div>');
             }
-        },
-        initComplete: function() {
-            $('.dataTables_filter input').addClass('form-control');
-            $('.dataTables_length select').addClass('form-select');
+        } else {
+            $(this).removeClass('is-invalid');
+            $(this).next('.invalid-feedback').remove();
         }
     });
 
+    // Username validation - minimum 6 characters, letters and underscores only
+    $('#username').on('input', function() {
+        // Only allow letters and underscore (no numbers)
+        this.value = this.value.replace(/[^a-zA-Z_]/g, '');
+        
+        // Check minimum length
+        if (this.value.length > 0 && this.value.length < 6) {
+            $(this).addClass('is-invalid');
+            if (!$(this).next('.invalid-feedback').length) {
+                $(this).after('<div class="invalid-feedback">Username must be at least 6 characters long and contain only letters and underscores</div>');
+            }
+        } else {
+            $(this).removeClass('is-invalid');
+            $(this).next('.invalid-feedback').remove();
+        }
+    });
+
+    // Initialize DataTable with automatic row numbering
+$('#accountantsTable').DataTable({
+    responsive: true,
+    dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+         "<'row'<'col-sm-12'tr>>" +
+         "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+    language: {
+        search: "",
+        searchPlaceholder: "Search accountants...",
+        lengthMenu: "Show _MENU_ entries",
+        info: "Showing _START_ to _END_ of _TOTAL_ entries",
+        infoEmpty: "Showing 0 to 0 of 0 entries",
+        emptyTable: "<div class='text-center'>No data available in table</div>",
+        infoFiltered: "(filtered from _MAX_ total entries)",
+        paginate: {
+            first: "First",
+            last: "Last",
+            next: "Next",
+            previous: "Previous"
+        }
+    },
+    initComplete: function() {
+        $('.dataTables_filter input').addClass('form-control');
+        $('.dataTables_length select').addClass('form-select');
+    },
+    // Add automatic row numbering
+    columnDefs: [{
+        targets: 0,
+        render: function(data, type, row, meta) {
+            // Show sequential row numbers that update automatically
+            if (type === 'display') {
+                return meta.row + meta.settings._iDisplayStart + 1;
+            }
+            return data;
+        }
+    }]
+});
     // Reset form when modal is closed
     $('#accountantModal').on('hidden.bs.modal', function() {
         $('#accountantForm')[0].reset();
@@ -879,6 +940,10 @@
         $('#passwordHelp').text('Leave blank to keep current password');
         $('#password').attr('placeholder', '');
         $('#passwordConfirmGroup').show();
+        $('#username').removeClass('is-invalid');
+        $('#username').next('.invalid-feedback').remove();
+        $('#contactNumber').removeClass('is-invalid');
+        $('#contactNumber').next('.invalid-feedback').remove();
     });
 
     // Add Accountant button click
@@ -920,6 +985,16 @@
             return;
         }
 
+        // Username minimum length validation
+        if (formData.username.length < 6) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Username must be at least 6 characters long'
+            });
+            return;
+        }
+
         // For new accountant, password is required
         const accountantId = $('#accountantId').val();
         if (!accountantId && !formData.password) {
@@ -947,13 +1022,13 @@
             delete formData.password_confirmation;
         }
 
-        // Username validation (alphanumeric and underscores)
-        const usernameRegex = /^[a-zA-Z0-9_]+$/;
+        // Username validation (letters and underscores only)
+        const usernameRegex = /^[a-zA-Z_]+$/;
         if (!usernameRegex.test(formData.username)) {
             Swal.fire({
                 icon: 'error',
                 title: 'Validation Error',
-                text: 'Username can only contain letters, numbers, and underscores'
+                text: 'Username can only contain letters and underscores'
             });
             return;
         }
@@ -969,13 +1044,12 @@
             return;
         }
 
-        // Phone number validation
-        const phoneRegex = /^09\d{9}$/;
-        if (!phoneRegex.test(formData.contact_number)) {
+        // Enhanced phone number validation - exactly 11 digits starting with 09
+        if (formData.contact_number.length !== 11 || !formData.contact_number.startsWith('09')) {
             Swal.fire({
                 icon: 'error',
                 title: 'Validation Error',
-                text: 'Please enter a valid phone number (09XXXXXXXXX)'
+                text: 'Phone number must be exactly 11 digits starting with 09'
             });
             return;
         }
@@ -1051,52 +1125,62 @@
         });
     });
 
-    // Delete Accountant
-    let deleteAccountantId = null;
+     // Delete Accountant
+let deleteAccountantId = null;
 
-    $(document).on('click', '.delete-accountant', function() {
-        deleteAccountantId = $(this).data('id');
-        $('#deleteModal').modal('show');
-    });
+$(document).on('click', '.delete-accountant', function() {
+    deleteAccountantId = $(this).data('id');
+    $('#deleteModal').modal('show');
+});
 
-    $('#confirmDelete').click(function() {
-        if (!deleteAccountantId) return;
-        
-        $.ajax({
-            url: `/admin-accountant/${deleteAccountantId}`,
-            type: 'DELETE',
-            data: {
-                _token: $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) {
-                $('#deleteModal').modal('hide');
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: response.message,
-                    timer: 2000,
-                    showConfirmButton: false
-                }).then(() => {
-                    $('#accountantRow_' + deleteAccountantId).remove();
-                    deleteAccountantId = null;
-                });
-            },
-            error: function(xhr) {
-                $('#deleteModal').modal('hide');
-                let errorMessage = xhr.responseJSON?.message || 'Failed to delete accountant';
-                
-                if (xhr.responseJSON?.errors) {
-                    errorMessage = Object.values(xhr.responseJSON.errors).join('\n');
-                }
-                
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: errorMessage
-                });
+$('#confirmDelete').click(function() {
+    if (!deleteAccountantId) return;
+    
+    $.ajax({
+        url: `/admin-accountant/${deleteAccountantId}`,
+        type: 'DELETE',
+        data: {
+            _token: $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function(response) {
+            $('#deleteModal').modal('hide');
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: response.message,
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => {
+                // Auto-refresh the page after success message
+                location.reload();
+            });
+            
+            deleteAccountantId = null;
+        },
+        error: function(xhr) {
+            $('#deleteModal').modal('hide');
+            let errorMessage = xhr.responseJSON?.message || 'Failed to delete accountant';
+            
+            if (xhr.responseJSON?.errors) {
+                errorMessage = Object.values(xhr.responseJSON.errors).join('\n');
             }
-        });
+            
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: errorMessage
+            });
+        }
     });
+});
+// Function to renumber table rows sequentially
+function renumberTableRows() {
+    $('#accountantsTable tbody tr').each(function(index) {
+        // Set the first cell to sequential number starting from 1
+        $(this).find('td:first').text(index + 1);
+    });
+}
 
     // Logout functionality
     $('#logoutBtn').click(function(e) {
