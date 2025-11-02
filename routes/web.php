@@ -383,13 +383,11 @@ Route::post('/cut-consumers', [BillingController::class, 'cutConsumer'])->name('
 Route::get('/cut-consumers', [BillingController::class, 'getCutConsumers'])->name('cut-consumers.index');
 Route::post('/cut-consumers/{id}/restore', [BillingController::class, 'restoreConsumer'])->name('cut-consumers.restore');
 
-// Admin log routes
-Route::middleware(['auth:admin'])->group(function () {
-    Route::get('/admin-logs', [AdminLogController::class, 'index'])->name('admin.logs');
-    Route::get('/admin-logs/filter', [AdminLogController::class, 'filter'])->name('admin.logs.filter');
-    Route::get('/admin-logs/{log}', [AdminLogController::class, 'show'])->name('admin.logs.show');
-});
+// In your routes/web.php file, add these routes:
 
+// Admin logs API endpoints
+Route::get('/admin/logs/api', [DashboardController::class, 'getAdminLogs'])->name('admin.logs.api');
+Route::get('/admin/admins/api', [DashboardController::class, 'getAdmins'])->name('admin.admins.api');
 
 Route::get('/consumer-dashboard', [AuthController::class, 'consumerDashboard']);
 Route::get('/consumer-profile', [AuthController::class, 'consumerprofile']);
@@ -455,7 +453,13 @@ Route::get('/accountant-2fa', [AccountantManageController::class, 'show2FAModal'
 Route::post('/accountant-2fa/verify', [AccountantManageController::class, 'verify2FACode'])->name('accountant.2fa.verify');
 Route::post('/accountant-2fa/resend', [AccountantManageController::class, 'resend2FACode'])->name('accountant.2fa.resend');
 
-
+// Add these routes to your web.php file
+Route::get('/consumer-portal', [ConsumerAuthController::class, 'showLoginForm'])->name('consumer.login.form');
+Route::post('/consumer/login', [ConsumerAuthController::class, 'login'])->name('consumer.login');
+Route::post('/consumer/verify-2fa', [ConsumerAuthController::class, 'verify2FA'])->name('consumer.verify2fa');
+Route::post('/consumer/resend-2fa', [ConsumerAuthController::class, 'resend2FA'])->name('consumer.resend2fa');
+Route::get('/consumer/dashboard', [ConsumerAuthController::class, 'dashboard'])->name('consumer.dashboard');
+Route::post('/consumer/logout', [ConsumerAuthController::class, 'logout'])->name('consumer.logout');
 // Logout route
 Route::post('/accountant/logout', [AccountantManageController::class, 'logout'])->name('accountant.logout');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

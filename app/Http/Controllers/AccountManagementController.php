@@ -7,6 +7,7 @@ use App\Models\AdminConsumer;
 use App\Models\ConsumerAccount;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class AccountManagementController extends Controller
 {
@@ -47,15 +48,25 @@ class AccountManagementController extends Controller
     public function store(Request $request)
     {
         try {
-            $request->validate([
+            $validator = Validator::make($request->all(), [
                 'consumer_id' => 'required|exists:admin_consumers,id|unique:consumer_accounts,consumer_id,NULL,id,deleted_at,NULL',
                 'username' => 'required|string|unique:consumer_accounts,username,NULL,id,deleted_at,NULL',
+                'email' => 'nullable|email|unique:consumer_accounts,email,NULL,id,deleted_at,NULL',
                 'password' => 'required|string|min:8'
             ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
 
             $account = ConsumerAccount::create([
                 'consumer_id' => $request->consumer_id,
                 'username' => $request->username,
+                'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'created_by' => Auth::id()
             ]);
@@ -71,8 +82,7 @@ class AccountManagementController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to create account',
-                'error' => $e->getMessage(),
-                'validation_errors' => $e instanceof \Illuminate\Validation\ValidationException ? $e->errors() : null
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -98,9 +108,18 @@ class AccountManagementController extends Controller
 
     public function update(Request $request, $id)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
+            'email' => 'nullable|email|unique:consumer_accounts,email,'.$id.',id,deleted_at,NULL',
             'password' => 'sometimes|string|min:8'
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
 
         try {
             $account = ConsumerAccount::findOrFail($id);
@@ -108,6 +127,10 @@ class AccountManagementController extends Controller
             $updateData = [
                 'updated_by' => Auth::id()
             ];
+
+            if ($request->filled('email')) {
+                $updateData['email'] = $request->email;
+            }
 
             if ($request->filled('password')) {
                 $updateData['password'] = Hash::make($request->password);

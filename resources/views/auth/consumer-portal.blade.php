@@ -120,6 +120,102 @@
         .password-toggle:hover {
             background-color: #e9ecef;
         }
+        
+        /* Simplified 2FA Modal Styles */
+        .modal-content {
+            border-radius: 8px;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .modal-header {
+            border-bottom: 1px solid #e9ecef;
+            padding: 1.5rem 1.5rem 0.5rem;
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+        }
+        
+        .verification-container {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .verification-icon {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .verification-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .verification-subtitle {
+            color: #6c757d;
+            margin-bottom: 1.5rem;
+        }
+        
+        .code-inputs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .code-input {
+            width: 45px;
+            height: 45px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+        }
+        
+        .code-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(211, 47, 47, 0.25);
+        }
+        
+        .btn-verify {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+        }
+        
+        .btn-verify:hover {
+            background-color: var(--primary-dark);
+            color: white;
+        }
+        
+        .resend-container {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .resend-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .resend-link:hover {
+            text-decoration: underline;
+        }
+        
+        .resend-link.disabled {
+            color: #6c757d;
+            pointer-events: none;
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -133,7 +229,7 @@
             </div>
             
             <div class="login-body">
-                <form id="loginForm" action="/consumer/login" method="POST">
+                <form id="loginForm" action="{{ route('consumer.login') }}" method="POST">
                     @csrf <!-- Add this for Laravel CSRF protection -->
                     
                     <div class="mb-3">
@@ -179,6 +275,56 @@
         </div>
     </div>
     
+    <!-- Simplified 2FA Verification Modal -->
+    <div class="modal fade" id="twoFactorModal" tabindex="-1" aria-labelledby="twoFactorModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="verification-container">
+                        <div class="verification-icon">
+                            <i class="bi bi-shield-lock"></i>
+                        </div>
+                        <h5 class="verification-title">Two-Factor Authentication</h5>
+                        <p class="verification-subtitle">We've sent a 6-digit verification code to your email</p>
+                    </div>
+                    
+                    <form id="twoFactorForm" action="{{ route('consumer.verify2fa') }}" method="POST">
+                        @csrf
+                        <div class="code-inputs">
+                            <input type="text" class="form-control code-input" maxlength="1" required>
+                            <input type="text" class="form-control code-input" maxlength="1" required>
+                            <input type="text" class="form-control code-input" maxlength="1" required>
+                            <input type="text" class="form-control code-input" maxlength="1" required>
+                            <input type="text" class="form-control code-input" maxlength="1" required>
+                            <input type="text" class="form-control code-input" maxlength="1" required>
+                            <!-- Hidden field to combine all inputs -->
+                            <input type="hidden" id="two_factor_code" name="two_factor_code" required>
+                        </div>
+                        
+                        @error('two_factor_code')
+                            <div class="alert alert-danger mb-3">{{ $message }}</div>
+                        @endif
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-verify">
+                                Verify Code
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="resend-container text-center">
+                        Didn't receive the code? 
+                        <a href="#" id="resendCode" class="resend-link">Resend Code</a>
+                        <span id="countdown"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- jQuery -->
@@ -197,9 +343,151 @@
                 $(this).find('i').toggleClass('bi-eye bi-eye-slash');
             });
             
-
-            $('#loginForm').submit(function(e) {
+            // Show 2FA modal if session variable is set
+            @if(session('show2faModal'))
+                const twoFactorModal = new bootstrap.Modal(document.getElementById('twoFactorModal'));
+                twoFactorModal.show();
+                startCountdown();
+            @endif
+            
+            // Code input handling
+            const codeInputs = $('.code-input');
+            
+            codeInputs.on('input', function() {
+                const value = $(this).val();
                 
+                // Only allow numbers
+                if (!/^\d*$/.test(value)) {
+                    $(this).val('');
+                    return;
+                }
+                
+                // Move to next input if current is filled
+                if (value.length === 1) {
+                    const index = codeInputs.index(this);
+                    if (index < codeInputs.length - 1) {
+                        codeInputs.eq(index + 1).focus();
+                    }
+                }
+                
+                // Update hidden field
+                updateCodeField();
+            });
+            
+            // Handle backspace
+            codeInputs.on('keydown', function(e) {
+                if (e.key === 'Backspace' && $(this).val() === '') {
+                    const index = codeInputs.index(this);
+                    if (index > 0) {
+                        codeInputs.eq(index - 1).focus();
+                    }
+                }
+            });
+            
+            // Handle paste
+            codeInputs.on('paste', function(e) {
+                e.preventDefault();
+                const pastedData = e.originalEvent.clipboardData.getData('text');
+                const digits = pastedData.replace(/\D/g, '').slice(0, 6);
+                
+                for (let i = 0; i < digits.length; i++) {
+                    codeInputs.eq(i).val(digits[i]);
+                }
+                
+                if (digits.length > 0 && digits.length < 6) {
+                    codeInputs.eq(digits.length).focus();
+                }
+                
+                updateCodeField();
+            });
+            
+            // Update hidden field with combined code
+            function updateCodeField() {
+                let code = '';
+                codeInputs.each(function() {
+                    code += $(this).val();
+                });
+                $('#two_factor_code').val(code);
+            }
+            
+            // Resend code functionality
+            $('#resendCode').click(function(e) {
+                e.preventDefault();
+                
+                const resendLink = $(this);
+                const countdown = $('#countdown');
+                
+                // Disable the link
+                resendLink.addClass('disabled');
+                
+                // Send AJAX request to resend code
+                $.ajax({
+                    url: '{{ route("consumer.resend2fa") }}',
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Show success message
+                            const alertHtml = '<div class="alert alert-success alert-dismissible fade show" role="alert">' +
+                                response.message +
+                                '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' +
+                                '</div>';
+                            $('#twoFactorModal .modal-body').prepend(alertHtml);
+                            
+                            // Start countdown
+                            startCountdown();
+                        } else {
+                            // Show error message
+                            const alertHtml = '<div class="alert alert-danger alert-dismissible fade show" role="alert">' +
+                                response.message +
+                                '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' +
+                                '</div>';
+                            $('#twoFactorModal .modal-body').prepend(alertHtml);
+                            
+                            // Re-enable the link
+                            resendLink.removeClass('disabled');
+                        }
+                    },
+                    error: function() {
+                        // Show error message
+                        const alertHtml = '<div class="alert alert-danger alert-dismissible fade show" role="alert">' +
+                            'An error occurred. Please try again.' +
+                            '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' +
+                            '</div>';
+                        $('#twoFactorModal .modal-body').prepend(alertHtml);
+                        
+                        // Re-enable the link
+                        resendLink.removeClass('disabled');
+                    }
+                });
+            });
+            
+            // Countdown function
+            function startCountdown() {
+                let timeLeft = 60;
+                const resendLink = $('#resendCode');
+                const countdown = $('#countdown');
+                
+                resendLink.addClass('disabled');
+                countdown.text(`(${timeLeft}s)`);
+                
+                const timer = setInterval(function() {
+                    timeLeft--;
+                    countdown.text(`(${timeLeft}s)`);
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(timer);
+                        resendLink.removeClass('disabled');
+                        countdown.text('');
+                    }
+                }, 1000);
+            }
+            
+            // Auto-focus on first code input when modal is shown
+            $('#twoFactorModal').on('shown.bs.modal', function() {
+                $('.code-input').first().focus();
             });
         });
     </script>

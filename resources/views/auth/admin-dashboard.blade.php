@@ -209,6 +209,96 @@
             color: var(--primary-color);
         }
         
+        /* Modal styles */
+        .modal-dialog {
+            max-width: 95%;
+        }
+        
+        .modal-content {
+            height: 90vh;
+        }
+        
+        .modal-body {
+            height: calc(90vh - 140px);
+            overflow-y: auto;
+        }
+        
+        .avatar-sm {
+            width: 32px;
+            height: 32px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .table th {
+            border-top: none;
+            font-weight: 600;
+            color: #495057;
+            background-color: #f8f9fa;
+        }
+        
+        .badge-active {
+            background-color: #28a745;
+        }
+        
+        .badge-inactive {
+            background-color: #6c757d;
+        }
+        
+        .location-pin {
+            cursor: pointer;
+            color: #1a73e8;
+        }
+        
+        .location-pin:hover {
+            color: #0d5bba;
+        }
+        
+        .map-popup {
+            font-family: Arial, sans-serif;
+        }
+        
+        .map-popup h6 {
+            margin-bottom: 5px;
+            color: #1a73e8;
+        }
+        
+        .map-popup p {
+            margin: 2px 0;
+            font-size: 12px;
+        }
+        
+        #map {
+            height: 300px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        
+        /* Header icon styles */
+        .header-icon {
+            font-size: 1.25rem;
+            color: #6c757d;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .header-icon:hover {
+            color: var(--primary-color);
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 10px;
+            height: 10px;
+            background-color: #dc3545;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        
         @media (min-width: 992px) {
             .sidebar {
                 transform: translateX(0);
@@ -278,6 +368,20 @@
             .dropdown-toggle span {
                 display: none;
             }
+            
+            .modal-dialog {
+                max-width: 100%;
+                margin: 0;
+            }
+            
+            .modal-content {
+                height: 100vh;
+                border-radius: 0;
+            }
+            
+            .modal-body {
+                height: calc(100vh - 140px);
+            }
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -335,7 +439,11 @@
         
         <div class="header-right">
             <div class="position-relative me-3 d-none d-sm-block">
-                <i class="bi bi-bell fs-5"></i>
+                <i class="bi bi-bell header-icon" id="notificationIcon"></i>
+                <span class="notification-badge"></span>
+            </div>
+            <div class="position-relative me-3 d-none d-sm-block">
+                <i class="bi bi-clock-history header-icon" id="adminLogsIcon" data-bs-toggle="modal" data-bs-target="#adminLogsModal" title="Admin Logs"></i>
             </div>
             <div class="dropdown">
                 <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
@@ -344,7 +452,7 @@
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUser">
                     <li><a class="dropdown-item" href="#">Profile</a></li>
                     <li><a class="dropdown-item" href="#">Settings</a></li>
-                    <li><a class="dropdown-item" href="admin-logs">Admin Logs</a></li>
+                    <li><a class="dropdown-item" href="#" id="adminLogsBtn" data-bs-toggle="modal" data-bs-target="#adminLogsModal">Admin Logs</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <!-- In the dropdown menu -->
                     <li>
@@ -436,6 +544,146 @@
     </div>
 </div>
 
+<!-- Admin Logs Modal -->
+<div class="modal fade" id="adminLogsModal" tabindex="-1" aria-labelledby="adminLogsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="adminLogsModalLabel">
+                    <i class="fas fa-history me-2"></i>Admin Login Logs
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="container-fluid p-3">
+                    <!-- Filters -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <form id="logsFilterForm" class="row g-2">
+                                <div class="col-md-3">
+                                    <label class="form-label">Admin</label>
+                                    <select name="admin_id" id="adminFilter" class="form-select form-select-sm">
+                                        <option value="">All Admins</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Activity</label>
+                                    <input type="text" name="activity" id="activityFilter" class="form-control form-control-sm" placeholder="Search activity...">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Date From</label>
+                                    <input type="date" name="date_from" id="dateFromFilter" class="form-control form-control-sm">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Date To</label>
+                                    <input type="date" name="date_to" id="dateToFilter" class="form-control form-control-sm">
+                                </div>
+                                <div class="col-md-2 d-flex align-items-end">
+                                    <button type="button" id="filterLogsBtn" class="btn btn-primary btn-sm me-1">Filter</button>
+                                    <button type="button" id="resetLogsBtn" class="btn btn-secondary btn-sm">Reset</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Map Toggle -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <button class="btn btn-outline-primary btn-sm" id="toggleMapBtn">
+                                <i class="fas fa-map me-1"></i> Toggle Map
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Geolocation Map -->
+                    <div id="mapContainer" class="d-none">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0">
+                                <i class="fas fa-map-marker-alt me-2"></i>Login Locations Map
+                            </h6>
+                            <small class="text-muted">Click on location pins to see details</small>
+                        </div>
+                        <div id="map"></div>
+                    </div>
+
+                    <!-- Logs Table -->
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Admin</th>
+                                    <th>IP Address</th>
+                                    <th>Location</th>
+                                    <th>Device</th>
+                                    <th>Activity</th>
+                                    <th>Login Time</th>
+                                    <th>Logout Time</th>
+                                    <th>Duration</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logsTableBody">
+                                <tr>
+                                    <td colspan="9" class="text-center py-4">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        <p class="mt-2">Loading logs...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="d-flex justify-content-center mt-3">
+                        <nav id="logsPagination">
+                            <!-- Pagination will be loaded here -->
+                        </nav>
+                    </div>
+
+                    <!-- Statistics -->
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">Quick Statistics</h6>
+                                    <div class="row text-center">
+                                        <div class="col-md-3">
+                                            <div class="border rounded p-2">
+                                                <h4 class="text-primary mb-0" id="totalLogsCount">0</h4>
+                                                <small class="text-muted">Total Logs</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="border rounded p-2">
+                                                <h4 class="text-success mb-0" id="successfulLoginsCount">0</h4>
+                                                <small class="text-muted">Successful Logins</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="border rounded p-2">
+                                                <h4 class="text-danger mb-0" id="failedAttemptsCount">0</h4>
+                                                <small class="text-muted">Failed Attempts</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="border rounded p-2">
+                                                <h4 class="text-warning mb-0" id="activeSessionsCount">0</h4>
+                                                <small class="text-muted">Active Sessions</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Bootstrap Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <!-- jQuery -->
@@ -444,6 +692,9 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <!-- SweetAlert2 for notifications -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Leaflet for maps -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
  $(document).ready(function() {
@@ -585,7 +836,7 @@
         }
     }); 
 
-        // SweetAlert2 Logout Confirmation - With reversed buttons
+    // SweetAlert2 Logout Confirmation - With reversed buttons
     $('#logout-btn').on('click', function(e) {
         e.preventDefault();
         
@@ -621,6 +872,408 @@
                     document.getElementById('logout-form').submit();
                 }, 1000);
             }
+        });
+    });
+    
+    // Admin Logs Modal functionality
+    let map;
+    let markers = [];
+    let mapVisible = false;
+    let currentPage = 1;
+    
+    // Initialize map when modal is shown
+    $('#adminLogsModal').on('shown.bs.modal', function() {
+        if (!map) {
+            initMap();
+        }
+        loadAdminLogs();
+        loadAdmins();
+    });
+    
+    // Initialize map
+    function initMap() {
+        // Default center (Philippines)
+        map = L.map('map').setView([12.8797, 121.7740], 5);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+    }
+    
+    // Load admin logs
+    function loadAdminLogs(page = 1) {
+        currentPage = page;
+        
+        // Show loading state
+        $('#logsTableBody').html(`
+            <tr>
+                <td colspan="9" class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading logs...</p>
+                </td>
+            </tr>
+        `);
+        
+        // Get filter values
+        const adminId = $('#adminFilter').val();
+        const activity = $('#activityFilter').val();
+        const dateFrom = $('#dateFromFilter').val();
+        const dateTo = $('#dateToFilter').val();
+        
+        // Build query string
+        let queryString = `?page=${page}`;
+        if (adminId) queryString += `&admin_id=${adminId}`;
+        if (activity) queryString += `&activity=${activity}`;
+        if (dateFrom) queryString += `&date_from=${dateFrom}`;
+        if (dateTo) queryString += `&date_to=${dateTo}`;
+        
+        // Fetch logs via AJAX
+        $.get(`/admin/logs/api${queryString}`, function(data) {
+            renderLogsTable(data.logs.data);
+            renderPagination(data.logs);
+            updateStatistics(data.statistics);
+            
+            // Load map data if map is visible
+            if (mapVisible) {
+                loadAllLocations(data.logs.data);
+            }
+        }).fail(function() {
+            $('#logsTableBody').html(`
+                <tr>
+                    <td colspan="9" class="text-center py-4">
+                        <i class="fas fa-exclamation-triangle fa-2x text-warning mb-3"></i>
+                        <p class="text-muted">Error loading logs. Please try again.</p>
+                    </td>
+                </tr>
+            `);
+        });
+    }
+    
+    // Load admins for filter dropdown
+    function loadAdmins() {
+        $.get('/admin/admins/api', function(data) {
+            let options = '<option value="">All Admins</option>';
+            data.forEach(function(admin) {
+                options += `<option value="${admin.id}">${admin.email}</option>`;
+            });
+            $('#adminFilter').html(options);
+        });
+    }
+    
+    // Render logs table
+    function renderLogsTable(logs) {
+        if (logs.length === 0) {
+            $('#logsTableBody').html(`
+                <tr>
+                    <td colspan="9" class="text-center py-4">
+                        <i class="fas fa-search fa-2x text-muted mb-3"></i>
+                        <p class="text-muted">No logs found</p>
+                    </td>
+                </tr>
+            `);
+            return;
+        }
+        
+        let html = '';
+        logs.forEach(function(log) {
+            const loginTime = new Date(log.login_at).toLocaleString();
+            const logoutTime = log.logout_at ? new Date(log.logout_at).toLocaleString() : '';
+            const duration = log.session_duration ? formatDuration(log.session_duration) : '-';
+            const status = log.logout_at ? 
+                '<span class="badge bg-secondary">Completed</span>' : 
+                '<span class="badge bg-success">Active</span>';
+            
+            const activityBadge = log.activity.includes('successful') ? 
+                'bg-success' : log.activity.includes('failed') ? 'bg-danger' : 'bg-primary';
+            
+            const location = log.city && log.country ? 
+                `<div class="d-flex align-items-center">
+                    <span>${log.city}, ${log.country}</span>
+                    <i class="fas fa-map-marker-alt location-pin ms-2" 
+                       onclick="showLocationOnMap('${log.ip_address}', '${log.city}', '${log.country}', '${log.region || ''}', '${log.email}', '${log.activity}', '${loginTime}')"
+                       title="Show on map"></i>
+                </div>` : 
+                '<span class="text-muted">Unknown</span>';
+            
+            html += `
+                <tr data-log-id="${log.id}" 
+                    data-ip="${log.ip_address}"
+                    data-country="${log.country}"
+                    data-city="${log.city}"
+                    data-region="${log.region || ''}"
+                    data-email="${log.email}"
+                    data-activity="${log.activity}"
+                    data-login-time="${loginTime}">
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-sm bg-primary rounded-circle text-white d-flex align-items-center justify-content-center me-2">
+                                ${log.email.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                                <div class="fw-bold">${log.email}</div>
+                                <small class="text-muted">
+                                    ${log.admin ? `${log.admin.first_name} ${log.admin.last_name}` : 'Admin Deleted'}
+                                </small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <code>${log.ip_address}</code>
+                    </td>
+                    <td>${location}</td>
+                    <td>
+                        <small>
+                            <i class="fas fa-desktop me-1 text-muted"></i> ${log.browser}<br>
+                            <i class="fas fa-laptop me-1 text-muted"></i> ${log.platform}
+                        </small>
+                    </td>
+                    <td>
+                        <span class="badge ${activityBadge}">${log.activity}</span>
+                    </td>
+                    <td>
+                        <small>
+                            ${loginTime.split(',')[0]}<br>
+                            ${loginTime.split(',')[1]}
+                        </small>
+                    </td>
+                    <td>
+                        ${logoutTime ? 
+                            `<small>
+                                ${logoutTime.split(',')[0]}<br>
+                                ${logoutTime.split(',')[1]}
+                            </small>` : 
+                            '<span class="badge bg-warning">Active</span>'
+                        }
+                    </td>
+                    <td>
+                        ${duration !== '-' ? 
+                            `<span class="badge bg-info">${duration}</span>` : 
+                            '<span class="text-muted">-</span>'
+                        }
+                    </td>
+                    <td>${status}</td>
+                </tr>
+            `;
+        });
+        
+        $('#logsTableBody').html(html);
+    }
+    
+    // Render pagination
+    function renderPagination(logs) {
+        if (logs.last_page <= 1) {
+            $('#logsPagination').html('');
+            return;
+        }
+        
+        let html = '<ul class="pagination">';
+        
+        // Previous button
+        html += `<li class="page-item ${logs.current_page === 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="loadAdminLogs(${logs.current_page - 1}); return false;">Previous</a>
+        </li>`;
+        
+        // Page numbers
+        for (let i = 1; i <= logs.last_page; i++) {
+            if (i === 1 || i === logs.last_page || (i >= logs.current_page - 2 && i <= logs.current_page + 2)) {
+                html += `<li class="page-item ${i === logs.current_page ? 'active' : ''}">
+                    <a class="page-link" href="#" onclick="loadAdminLogs(${i}); return false;">${i}</a>
+                </li>`;
+            } else if (i === logs.current_page - 3 || i === logs.current_page + 3) {
+                html += `<li class="page-item disabled"><a class="page-link" href="#">...</a></li>`;
+            }
+        }
+        
+        // Next button
+        html += `<li class="page-item ${logs.current_page === logs.last_page ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="loadAdminLogs(${logs.current_page + 1}); return false;">Next</a>
+        </li>`;
+        
+        html += '</ul>';
+        $('#logsPagination').html(html);
+    }
+    
+    // Update statistics
+    function updateStatistics(stats) {
+        $('#totalLogsCount').text(stats.total);
+        $('#successfulLoginsCount').text(stats.successful);
+        $('#failedAttemptsCount').text(stats.failed);
+        $('#activeSessionsCount').text(stats.active);
+    }
+    
+    // Format duration from seconds to HH:MM:SS
+    function formatDuration(seconds) {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+    
+    // Toggle map visibility
+    $('#toggleMapBtn').on('click', function() {
+        const mapContainer = $('#mapContainer');
+        mapVisible = !mapVisible;
+        
+        if (mapVisible) {
+            mapContainer.removeClass('d-none');
+            // Refresh map bounds to show all markers
+            setTimeout(() => {
+                map.invalidateSize();
+                if (markers.length > 0) {
+                    const group = new L.featureGroup(markers);
+                    map.fitBounds(group.getBounds().pad(0.1));
+                } else {
+                    // Load all locations if not already loaded
+                    loadAllLocations();
+                }
+            }, 100);
+        } else {
+            mapContainer.addClass('d-none');
+        }
+    });
+    
+    // Load all locations for the map
+    function loadAllLocations(logs) {
+        // Clear existing markers
+        markers.forEach(marker => map.removeLayer(marker));
+        markers = [];
+        
+        // If logs not provided, get them from the table
+        if (!logs) {
+            logs = [];
+            $('#logsTableBody tr[data-country]').each(function() {
+                logs.push({
+                    country: $(this).data('country'),
+                    city: $(this).data('city'),
+                    region: $(this).data('region'),
+                    ip: $(this).data('ip'),
+                    email: $(this).data('email'),
+                    activity: $(this).data('activity'),
+                    loginTime: $(this).data('login-time')
+                });
+            });
+        }
+        
+        // Process each log
+        logs.forEach(function(log) {
+            if (log.country && log.country !== 'Local') {
+                geocodeLocation(log.city, log.country, log.region, log.ip, log.email, log.activity, log.loginTime);
+            }
+        });
+    }
+    
+    // Geocode location and add marker
+    function geocodeLocation(city, country, region, ip, email, activity, loginTime) {
+        const query = `${city}, ${region}, ${country}`;
+        
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.length > 0) {
+                    const lat = parseFloat(data[0].lat);
+                    const lon = parseFloat(data[0].lon);
+                    
+                    addMarker(lat, lon, city, country, region, ip, email, activity, loginTime);
+                }
+            })
+            .catch(error => {
+                console.error('Geocoding error:', error);
+            });
+    }
+    
+    // Add marker to map
+    function addMarker(lat, lon, city, country, region, ip, email, activity, loginTime) {
+        // Determine marker color based on activity
+        let markerColor = 'blue';
+        if (activity.includes('failed')) {
+            markerColor = 'red';
+        } else if (activity.includes('successful')) {
+            markerColor = 'green';
+        }
+
+        // Create custom icon
+        const customIcon = L.divIcon({
+            html: `<div style="background-color: ${markerColor}; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>`,
+            className: 'custom-marker',
+            iconSize: [20, 20],
+            iconAnchor: [10, 10]
+        });
+
+        const marker = L.marker([lat, lon], { icon: customIcon }).addTo(map);
+        
+        // Create popup content
+        const popupContent = `
+            <div class="map-popup">
+                <h6><i class="fas fa-user"></i> ${email}</h6>
+                <p><strong>Location:</strong> ${city}, ${country}</p>
+                <p><strong>IP Address:</strong> ${ip}</p>
+                <p><strong>Activity:</strong> <span class="badge ${activity.includes('successful') ? 'bg-success' : activity.includes('failed') ? 'bg-danger' : 'bg-primary'}">${activity}</span></p>
+                <p><strong>Login Time:</strong> ${loginTime}</p>
+                <p><strong>Region:</strong> ${region || 'N/A'}</p>
+            </div>
+        `;
+        
+        marker.bindPopup(popupContent);
+        markers.push(marker);
+    }
+    
+    // Show specific location on map
+    window.showLocationOnMap = function(ip, city, country, region, email, activity, loginTime) {
+        // Show map if hidden
+        if (!mapVisible) {
+            $('#toggleMapBtn').click();
+        }
+
+        // Clear existing markers and focus on this one
+        markers.forEach(marker => map.removeLayer(marker));
+        markers = [];
+
+        if (city && country && country !== 'Local') {
+            geocodeLocation(city, country, region, ip, email, activity, loginTime);
+            
+            // Wait a bit for geocoding to complete, then fit bounds
+            setTimeout(() => {
+                if (markers.length > 0) {
+                    const group = new L.featureGroup(markers);
+                    map.fitBounds(group.getBounds().pad(0.1));
+                    
+                    // Open the popup
+                    markers[0].openPopup();
+                }
+            }, 500);
+        } else {
+            Swal.fire({
+                icon: 'info',
+                title: 'Location Not Available',
+                text: 'No geographic location data available for this IP address.',
+                confirmButtonColor: '#d32f2f'
+            });
+        }
+    };
+    
+    // Filter logs
+    $('#filterLogsBtn').on('click', function() {
+        loadAdminLogs(1);
+    });
+    
+    // Reset filters
+    $('#resetLogsBtn').on('click', function() {
+        $('#adminFilter').val('');
+        $('#activityFilter').val('');
+        $('#dateFromFilter').val('');
+        $('#dateToFilter').val('');
+        loadAdminLogs(1);
+    });
+    
+    // Notification icon click handler
+    $('#notificationIcon').on('click', function() {
+        Swal.fire({
+            icon: 'info',
+            title: 'Notifications',
+            text: 'You have no new notifications at this time.',
+            confirmButtonColor: '#d32f2f'
         });
     });
 });

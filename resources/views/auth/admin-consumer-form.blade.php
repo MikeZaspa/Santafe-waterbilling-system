@@ -390,6 +390,7 @@
                             <th>ID</th>
                             <th>Consumer</th>
                             <th>Meter no.</th>
+                            <th>Email</th>
                             <th>Password</th>
                             <th>Actions</th>
                         </tr>
@@ -438,6 +439,10 @@
                     <div class="mb-3">
                         <label class="form-label fw-bold">Account Number</label>
                         <input type="text" class="form-control" id="username" name="username" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Password</label>
@@ -492,7 +497,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 
 <script>
-$(document).ready(function() {
+ $(document).ready(function() {
     // Fix the DataTable configuration
     const table = $('#accountsTable').DataTable({
         processing: true,
@@ -526,6 +531,10 @@ $(document).ready(function() {
             { 
                 data: 'username', 
                 name: 'username'
+            },
+            { 
+                data: 'email', 
+                name: 'email'
             },
             { 
                 data: null, 
@@ -572,9 +581,11 @@ $(document).ready(function() {
         $('#selectedConsumerText').text('Select Consumer');
         $('#consumer_id').val('');
         $('#username').val('');
+        $('#email').val('');
         $('#consumerDropdownButton').prop('disabled', false);
         $('#consumer_id').prop('disabled', false);
         $('#username').prop('readonly', false);
+        $('#email').prop('readonly', false);
         fetchConsumers();
     }
     });
@@ -598,10 +609,14 @@ $(document).ready(function() {
         if ($('#password').val()) {
             formData.password = $('#password').val();
         }
+        if ($('#email').val()) {
+            formData.email = $('#email').val();
+        }
     } else {
         // Add mode: send all fields
         formData.consumer_id = $('#consumer_id').val();
         formData.username = $('#username').val();
+        formData.email = $('#email').val();
         formData.password = $('#password').val();
     }
 
@@ -654,6 +669,7 @@ $(document).ready(function() {
             $('#consumerDropdownButton').prop('disabled', true);
             $('#consumer_id').val(response.data.consumer_id).prop('disabled', true);
             $('#username').val(response.data.username).prop('readonly', true);
+            $('#email').val(response.data.email).prop('readonly', false);
 
             // Set consumer name
             let fullName = response.data.consumer.last_name || '';
@@ -799,6 +815,7 @@ $(document).ready(function() {
         $('#selectedConsumerText').text(fullName.trim());
         $('#consumer_id').val(consumer.id);
         $('#username').val(consumer.meter_no || '');
+        $('#email').val(consumer.email || '');
         
         // Close the dropdown
         $('.dropdown-menu').removeClass('show');
@@ -825,7 +842,7 @@ $(document).ready(function() {
         `);
     }
     // Logout functionality
-$('#logoutBtn').click(function(e) {
+ $('#logoutBtn').click(function(e) {
     e.preventDefault();
     
     Swal.fire({
