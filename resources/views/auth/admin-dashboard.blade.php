@@ -438,10 +438,7 @@
         </div>
         
         <div class="header-right">
-            <div class="position-relative me-3 d-none d-sm-block">
-                <i class="bi bi-bell header-icon" id="notificationIcon"></i>
-                <span class="notification-badge"></span>
-            </div>
+            
             <div class="position-relative me-3 d-none d-sm-block">
                 <i class="bi bi-clock-history header-icon" id="adminLogsIcon" data-bs-toggle="modal" data-bs-target="#adminLogsModal" title="Admin Logs"></i>
             </div>
