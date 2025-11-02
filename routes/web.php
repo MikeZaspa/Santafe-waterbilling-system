@@ -442,6 +442,22 @@ Route::delete('/admin/plumbers/{id}', [PlumberController::class, 'destroy'])->na
 
 // Admin plumber dashboard route
 Route::get('/admin-plumber-dashboard', [ReadingController::class, 'index'])->name('admin.plumber.dashboard');
+
+// Accountant Login Routes
+Route::get('/accountant-login', function() {
+    return view('auth.accountant-login');
+})->name('accountant.login');
+
+Route::post('/accountant-login/submit', [AccountantManageController::class, 'send2FACode'])->name('accountant.login.submit');
+
+// 2FA Routes
+Route::get('/accountant-2fa', [AccountantManageController::class, 'show2FAModal'])->name('accountant.2fa.show');
+Route::post('/accountant-2fa/verify', [AccountantManageController::class, 'verify2FACode'])->name('accountant.2fa.verify');
+Route::post('/accountant-2fa/resend', [AccountantManageController::class, 'resend2FACode'])->name('accountant.2fa.resend');
+
+
+// Logout route
+Route::post('/accountant/logout', [AccountantManageController::class, 'logout'])->name('accountant.logout');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/', function () {
     return view('auth.admin-login');

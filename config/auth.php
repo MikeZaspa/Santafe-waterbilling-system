@@ -22,9 +22,13 @@ return [
             'provider' => 'consumers',
         ],
         'plumber' => [
-        'driver' => 'session',
-        'provider' => 'plumbers',
-    ],
+            'driver' => 'session',
+            'provider' => 'plumbers',
+        ],
+        'accountant' => [
+            'driver' => 'session',
+            'provider' => 'accountants',
+        ],
     ],
 
     'providers' => [
@@ -43,9 +47,13 @@ return [
             'model' => App\Models\ConsumerAccount::class,
         ],
          'plumbers' => [
-        'driver' => 'eloquent',
-        'model' => App\Models\Plumber::class,
-    ],
+            'driver' => 'eloquent',
+            'model' => App\Models\Plumber::class,
+        ],
+        'accountants' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Accountant::class,
+        ],
     ],
 
     'passwords' => [

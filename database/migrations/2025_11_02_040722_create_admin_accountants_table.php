@@ -20,7 +20,11 @@ return new class extends Migration
             $table->string('contact_number', 11);
             $table->string('address');
             $table->string('username')->unique();
+            $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('two_factor_code')->nullable();
+            $table->timestamp('two_factor_expires_at')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
             $table->softDeletes();

@@ -582,6 +582,7 @@
                         <tr>
                             <th width="60">ID</th>
                             <th>Username</th>
+                            <th>Email</th>
                             <th>First Name</th>
                             <th>Last Name</th>
                             <th>Middle Name</th>
@@ -597,6 +598,7 @@
                         <tr id="accountantRow_{{ $accountant->id }}">
                             <td class="fw-semibold">{{ $accountant->id }}</td>
                             <td>{{ $accountant->username }}</td>
+                            <td>{{ $accountant->email }}</td>
                             <td>{{ $accountant->first_name }}</td>
                             <td>{{ $accountant->last_name }}</td>
                             <td>{{ $accountant->middle_name }}</td>
@@ -652,6 +654,15 @@
                             </div>
                         </div>
                         <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="email" class="form-label required">Email</label>
+                                <input type="email" class="form-control" id="email" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
                             <div class="mb-3">
                                 <label for="password" class="form-label" id="passwordLabel">Password</label>
                                 <div class="input-group">
@@ -885,6 +896,7 @@
         // Get all form values
         const formData = {
             username: $('#username').val().trim(),
+            email: $('#email').val().trim(),
             password: $('#password').val(),
             password_confirmation: $('#password_confirmation').val(),
             first_name: $('#firstName').val().trim(),
@@ -898,7 +910,7 @@
         };
 
         // Basic validation
-        if (!formData.username || !formData.first_name || !formData.last_name || 
+        if (!formData.username || !formData.email || !formData.first_name || !formData.last_name || 
             !formData.contact_number || !formData.address || !formData.status) {
             Swal.fire({
                 icon: 'error',
@@ -942,6 +954,17 @@
                 icon: 'error',
                 title: 'Validation Error',
                 text: 'Username can only contain letters, numbers, and underscores'
+            });
+            return;
+        }
+
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Please enter a valid email address'
             });
             return;
         }
@@ -1001,6 +1024,7 @@
                 $('#modalTitle').text('Edit Accountant');
                 $('#accountantId').val(response.id);
                 $('#username').val(response.username);
+                $('#email').val(response.email);
                 $('#firstName').val(response.first_name);
                 $('#middleName').val(response.middle_name);
                 $('#lastName').val(response.last_name);
