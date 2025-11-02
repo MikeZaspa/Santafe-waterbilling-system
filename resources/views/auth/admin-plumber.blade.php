@@ -738,32 +738,43 @@
             }
         });
 
-        // Initialize DataTable
-        $('#plumbersTable').DataTable({
-            responsive: true,
-            dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-                 "<'row'<'col-sm-12'tr>>" +
-                 "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-            language: {
-                search: "",
-                searchPlaceholder: "Search plumbers...",
-                lengthMenu: "Show _MENU_ entries",
-                info: "Showing _START_ to _END_ of _TOTAL_ entries",
-                infoEmpty: "Showing 0 to 0 of 0 entries",
-                emptyTable: "<div class='text-center'> No data available in table</div>",     
-                infoFiltered: "(filtered from _MAX_ total entries)",
-                paginate: {
-                    first: "First",
-                    last: "Last",
-                    next: "Next",
-                    previous: "Previous"
-                }
-            },
-            initComplete: function() {
-                $('.dataTables_filter input').addClass('form-control');
-                $('.dataTables_length select').addClass('form-select');
+        // Initialize DataTable with automatic row numbering
+$('#plumbersTable').DataTable({
+    responsive: true,
+    dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+         "<'row'<'col-sm-12'tr>>" +
+         "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+    language: {
+        search: "",
+        searchPlaceholder: "Search plumbers...",
+        lengthMenu: "Show _MENU_ entries",
+        info: "Showing _START_ to _END_ of _TOTAL_ entries",
+        infoEmpty: "Showing 0 to 0 of 0 entries",
+        emptyTable: "<div class='text-center'> No data available in table</div>",     
+        infoFiltered: "(filtered from _MAX_ total entries)",
+        paginate: {
+            first: "First",
+            last: "Last",
+            next: "Next",
+            previous: "Previous"
+        }
+    },
+    initComplete: function() {
+        $('.dataTables_filter input').addClass('form-control');
+        $('.dataTables_length select').addClass('form-select');
+    },
+    // Add automatic row numbering
+    columnDefs: [{
+        targets: 0,
+        render: function(data, type, row, meta) {
+            // Show sequential row numbers that update automatically
+            if (type === 'display') {
+                return meta.row + meta.settings._iDisplayStart + 1;
             }
-        });
+            return data;
+        }
+    }]
+});
 
         // Reset form when modal is closed
         $('#plumberModal').on('hidden.bs.modal', function() {
@@ -974,52 +985,66 @@
             });
         });
 
-        // Delete Plumber
-        let deletePlumberId = null;
+        // Delete Plumber - WITH AUTO RENUMBERING
+let deletePlumberId = null;
 
-        $(document).on('click', '.delete-plumber', function() {
-            deletePlumberId = $(this).data('id');
-            $('#deleteModal').modal('show');
-        });
+$(document).on('click', '.delete-plumber', function() {
+    deletePlumberId = $(this).data('id');
+    $('#deleteModal').modal('show');
+});
 
-        $('#confirmDelete').click(function() {
-            if (!deletePlumberId) return;
+$('#confirmDelete').click(function() {
+    if (!deletePlumberId) return;
+    
+    $.ajax({
+        url: `/admin-plumber/${deletePlumberId}`,
+        type: 'DELETE',
+        data: {
+            _token: $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function(response) {
+            $('#deleteModal').modal('hide');
             
-            $.ajax({
-                url: `/admin-plumber/${deletePlumberId}`,
-                type: 'DELETE',
-                data: {
-                    _token: $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function(response) {
-                    $('#deleteModal').modal('hide');
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: response.message,
-                        timer: 2000,
-                        showConfirmButton: false
-                    }).then(() => {
-                        $('#plumberRow_' + deletePlumberId).remove();
-                        deletePlumberId = null;
-                    });
-                },
-                error: function(xhr) {
-                    $('#deleteModal').modal('hide');
-                    let errorMessage = xhr.responseJSON?.message || 'Failed to delete plumber';
-                    
-                    if (xhr.responseJSON?.errors) {
-                        errorMessage = Object.values(xhr.responseJSON.errors).join('\n');
-                    }
-                    
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: errorMessage
-                    });
-                }
+            // Remove the row
+            $('#plumberRow_' + deletePlumberId).remove();
+            
+            // Re-number all remaining rows sequentially starting from 1
+            renumberPlumberRows();
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: response.message,
+                timer: 2000,
+                showConfirmButton: false
             });
-        });
+            
+            deletePlumberId = null;
+        },
+        error: function(xhr) {
+            $('#deleteModal').modal('hide');
+            let errorMessage = xhr.responseJSON?.message || 'Failed to delete plumber';
+            
+            if (xhr.responseJSON?.errors) {
+                errorMessage = Object.values(xhr.responseJSON.errors).join('\n');
+            }
+            
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: errorMessage
+            });
+        }
+    });
+});
+
+// Function to renumber table rows sequentially
+function renumberPlumberRows() {
+    $('#plumbersTable tbody tr').each(function(index) {
+        // Set the first cell to sequential number starting from 1
+        $(this).find('td:first').text(index + 1);
+    });
+}
 
         // Toggle sidebar on mobile
         $('#sidebarToggle').click(function() {
