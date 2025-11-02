@@ -21,6 +21,10 @@ return [
             'driver' => 'session',
             'provider' => 'consumers',
         ],
+        'plumber' => [
+        'driver' => 'session',
+        'provider' => 'plumbers',
+    ],
     ],
 
     'providers' => [
@@ -38,6 +42,10 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\ConsumerAccount::class,
         ],
+         'plumbers' => [
+        'driver' => 'eloquent',
+        'model' => App\Models\Plumber::class,
+    ],
     ],
 
     'passwords' => [
@@ -61,6 +69,11 @@ return [
             'expire' => 60,
             'throttle' => 60,
         ],
+
+        'plumbers' => [ // Add this provider
+        'driver' => 'eloquent',
+        'model' => App\Models\Plumber::class,
+    ],
     ],
 
     'password_timeout' => 10800,

@@ -10,6 +10,7 @@ class Plumber extends Model
 {
     use HasFactory, SoftDeletes;
 
+    // Specify the table name explicitly
     protected $table = 'admin_plumbers';
 
     protected $fillable = [
@@ -20,16 +21,22 @@ class Plumber extends Model
         'contact_number',
         'address',
         'username',
+        'email',
         'password',
-        'status'
+        'status',
+        'two_factor_code',
+        'two_factor_expires_at',
     ];
 
     protected $hidden = [
-        'password', // Hide password when returning JSON
+        'password',
+        'remember_token',
+        'two_factor_code',
     ];
 
     protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+        'email_verified_at' => 'datetime',
+        'two_factor_expires_at' => 'datetime',
     ];
+
 }

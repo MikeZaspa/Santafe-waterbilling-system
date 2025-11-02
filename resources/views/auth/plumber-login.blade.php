@@ -150,6 +150,121 @@
             border-radius: 4px;
         }
         
+        /* 2FA Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: var(--white);
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .modal-title {
+            color: var(--text);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .modal-description {
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+        
+        .code-input {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .code-input input {
+            width: 45px;
+            height: 45px;
+            text-align: center;
+            font-size: 1.2rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+        }
+        
+        .code-input input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.2);
+        }
+        
+        .btn-verify {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+        
+        .btn-verify:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn-verify:disabled {
+            background-color: #a0a0a0;
+            cursor: not-allowed;
+        }
+        
+        .resend-container {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .resend-link {
+            color: var(--primary);
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .resend-link:hover {
+            text-decoration: underline;
+        }
+        
+        .resend-link.disabled {
+            color: #a0a0a0;
+            cursor: not-allowed;
+            text-decoration: none;
+        }
+        
+        .countdown {
+            color: var(--warning);
+            font-weight: 500;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            color: var(--text-light);
+            cursor: pointer;
+        }
+        
         @media (max-width: 480px) {
             .login-container {
                 padding: 1.5rem;
@@ -172,7 +287,7 @@
             </div>
         @endif
         
-        <form method="POST" action="{{ route('plumber.login.submit') }}">
+        <form id="loginForm" method="POST" action="{{ route('plumber.login.submit') }}">
             @csrf
             
             <div class="form-group">
@@ -190,7 +305,7 @@
                 @enderror
             </div>
             
-            <button type="submit" class="btn-login">
+            <button type="submit" class="btn-login" id="loginBtn">
                 <span>Log In as Plumber</span>
             </button>
             
@@ -202,10 +317,84 @@
         </form>
     </div>
 
+    <!-- 2FA Verification Modal -->
+    <div id="twoFactorModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeModal">&times;</span>
+            <h2 class="modal-title">Two-Factor Authentication</h2>
+            <p class="modal-description">We've sent a verification code to your email. Please enter it below.</p>
+            
+            <form id="twoFactorForm">
+                <div class="code-input">
+                    <input type="text" maxlength="1" class="code-digit" required>
+                    <input type="text" maxlength="1" class="code-digit" required>
+                    <input type="text" maxlength="1" class="code-digit" required>
+                    <input type="text" maxlength="1" class="code-digit" required>
+                    <input type="text" maxlength="1" class="code-digit" required>
+                    <input type="text" maxlength="1" class="code-digit" required>
+                </div>
+                
+                <button type="submit" class="btn-verify" id="verifyBtn">Verify Code</button>
+                
+                <div class="resend-container">
+                    <span id="countdownText" class="countdown"></span>
+                    <a href="#" id="resendCode" class="resend-link disabled">Resend Code</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const togglePassword = document.getElementById('togglePassword');
             const passwordInput = document.getElementById('password');
+            const loginForm = document.getElementById('loginForm');
+            const twoFactorModal = document.getElementById('twoFactorModal');
+            const closeModal = document.getElementById('closeModal');
+            const twoFactorForm = document.getElementById('twoFactorForm');
+            const codeDigits = document.querySelectorAll('.code-digit');
+            const resendCode = document.getElementById('resendCode');
+            const countdownText = document.getElementById('countdownText');
+            
+            let countdownInterval;
+            let timeLeft = 60;
+            
+            // Start countdown function
+            function startCountdown() {
+                timeLeft = 60;
+                resendCode.classList.add('disabled');
+                resendCode.style.pointerEvents = 'none';
+                
+                // Clear any existing interval
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                }
+                
+                // Update countdown display
+                updateCountdownDisplay();
+                
+                // Set interval to update countdown every second
+                countdownInterval = setInterval(function() {
+                    timeLeft--;
+                    updateCountdownDisplay();
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(countdownInterval);
+                        resendCode.classList.remove('disabled');
+                        resendCode.style.pointerEvents = 'auto';
+                        countdownText.textContent = '';
+                    }
+                }, 1000);
+            }
+            
+            // Update countdown display
+            function updateCountdownDisplay() {
+                if (timeLeft > 0) {
+                    countdownText.textContent = `Resend code in ${timeLeft} seconds`;
+                } else {
+                    countdownText.textContent = '';
+                }
+            }
             
             // Toggle password visibility
             togglePassword.addEventListener('click', function() {
@@ -213,6 +402,194 @@
                 passwordInput.setAttribute('type', type);
                 this.classList.toggle('fa-eye');
                 this.classList.toggle('fa-eye-slash');
+            });
+            
+            // Handle login form submission
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const loginBtn = document.getElementById('loginBtn');
+                loginBtn.disabled = true;
+                loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
+                
+                const formData = new FormData(loginForm);
+                
+                fetch('{{ route("plumber.login.submit") }}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if (data.requires_2fa) {
+                            // Show 2FA modal
+                            twoFactorModal.style.display = 'flex';
+                            // Focus on first input
+                            codeDigits[0].focus();
+                            // Start countdown
+                            startCountdown();
+                        } else {
+                            // Redirect to dashboard
+                            window.location.href = data.redirect;
+                        }
+                    } else {
+                        // Show error message
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Login Failed',
+                            text: data.message,
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An error occurred. Please try again.',
+                    });
+                })
+                .finally(() => {
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = '<span>Log In as Plumber</span>';
+                });
+            });
+            
+            // Close modal
+            closeModal.addEventListener('click', function() {
+                twoFactorModal.style.display = 'none';
+                // Clear countdown when modal is closed
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                }
+            });
+            
+            // Handle code input
+            codeDigits.forEach((input, index) => {
+                input.addEventListener('input', function() {
+                    if (this.value.length === 1) {
+                        if (index < codeDigits.length - 1) {
+                            codeDigits[index + 1].focus();
+                        }
+                    }
+                });
+                
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && this.value === '' && index > 0) {
+                        codeDigits[index - 1].focus();
+                    }
+                });
+                
+                // Only allow numbers
+                input.addEventListener('input', function() {
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                });
+            });
+            
+            // Handle 2FA form submission
+            twoFactorForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const verifyBtn = document.getElementById('verifyBtn');
+                verifyBtn.disabled = true;
+                verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
+                
+                // Get the full code
+                let code = '';
+                codeDigits.forEach(input => {
+                    code += input.value;
+                });
+                
+                fetch('{{ route("plumber.verify.2fa") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        code: code
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Redirect to dashboard
+                        window.location.href = data.redirect;
+                    } else {
+                        // Show error message
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Verification Failed',
+                            text: data.message,
+                        });
+                        // Clear inputs
+                        codeDigits.forEach(input => {
+                            input.value = '';
+                        });
+                        codeDigits[0].focus();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An error occurred. Please try again.',
+                    });
+                })
+                .finally(() => {
+                    verifyBtn.disabled = false;
+                    verifyBtn.innerHTML = 'Verify Code';
+                });
+            });
+            
+            // Handle resend code
+            resendCode.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Check if resend is allowed (countdown is finished)
+                if (resendCode.classList.contains('disabled')) {
+                    return;
+                }
+                
+                fetch('{{ route("plumber.resend.2fa") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Code Sent',
+                            text: data.message,
+                            timer: 3000,
+                            showConfirmButton: false
+                        });
+                        // Start countdown again after successful resend
+                        startCountdown();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.message,
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An error occurred. Please try again.',
+                    });
+                });
             });
         });
     </script>

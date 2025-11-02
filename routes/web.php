@@ -423,7 +423,25 @@ Route::prefix('admin')->name('admin.')->middleware('auth:admin')->group(function
     Route::get('/notifications/unread-count', [AccountantNotificationController::class, 'unreadCount'])->name('notifications.unreadCount');
     Route::post('/notifications/create', [AccountantNotificationController::class, 'create'])->name('notifications.create');
 });
+// Plumber authentication routes
+Route::get('/plumber-login', [PlumberController::class, 'showLoginForm'])->name('plumber.login');
+Route::post('/plumber-login', [PlumberController::class, 'login'])->name('plumber.login.submit');
+Route::get('/plumber/dashboard', [PlumberController::class, 'dashboard'])->name('plumber.dashboard');
+Route::post('/plumber/logout', [PlumberController::class, 'logout'])->name('plumber.logout');
 
+// Plumber 2FA routes
+Route::post('/plumber/verify-2fa', [PlumberController::class, 'verify2FA'])->name('plumber.verify.2fa');
+Route::post('/plumber/resend-2fa', [PlumberController::class, 'resend2FA'])->name('plumber.resend.2fa');
+
+// Admin plumber management routes
+Route::get('/admin/plumbers', [PlumberController::class, 'index'])->name('admin.plumbers.index');
+Route::post('/admin/plumbers', [PlumberController::class, 'store'])->name('admin.plumbers.store');
+Route::get('/admin/plumbers/{id}/edit', [PlumberController::class, 'edit'])->name('admin.plumbers.edit');
+Route::put('/admin/plumbers/{id}', [PlumberController::class, 'update'])->name('admin.plumbers.update');
+Route::delete('/admin/plumbers/{id}', [PlumberController::class, 'destroy'])->name('admin.plumbers.destroy');
+
+// Admin plumber dashboard route
+Route::get('/admin-plumber-dashboard', [ReadingController::class, 'index'])->name('admin.plumber.dashboard');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/', function () {
     return view('auth.admin-login');
