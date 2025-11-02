@@ -20,7 +20,7 @@ class PlumberController extends Controller
         $plumbers = Plumber::all();
         return view('auth.admin-plumber', compact('plumbers'));
     }
-
+    
     /**
      * Store a newly created plumber (for admin)
      */
@@ -108,8 +108,8 @@ class PlumberController extends Controller
     {
         $plumber = Plumber::findOrFail($id);
 
-        // Use regular delete() instead of forceDelete() to utilize soft deletes
-        $plumber->delete();
+        // Use forceDelete() instead of delete() to permanently remove the record
+        $plumber->forceDelete();
 
         return response()->json([
             'message' => 'Plumber deleted successfully'

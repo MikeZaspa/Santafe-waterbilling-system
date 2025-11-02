@@ -410,7 +410,7 @@
     <nav class="sidebar-menu">
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a class="nav-link active" href="admin-dashboard">
+                <a class="nav-link " href="admin-dashboard">
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
             </li>
@@ -420,7 +420,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="admin-plumber">
+                <a class="nav-link active" href="admin-plumber">
                     <i class="bi bi-wrench"></i> Manage Plumber
                 </a>
             </li>
@@ -687,6 +687,57 @@
             }
         });
 
+        // Prevent numbers in name fields
+        $('#firstName, #middleName, #lastName, #suffix').on('input', function() {
+            // Remove any numbers from the input
+            this.value = this.value.replace(/[0-9]/g, '');
+        });
+
+        // Enhanced contact number validation
+        $('#contactNumber').on('input', function() {
+            // Remove any non-numeric characters
+            this.value = this.value.replace(/[^0-9]/g, '');
+            
+            // Ensure it starts with 09 and limit to 11 digits
+            if (this.value.length > 0 && !this.value.startsWith('09')) {
+                // If it doesn't start with 09, prepend 09
+                this.value = '09' + this.value.substring(2);
+            }
+            
+            // Limit to 11 digits
+            if (this.value.length > 11) {
+                this.value = this.value.substring(0, 11);
+            }
+            
+            // Visual feedback for validation
+            if (this.value.length > 0 && this.value.length < 11) {
+                $(this).addClass('is-invalid');
+                if (!$(this).next('.invalid-feedback').length) {
+                    $(this).after('<div class="invalid-feedback">Phone number must be 11 digits starting with 09</div>');
+                }
+            } else {
+                $(this).removeClass('is-invalid');
+                $(this).next('.invalid-feedback').remove();
+            }
+        });
+
+        // Username validation - minimum 6 characters, letters and underscores only
+        $('#username').on('input', function() {
+            // Only allow letters and underscore (no numbers)
+            this.value = this.value.replace(/[^a-zA-Z_]/g, '');
+            
+            // Check minimum length
+            if (this.value.length > 0 && this.value.length < 6) {
+                $(this).addClass('is-invalid');
+                if (!$(this).next('.invalid-feedback').length) {
+                    $(this).after('<div class="invalid-feedback">Username must be at least 6 characters long and contain only letters and underscores</div>');
+                }
+            } else {
+                $(this).removeClass('is-invalid');
+                $(this).next('.invalid-feedback').remove();
+            }
+        });
+
         // Initialize DataTable
         $('#plumbersTable').DataTable({
             responsive: true,
@@ -724,6 +775,10 @@
             $('#password').attr('placeholder', '');
             $('#passwordConfirmGroup').show();
             $('#email').removeClass('is-invalid');
+            $('#username').removeClass('is-invalid');
+            $('#username').next('.invalid-feedback').remove();
+            $('#contactNumber').removeClass('is-invalid');
+            $('#contactNumber').next('.invalid-feedback').remove();
         });
 
         // Add Plumber button click
@@ -780,6 +835,16 @@
                 return;
             }
 
+            // Username minimum length validation
+            if (formData.username.length < 6) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: 'Username must be at least 6 characters long'
+                });
+                return;
+            }
+
             // For new plumber, password is required
             const plumberId = $('#plumberId').val();
             if (!plumberId && !formData.password) {
@@ -817,27 +882,27 @@
                 delete formData.password_confirmation;
             }
 
-            // Username validation (alphanumeric and underscores)
-            const usernameRegex = /^[a-zA-Z0-9_]+$/;
+            // Username validation (letters and underscores only)
+            const usernameRegex = /^[a-zA-Z_]+$/;
             if (!usernameRegex.test(formData.username)) {
                 Swal.fire({
                     icon: 'error',
                     title: 'Validation Error',
-                    text: 'Username can only contain letters, numbers, and underscores'
+                    text: 'Username can only contain letters and underscores'
                 });
                 return;
             }
 
-            // Phone number validation
-            const phoneRegex = /^09\d{9}$/;
-            if (!phoneRegex.test(formData.contact_number)) {
+            // Enhanced phone number validation - exactly 11 digits starting with 09
+            if (formData.contact_number.length !== 11 || !formData.contact_number.startsWith('09')) {
                 Swal.fire({
                     icon: 'error',
                     title: 'Validation Error',
-                    text: 'Please enter a valid phone number (09XXXXXXXXX)'
+                    text: 'Phone number must be exactly 11 digits starting with 09'
                 });
                 return;
             }
+            
             const url = plumberId ? `/admin-plumber/${plumberId}` : '/admin-plumber';
             const method = plumberId ? 'PUT' : 'POST';
 
@@ -963,58 +1028,58 @@
         });
 
         // Logout functionality
- $('#logoutBtn').click(function(e) {
-    e.preventDefault();
-    
-    Swal.fire({
-        title: 'Sign Out?',
-        text: 'Are you sure you want to sign out?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Yes, Sign Out',
-        cancelButtonText: 'Cancel'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Perform logout - you can customize this based on your authentication system
-            performLogout();
-        }
-    });
-});
+        $('#logoutBtn').click(function(e) {
+            e.preventDefault();
+            
+            Swal.fire({
+                title: 'Sign Out?',
+                text: 'Are you sure you want to sign out?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, Sign Out',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Perform logout - you can customize this based on your authentication system
+                    performLogout();
+                }
+            });
+        });
 
-function performLogout() {
-    // Show loading state
-    Swal.fire({
-        title: 'Signing Out...',
-        text: 'Please wait',
-        allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
-    });
+        function performLogout() {
+            // Show loading state
+            Swal.fire({
+                title: 'Signing Out...',
+                text: 'Please wait',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
 
-    // Example: Send logout request to server
-    // Replace this with your actual logout endpoint
-    $.ajax({
-        url: '/logout', // Your logout route
-        type: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
-        success: function(response) {
-            // Redirect to login page
-            window.location.href = '/admin-login';
-        },
-        error: function(xhr) {
-            // If AJAX fails, still redirect to login
-            window.location.href = '/admin-login';
+            // Example: Send logout request to server
+            // Replace this with your actual logout endpoint
+            $.ajax({
+                url: '/logout', // Your logout route
+                type: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    // Redirect to login page
+                    window.location.href = '/admin-login';
+                },
+                error: function(xhr) {
+                    // If AJAX fails, still redirect to login
+                    window.location.href = '/admin-login';
+                }
+            });
+            
+            // Alternative: Simple redirect (if no server-side logout needed)
+            // window.location.href = '/login';
         }
-    });
-    
-    // Alternative: Simple redirect (if no server-side logout needed)
-    // window.location.href = '/login';
-}
     });
 </script>
 
