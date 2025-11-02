@@ -71,24 +71,3 @@ Options -Indexes
 </IfModule>
 
 
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-
-    # Handle Authorization Header
-    RewriteCond %{HTTP:Authorization} .
-    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
-
-    # Block direct access to sensitive folders
-    RewriteRule ^(vendor|storage|bootstrap|config|database|resources|routes)/ - [F,L]
-
-    # Block sensitive files
-    <FilesMatch "^(\.env|composer\.(json|lock)|artisan)$">
-        Order allow,deny
-        Deny from all
-    </FilesMatch>
-
-    # Allow index.php (Laravel router)
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^ index.php [L]
-</IfModule>
