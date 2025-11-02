@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\TwoFactorCodeMailPlumber;
 use Carbon\Carbon;
+
 class PlumberController extends Controller
 {
     /**
@@ -285,6 +286,7 @@ class PlumberController extends Controller
             'message' => 'A new verification code has been sent to your email.'
         ]);
     }
+    
     /**
      * Show the plumber dashboard
      */

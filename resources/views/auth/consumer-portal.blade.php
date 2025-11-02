@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Santa Fe Water Billing System - Consumer Login</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <style>
         :root {
             --primary-color: #d32f2f;
@@ -216,6 +219,23 @@
             color: #6c757d;
             pointer-events: none;
         }
+        
+        /* Attempt counter styles */
+        .attempt-counter {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+        
+        .attempt-counter.warning {
+            color: #ff9800;
+        }
+        
+        .attempt-counter.danger {
+            color: #f44336;
+            font-weight: 600;
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -223,7 +243,7 @@
     <div class="container">
         <div class="login-container">
             <div class="login-header">
-                <img src="image/santafe.png" class="login-logo">
+                <img src="{{ asset('image/santafe.png') }}" class="login-logo">
                 <h2>Santa Fe Water Billing System</h2>
                 <p class="mb-0">Consumer Login Portal</p>
             </div>
@@ -262,7 +282,11 @@
                         @enderror
                     </div>
                     
-                    <button type="submit" class="btn btn-login w-100 mb-3">
+                    <div class="attempt-counter" id="attemptCounter">
+                        <span id="attemptText">Login attempts remaining: 3</span>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-login w-100 mb-3" id="loginButton">
                         <i class="bi bi-box-arrow-in-right me-2"></i> Login
                     </button>
                 </form>
@@ -329,131 +353,381 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <script>
-        $(document).ready(function() {
-            // Set current year in footer
-            $('#currentYear').text(new Date().getFullYear());
+    $(document).ready(function() {
+        // Set current year in footer
+        $('#currentYear').text(new Date().getFullYear());
+        
+        // Toggle password visibility
+        $('#togglePassword').click(function() {
+            const passwordField = $('#password');
+            const type = passwordField.attr('type') === 'password' ? 'text' : 'password';
+            passwordField.attr('type', type);
+            $(this).find('i').toggleClass('bi-eye bi-eye-slash');
+        });
+        
+        // Login attempt tracking
+        let loginAttempts = parseInt(localStorage.getItem('loginAttempts') || '0');
+        let lockoutEndTime = localStorage.getItem('lockoutEndTime');
+        let isLockedOut = false;
+        
+        // Check if currently locked out
+        if (lockoutEndTime) {
+            const endTime = new Date(lockoutEndTime);
+            const now = new Date();
             
-            // Toggle password visibility
-            $('#togglePassword').click(function() {
-                const passwordField = $('#password');
-                const type = passwordField.attr('type') === 'password' ? 'text' : 'password';
-                passwordField.attr('type', type);
-                $(this).find('i').toggleClass('bi-eye bi-eye-slash');
-            });
+            if (now < endTime) {
+                // Still locked out
+                isLockedOut = true;
+                const remainingSeconds = Math.floor((endTime - now) / 1000);
+                showLockoutModal(remainingSeconds);
+                disableLoginForm();
+            } else {
+                // Lockout period has passed
+                resetLoginAttempts();
+            }
+        }
+        
+        // Update attempt counter display
+        updateAttemptCounter();
+        
+        // Handle form submission
+        $('#loginForm').on('submit', function(e) {
+            e.preventDefault();
             
-            // Show 2FA modal if session variable is set
-            @if(session('show2faModal'))
-                const twoFactorModal = new bootstrap.Modal(document.getElementById('twoFactorModal'));
-                twoFactorModal.show();
-                startCountdown();
-            @endif
-            
-            // Code input handling
-            const codeInputs = $('.code-input');
-            
-            codeInputs.on('input', function() {
-                const value = $(this).val();
-                
-                // Only allow numbers
-                if (!/^\d*$/.test(value)) {
-                    $(this).val('');
-                    return;
-                }
-                
-                // Move to next input if current is filled
-                if (value.length === 1) {
-                    const index = codeInputs.index(this);
-                    if (index < codeInputs.length - 1) {
-                        codeInputs.eq(index + 1).focus();
-                    }
-                }
-                
-                // Update hidden field
-                updateCodeField();
-            });
-            
-            // Handle backspace
-            codeInputs.on('keydown', function(e) {
-                if (e.key === 'Backspace' && $(this).val() === '') {
-                    const index = codeInputs.index(this);
-                    if (index > 0) {
-                        codeInputs.eq(index - 1).focus();
-                    }
-                }
-            });
-            
-            // Handle paste
-            codeInputs.on('paste', function(e) {
-                e.preventDefault();
-                const pastedData = e.originalEvent.clipboardData.getData('text');
-                const digits = pastedData.replace(/\D/g, '').slice(0, 6);
-                
-                for (let i = 0; i < digits.length; i++) {
-                    codeInputs.eq(i).val(digits[i]);
-                }
-                
-                if (digits.length > 0 && digits.length < 6) {
-                    codeInputs.eq(digits.length).focus();
-                }
-                
-                updateCodeField();
-            });
-            
-            // Update hidden field with combined code
-            function updateCodeField() {
-                let code = '';
-                codeInputs.each(function() {
-                    code += $(this).val();
+            if (isLockedOut) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Account Locked',
+                    text: 'Please wait before trying again.',
+                    confirmButtonColor: '#d32f2f',
                 });
-                $('#two_factor_code').val(code);
+                return false;
             }
             
-            // Resend code functionality
-            $('#resendCode').click(function(e) {
-                e.preventDefault();
-                
-                const resendLink = $(this);
-                const countdown = $('#countdown');
-                
-                // Disable the link
-                resendLink.addClass('disabled');
-                
-                // Send AJAX request to resend code
-                $.ajax({
-                    url: '{{ route("consumer.resend2fa") }}',
-                    type: 'POST',
-                    data: {
-                        _token: '{{ csrf_token() }}'
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            // Show success message
-                            const alertHtml = '<div class="alert alert-success alert-dismissible fade show" role="alert">' +
-                                response.message +
-                                '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' +
-                                '</div>';
-                            $('#twoFactorModal .modal-body').prepend(alertHtml);
+            // Get form data
+            const formData = {
+                username: $('#username').val(),
+                password: $('#password').val(),
+                _token: $('meta[name="csrf-token"]').attr('content')
+            };
+            
+            // Disable login button during request
+            $('#loginButton').prop('disabled', true).html('<i class="bi bi-hourglass-split me-2"></i> Verifying...');
+            
+            // Send AJAX request
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: formData,
+                success: function(response) {
+                    if (response.success) {
+                        // Reset attempts on successful login
+                        resetLoginAttempts();
+                        
+                        if (response.requires_2fa) {
+                            // Show success message for 2FA
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Login Successful',
+                                text: response.message,
+                                confirmButtonColor: '#d32f2f',
+                            }).then(function() {
+                                // Show the 2FA modal
+                                const twoFactorModal = new bootstrap.Modal(document.getElementById('twoFactorModal'));
+                                twoFactorModal.show();
+                                startCountdown();
+                            });
+                        } else {
+                            // Direct login without 2FA
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Login Successful',
+                                text: 'Redirecting to your dashboard...',
+                                timer: 1500,
+                                showConfirmButton: false,
+                            }).then(function() {
+                                window.location.href = response.redirect;
+                            });
+                        }
+                    }
+                },
+                error: function(xhr) {
+                    // Re-enable login button
+                    $('#loginButton').prop('disabled', false).html('<i class="bi bi-box-arrow-in-right me-2"></i> Login');
+                    
+                    if (xhr.status === 429) {
+                        // User is locked out
+                        const response = xhr.responseJSON;
+                        showLockoutModal(response.remaining_time);
+                        disableLoginForm();
+                    } else {
+                        // Login failed
+                        const response = xhr.responseJSON;
+                        
+                        // Increment login attempts
+                        loginAttempts++;
+                        localStorage.setItem('loginAttempts', loginAttempts.toString());
+                        
+                        // Update counter display
+                        updateAttemptCounter();
+                        
+                        // Check if max attempts reached
+                        if (loginAttempts >= 3) {
+                            // Lock out for 30 seconds
+                            const lockoutDuration = 30; // seconds
+                            const endTime = new Date();
+                            endTime.setSeconds(endTime.getSeconds() + lockoutDuration);
                             
-                            // Start countdown
-                            startCountdown();
+                            localStorage.setItem('lockoutEndTime', endTime.toISOString());
+                            
+                            // Show lockout modal
+                            showLockoutModal(lockoutDuration);
+                            disableLoginForm();
                         } else {
                             // Show error message
-                            const alertHtml = '<div class="alert alert-danger alert-dismissible fade show" role="alert">' +
-                                response.message +
-                                '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' +
-                                '</div>';
-                            $('#twoFactorModal .modal-body').prepend(alertHtml);
-                            
-                            // Re-enable the link
-                            resendLink.removeClass('disabled');
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Login Failed',
+                                text: response.message || 'Invalid account number or password. Please try again.',
+                                confirmButtonColor: '#d32f2f',
+                            });
                         }
-                    },
-                    error: function() {
+                    }
+                }
+            });
+            
+            return false;
+        });
+        
+        // Handle 2FA form submission
+        $('#twoFactorForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form data
+            const formData = {
+                two_factor_code: $('#two_factor_code').val(),
+                _token: $('meta[name="csrf-token"]').attr('content')
+            };
+            
+            // Disable verify button during request
+            $('.btn-verify').prop('disabled', true).html('<i class="bi bi-hourglass-split me-2"></i> Verifying...');
+            
+            // Send AJAX request
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: formData,
+                success: function(response) {
+                    if (response.success) {
+                        // Show success message
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Authentication Successful',
+                            text: response.message,
+                            timer: 1500,
+                            showConfirmButton: false,
+                        }).then(function() {
+                            // Redirect to dashboard
+                            window.location.href = response.redirect;
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    // Re-enable verify button
+                    $('.btn-verify').prop('disabled', false).html('Verify Code');
+                    
+                    // Show error message
+                    const response = xhr.responseJSON;
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Verification Failed',
+                        text: response.message || 'Invalid verification code. Please try again.',
+                        confirmButtonColor: '#d32f2f',
+                    });
+                }
+            });
+            
+            return false;
+        });
+        
+        // Update attempt counter display
+        function updateAttemptCounter() {
+            const remainingAttempts = 3 - loginAttempts;
+            const attemptCounter = $('#attemptCounter');
+            const attemptText = $('#attemptText');
+            
+            if (remainingAttempts <= 1) {
+                attemptCounter.removeClass('warning').addClass('danger');
+                attemptText.text(`Last attempt before account lockout!`);
+            } else if (remainingAttempts === 2) {
+                attemptCounter.removeClass('danger').addClass('warning');
+                attemptText.text(`Login attempts remaining: ${remainingAttempts}`);
+            } else {
+                attemptCounter.removeClass('warning danger');
+                attemptText.text(`Login attempts remaining: ${remainingAttempts}`);
+            }
+        }
+        
+        // Show lockout modal with countdown
+        function showLockoutModal(seconds) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Account Temporarily Locked',
+                html: `Too many failed login attempts. Please wait <b>${seconds}</b> seconds before trying again.`,
+                timer: seconds * 1000,
+                timerProgressBar: true,
+                showConfirmButton: false,
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                    const timerInterval = setInterval(() => {
+                        const remaining = Math.ceil(Swal.getTimerLeft() / 1000);
+                        if (remaining > 0) {
+                            Swal.getHtmlContainer().querySelector('b').textContent = remaining;
+                        } else {
+                            clearInterval(timerInterval);
+                        }
+                    }, 1000);
+                }
+            }).then(() => {
+                // Lockout period is over
+                resetLoginAttempts();
+                enableLoginForm();
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Account Unlocked',
+                    text: 'You can now try logging in again.',
+                    confirmButtonColor: '#d32f2f',
+                });
+            });
+        }
+        
+        // Disable login form
+        function disableLoginForm() {
+            $('#loginButton').prop('disabled', true);
+            $('#username, #password').prop('disabled', true);
+            isLockedOut = true;
+        }
+        
+        // Enable login form
+        function enableLoginForm() {
+            $('#loginButton').prop('disabled', false);
+            $('#username, #password').prop('disabled', false);
+            isLockedOut = false;
+        }
+        
+        // Reset login attempts
+        function resetLoginAttempts() {
+            loginAttempts = 0;
+            localStorage.removeItem('loginAttempts');
+            localStorage.removeItem('lockoutEndTime');
+            updateAttemptCounter();
+        }
+        
+        // Show 2FA modal if session variable is set
+        @if(session('show2faModal'))
+            const twoFactorModal = new bootstrap.Modal(document.getElementById('twoFactorModal'));
+            twoFactorModal.show();
+            startCountdown();
+        @endif
+        
+        // Code input handling
+        const codeInputs = $('.code-input');
+        
+        codeInputs.on('input', function() {
+            const value = $(this).val();
+            
+            // Only allow numbers
+            if (!/^\d*$/.test(value)) {
+                $(this).val('');
+                return;
+            }
+            
+            // Move to next input if current is filled
+            if (value.length === 1) {
+                const index = codeInputs.index(this);
+                if (index < codeInputs.length - 1) {
+                    codeInputs.eq(index + 1).focus();
+                }
+            }
+            
+            // Update hidden field
+            updateCodeField();
+        });
+        
+        // Handle backspace
+        codeInputs.on('keydown', function(e) {
+            if (e.key === 'Backspace' && $(this).val() === '') {
+                const index = codeInputs.index(this);
+                if (index > 0) {
+                    codeInputs.eq(index - 1).focus();
+                }
+            }
+        });
+        
+        // Handle paste
+        codeInputs.on('paste', function(e) {
+            e.preventDefault();
+            const pastedData = e.originalEvent.clipboardData.getData('text');
+            const digits = pastedData.replace(/\D/g, '').slice(0, 6);
+            
+            for (let i = 0; i < digits.length; i++) {
+                codeInputs.eq(i).val(digits[i]);
+            }
+            
+            if (digits.length > 0 && digits.length < 6) {
+                codeInputs.eq(digits.length).focus();
+            }
+            
+            updateCodeField();
+        });
+        
+        // Update hidden field with combined code
+        function updateCodeField() {
+            let code = '';
+            codeInputs.each(function() {
+                code += $(this).val();
+            });
+            $('#two_factor_code').val(code);
+        }
+        
+        // Resend code functionality
+        $('#resendCode').click(function(e) {
+            e.preventDefault();
+            
+            const resendLink = $(this);
+            const countdown = $('#countdown');
+            
+            // Disable the link
+            resendLink.addClass('disabled');
+            
+            // Send AJAX request to resend code
+            $.ajax({
+                url: '{{ route("consumer.resend2fa") }}',
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Show success message
+                        const alertHtml = '<div class="alert alert-success alert-dismissible fade show" role="alert">' +
+                            response.message +
+                            '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' +
+                            '</div>';
+                        $('#twoFactorModal .modal-body').prepend(alertHtml);
+                        
+                        // Start countdown
+                        startCountdown();
+                    } else {
                         // Show error message
                         const alertHtml = '<div class="alert alert-danger alert-dismissible fade show" role="alert">' +
-                            'An error occurred. Please try again.' +
+                            response.message +
                             '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' +
                             '</div>';
                         $('#twoFactorModal .modal-body').prepend(alertHtml);
@@ -461,35 +735,47 @@
                         // Re-enable the link
                         resendLink.removeClass('disabled');
                     }
-                });
-            });
-            
-            // Countdown function
-            function startCountdown() {
-                let timeLeft = 60;
-                const resendLink = $('#resendCode');
-                const countdown = $('#countdown');
-                
-                resendLink.addClass('disabled');
-                countdown.text(`(${timeLeft}s)`);
-                
-                const timer = setInterval(function() {
-                    timeLeft--;
-                    countdown.text(`(${timeLeft}s)`);
+                },
+                error: function() {
+                    // Show error message
+                    const alertHtml = '<div class="alert alert-danger alert-dismissible fade show" role="alert">' +
+                        'An error occurred. Please try again.' +
+                        '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' +
+                        '</div>';
+                    $('#twoFactorModal .modal-body').prepend(alertHtml);
                     
-                    if (timeLeft <= 0) {
-                        clearInterval(timer);
-                        resendLink.removeClass('disabled');
-                        countdown.text('');
-                    }
-                }, 1000);
-            }
-            
-            // Auto-focus on first code input when modal is shown
-            $('#twoFactorModal').on('shown.bs.modal', function() {
-                $('.code-input').first().focus();
+                    // Re-enable the link
+                    resendLink.removeClass('disabled');
+                }
             });
         });
-    </script>
+        
+        // Countdown function
+        function startCountdown() {
+            let timeLeft = 60;
+            const resendLink = $('#resendCode');
+            const countdown = $('#countdown');
+            
+            resendLink.addClass('disabled');
+            countdown.text(`(${timeLeft}s)`);
+            
+            const timer = setInterval(function() {
+                timeLeft--;
+                countdown.text(`(${timeLeft}s)`);
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    resendLink.removeClass('disabled');
+                    countdown.text('');
+                }
+            }, 1000);
+        }
+        
+        // Auto-focus on first code input when modal is shown
+        $('#twoFactorModal').on('shown.bs.modal', function() {
+            $('.code-input').first().focus();
+        });
+    });
+</script>
 </body>
 </html>

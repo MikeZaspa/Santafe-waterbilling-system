@@ -115,6 +115,11 @@
             background-color: var(--primary-dark);
         }
         
+        .btn-login:disabled {
+            background-color: #a0a0a0;
+            cursor: not-allowed;
+        }
+        
         .back-link {
             margin: 1rem 0;
             text-align: center;
@@ -358,6 +363,9 @@
             
             let countdownInterval;
             let timeLeft = 60;
+            let loginAttempts = 0;
+            let loginLockoutInterval;
+            let loginLockoutTimeLeft = 0;
             
             // Start countdown function
             function startCountdown() {
@@ -396,6 +404,45 @@
                 }
             }
             
+            // Start login lockout countdown
+            function startLoginLockout() {
+                loginLockoutTimeLeft = 30;
+                const loginBtn = document.getElementById('loginBtn');
+                loginBtn.disabled = true;
+                
+                // Clear any existing interval
+                if (loginLockoutInterval) {
+                    clearInterval(loginLockoutInterval);
+                }
+                
+                // Show SweetAlert with countdown
+                Swal.fire({
+                    title: 'Too Many Attempts',
+                    html: `You've reached the maximum number of login attempts. Please wait <b>${loginLockoutTimeLeft}</b> seconds before trying again.`,
+                    icon: 'warning',
+                    showConfirmButton: false,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
+                });
+                
+                // Set interval to update countdown every second
+                loginLockoutInterval = setInterval(function() {
+                    loginLockoutTimeLeft--;
+                    
+                    // Update SweetAlert content
+                    Swal.update({
+                        html: `You've reached the maximum number of login attempts. Please wait <b>${loginLockoutTimeLeft}</b> seconds before trying again.`
+                    });
+                    
+                    if (loginLockoutTimeLeft <= 0) {
+                        clearInterval(loginLockoutInterval);
+                        loginBtn.disabled = false;
+                        loginAttempts = 0;
+                        Swal.close();
+                    }
+                }, 1000);
+            }
+            
             // Toggle password visibility
             togglePassword.addEventListener('click', function() {
                 const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
@@ -407,6 +454,11 @@
             // Handle login form submission
             loginForm.addEventListener('submit', function(e) {
                 e.preventDefault();
+                
+                // Check if login is locked
+                if (loginLockoutTimeLeft > 0) {
+                    return;
+                }
                 
                 const loginBtn = document.getElementById('loginBtn');
                 loginBtn.disabled = true;
@@ -424,6 +476,9 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
+                        // Reset attempts on successful login
+                        loginAttempts = 0;
+                        
                         if (data.requires_2fa) {
                             // Show 2FA modal
                             twoFactorModal.style.display = 'flex';
@@ -436,12 +491,21 @@
                             window.location.href = data.redirect;
                         }
                     } else {
-                        // Show error message
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Login Failed',
-                            text: data.message,
-                        });
+                        // Increment attempts
+                        loginAttempts++;
+                        
+                        // Check if max attempts reached
+                        if (loginAttempts >= 3) {
+                            startLoginLockout();
+                        } else {
+                            // Show error message with remaining attempts
+                            const remainingAttempts = 3 - loginAttempts;
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Login Failed',
+                                text: `${data.message} You have ${remainingAttempts} ${remainingAttempts === 1 ? 'attempt' : 'attempts'} remaining.`,
+                            });
+                        }
                     }
                 })
                 .catch(error => {

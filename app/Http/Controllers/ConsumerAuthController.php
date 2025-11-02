@@ -9,6 +9,7 @@ use App\Models\Notice;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Cache;
 use App\Mail\TwoFactorCodeMailConsumer;
 
 class ConsumerAuthController extends Controller
@@ -27,21 +28,44 @@ class ConsumerAuthController extends Controller
             'password' => 'required|string',
         ]);
 
+        // Check if user is locked out
+        $lockoutKey = 'login_lockout_' . $request->ip();
+        $attemptsKey = 'login_attempts_' . $request->ip();
+        
+        if (Cache::has($lockoutKey)) {
+            $remainingTime = Cache::get($lockoutKey) - time();
+            return response()->json([
+                'success' => false,
+                'locked' => true,
+                'message' => 'Too many failed login attempts. Please try again later.',
+                'remaining_time' => $remainingTime
+            ], 429);
+        }
+
         // Find the consumer account with consumer relationship
         $account = ConsumerAccount::with('consumer')->where('username', $credentials['username'])->first();
 
         if (!$account) {
-            return back()->withErrors([
-                'username' => 'The provided credentials do not match our records.',
-            ])->onlyInput('username');
+            $this->handleFailedLogin($request);
+            return response()->json([
+                'success' => false,
+                'message' => 'The provided credentials do not match our records.',
+                'attempts' => Cache::get($attemptsKey, 0)
+            ], 401);
         }
 
         // Verify the password
         if (!Hash::check($credentials['password'], $account->password)) {
-            return back()->withErrors([
-                'password' => 'The provided password is incorrect.',
-            ])->onlyInput('username');
+            $this->handleFailedLogin($request);
+            return response()->json([
+                'success' => false,
+                'message' => 'The provided password is incorrect.',
+                'attempts' => Cache::get($attemptsKey, 0)
+            ], 401);
         }
+        
+        // Reset attempts on successful login
+        Cache::forget($attemptsKey);
         
         // Generate 2FA code
         $account->generateTwoFactorCode();
@@ -52,8 +76,32 @@ class ConsumerAuthController extends Controller
         // Store account ID in session for verification
         session(['2fa_account_id' => $account->id]);
         
-        // Return to login with 2FA modal
-        return back()->with('show2faModal', true)->onlyInput('username');
+        // Return success response with 2FA flag
+        return response()->json([
+            'success' => true,
+            'requires_2fa' => true,
+            'message' => 'Login successful. Please verify with 2FA.',
+            'account_id' => $account->id
+        ]);
+    }
+    
+    // Handle failed login attempts
+    private function handleFailedLogin(Request $request)
+    {
+        $attemptsKey = 'login_attempts_' . $request->ip();
+        $lockoutKey = 'login_lockout_' . $request->ip();
+        
+        // Increment attempts
+        $attempts = Cache::increment($attemptsKey);
+        
+        // Set expiration for attempts counter (5 minutes)
+        Cache::put($attemptsKey, $attempts, 300);
+        
+        // Lock out after 3 attempts for 30 seconds
+        if ($attempts >= 3) {
+            $lockoutTime = time() + 30; // 30 seconds from now
+            Cache::put($lockoutKey, $lockoutTime, 30);
+        }
     }
     
     // Verify 2FA code
@@ -65,16 +113,25 @@ class ConsumerAuthController extends Controller
         
         $accountId = session('2fa_account_id');
         if (!$accountId) {
-            return redirect('/consumer-portal')->withErrors(['2fa' => 'Session expired. Please try again.']);
+            return response()->json([
+                'success' => false,
+                'message' => 'Session expired. Please try again.'
+            ]);
         }
         
         $account = ConsumerAccount::find($accountId);
         if (!$account) {
-            return redirect('/consumer-portal')->withErrors(['2fa' => 'Invalid session. Please try again.']);
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid session. Please try again.'
+            ]);
         }
         
         if (!$account->verifyTwoFactorCode($request->two_factor_code)) {
-            return back()->withErrors(['two_factor_code' => 'Invalid or expired verification code.']);
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid or expired verification code.'
+            ]);
         }
         
         // Reset 2FA code
@@ -86,8 +143,12 @@ class ConsumerAuthController extends Controller
         // Log in the user
         Auth::guard('consumer')->login($account);
         
-        // Redirect to dashboard
-        return redirect()->route('consumer.dashboard');
+        // Return success response
+        return response()->json([
+            'success' => true,
+            'message' => 'Authentication successful. Redirecting to dashboard...',
+            'redirect' => route('consumer.dashboard')
+        ]);
     }
     
     // Resend 2FA code

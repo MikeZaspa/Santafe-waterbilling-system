@@ -156,7 +156,7 @@
             border-radius: 4px;
         }
         
-        /* Modal Styles */
+        /* Simplified Modal Styles */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -176,11 +176,11 @@
         
         .modal-container {
             background-color: var(--white);
-            border-radius: 8px;
+            border-radius: 12px;
             width: 90%;
-            max-width: 450px;
-            padding: 2.5rem;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            max-width: 400px;
+            padding: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
             animation: modalFadeIn 0.3s ease-out;
         }
         
@@ -201,31 +201,31 @@
         }
         
         .modal-logo {
-            width: 120px;
-            height: 85px;
+            width: 80px;
+            height: 60px;
             margin-bottom: 1rem;
         }
         
         .modal-title {
             color: var(--text);
-            font-size: 1.5rem;
-            font-weight: 400;
+            font-size: 1.3rem;
+            font-weight: 500;
             margin-bottom: 0.5rem;
         }
         
         .modal-subtitle {
             color: var(--primary);
-            font-size: 1.2rem;
-            font-weight: 500;
+            font-size: 1rem;
+            font-weight: 400;
             margin-bottom: 1rem;
         }
         
         .verification-info {
             background-color: var(--light);
             padding: 1rem;
-            border-radius: 4px;
+            border-radius: 8px;
             margin-bottom: 1.5rem;
-            text-align: left;
+            text-align: center;
         }
         
         .verification-info p {
@@ -236,30 +236,33 @@
         
         .code-inputs {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
+            gap: 10px;
             margin-bottom: 1.5rem;
         }
         
         .code-input {
             width: 45px;
-            height: 45px;
+            height: 50px;
             text-align: center;
-            font-size: 1.2rem;
+            font-size: 1.5rem;
             font-weight: 600;
-            border: 1px solid var(--border);
-            border-radius: 4px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            transition: all 0.2s ease;
         }
         
         .code-input:focus {
             border-color: var(--primary);
             outline: none;
-            box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
         }
         
         .timer {
             color: var(--text-light);
             font-size: 0.9rem;
             margin-top: 0.5rem;
+            text-align: center;
         }
         
         .timer.warning {
@@ -278,6 +281,9 @@
             cursor: pointer;
             text-decoration: underline;
             margin-top: 1rem;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
         }
         
         .btn-resend:hover {
@@ -321,7 +327,7 @@
             
             .code-input {
                 width: 40px;
-                height: 40px;
+                height: 45px;
             }
         }
     </style>
@@ -370,19 +376,18 @@
         </form>
     </div>
     
-    <!-- 2FA Verification Modal -->
+    <!-- Simplified 2FA Verification Modal -->
     <div class="modal-overlay" id="verification-modal">
         <div class="modal-container">
             <div class="modal-header">
                 <img src="{{ asset('image/santafe.png') }}" class="modal-logo" alt="Santa Fe Water">
-                <h1 class="modal-title">Santa Fe Water Billing System</h1>
-                <h2 class="modal-subtitle">Two-Factor Authentication</h2>
+                <h1 class="modal-title">Two-Factor Authentication</h1>
+                <h2 class="modal-subtitle">Enter your verification code</h2>
             </div>
             
             <div class="verification-info">
-                <p>A verification code has been sent to your email address.</p>
-                <p>Please enter the 6-digit code below to continue.</p>
-                <p class="timer" id="timer">Code expires in: <span id="countdown">10:00</span></p>
+                <p>We've sent a 6-digit code to your email</p>
+                <p class="timer" id="timer">Code expires in: <span id="countdown">1:00</span></p>
             </div>
             
             <form id="verification-form">
@@ -433,9 +438,14 @@
             const countdownEl = document.getElementById('countdown');
             const timerEl = document.getElementById('timer');
             
-            let timeLeft = 600; // 10 minutes in seconds
+            let timeLeft = 60; // Changed to 60 seconds
             let timerInterval;
             let accountantId = null;
+            
+            // Login attempt tracking
+            let loginAttempts = 0;
+            let loginLockoutInterval;
+            let loginLockoutTimeLeft = 0;
             
             // Toggle password visibility
             togglePassword.addEventListener('click', function() {
@@ -445,10 +455,60 @@
                 this.classList.toggle('fa-eye-slash');
             });
             
+           // Start login lockout countdown
+function startLoginLockout() {
+    loginLockoutTimeLeft = 30;
+    loginBtn.disabled = true;
+    
+    // Clear any existing interval
+    if (loginLockoutInterval) {
+        clearInterval(loginLockoutInterval);
+    }
+    
+    // Show SweetAlert with countdown
+    Swal.fire({
+        title: 'Too Many Attempts',
+        html: `You've reached the maximum number of login attempts. Please wait <b>${loginLockoutTimeLeft}</b> seconds before trying again.`,
+        icon: 'warning',
+        showConfirmButton: false,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+            // Set up the timer inside the didOpen callback
+            const timer = Swal.getHtmlContainer().querySelector('b');
+            loginLockoutInterval = setInterval(() => {
+                loginLockoutTimeLeft--;
+                timer.textContent = loginLockoutTimeLeft;
+                
+                if (loginLockoutTimeLeft <= 0) {
+                    clearInterval(loginLockoutInterval);
+                    loginBtn.disabled = false;
+                    loginAttempts = 0;
+                    // Reset button text to original state
+                    loginBtn.innerHTML = '<span>Log In as Accountant</span>';
+                    Swal.close();
+                }
+            }, 1000);
+        }
+    });
+}
+            
             // Handle form submission
             loginForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 
+                 // Check if login is locked
+                if (loginLockoutTimeLeft > 0) {
+                    Swal.fire({
+                        title: 'Login Locked',
+                        html: `Please wait <b>${loginLockoutTimeLeft}</b> seconds before trying again.`,
+                        icon: 'warning',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    return;
+                }
+                            
                 // Disable button and show loading
                 loginBtn.disabled = true;
                 loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
@@ -466,6 +526,9 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
+                        // Reset attempts on successful login
+                        loginAttempts = 0;
+                        
                         // Store accountant ID
                         accountantId = data.accountant_id;
                         document.getElementById('accountant-id').value = accountantId;
@@ -479,16 +542,25 @@
                         loginBtn.disabled = false;
                         loginBtn.innerHTML = '<span>Log In as Accountant</span>';
                     } else {
-                        // Show error message
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Login Failed',
-                            text: data.message,
-                        });
+                        // Increment attempts
+                        loginAttempts++;
                         
-                        // Re-enable button
-                        loginBtn.disabled = false;
-                        loginBtn.innerHTML = '<span>Log In as Accountant</span>';
+                        // Check if max attempts reached
+                        if (loginAttempts >= 3) {
+                            startLoginLockout();
+                        } else {
+                            // Show error message with remaining attempts
+                            const remainingAttempts = 3 - loginAttempts;
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Login Failed',
+                                text: `${data.message} You have ${remainingAttempts} ${remainingAttempts === 1 ? 'attempt' : 'attempts'} remaining.`,
+                            });
+                            
+                            // Re-enable button
+                            loginBtn.disabled = false;
+                            loginBtn.innerHTML = '<span>Log In as Accountant</span>';
+                        }
                     }
                 })
                 .catch(error => {
@@ -544,9 +616,9 @@
             
             // Timer countdown
             function startTimer() {
-                timeLeft = 600; // Reset to 10 minutes
+                timeLeft = 60; // Changed to 60 seconds
                 timerEl.classList.remove('warning', 'expired');
-                timerEl.innerHTML = 'Code expires in: <span id="countdown">10:00</span>';
+                timerEl.innerHTML = 'Code expires in: <span id="countdown">1:00</span>';
                 
                 clearInterval(timerInterval);
                 timerInterval = setInterval(updateTimer, 1000);
@@ -557,7 +629,7 @@
                 const seconds = timeLeft % 60;
                 countdownEl.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
                 
-                if (timeLeft <= 60) {
+                if (timeLeft <= 10) {
                     timerEl.classList.add('warning');
                 }
                 
