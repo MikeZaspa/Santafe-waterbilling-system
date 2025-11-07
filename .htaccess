@@ -3,3 +3,8 @@
     RewriteCond %{REQUEST_URI} !^/public
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
+# Block direct access to application files
+<FilesMatch "\.(env|json|config|md|lock|gitignore|env|blade\.php|php)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
