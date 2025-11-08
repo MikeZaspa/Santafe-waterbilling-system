@@ -42,7 +42,7 @@ Route::get('/admin-login', [AuthController::class, 'showLoginForm'])->name('admi
 Route::post('/admin-login', [AuthController::class,'login']);
 
 Route::middleware(['auth:admin'])->group(function () {
-    Route::get('/admin-dashboard', [AuthController::class, 'Showdashboard'])->name('admin-dashboard');
+    Route::get('/admin-dashboard', [AuthController::class, 'Showdashboard'])->name('admin-dashboard')->middleware('auth');
     Route::post('/admin-dashboard', [AuthController::class,'dashboard']);
 });
 Route::get('/admin-dashboard', [DashboardController::class, 'index']);
