@@ -841,7 +841,8 @@
     const sidebarToggle = $('#sidebarToggle');
     const mobileOverlay = $('.mobile-overlay');
 
-
+     
+    
      $('#firstName, #middleName, #lastName, #suffix').on('input', function() {
     const originalValue = this.value;
     // Allow only letters, spaces, hyphens, apostrophes, and periods
@@ -905,7 +906,7 @@
             $('body').css('overflow', '');
         }
     });
-
+      
     // Initialize DataTable
     $('#consumersTable').DataTable({
         responsive: true,

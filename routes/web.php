@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\AuthController;;
 use App\Http\Controllers\AdminConsumerController;
 use App\Http\Controllers\PlumberController;
@@ -41,10 +43,19 @@ Route::post('/admin-register', [AuthController::class, 'register']);
 Route::get('/admin-login', [AuthController::class, 'showLoginForm'])->name('admin-login');
 Route::post('/admin-login', [AuthController::class,'login']);
 
-Route::middleware(['auth:admin'])->group(function () {
-    Route::get('/admin-dashboard', [AuthController::class, 'Showdashboard'])->name('admin-dashboard');
-    Route::post('/admin-dashboard', [AuthController::class,'dashboard']);
+Route::get('/admin-dashboard', [AuthController::class, 'showDashboard'])->middleware('admin.auth')->name('admin.dashboard');
+
+Route::get('/admin-consumer', [AdminConsumerController::class, 'index'])->name('admin-consumer');
+   // Add these routes to your web.php
+Route::get('/admin-check-auth', [AuthController::class, 'checkAuthStatus'])->name('admin.check.auth');
+Route::post('/admin-refresh-session', [AuthController::class, 'refreshSession'])->name('admin.refresh.session');
+
+Route::get('/admin-check-auth', function () {
+    return response()->json([
+        'authenticated' => Auth::guard('admin')->check()
+    ]);
 });
+
 Route::get('/admin-dashboard', [DashboardController::class, 'index']);
 
 Route::get('/admin-consumer', [AdminConsumerController::class, 'index'])->name('admin-consumer');

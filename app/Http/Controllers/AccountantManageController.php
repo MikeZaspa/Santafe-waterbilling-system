@@ -8,12 +8,18 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\TwoFactorCodeMailAccountant;
+use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
 class AccountantManageController extends Controller
 {
+      
     public function index() 
-    {
+    {   
+          // Check if consumer is authenticated
+        if (!Auth::guard('admin')->check()) {
+            return redirect('/admin-login');
+        }
         $accountants = Accountant::all();
         return view('auth.admin-accountant', compact('accountants'));
     }

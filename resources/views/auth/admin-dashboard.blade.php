@@ -715,7 +715,7 @@
             $('body').css('overflow', '');
         }
     });
-    
+
     // Close sidebar when clicking on overlay
     mobileOverlay.on('click', function() {
         sidebar.removeClass('active');

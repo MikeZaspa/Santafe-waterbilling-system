@@ -10,6 +10,7 @@ class AccountantDashboardController extends Controller
 {
     public function index()
     {
+        
         // Get counts for different billing statuses
         $paidCount = AccountantBilling::where('status', 'paid')->count();
         $unpaidCount = AccountantBilling::where('status', 'unpaid')->count();
