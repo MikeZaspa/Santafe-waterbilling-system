@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AdminConsumer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
 
 class AdminConsumerController extends Controller
@@ -13,6 +14,10 @@ class AdminConsumerController extends Controller
      */
     public function index()
     {
+          // Check if consumer is authenticated
+        if (!Auth::guard('admin')->check()) {
+            return redirect('/admin-login');
+        }
         $consumers = AdminConsumer::all();
         return view('auth.admin-consumer', compact('consumers'));
     }

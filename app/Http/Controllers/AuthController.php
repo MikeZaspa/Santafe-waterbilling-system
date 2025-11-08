@@ -29,11 +29,18 @@ class AuthController extends Controller
     
     public function showLoginForm()
     {
+    
         return view('auth.admin-login');
     }
     
     public function showDashboard()
     {
+
+         // Check if admin is authenticated
+    if (!Auth::guard('admin')->check()) {
+        return redirect()->route('admin-login');
+    }
+
         return view('auth.admin-dashboard');
     }
     
@@ -666,5 +673,38 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/admin-login');
+    }
+
+    public function checkAuthStatus(Request $request)
+    {
+        // Check if admin is authenticated via Auth guard
+        $isAuthenticated = Auth::guard('admin')->check();
+        
+        // Also check session data as a backup
+        $sessionAuthenticated = $request->session()->get('admin_authenticated', false);
+        
+        // Update last activity time if authenticated
+        if ($isAuthenticated || $sessionAuthenticated) {
+            $request->session()->put('admin_last_activity', now());
+        }
+        
+        return response()->json([
+            'authenticated' => $isAuthenticated || $sessionAuthenticated,
+            'admin_id' => $isAuthenticated ? Auth::guard('admin')->id() : $request->session()->get('admin_id'),
+            'last_activity' => $request->session()->get('admin_last_activity')
+        ]);
+    }
+    
+    /**
+     * Refresh session to prevent timeout
+     */
+    public function refreshSession(Request $request)
+    {
+        if (Auth::guard('admin')->check()) {
+            $request->session()->put('admin_last_activity', now());
+            return response()->json(['success' => true]);
+        }
+        
+        return response()->json(['success' => false], 401);
     }
 }

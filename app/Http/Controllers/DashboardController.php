@@ -4,12 +4,19 @@ namespace App\Http\Controllers;
 use App\Models\AdminConsumer;
 use App\Models\AdminLog;
 use App\Models\Admin;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
+    
     public function index()
     {
+          // Check if consumer is authenticated
+        if (!Auth::guard('admin')->check()) {
+            return redirect('/admin-login');
+        }
+
         $totalConsumers = AdminConsumer::count();
         $activeConsumers = AdminConsumer::where('status', 'active')->count();
         $inactiveConsumers = AdminConsumer::where('status', 'inactive')->count();

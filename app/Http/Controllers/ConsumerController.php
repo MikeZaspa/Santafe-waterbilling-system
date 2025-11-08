@@ -19,7 +19,7 @@ class ConsumerController extends Controller
     {
         // Check if consumer is authenticated
         if (!Auth::guard('consumer')->check()) {
-            return redirect('/consumer/login');
+            return redirect('/consumer-portal');
         }
         
         $account = Auth::guard('consumer')->user();

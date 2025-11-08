@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Auth;
 use App\Mail\TwoFactorCodeMailPlumber;
 use Carbon\Carbon;
 
@@ -17,6 +18,11 @@ class PlumberController extends Controller
      */
     public function index()
     {
+         // Check if consumer is authenticated
+        if (!Auth::guard('admin')->check()) {
+            return redirect('/admin-login');
+        }
+
         $plumbers = Plumber::all();
         return view('auth.admin-plumber', compact('plumbers'));
     }
