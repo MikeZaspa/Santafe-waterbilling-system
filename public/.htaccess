@@ -69,5 +69,14 @@ Options -Indexes
   Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
 </IfModule>
+RewriteEngine On
+
+RewriteEngine On
+
+# Block direct access to /admin-dashboard
+RewriteCond %{REQUEST_URI} ^/admin-dashboard/?$ [NC]
+RewriteCond %{HTTP_REFERER} !^https://santafe-waterbilling\.com/admin-login [NC]
+RewriteRule ^ - [R=404,L]
+
 
 
