@@ -9,6 +9,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- SweetAlert2 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <!-- reCAPTCHA v3 -->
@@ -251,6 +253,45 @@
             color: var(--primary-color);
             text-decoration: none;
         }
+        
+        /* Portal Modal Styles */
+        .portal-btn {
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .portal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .divider {
+            position: relative;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .divider::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background-color: #e9ecef;
+        }
+        
+        .divider span {
+            position: relative;
+            padding: 0 15px;
+            background-color: white;
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -314,11 +355,40 @@
                         <a href="https://policies.google.com/terms">Terms of Service</a> apply.
                     </div>
                 </form>
-
-                <div class="portal-links d-flex flex-column gap-3 mt-3">
-                    <a href="admin-login" class="btn btn-outline-secondary d-flex align-items-center justify-content-center gap-2">
-                         <i class="bi bi-arrow-left me-2"></i> Back to Main Login
-                    </a>              
+                <div class="text-center mt-3">
+                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#portalModal">
+                    Access Other Portals
+                </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Portal Modal -->
+    <div class="modal fade" id="portalModal" tabindex="-1" aria-labelledby="portalModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg border-0 rounded-4">
+                <div class="modal-header bg-primary text-white rounded-top-4">
+                    <h5 class="modal-title" id="portalModalLabel">Access Other Portals</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="divider my-3 text-muted">Choose a portal below</div>
+                    
+                    <div class="portal-links d-flex flex-column gap-3">
+                        <a href="{{ route('plumber.login') }}" class="btn btn-outline-secondary portal-btn">
+                            <i class="fas fa-tools"></i> Plumber Portal
+                        </a>
+                        <a href="{{ route('accountant.login') }}" class="btn btn-outline-secondary portal-btn">
+                            <i class="fas fa-calculator"></i> Accountant Portal
+                        </a>
+                        <a href="{{ route('admin-login') }}" class="btn btn-outline-secondary portal-btn">
+                            <i class="fas fa-user-shield"></i> Admin Portal
+                        </a>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>

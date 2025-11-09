@@ -335,7 +335,7 @@
             </div>
             
             <div class="back-link">
-                <a href="{{ url('/admin-login') }}">
+                <a href="{{ url('/consumer-portal') }}">
                     <i class="fas fa-arrow-left"></i> Back to Main Login
                 </a>
             </div>

@@ -367,12 +367,12 @@
             <button type="submit" class="btn-login" id="loginBtn">
                 <span>Log In</span>
             </button>
-            
-            <div class="text-center mt-3">
-                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#portalModal">
-                    Access Other Portals
-                </button>
+            <div class="back-link">
+                <a href="{{ url('/consumer-portal') }}">
+                    <i class="fas fa-arrow-left"></i> Back to Main Login
+                </a>
             </div>
+            
         </form>
 
         <!-- Two-Factor Authentication Modal -->
@@ -423,35 +423,7 @@
             </div>
         </div>
 
-        <!-- Portal Modal -->
-        <div class="modal fade" id="portalModal" tabindex="-1" aria-labelledby="portalModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content shadow-lg border-0 rounded-4">
-                    <div class="modal-header bg-primary text-white rounded-top-4">
-                        <h5 class="modal-title" id="portalModalLabel">Access Other Portals</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body text-center">
-                        <div class="divider my-3 text-muted">Choose a portal below</div>
-                        
-                        <div class="portal-links d-flex flex-column gap-3">
-                            <a href="{{ route('plumber.login') }}" class="btn btn-outline-secondary d-flex align-items-center justify-content-center gap-2">
-                                <i class="fas fa-tools"></i> Plumber Portal
-                            </a>
-                            <a href="{{ route('accountant.login') }}" class="btn btn-outline-secondary d-flex align-items-center justify-content-center gap-2">
-                                <i class="fas fa-calculator"></i> Accountant Portal
-                            </a>
-                            <a href="{{ route('consumer.portal') }}" class="btn btn-outline-secondary d-flex align-items-center justify-content-center gap-2">
-                                <i class="fas fa-users"></i> Consumer Portal
-                            </a>
-                        </div>
-                    </div>
-                    <div class="modal-footer border-0">
-                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        
 
         <!-- Forgot Password Modal -->
         <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
