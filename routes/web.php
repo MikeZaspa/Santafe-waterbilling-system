@@ -474,7 +474,7 @@ Route::post('/consumer/logout', [ConsumerAuthController::class, 'logout'])->name
 // Logout route
 Route::post('/accountant/logout', [AccountantManageController::class, 'logout'])->name('accountant.logout');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-Route::get('/auth.consumer-portal', function () {
+Route::get('/', function () {
     return view('auth.consumer-portal');
 
 });
