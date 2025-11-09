@@ -149,6 +149,16 @@
             margin-bottom: 20px;
         }
         
+        .range-input-error {
+            border-color: #dc3545;
+        }
+        
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        
         @media (max-width: 992px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -235,7 +245,7 @@
             <!-- Add/Edit Form -->
             <div class="form-container">
                 <h4 id="form-title">{{ isset($waterRate) ? 'Edit Water Rate' : 'Add New Water Rate' }}</h4>
-                <form method="POST" action="{{ isset($waterRate) ? route('water-rates.update', $waterRate->id) : route('water-rates.store') }}">
+                <form method="POST" action="{{ isset($waterRate) ? route('water-rates.update', $waterRate->id) : route('water-rates.store') }}" id="water-rate-form">
                     @csrf
                     @if(isset($waterRate))
                         @method('PUT')
@@ -256,6 +266,7 @@
                             <input type="text" class="form-control" id="range" name="range" 
                                    value="{{ $waterRate->range ?? old('range') }}" 
                                    placeholder="e.g. 0-10, 11-20, etc." required>
+                            <div id="range-error" class="error-message">Please enter a valid range (e.g., 0-10)</div>
                         </div>
                         <div class="col-md-4">
                             <label for="amount" class="form-label">Amount (₱)</label>
@@ -426,31 +437,72 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script>
-        // Handle tab switching
-        $('.rate-tab').click(function() {
-            const tabId = $(this).data('tab');
+        $(document).ready(function() {
+            // Hide error message initially
+            $('#range-error').hide();
             
-            // Update active tab
-            $('.rate-tab').removeClass('active');
-            $(this).addClass('active');
+            // Validate range input to only allow numbers and hyphens
+            $('#range').on('input', function() {
+                // Remove any character that's not a digit or hyphen
+                let value = $(this).val().replace(/[^0-9-]/g, '');
+                
+                // Update the input value
+                $(this).val(value);
+                
+                // Validate the format (should be like "0-10")
+                validateRangeFormat();
+            });
             
-            // Show corresponding section
-            $('.rate-section').hide();
-            $(`#${tabId}-rates`).show();
-        });
-        
-        // Handle delete confirmation
-        $('#confirm-modal').on('show.bs.modal', function(event) {
-            const button = $(event.relatedTarget);
-            const rateId = button.data('id');
-            const form = $('#delete-form');
-            form.attr('action', '/water-rates/' + rateId);
-        });
+            // Function to validate the range format
+            function validateRangeFormat() {
+                const rangeValue = $('#range').val();
+                const rangePattern = /^\d+-\d+$/; // Pattern for "number-number"
+                
+                if (rangeValue && !rangePattern.test(rangeValue)) {
+                    $('#range').addClass('range-input-error');
+                    $('#range-error').show();
+                    return false;
+                } else {
+                    $('#range').removeClass('range-input-error');
+                    $('#range-error').hide();
+                    return true;
+                }
+            }
+            
+            // Form submission validation
+            $('#water-rate-form').on('submit', function(e) {
+                if (!validateRangeFormat()) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+            
+            // Handle tab switching
+            $('.rate-tab').click(function() {
+                const tabId = $(this).data('tab');
+                
+                // Update active tab
+                $('.rate-tab').removeClass('active');
+                $(this).addClass('active');
+                
+                // Show corresponding section
+                $('.rate-section').hide();
+                $(`#${tabId}-rates`).show();
+            });
+            
+            // Handle delete confirmation
+            $('#confirm-modal').on('show.bs.modal', function(event) {
+                const button = $(event.relatedTarget);
+                const rateId = button.data('id');
+                const form = $('#delete-form');
+                form.attr('action', '/water-rates/' + rateId);
+            });
 
-        // Mobile sidebar toggle
-        $('#sidebarToggle').click(function() {
-            $('.sidebar').toggleClass('active');
-            $('.main-content').toggleClass('active');
+            // Mobile sidebar toggle
+            $('#sidebarToggle').click(function() {
+                $('.sidebar').toggleClass('active');
+                $('.main-content').toggleClass('active');
+            });
         });
     </script>
 </body>

@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <!-- SweetAlert2 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <!-- reCAPTCHA v3 -->
+    <script src="https://www.google.com/recaptcha/api.js?render=<?php echo env('NOCAPTCHA_SITEKEY'); ?>"></script>
     <style>
         :root {
             --primary-color: #d32f2f;
@@ -236,6 +238,19 @@
             color: #f44336;
             font-weight: 600;
         }
+        
+        /* reCAPTCHA info text */
+        .recaptcha-info {
+            font-size: 0.7rem;
+            color: #6c757d;
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+        
+        .recaptcha-info a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -250,7 +265,9 @@
             
             <div class="login-body">
                 <form id="loginForm" action="{{ route('consumer.login') }}" method="POST">
-                    @csrf <!-- Add this for Laravel CSRF protection -->
+                    @csrf
+                    <!-- Hidden reCAPTCHA field -->
+                    <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
                     
                     <div class="mb-3">
                         <label for="username" class="form-label">Account Number</label>
@@ -289,13 +306,21 @@
                     <button type="submit" class="btn btn-login w-100 mb-3" id="loginButton">
                         <i class="bi bi-box-arrow-in-right me-2"></i> Login
                     </button>
+                    
+                    <!-- reCAPTCHA info -->
+                    <div class="recaptcha-info">
+                        This site is protected by reCAPTCHA and the Google
+                        <a href="https://policies.google.com/privacy">Privacy Policy</a> and
+                        <a href="https://policies.google.com/terms">Terms of Service</a> apply.
+                    </div>
                 </form>
 
-                <div class="portal-links d-flex flex-column gap-3">
+                <div class="portal-links d-flex flex-column gap-3 mt-3">
                     <a href="admin-login" class="btn btn-outline-secondary d-flex align-items-center justify-content-center gap-2">
-                         <i class="fas fa-tools"></i> Back to Main Login
+                         <i class="bi bi-arrow-left me-2"></i> Back to Main Login
                     </a>              
-               </div>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -317,6 +342,9 @@
                     
                     <form id="twoFactorForm" action="{{ route('consumer.verify2fa') }}" method="POST">
                         @csrf
+                        <!-- Hidden reCAPTCHA field for 2FA -->
+                        <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response-2fa">
+                        
                         <div class="code-inputs">
                             <input type="text" class="form-control code-input" maxlength="1" required>
                             <input type="text" class="form-control code-input" maxlength="1" required>
@@ -394,7 +422,7 @@
         // Update attempt counter display
         updateAttemptCounter();
         
-        // Handle form submission
+        // Handle form submission with reCAPTCHA
         $('#loginForm').on('submit', function(e) {
             e.preventDefault();
             
@@ -408,10 +436,27 @@
                 return false;
             }
             
+            // Execute reCAPTCHA
+            grecaptcha.ready(function() {
+                grecaptcha.execute('<?php echo env('NOCAPTCHA_SITEKEY'); ?>', {action: 'login'}).then(function(token) {
+                    // Set the token in the hidden input
+                    $('#g-recaptcha-response').val(token);
+                    
+                    // Proceed with login
+                    submitLoginForm();
+                });
+            });
+            
+            return false;
+        });
+        
+        // Function to submit login form
+        function submitLoginForm() {
             // Get form data
             const formData = {
                 username: $('#username').val(),
                 password: $('#password').val(),
+                g_recaptcha_response: $('#g-recaptcha-response').val(),
                 _token: $('meta[name="csrf-token"]').attr('content')
             };
             
@@ -420,7 +465,7 @@
             
             // Send AJAX request
             $.ajax({
-                url: $(this).attr('action'),
+                url: $('#loginForm').attr('action'),
                 type: 'POST',
                 data: formData,
                 success: function(response) {
@@ -499,17 +544,32 @@
                     }
                 }
             });
+        }
+        
+        // Handle 2FA form submission with reCAPTCHA
+        $('#twoFactorForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            // Execute reCAPTCHA for 2FA
+            grecaptcha.ready(function() {
+                grecaptcha.execute('<?php echo env('NOCAPTCHA_SITEKEY'); ?>', {action: '2fa'}).then(function(token) {
+                    // Set the token in the hidden input
+                    $('#g-recaptcha-response-2fa').val(token);
+                    
+                    // Submit 2FA form
+                    submitTwoFactorForm();
+                });
+            });
             
             return false;
         });
         
-        // Handle 2FA form submission
-        $('#twoFactorForm').on('submit', function(e) {
-            e.preventDefault();
-            
+        // Function to submit 2FA form
+        function submitTwoFactorForm() {
             // Get form data
             const formData = {
                 two_factor_code: $('#two_factor_code').val(),
+                g_recaptcha_response: $('#g-recaptcha-response-2fa').val(),
                 _token: $('meta[name="csrf-token"]').attr('content')
             };
             
@@ -518,7 +578,7 @@
             
             // Send AJAX request
             $.ajax({
-                url: $(this).attr('action'),
+                url: $('#twoFactorForm').attr('action'),
                 type: 'POST',
                 data: formData,
                 success: function(response) {
@@ -550,9 +610,7 @@
                     });
                 }
             });
-            
-            return false;
-        });
+        }
         
         // Update attempt counter display
         function updateAttemptCounter() {
