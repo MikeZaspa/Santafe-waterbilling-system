@@ -7,6 +7,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- reCAPTCHA v3 -->
+    <script src="https://www.google.com/recaptcha/api.js?render=<?php echo env('NOCAPTCHA_SITEKEY'); ?>"></script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
         :root {
@@ -154,6 +156,19 @@
             margin-bottom: 1rem;
             border: 1px solid #a3d9a5;
             border-radius: 4px;
+        }
+        
+        /* reCAPTCHA info text */
+        .recaptcha-info {
+            font-size: 0.7rem;
+            color: var(--text-light);
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+        
+        .recaptcha-info a {
+            color: var(--primary);
+            text-decoration: none;
         }
         
         /* Simplified Modal Styles */
@@ -348,6 +363,8 @@
         
         <form id="login-form">
             @csrf
+            <!-- Hidden reCAPTCHA field -->
+            <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
             
             <div class="form-group">
                 <input type="text" id="username" name="username" value="{{ old('username') }}" required autofocus placeholder="Username">
@@ -367,6 +384,13 @@
             <button type="submit" class="btn-login" id="login-btn">
                 <span>Log In as Accountant</span>
             </button>
+            
+            <!-- reCAPTCHA info -->
+            <div class="recaptcha-info">
+                This site is protected by reCAPTCHA and the Google
+                <a href="https://policies.google.com/privacy">Privacy Policy</a> and
+                <a href="https://policies.google.com/terms">Terms of Service</a> apply.
+            </div>
             
             <div class="back-link">
                 <a href="{{ url('/admin-login') }}">
@@ -393,6 +417,8 @@
             <form id="verification-form">
                 @csrf
                 <input type="hidden" id="accountant-id" name="accountant_id">
+                <!-- Hidden reCAPTCHA field for 2FA -->
+                <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response-2fa">
                 
                 <div class="code-inputs">
                     <input type="text" class="code-input" maxlength="1" pattern="[0-9]" inputmode="numeric">
@@ -493,7 +519,7 @@ function startLoginLockout() {
     });
 }
             
-            // Handle form submission
+            // Handle form submission with reCAPTCHA
             loginForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 
@@ -508,7 +534,21 @@ function startLoginLockout() {
                     });
                     return;
                 }
-                            
+                
+                // Execute reCAPTCHA
+                grecaptcha.ready(function() {
+                    grecaptcha.execute('<?php echo env('NOCAPTCHA_SITEKEY'); ?>', {action: 'login'}).then(function(token) {
+                        // Set the token in the hidden input
+                        document.getElementById('g-recaptcha-response').value = token;
+                        
+                        // Proceed with login
+                        submitLoginForm();
+                    });
+                });
+            });
+            
+            // Function to submit login form
+            function submitLoginForm() {
                 // Disable button and show loading
                 loginBtn.disabled = true;
                 loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
@@ -575,7 +615,7 @@ function startLoginLockout() {
                     loginBtn.disabled = false;
                     loginBtn.innerHTML = '<span>Log In as Accountant</span>';
                 });
-            });
+            }
             
             // Modal functionality
             cancelBtn.addEventListener('click', function() {
@@ -649,7 +689,7 @@ function startLoginLockout() {
                 timeLeft--;
             }
             
-            // Verification form submission
+            // Verification form submission with reCAPTCHA
             verificationForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 
@@ -663,6 +703,20 @@ function startLoginLockout() {
                     return;
                 }
                 
+                // Execute reCAPTCHA for 2FA
+                grecaptcha.ready(function() {
+                    grecaptcha.execute('<?php echo env('NOCAPTCHA_SITEKEY'); ?>', {action: '2fa'}).then(function(token) {
+                        // Set the token in the hidden input
+                        document.getElementById('g-recaptcha-response-2fa').value = token;
+                        
+                        // Submit 2FA form
+                        submitVerificationForm();
+                    });
+                });
+            });
+            
+            // Function to submit verification form
+            function submitVerificationForm() {
                 verifyBtn.disabled = true;
                 verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
                 
@@ -709,7 +763,7 @@ function startLoginLockout() {
                     verifyBtn.disabled = false;
                     verifyBtn.innerHTML = '<span>Verify Code</span>';
                 });
-            });
+            }
             
             // Resend code
             function resendCode() {
