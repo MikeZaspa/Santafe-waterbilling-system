@@ -651,7 +651,7 @@
             cutout: '70%'
         }
     });
-     // SweetAlert2 Logout Confirmation - With reversed buttons
+    // SweetAlert2 Logout Confirmation - Direct redirect to consumer portal
 $('#logout-btn').on('click', function(e) {
     e.preventDefault();
     
@@ -664,7 +664,7 @@ $('#logout-btn').on('click', function(e) {
         cancelButtonColor: '#6c757d',
         confirmButtonText: 'Yes, Logout!',
         cancelButtonText: 'Cancel',
-        reverseButtons: false, // This reverses the button order
+        reverseButtons: false,
         customClass: {
             confirmButton: 'btn btn-danger',
             cancelButton: 'btn btn-secondary'
@@ -672,20 +672,8 @@ $('#logout-btn').on('click', function(e) {
         buttonsStyling: false
     }).then((result) => {
         if (result.isConfirmed) {
-            // Show loading state
-            Swal.fire({
-                title: 'Logging out...',
-                text: 'Please wait while we securely log you out.',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-            
-            // Submit the logout form
-            setTimeout(() => {
-                document.getElementById('logout-form').submit();
-            }, 1000);
+            // Direct redirect to consumer portal page
+            window.location.href = '/accountant-login';
         }
     });
 });
