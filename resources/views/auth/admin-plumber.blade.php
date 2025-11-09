@@ -551,6 +551,15 @@
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
+                                <label for="email" class="form-label required">Email</label>
+                                <input type="email" class="form-control" id="email" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
                                 <label for="password" class="form-label" id="passwordLabel">Password</label>
                                 <div class="input-group">
                                     <input type="password" class="form-control" id="password" name="password">
@@ -558,11 +567,12 @@
                                         <i class="bi bi-eye"></i>
                                     </button>
                                 </div>
+                                <div class="form-text" id="passwordHelp">Leave blank to keep current password</div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Password Confirmation Field (only shown when adding new plumber) -->
+                    <!-- Password Confirmation Field (only shown when adding new plumber or changing password) -->
                     <div class="row password-confirm-group" id="passwordConfirmGroup">
                         <div class="col-md-12">
                             <div class="mb-3">
@@ -598,13 +608,6 @@
                         <label for="contactNumber" class="form-label required">Contact Number</label>
                         <input type="tel" class="form-control" id="contactNumber" required>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" placeholder="example@email.com">
-                        <small class="text-muted">Optional: Used for sending notifications</small>
-                    </div>
-                    
                     <div class="mb-3">
                         <label for="address" class="form-label required">Address</label>
                         <input type="text" class="form-control" id="address" required>
@@ -626,7 +629,6 @@
         </div>
     </div>
 </div>
-
 
 <!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
@@ -687,6 +689,28 @@
             }
         });
 
+        // Handle password input to show/hide confirmation field dynamically
+        $('#password').on('input', function() {
+            const plumberId = $('#plumberId').val();
+            const passwordValue = $(this).val();
+            
+            // If in edit mode and password is not empty, show confirmation
+            if (plumberId && passwordValue.length > 0) {
+                $('#passwordConfirmGroup').show();
+                $('#password_confirmation').prop('required', true);
+            } 
+            // If in edit mode and password is empty, hide confirmation
+            else if (plumberId && passwordValue.length === 0) {
+                $('#passwordConfirmGroup').hide();
+                $('#password_confirmation').prop('required', false).val('');
+            }
+            // In add mode, always show confirmation
+            else if (!plumberId) {
+                $('#passwordConfirmGroup').show();
+                $('#password_confirmation').prop('required', true);
+            }
+        });
+
         // Prevent numbers in name fields
         $('#firstName, #middleName, #lastName, #suffix').on('input', function() {
             // Remove any numbers from the input
@@ -739,7 +763,7 @@
         });
 
         // Initialize DataTable with automatic row numbering
-$('#plumbersTable').DataTable({
+ $('#plumbersTable').DataTable({
     responsive: true,
     dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
          "<'row'<'col-sm-12'tr>>" +
@@ -782,7 +806,7 @@ $('#plumbersTable').DataTable({
             $('#plumberId').val('');
             $('#modalTitle').text('Add New Plumber');
             $('#passwordLabel').text('Password');
-            $('#passwordHelp').text('Leave blank to keep current password');
+            $('#passwordHelp').text('');
             $('#password').attr('placeholder', '');
             $('#passwordConfirmGroup').show();
             $('#email').removeClass('is-invalid');
@@ -800,6 +824,7 @@ $('#plumbersTable').DataTable({
             $('#passwordHelp').text('');
             $('#password').attr('placeholder', 'Enter password').prop('required', true);
             $('#passwordConfirmGroup').show();
+            $('#password_confirmation').prop('required', true);
         });
 
         // Email validation
@@ -817,183 +842,209 @@ $('#plumbersTable').DataTable({
             return re.test(String(email).toLowerCase());
         }
 
-        // Save Plumber (Add/Edit)
-        $('#savePlumber').click(function() {
-            // Get all form values
-            const formData = {
-                username: $('#username').val().trim(),
-                password: $('#password').val(),
-                password_confirmation: $('#password_confirmation').val(),
-                first_name: $('#firstName').val().trim(),
-                middle_name: $('#middleName').val().trim(),
-                last_name: $('#lastName').val().trim(),
-                suffix: $('#suffix').val().trim(),
-                contact_number: $('#contactNumber').val().trim(),
-                email: $('#email').val().trim(), // Added email field
-                address: $('#address').val().trim(),
-                status: $('#status').val(),
-                _token: $('meta[name="csrf-token"]').attr('content')
-            };
+      // Save Plumber (Add/Edit) - UPDATED
+ $('#savePlumber').click(function() {
+    // Get all form values
+    const formData = {
+        username: $('#username').val().trim(),
+        password: $('#password').val(),
+        first_name: $('#firstName').val().trim(),
+        middle_name: $('#middleName').val().trim(),
+        last_name: $('#lastName').val().trim(),
+        suffix: $('#suffix').val().trim(),
+        contact_number: $('#contactNumber').val().trim(),
+        email: $('#email').val().trim(),
+        address: $('#address').val().trim(),
+        status: $('#status').val(),
+        _token: $('meta[name="csrf-token"]').attr('content')
+    };
 
-            // Basic validation
-            if (!formData.username || !formData.first_name || !formData.last_name || 
-                !formData.contact_number || !formData.address || !formData.status) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Validation Error',
-                    text: 'Please fill all required fields'
-                });
-                return;
-            }
+    const plumberId = $('#plumberId').val();
+    const password = $('#password').val();
+    const isEditMode = plumberId !== '';
 
-            // Username minimum length validation
-            if (formData.username.length < 6) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Validation Error',
-                    text: 'Username must be at least 6 characters long'
-                });
-                return;
-            }
-
-            // For new plumber, password is required
-            const plumberId = $('#plumberId').val();
-            if (!plumberId && !formData.password) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Validation Error',
-                    text: 'Password is required for new plumbers'
-                });
-                return;
-            }
-            
-            // For new plumber, password confirmation is required
-            if (!plumberId && formData.password !== formData.password_confirmation) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Validation Error',
-                    text: 'Password confirmation does not match'
-                });
-                return;
-            }
-
-            // Email validation (if provided)
-            if (formData.email && !validateEmail(formData.email)) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Validation Error',
-                    text: 'Please enter a valid email address'
-                });
-                return;
-            }
-
-            // If editing and password is empty, remove it from form data
-            if (plumberId && !formData.password) {
-                delete formData.password;
-                delete formData.password_confirmation;
-            }
-
-            // Username validation (letters and underscores only)
-            const usernameRegex = /^[a-zA-Z_]+$/;
-            if (!usernameRegex.test(formData.username)) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Validation Error',
-                    text: 'Username can only contain letters and underscores'
-                });
-                return;
-            }
-
-            // Enhanced phone number validation - exactly 11 digits starting with 09
-            if (formData.contact_number.length !== 11 || !formData.contact_number.startsWith('09')) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Validation Error',
-                    text: 'Phone number must be exactly 11 digits starting with 09'
-                });
-                return;
-            }
-            
-            const url = plumberId ? `/admin-plumber/${plumberId}` : '/admin-plumber';
-            const method = plumberId ? 'PUT' : 'POST';
-
-            $.ajax({
-                url: url,
-                type: method,
-                data: formData,
-                success: function(response) {
-                    $('#plumberModal').modal('hide');
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: response.message,
-                        timer: 2000,
-                        showConfirmButton: false
-                    }).then(() => {
-                        location.reload();
-                    });
-                },
-                error: function(xhr) {
-                    let errorMessage = xhr.responseJSON?.message || 'Something went wrong!';
-                    if (xhr.responseJSON?.errors) {
-                        errorMessage = Object.values(xhr.responseJSON.errors).join('\n');
-                    }
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: errorMessage
-                    });
-                }
-            });
+    // Basic validation
+    if (!formData.username || !formData.first_name || !formData.last_name || 
+        !formData.contact_number || !formData.address || !formData.status || !formData.email) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Please fill all required fields'
         });
+        return;
+    }
 
-        // Edit Plumber
-        $(document).on('click', '.edit-plumber', function() {
-            const plumberId = $(this).data('id');
-            
-            $.ajax({
-                url: `/admin-plumber/${plumberId}/edit`,
-                type: 'GET',
-                success: function(response) {
-                    $('#modalTitle').text('Edit Plumber');
-                    $('#plumberId').val(response.id);
-                    $('#username').val(response.username);
-                    $('#firstName').val(response.first_name);
-                    $('#middleName').val(response.middle_name);
-                    $('#lastName').val(response.last_name);
-                    $('#suffix').val(response.suffix);
-                    $('#contactNumber').val(response.contact_number);
-                    $('#email').val(response.email || ''); // Added email field
-                    $('#address').val(response.address);
-                    $('#status').val(response.status);
-                    
-                    // Update password field for editing
-                    $('#passwordLabel').text('Password');
-                    $('#passwordHelp').text('');
-                    $('#password').attr('placeholder', 'Enter new password to change').prop('required', false);
-                    $('#passwordConfirmGroup').hide();
-                    
-                    $('#plumberModal').modal('show');
-                },
-                error: function(xhr) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: xhr.responseJSON?.message || 'Failed to fetch plumber data'
-                    });
-                }
-            });
+    // Username minimum length validation
+    if (formData.username.length < 6) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Username must be at least 6 characters long'
         });
+        return;
+    }
+
+    // For new plumber, password is required
+    if (!isEditMode && !password) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Password is required for new plumbers'
+        });
+        return;
+    }
+    
+    // Password confirmation validation
+    const passwordConfirmation = $('#password_confirmation').val();
+    
+    // For new plumber, password confirmation is required
+    if (!isEditMode && password !== passwordConfirmation) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Password confirmation does not match'
+        });
+        return;
+    }
+    
+    // For editing, if password is provided, confirmation is required
+    if (isEditMode && password && password !== passwordConfirmation) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Password confirmation does not match'
+        });
+        return;
+    }
+
+    // If password is provided in edit mode, include confirmation
+    if (password) {
+        formData.password_confirmation = passwordConfirmation;
+    }
+
+    // Email validation
+    if (formData.email && !validateEmail(formData.email)) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Please enter a valid email address'
+        });
+        return;
+    }
+
+    // If editing and password is empty, remove it from form data
+    if (isEditMode && !password) {
+        delete formData.password;
+    }
+
+    // Username validation (letters and underscores only)
+    const usernameRegex = /^[a-zA-Z_]+$/;
+    if (!usernameRegex.test(formData.username)) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Username can only contain letters and underscores'
+        });
+        return;
+    }
+
+    // Enhanced phone number validation - exactly 11 digits starting with 09
+    if (formData.contact_number.length !== 11 || !formData.contact_number.startsWith('09')) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Phone number must be exactly 11 digits starting with 09'
+        });
+        return;
+    }
+    
+    const url = plumberId ? `/admin-plumber/${plumberId}` : '/admin-plumber';
+    const method = plumberId ? 'PUT' : 'POST';
+
+    $.ajax({
+        url: url,
+        type: method,
+        data: formData,
+        success: function(response) {
+            $('#plumberModal').modal('hide');
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: response.message,
+                timer: 2000,
+                showConfirmButton: false
+            }).then(() => {
+                location.reload();
+            });
+        },
+        error: function(xhr) {
+            let errorMessage = xhr.responseJSON?.message || 'Something went wrong!';
+            if (xhr.responseJSON?.errors) {
+                errorMessage = Object.values(xhr.responseJSON.errors).join('\n');
+            }
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: errorMessage
+            });
+        }
+    });
+});
+
+        // Edit Plumber - UPDATED VERSION
+ $(document).on('click', '.edit-plumber', function() {
+    const plumberId = $(this).data('id');
+    
+    $.ajax({
+        url: `/admin-plumber/${plumberId}/edit`,
+        type: 'GET',
+        success: function(response) {
+            $('#modalTitle').text('Edit Plumber');
+            $('#plumberId').val(response.id);
+            $('#username').val(response.username);
+            $('#firstName').val(response.first_name);
+            $('#middleName').val(response.middle_name);
+            $('#lastName').val(response.last_name);
+            $('#suffix').val(response.suffix);
+            $('#contactNumber').val(response.contact_number);
+            $('#email').val(response.email || '');
+            $('#address').val(response.address);
+            $('#status').val(response.status);
+            
+            // Set up password fields for editing
+            $('#passwordLabel').text('Password');
+            $('#passwordHelp').text('Leave blank to keep current password');
+            $('#password').attr('placeholder', '').prop('required', false);
+            
+            // Hide confirmation field initially
+            $('#passwordConfirmGroup').hide();
+            $('#password_confirmation').prop('required', false);
+            
+            // Clear password fields when editing
+            $('#password').val('');
+            $('#password_confirmation').val('');
+            
+            $('#plumberModal').modal('show');
+        },
+        error: function(xhr) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: xhr.responseJSON?.message || 'Failed to fetch plumber data'
+            });
+        }
+    });
+});
 
         // Delete Plumber - WITH AUTO RENUMBERING
 let deletePlumberId = null;
 
-$(document).on('click', '.delete-plumber', function() {
+ $(document).on('click', '.delete-plumber', function() {
     deletePlumberId = $(this).data('id');
     $('#deleteModal').modal('show');
 });
 
-$('#confirmDelete').click(function() {
+ $('#confirmDelete').click(function() {
     if (!deletePlumberId) return;
     
     $.ajax({
@@ -1094,11 +1145,11 @@ function renumberPlumberRows() {
                 },
                 success: function(response) {
                     // Redirect to login page
-                    window.location.href = '/admin-login';
+                    window.location.href = '/consumer-portal';
                 },
                 error: function(xhr) {
                     // If AJAX fails, still redirect to login
-                    window.location.href = '/admin-login';
+                    window.location.href = '/consumer-portal';
                 }
             });
             
