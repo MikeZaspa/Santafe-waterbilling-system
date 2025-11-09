@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://www.google.com/recaptcha/api.js?render=<?php echo env('NOCAPTCHA_SITEKEY'); ?>"></script>
     <style>
         :root {
             --primary: #0d9488;
@@ -270,6 +271,18 @@
             cursor: pointer;
         }
         
+        .recaptcha-info {
+            font-size: 0.7rem;
+            color: var(--text-light);
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+        
+        .recaptcha-info a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
         @media (max-width: 480px) {
             .login-container {
                 padding: 1.5rem;
@@ -294,6 +307,7 @@
         
         <form id="loginForm" method="POST" action="{{ route('plumber.login.submit') }}">
             @csrf
+            <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
             
             <div class="form-group">
                 <input type="text" id="username" name="username" value="{{ old('username') }}" required autofocus placeholder="Username">
@@ -314,6 +328,12 @@
                 <span>Log In as Plumber</span>
             </button>
             
+            <div class="recaptcha-info">
+                This site is protected by reCAPTCHA and the Google
+                <a href="https://policies.google.com/privacy">Privacy Policy</a> and
+                <a href="https://policies.google.com/terms">Terms of Service</a> apply.
+            </div>
+            
             <div class="back-link">
                 <a href="{{ url('/admin-login') }}">
                     <i class="fas fa-arrow-left"></i> Back to Main Login
@@ -330,6 +350,8 @@
             <p class="modal-description">We've sent a verification code to your email. Please enter it below.</p>
             
             <form id="twoFactorForm">
+                <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response-2fa">
+                
                 <div class="code-input">
                     <input type="text" maxlength="1" class="code-digit" required>
                     <input type="text" maxlength="1" class="code-digit" required>
@@ -360,6 +382,8 @@
             const codeDigits = document.querySelectorAll('.code-digit');
             const resendCode = document.getElementById('resendCode');
             const countdownText = document.getElementById('countdownText');
+            const recaptchaResponse = document.getElementById('g-recaptcha-response');
+            const recaptchaResponse2FA = document.getElementById('g-recaptcha-response-2fa');
             
             let countdownInterval;
             let timeLeft = 60;
@@ -464,6 +488,20 @@
                 loginBtn.disabled = true;
                 loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
                 
+                // Execute reCAPTCHA
+                grecaptcha.ready(function() {
+                    grecaptcha.execute('<?php echo env('NOCAPTCHA_SITEKEY'); ?>', {action: 'login'}).then(function(token) {
+                        // Set the token in the hidden input
+                        recaptchaResponse.value = token;
+                        
+                        // Submit the form
+                        submitLoginForm();
+                    });
+                });
+            });
+            
+            // Function to submit login form
+            function submitLoginForm() {
                 const formData = new FormData(loginForm);
                 
                 fetch('{{ route("plumber.login.submit") }}', {
@@ -517,10 +555,11 @@
                     });
                 })
                 .finally(() => {
+                    const loginBtn = document.getElementById('loginBtn');
                     loginBtn.disabled = false;
                     loginBtn.innerHTML = '<span>Log In as Plumber</span>';
                 });
-            });
+            }
             
             // Close modal
             closeModal.addEventListener('click', function() {
@@ -561,6 +600,20 @@
                 verifyBtn.disabled = true;
                 verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
                 
+                // Execute reCAPTCHA for 2FA
+                grecaptcha.ready(function() {
+                    grecaptcha.execute('<?php echo env('NOCAPTCHA_SITEKEY'); ?>', {action: '2fa'}).then(function(token) {
+                        // Set the token in the hidden input
+                        recaptchaResponse2FA.value = token;
+                        
+                        // Submit the 2FA form
+                        submitTwoFactorForm();
+                    });
+                });
+            });
+            
+            // Function to submit 2FA form
+            function submitTwoFactorForm() {
                 // Get the full code
                 let code = '';
                 codeDigits.forEach(input => {
@@ -605,10 +658,11 @@
                     });
                 })
                 .finally(() => {
+                    const verifyBtn = document.getElementById('verifyBtn');
                     verifyBtn.disabled = false;
                     verifyBtn.innerHTML = 'Verify Code';
                 });
-            });
+            }
             
             // Handle resend code
             resendCode.addEventListener('click', function(e) {
