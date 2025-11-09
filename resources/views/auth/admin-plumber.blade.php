@@ -1145,11 +1145,11 @@ function renumberPlumberRows() {
                 },
                 success: function(response) {
                     // Redirect to login page
-                    window.location.href = '/consumer-portal';
+                    window.location.href = '/admin-login';
                 },
                 error: function(xhr) {
                     // If AJAX fails, still redirect to login
-                    window.location.href = '/consumer-portal';
+                    window.location.href = '/admin-login';
                 }
             });
             
