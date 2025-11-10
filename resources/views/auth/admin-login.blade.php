@@ -324,6 +324,50 @@
             color: var(--warning);
             font-weight: 600;
         }
+
+        /* Session management styles */
+        .session-timer {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            font-size: 0.8rem;
+            color: var(--text-light);
+            z-index: 1000;
+            display: none;
+        }
+
+        .session-timer.warning {
+            border-color: var(--warning);
+            color: var(--warning);
+        }
+
+        .session-timer.danger {
+            border-color: var(--error);
+            color: var(--error);
+        }
+
+        .back-link {
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .back-link a {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -367,6 +411,7 @@
             <button type="submit" class="btn-login" id="loginBtn">
                 <span>Log In</span>
             </button>
+            
             <div class="back-link">
                 <a href="{{ url('/consumer-portal') }}">
                     <i class="fas fa-arrow-left"></i> Back to Main Login
@@ -423,8 +468,6 @@
             </div>
         </div>
 
-        
-
         <!-- Forgot Password Modal -->
         <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -453,6 +496,12 @@
         </div>
     </div>
 
+    <!-- Session Timer Display -->
+    <div class="session-timer" id="sessionTimer">
+        <i class="fas fa-clock me-2"></i>
+        Session expires in: <span id="sessionTimeDisplay">03:00</span>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -473,6 +522,18 @@
         const countdownTimeElement = document.getElementById('countdownTime');
         const recaptchaResponse2FA = document.getElementById('g-recaptcha-response-2fa');
         
+        // Session management variables
+        const sessionTimer = document.getElementById('sessionTimer');
+        const sessionTimeDisplay = document.getElementById('sessionTimeDisplay');
+        let sessionTimeout; // Will store the timeout ID
+        let warningTimeout; // Will store the warning timeout ID
+        let sessionInterval; // Will store the interval ID for updating the display
+        const sessionDuration = 3 * 60 * 1000; // 3 minutes in milliseconds
+        const warningTime = 30 * 1000; // 30 seconds before expiry to show warning
+        let sessionStartTime;
+        let sessionExpiryTime;
+        let isSessionActive = false;
+        
         // Track login attempts
         let loginAttempts = 0;
         const maxAttempts = 3;
@@ -480,6 +541,185 @@
         let isLocked = false;
         let countdownInterval;
         let resendCountdownInterval;
+        
+        // Initialize session management
+        function initSessionManagement() {
+            // Set up event listeners to track user activity
+            document.addEventListener('mousemove', resetSessionTimer);
+            document.addEventListener('mousedown', resetSessionTimer);
+            document.addEventListener('keypress', resetSessionTimer);
+            document.addEventListener('scroll', resetSessionTimer);
+            document.addEventListener('touchstart', resetSessionTimer);
+            document.addEventListener('click', resetSessionTimer);
+            
+            // Check if there's an active session on page load
+            checkExistingSession();
+        }
+        
+        // Check for existing session
+        function checkExistingSession() {
+            // This would typically check with the server if a session is active
+            // For this example, we'll just assume no session on the login page
+            // On other pages, you might check a session cookie or make an API call
+        }
+        
+        // Start a new session after successful login
+        function startSession() {
+            isSessionActive = true;
+            sessionStartTime = new Date();
+            sessionExpiryTime = new Date(sessionStartTime.getTime() + sessionDuration);
+            
+            // Show the session timer
+            sessionTimer.style.display = 'block';
+            updateSessionDisplay();
+            
+            // Set up the session expiry timer
+            clearTimeout(sessionTimeout);
+            sessionTimeout = setTimeout(() => {
+                endSession();
+            }, sessionDuration);
+            
+            // Set up the warning timer
+            clearTimeout(warningTimeout);
+            warningTimeout = setTimeout(() => {
+                showSessionWarning();
+            }, sessionDuration - warningTime);
+            
+            // Set up the interval to update the display
+            clearInterval(sessionInterval);
+            sessionInterval = setInterval(() => {
+                updateSessionDisplay();
+                
+                // Check if session is about to expire
+                const now = new Date();
+                const timeLeft = sessionExpiryTime - now;
+                
+                if (timeLeft <= warningTime && timeLeft > 0) {
+                    sessionTimer.classList.add('warning');
+                } else if (timeLeft <= 30000) { // Last 30 seconds
+                    sessionTimer.classList.remove('warning');
+                    sessionTimer.classList.add('danger');
+                }
+            }, 1000); // Update every second
+        }
+        
+        // Reset the session timer on user activity
+        function resetSessionTimer() {
+            if (!isSessionActive) return;
+            
+            // Clear existing timers
+            clearTimeout(sessionTimeout);
+            clearTimeout(warningTimeout);
+            clearInterval(sessionInterval);
+            
+            // Reset the session
+            sessionStartTime = new Date();
+            sessionExpiryTime = new Date(sessionStartTime.getTime() + sessionDuration);
+            
+            // Reset the timer display
+            sessionTimer.classList.remove('warning', 'danger');
+            updateSessionDisplay();
+            
+            // Set up new timers
+            sessionTimeout = setTimeout(() => {
+                endSession();
+            }, sessionDuration);
+            
+            warningTimeout = setTimeout(() => {
+                showSessionWarning();
+            }, sessionDuration - warningTime);
+            
+            sessionInterval = setInterval(() => {
+                updateSessionDisplay();
+                
+                // Check if session is about to expire
+                const now = new Date();
+                const timeLeft = sessionExpiryTime - now;
+                
+                if (timeLeft <= warningTime && timeLeft > 0) {
+                    sessionTimer.classList.add('warning');
+                } else if (timeLeft <= 30000) { // Last 30 seconds
+                    sessionTimer.classList.remove('warning');
+                    sessionTimer.classList.add('danger');
+                }
+            }, 1000);
+        }
+        
+        // Update the session time display
+        function updateSessionDisplay() {
+            if (!isSessionActive) return;
+            
+            const now = new Date();
+            const timeLeft = Math.max(0, sessionExpiryTime - now);
+            
+            // Convert to minutes and seconds
+            const minutes = Math.floor(timeLeft / 60000);
+            const seconds = Math.floor((timeLeft % 60000) / 1000);
+            
+            // Format as MM:SS
+            sessionTimeDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        // Show session warning
+        function showSessionWarning() {
+            Swal.fire({
+                title: 'Session Expiring Soon',
+                html: 'Your session will expire in <strong>30 seconds</strong> due to inactivity.<br><br>Would you like to extend your session?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#1a73e8',
+                cancelButtonColor: '#d93025',
+                confirmButtonText: 'Extend Session',
+                cancelButtonText: 'Log Out',
+                allowOutsideClick: false,
+                allowEscapeKey: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Extend the session
+                    resetSessionTimer();
+                    
+                    Swal.fire({
+                        title: 'Session Extended',
+                        text: 'Your session has been extended for another 3 minutes.',
+                        icon: 'success',
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    // Log out
+                    endSession();
+                }
+            });
+        }
+        
+        // End the session
+        function endSession() {
+            isSessionActive = false;
+            
+            // Clear all timers
+            clearTimeout(sessionTimeout);
+            clearTimeout(warningTimeout);
+            clearInterval(sessionInterval);
+            
+            // Hide the session timer
+            sessionTimer.style.display = 'none';
+            
+            // Show session expired message
+            Swal.fire({
+                title: 'Session Expired',
+                text: 'Your session has expired due to inactivity. Please log in again.',
+                icon: 'info',
+                confirmButtonColor: '#1a73e8',
+                allowOutsideClick: false,
+                allowEscapeKey: false
+            }).then(() => {
+                // Redirect to logout endpoint
+                window.location.href = '/admin-logout';
+            });
+        }
+        
+        // Initialize session management on page load
+        initSessionManagement();
         
         // Toggle password visibility
         togglePassword.addEventListener('click', function() {
@@ -671,7 +911,8 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // 2FA successful, redirect
+                    // 2FA successful, start session and redirect
+                    startSession();
                     window.location.href = data.redirect || '/admin-dashboard';
                 } else {
                     // 2FA failed
