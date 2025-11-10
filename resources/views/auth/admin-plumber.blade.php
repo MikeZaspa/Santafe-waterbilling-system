@@ -396,6 +396,32 @@
         .password-confirm-group {
             margin-top: 10px;
         }
+        
+        /* Session management styles */
+        .session-timer {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            font-size: 0.8rem;
+            color: var(--text-light);
+            z-index: 1000;
+            display: none;
+        }
+
+        .session-timer.warning {
+            border-color: var(--warning);
+            color: var(--warning);
+        }
+
+        .session-timer.danger {
+            border-color: var(--error);
+            color: var(--error);
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -649,6 +675,12 @@
     </div>
 </div>
 
+<!-- Session Timer Display -->
+<div class="session-timer" id="sessionTimer">
+    <i class="fas fa-clock me-2"></i>
+    Session expires in: <span id="sessionTimeDisplay">03:00</span>
+</div>
+
 <!-- Bootstrap Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <!-- jQuery -->
@@ -661,6 +693,190 @@
 
 <script>
     $(document).ready(function() {
+        // Session management variables
+        const sessionTimer = document.getElementById('sessionTimer');
+        const sessionTimeDisplay = document.getElementById('sessionTimeDisplay');
+        let sessionTimeout; // Will store the timeout ID
+        let warningTimeout; // Will store the warning timeout ID
+        let sessionInterval; // Will store the interval ID for updating the display
+        const sessionDuration = 3 * 60 * 1000; // 3 minutes in milliseconds
+        const warningTime = 30 * 1000; // 30 seconds before expiry to show warning
+        let sessionStartTime;
+        let sessionExpiryTime;
+        let isSessionActive = false;
+        
+        // Initialize session management
+        function initSessionManagement() {
+            // Set up event listeners to track user activity
+            document.addEventListener('mousemove', resetSessionTimer);
+            document.addEventListener('mousedown', resetSessionTimer);
+            document.addEventListener('keypress', resetSessionTimer);
+            document.addEventListener('scroll', resetSessionTimer);
+            document.addEventListener('touchstart', resetSessionTimer);
+            document.addEventListener('click', resetSessionTimer);
+            
+            // Start session immediately on page load
+            startSession();
+        }
+        
+        // Start a new session after page load
+        function startSession() {
+            isSessionActive = true;
+            sessionStartTime = new Date();
+            sessionExpiryTime = new Date(sessionStartTime.getTime() + sessionDuration);
+            
+            // Show the session timer
+            sessionTimer.style.display = 'block';
+            updateSessionDisplay();
+            
+            // Set up the session expiry timer
+            clearTimeout(sessionTimeout);
+            sessionTimeout = setTimeout(() => {
+                endSession();
+            }, sessionDuration);
+            
+            // Set up the warning timer
+            clearTimeout(warningTimeout);
+            warningTimeout = setTimeout(() => {
+                showSessionWarning();
+            }, sessionDuration - warningTime);
+            
+            // Set up the interval to update the display
+            clearInterval(sessionInterval);
+            sessionInterval = setInterval(() => {
+                updateSessionDisplay();
+                
+                // Check if session is about to expire
+                const now = new Date();
+                const timeLeft = sessionExpiryTime - now;
+                
+                if (timeLeft <= warningTime && timeLeft > 0) {
+                    sessionTimer.classList.add('warning');
+                } else if (timeLeft <= 30000) { // Last 30 seconds
+                    sessionTimer.classList.remove('warning');
+                    sessionTimer.classList.add('danger');
+                }
+            }, 1000); // Update every second
+        }
+        
+        // Reset the session timer on user activity
+        function resetSessionTimer() {
+            if (!isSessionActive) return;
+            
+            // Clear existing timers
+            clearTimeout(sessionTimeout);
+            clearTimeout(warningTimeout);
+            clearInterval(sessionInterval);
+            
+            // Reset the session
+            sessionStartTime = new Date();
+            sessionExpiryTime = new Date(sessionStartTime.getTime() + sessionDuration);
+            
+            // Reset the timer display
+            sessionTimer.classList.remove('warning', 'danger');
+            updateSessionDisplay();
+            
+            // Set up new timers
+            sessionTimeout = setTimeout(() => {
+                endSession();
+            }, sessionDuration);
+            
+            warningTimeout = setTimeout(() => {
+                showSessionWarning();
+            }, sessionDuration - warningTime);
+            
+            sessionInterval = setInterval(() => {
+                updateSessionDisplay();
+                
+                // Check if session is about to expire
+                const now = new Date();
+                const timeLeft = sessionExpiryTime - now;
+                
+                if (timeLeft <= warningTime && timeLeft > 0) {
+                    sessionTimer.classList.add('warning');
+                } else if (timeLeft <= 30000) { // Last 30 seconds
+                    sessionTimer.classList.remove('warning');
+                    sessionTimer.classList.add('danger');
+                }
+            }, 1000);
+        }
+        
+        // Update the session time display
+        function updateSessionDisplay() {
+            if (!isSessionActive) return;
+            
+            const now = new Date();
+            const timeLeft = Math.max(0, sessionExpiryTime - now);
+            
+            // Convert to minutes and seconds
+            const minutes = Math.floor(timeLeft / 60000);
+            const seconds = Math.floor((timeLeft % 60000) / 1000);
+            
+            // Format as MM:SS
+            sessionTimeDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        // Show session warning
+        function showSessionWarning() {
+            Swal.fire({
+                title: 'Session Expiring Soon',
+                html: 'Your session will expire in <strong>30 seconds</strong> due to inactivity.<br><br>Would you like to extend your session?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#0d6efd',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Extend Session',
+                cancelButtonText: 'Log Out',
+                allowOutsideClick: false,
+                allowEscapeKey: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Extend the session
+                    resetSessionTimer();
+                    
+                    Swal.fire({
+                        title: 'Session Extended',
+                        text: 'Your session has been extended for another 3 minutes.',
+                        icon: 'success',
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    // Log out
+                    endSession();
+                }
+            });
+        }
+        
+        // End the session
+        function endSession() {
+            isSessionActive = false;
+            
+            // Clear all timers
+            clearTimeout(sessionTimeout);
+            clearTimeout(warningTimeout);
+            clearInterval(sessionInterval);
+            
+            // Hide the session timer
+            sessionTimer.style.display = 'none';
+            
+            // Show session expired message
+            Swal.fire({
+                title: 'Session Expired',
+                text: 'Your session has expired due to inactivity. Please log in again.',
+                icon: 'info',
+                confirmButtonColor: '#0d6efd',
+                allowOutsideClick: false,
+                allowEscapeKey: false
+            }).then(() => {
+                // Redirect to logout endpoint
+                performLogout();
+            });
+        }
+        
+        // Initialize session management on page load
+        initSessionManagement();
+        
         // Password toggle functionality
         $('.password-toggle').click(function() {
             const passwordInput = $('#password');
@@ -713,7 +929,7 @@
 
         // Prevent numbers in name fields
         $('#firstName, #middleName, #lastName, #suffix').on('input', function() {
-            // Remove any numbers from the input
+            // Remove any numbers from input
             this.value = this.value.replace(/[0-9]/g, '');
         });
 
@@ -763,42 +979,42 @@
         });
 
         // Initialize DataTable with automatic row numbering
- $('#plumbersTable').DataTable({
-    responsive: true,
-    dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-         "<'row'<'col-sm-12'tr>>" +
-         "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-    language: {
-        search: "",
-        searchPlaceholder: "Search plumbers...",
-        lengthMenu: "Show _MENU_ entries",
-        info: "Showing _START_ to _END_ of _TOTAL_ entries",
-        infoEmpty: "Showing 0 to 0 of 0 entries",
-        emptyTable: "<div class='text-center'> No data available in table</div>",     
-        infoFiltered: "(filtered from _MAX_ total entries)",
-        paginate: {
-            first: "First",
-            last: "Last",
-            next: "Next",
-            previous: "Previous"
-        }
-    },
-    initComplete: function() {
-        $('.dataTables_filter input').addClass('form-control');
-        $('.dataTables_length select').addClass('form-select');
-    },
-    // Add automatic row numbering
-    columnDefs: [{
-        targets: 0,
-        render: function(data, type, row, meta) {
-            // Show sequential row numbers that update automatically
-            if (type === 'display') {
-                return meta.row + meta.settings._iDisplayStart + 1;
-            }
-            return data;
-        }
-    }]
-});
+        $('#plumbersTable').DataTable({
+            responsive: true,
+            dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                 "<'row'<'col-sm-12'tr>>" +
+                 "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+            language: {
+                search: "",
+                searchPlaceholder: "Search plumbers...",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                infoEmpty: "Showing 0 to 0 of 0 entries",
+                emptyTable: "<div class='text-center'> No data available in table</div>",     
+                infoFiltered: "(filtered from _MAX_ total entries)",
+                paginate: {
+                    first: "First",
+                    last: "Last",
+                    next: "Next",
+                    previous: "Previous"
+                }
+            },
+            initComplete: function() {
+                $('.dataTables_filter input').addClass('form-control');
+                $('.dataTables_length select').addClass('form-select');
+            },
+            // Add automatic row numbering
+            columnDefs: [{
+                targets: 0,
+                render: function(data, type, row, meta) {
+                    // Show sequential row numbers that update automatically
+                    if (type === 'display') {
+                        return meta.row + meta.settings._iDisplayStart + 1;
+                    }
+                    return data;
+                }
+            }]
+        });
 
         // Reset form when modal is closed
         $('#plumberModal').on('hidden.bs.modal', function() {
@@ -842,260 +1058,260 @@
             return re.test(String(email).toLowerCase());
         }
 
-      // Save Plumber (Add/Edit) - UPDATED
- $('#savePlumber').click(function() {
-    // Get all form values
-    const formData = {
-        username: $('#username').val().trim(),
-        password: $('#password').val(),
-        first_name: $('#firstName').val().trim(),
-        middle_name: $('#middleName').val().trim(),
-        last_name: $('#lastName').val().trim(),
-        suffix: $('#suffix').val().trim(),
-        contact_number: $('#contactNumber').val().trim(),
-        email: $('#email').val().trim(),
-        address: $('#address').val().trim(),
-        status: $('#status').val(),
-        _token: $('meta[name="csrf-token"]').attr('content')
-    };
+        // Save Plumber (Add/Edit) - UPDATED
+        $('#savePlumber').click(function() {
+            // Get all form values
+            const formData = {
+                username: $('#username').val().trim(),
+                password: $('#password').val(),
+                first_name: $('#firstName').val().trim(),
+                middle_name: $('#middleName').val().trim(),
+                last_name: $('#lastName').val().trim(),
+                suffix: $('#suffix').val().trim(),
+                contact_number: $('#contactNumber').val().trim(),
+                email: $('#email').val().trim(),
+                address: $('#address').val().trim(),
+                status: $('#status').val(),
+                _token: $('meta[name="csrf-token"]').attr('content')
+            };
 
-    const plumberId = $('#plumberId').val();
-    const password = $('#password').val();
-    const isEditMode = plumberId !== '';
+            const plumberId = $('#plumberId').val();
+            const password = $('#password').val();
+            const isEditMode = plumberId !== '';
 
-    // Basic validation
-    if (!formData.username || !formData.first_name || !formData.last_name || 
-        !formData.contact_number || !formData.address || !formData.status || !formData.email) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Validation Error',
-            text: 'Please fill all required fields'
-        });
-        return;
-    }
-
-    // Username minimum length validation
-    if (formData.username.length < 6) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Validation Error',
-            text: 'Username must be at least 6 characters long'
-        });
-        return;
-    }
-
-    // For new plumber, password is required
-    if (!isEditMode && !password) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Validation Error',
-            text: 'Password is required for new plumbers'
-        });
-        return;
-    }
-    
-    // Password confirmation validation
-    const passwordConfirmation = $('#password_confirmation').val();
-    
-    // For new plumber, password confirmation is required
-    if (!isEditMode && password !== passwordConfirmation) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Validation Error',
-            text: 'Password confirmation does not match'
-        });
-        return;
-    }
-    
-    // For editing, if password is provided, confirmation is required
-    if (isEditMode && password && password !== passwordConfirmation) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Validation Error',
-            text: 'Password confirmation does not match'
-        });
-        return;
-    }
-
-    // If password is provided in edit mode, include confirmation
-    if (password) {
-        formData.password_confirmation = passwordConfirmation;
-    }
-
-    // Email validation
-    if (formData.email && !validateEmail(formData.email)) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Validation Error',
-            text: 'Please enter a valid email address'
-        });
-        return;
-    }
-
-    // If editing and password is empty, remove it from form data
-    if (isEditMode && !password) {
-        delete formData.password;
-    }
-
-    // Username validation (letters and underscores only)
-    const usernameRegex = /^[a-zA-Z_]+$/;
-    if (!usernameRegex.test(formData.username)) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Validation Error',
-            text: 'Username can only contain letters and underscores'
-        });
-        return;
-    }
-
-    // Enhanced phone number validation - exactly 11 digits starting with 09
-    if (formData.contact_number.length !== 11 || !formData.contact_number.startsWith('09')) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Validation Error',
-            text: 'Phone number must be exactly 11 digits starting with 09'
-        });
-        return;
-    }
-    
-    const url = plumberId ? `/admin-plumber/${plumberId}` : '/admin-plumber';
-    const method = plumberId ? 'PUT' : 'POST';
-
-    $.ajax({
-        url: url,
-        type: method,
-        data: formData,
-        success: function(response) {
-            $('#plumberModal').modal('hide');
-            Swal.fire({
-                icon: 'success',
-                title: 'Success',
-                text: response.message,
-                timer: 2000,
-                showConfirmButton: false
-            }).then(() => {
-                location.reload();
-            });
-        },
-        error: function(xhr) {
-            let errorMessage = xhr.responseJSON?.message || 'Something went wrong!';
-            if (xhr.responseJSON?.errors) {
-                errorMessage = Object.values(xhr.responseJSON.errors).join('\n');
+            // Basic validation
+            if (!formData.username || !formData.first_name || !formData.last_name || 
+                !formData.contact_number || !formData.address || !formData.status || !formData.email) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: 'Please fill all required fields'
+                });
+                return;
             }
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: errorMessage
+
+            // Username minimum length validation
+            if (formData.username.length < 6) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: 'Username must be at least 6 characters long'
+                });
+                return;
+            }
+
+            // For new plumber, password is required
+            if (!isEditMode && !password) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: 'Password is required for new plumbers'
+                });
+                return;
+            }
+            
+            // Password confirmation validation
+            const passwordConfirmation = $('#password_confirmation').val();
+            
+            // For new plumber, password confirmation is required
+            if (!isEditMode && password !== passwordConfirmation) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: 'Password confirmation does not match'
+                });
+                return;
+            }
+            
+            // For editing, if password is provided, confirmation is required
+            if (isEditMode && password && password !== passwordConfirmation) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: 'Password confirmation does not match'
+                });
+                return;
+            }
+
+            // If password is provided in edit mode, include confirmation
+            if (password) {
+                formData.password_confirmation = passwordConfirmation;
+            }
+
+            // Email validation
+            if (formData.email && !validateEmail(formData.email)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: 'Please enter a valid email address'
+                });
+                return;
+            }
+
+            // If editing and password is empty, remove it from form data
+            if (isEditMode && !password) {
+                delete formData.password;
+            }
+
+            // Username validation (letters and underscores only)
+            const usernameRegex = /^[a-zA-Z_]+$/;
+            if (!usernameRegex.test(formData.username)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: 'Username can only contain letters and underscores'
+                });
+                return;
+            }
+
+            // Enhanced phone number validation - exactly 11 digits starting with 09
+            if (formData.contact_number.length !== 11 || !formData.contact_number.startsWith('09')) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: 'Phone number must be exactly 11 digits starting with 09'
+                });
+                return;
+            }
+            
+            const url = plumberId ? `/admin-plumber/${plumberId}` : '/admin-plumber';
+            const method = plumberId ? 'PUT' : 'POST';
+
+            $.ajax({
+                url: url,
+                type: method,
+                data: formData,
+                success: function(response) {
+                    $('#plumberModal').modal('hide');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: response.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload();
+                    });
+                },
+                error: function(xhr) {
+                    let errorMessage = xhr.responseJSON?.message || 'Something went wrong!';
+                    if (xhr.responseJSON?.errors) {
+                        errorMessage = Object.values(xhr.responseJSON.errors).join('\n');
+                    }
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: errorMessage
+                    });
+                }
             });
-        }
-    });
-});
+        });
 
         // Edit Plumber - UPDATED VERSION
- $(document).on('click', '.edit-plumber', function() {
-    const plumberId = $(this).data('id');
-    
-    $.ajax({
-        url: `/admin-plumber/${plumberId}/edit`,
-        type: 'GET',
-        success: function(response) {
-            $('#modalTitle').text('Edit Plumber');
-            $('#plumberId').val(response.id);
-            $('#username').val(response.username);
-            $('#firstName').val(response.first_name);
-            $('#middleName').val(response.middle_name);
-            $('#lastName').val(response.last_name);
-            $('#suffix').val(response.suffix);
-            $('#contactNumber').val(response.contact_number);
-            $('#email').val(response.email || '');
-            $('#address').val(response.address);
-            $('#status').val(response.status);
+        $(document).on('click', '.edit-plumber', function() {
+            const plumberId = $(this).data('id');
             
-            // Set up password fields for editing
-            $('#passwordLabel').text('Password');
-            $('#passwordHelp').text('Leave blank to keep current password');
-            $('#password').attr('placeholder', '').prop('required', false);
-            
-            // Hide confirmation field initially
-            $('#passwordConfirmGroup').hide();
-            $('#password_confirmation').prop('required', false);
-            
-            // Clear password fields when editing
-            $('#password').val('');
-            $('#password_confirmation').val('');
-            
-            $('#plumberModal').modal('show');
-        },
-        error: function(xhr) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: xhr.responseJSON?.message || 'Failed to fetch plumber data'
+            $.ajax({
+                url: `/admin-plumber/${plumberId}/edit`,
+                type: 'GET',
+                success: function(response) {
+                    $('#modalTitle').text('Edit Plumber');
+                    $('#plumberId').val(response.id);
+                    $('#username').val(response.username);
+                    $('#firstName').val(response.first_name);
+                    $('#middleName').val(response.middle_name);
+                    $('#lastName').val(response.last_name);
+                    $('#suffix').val(response.suffix);
+                    $('#contactNumber').val(response.contact_number);
+                    $('#email').val(response.email || '');
+                    $('#address').val(response.address);
+                    $('#status').val(response.status);
+                    
+                    // Set up password fields for editing
+                    $('#passwordLabel').text('Password');
+                    $('#passwordHelp').text('Leave blank to keep current password');
+                    $('#password').attr('placeholder', '').prop('required', false);
+                    
+                    // Hide confirmation field initially
+                    $('#passwordConfirmGroup').hide();
+                    $('#password_confirmation').prop('required', false);
+                    
+                    // Clear password fields when editing
+                    $('#password').val('');
+                    $('#password_confirmation').val('');
+                    
+                    $('#plumberModal').modal('show');
+                },
+                error: function(xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: xhr.responseJSON?.message || 'Failed to fetch plumber data'
+                    });
+                }
             });
-        }
-    });
-});
+        });
 
         // Delete Plumber - WITH AUTO RENUMBERING
-let deletePlumberId = null;
+        let deletePlumberId = null;
 
- $(document).on('click', '.delete-plumber', function() {
-    deletePlumberId = $(this).data('id');
-    $('#deleteModal').modal('show');
-});
+        $(document).on('click', '.delete-plumber', function() {
+            deletePlumberId = $(this).data('id');
+            $('#deleteModal').modal('show');
+        });
 
- $('#confirmDelete').click(function() {
-    if (!deletePlumberId) return;
-    
-    $.ajax({
-        url: `/admin-plumber/${deletePlumberId}`,
-        type: 'DELETE',
-        data: {
-            _token: $('meta[name="csrf-token"]').attr('content')
-        },
-        success: function(response) {
-            $('#deleteModal').modal('hide');
+        $('#confirmDelete').click(function() {
+            if (!deletePlumberId) return;
             
-            // Remove the row
-            $('#plumberRow_' + deletePlumberId).remove();
-            
-            // Re-number all remaining rows sequentially starting from 1
-            renumberPlumberRows();
-            
-            Swal.fire({
-                icon: 'success',
-                title: 'Success',
-                text: response.message,
-                timer: 2000,
-                showConfirmButton: false
+            $.ajax({
+                url: `/admin-plumber/${deletePlumberId}`,
+                type: 'DELETE',
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    $('#deleteModal').modal('hide');
+                    
+                    // Remove the row
+                    $('#plumberRow_' + deletePlumberId).remove();
+                    
+                    // Re-number all remaining rows sequentially starting from 1
+                    renumberPlumberRows();
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: response.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    
+                    deletePlumberId = null;
+                },
+                error: function(xhr) {
+                    $('#deleteModal').modal('hide');
+                    let errorMessage = xhr.responseJSON?.message || 'Failed to delete plumber';
+                    
+                    if (xhr.responseJSON?.errors) {
+                        errorMessage = Object.values(xhr.responseJSON.errors).join('\n');
+                    }
+                    
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: errorMessage
+                    });
+                }
             });
-            
-            deletePlumberId = null;
-        },
-        error: function(xhr) {
-            $('#deleteModal').modal('hide');
-            let errorMessage = xhr.responseJSON?.message || 'Failed to delete plumber';
-            
-            if (xhr.responseJSON?.errors) {
-                errorMessage = Object.values(xhr.responseJSON.errors).join('\n');
-            }
-            
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: errorMessage
+        });
+
+        // Function to renumber table rows sequentially
+        function renumberPlumberRows() {
+            $('#plumbersTable tbody tr').each(function(index) {
+                // Set the first cell to sequential number starting from 1
+                $(this).find('td:first').text(index + 1);
             });
         }
-    });
-});
-
-// Function to renumber table rows sequentially
-function renumberPlumberRows() {
-    $('#plumbersTable tbody tr').each(function(index) {
-        // Set the first cell to sequential number starting from 1
-        $(this).find('td:first').text(index + 1);
-    });
-}
 
         // Toggle sidebar on mobile
         $('#sidebarToggle').click(function() {
