@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\AccountantBilling;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
+
 
 class AccountantDashboardController extends Controller
 {
     public function index()
     {
-        
+     
         // Get counts for different billing statuses
         $paidCount = AccountantBilling::where('status', 'paid')->count();
         $unpaidCount = AccountantBilling::where('status', 'unpaid')->count();

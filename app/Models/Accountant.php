@@ -11,7 +11,6 @@ class Accountant extends Model
     use HasFactory, SoftDeletes;
 
     protected $table = 'admin_accountants';
-
     protected $fillable = [
         'first_name',
         'last_name',

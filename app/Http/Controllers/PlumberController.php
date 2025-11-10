@@ -187,7 +187,7 @@ class PlumberController extends Controller
     /**
      * Verify 2FA code
      */
-    public function verify2FA(Request $request)
+      public function verify2FA(Request $request)
     {
         $request->validate([
             'code' => 'required|string|digits:6',
@@ -236,6 +236,7 @@ class PlumberController extends Controller
         Session::put('plumber_id', $plumber->id);
         Session::put('plumber_data', $plumber->toArray());
         
+        
         // Clear the temporary session
         Session::forget('plumber_id_for_2fa');
         
@@ -245,7 +246,6 @@ class PlumberController extends Controller
             'redirect' => '/admin-plumber-dashboard'  // Direct URL to match your route
         ]);
     }
-
     /**
      * Resend 2FA code
      */

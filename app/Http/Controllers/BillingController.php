@@ -15,7 +15,8 @@ use Illuminate\Support\Facades\DB;
 class BillingController extends Controller
 {
    public function index()
-{
+  {
+     
     if(request()->ajax()) {
         $billings = Billing::with('consumer')
             ->orderBy('reading_date', 'desc')
@@ -25,6 +26,7 @@ class BillingController extends Controller
         return response()->json(['data' => $billings]);
     }
     
+     
     return view('auth.admin-plumber-consumer');
 }
    public function create()

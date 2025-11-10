@@ -7,12 +7,19 @@ use App\Models\Billing;
 use App\Models\Disconnection;
 use App\Models\AdminConsumer;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Session;
 class ReadingController extends Controller
 {
+    
     public function index()
     {
+       
+         // Check if consumer is authenticated
+        if (!Auth::guard('plumber')->check()) {
+            return redirect('/plumber-login');
+        }
         // Count readings with both current and previous readings (completed)
         $completedCount = Billing::whereNotNull('current_reading')
                                ->whereNotNull('previous_reading')
@@ -154,6 +161,7 @@ class ReadingController extends Controller
     // Method to get dashboard data for AJAX updates (for real-time updates)
     public function getDashboardData()
     {
+        
         try {
             // Get current month and year
             $currentMonth = now()->month;

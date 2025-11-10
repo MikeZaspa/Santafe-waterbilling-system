@@ -416,8 +416,10 @@ Route::get('/dashboard-consumer', [ConsumerDashboardController::class, 'index'])
 
 // Add these routes to your existing authentication routes
 Route::post('/admin-check-credentials', [AuthController::class, 'checkCredentials'])->name('admin.check-credentials');
-Route::post('/admin-verify-2fa', [AuthController::class, 'verifyTwoFactor'])->name('admin.verify-2fa');
-Route::post('/admin-resend-2fa', [AuthController::class, 'resendTwoFactor'])->name('admin.resend-2fa');
+// Plumber 2FA routes
+Route::post('/plumber/verify-2fa', [PlumberController::class, 'verify2FA'])->name('plumber.verify.2fa');
+Route::post('/plumber/resend-2fa', [PlumberController::class, 'resend2FA'])->name('plumber.resend.2fa');
+
 
 // Add these routes for consumer notifications
 Route::post('/consumer/notifications/{id}/read', [ConsumerAuthController::class, 'markNotificationAsRead']);
@@ -432,13 +434,15 @@ Route::prefix('admin')->name('admin.')->middleware('auth:admin')->group(function
     Route::get('/notifications/unread-count', [AccountantNotificationController::class, 'unreadCount'])->name('notifications.unreadCount');
     Route::post('/notifications/create', [AccountantNotificationController::class, 'create'])->name('notifications.create');
 });
-// Plumber authentication routes
 Route::get('/plumber-login', [PlumberController::class, 'showLoginForm'])->name('plumber.login');
 Route::post('/plumber-login', [PlumberController::class, 'login'])->name('plumber.login.submit');
+
+
 Route::get('/plumber/dashboard', [PlumberController::class, 'dashboard'])->name('plumber.dashboard');
 Route::post('/plumber/logout', [PlumberController::class, 'logout'])->name('plumber.logout');
 
 // Plumber 2FA routes
+
 Route::post('/plumber/verify-2fa', [PlumberController::class, 'verify2FA'])->name('plumber.verify.2fa');
 Route::post('/plumber/resend-2fa', [PlumberController::class, 'resend2FA'])->name('plumber.resend.2fa');
 

@@ -25,7 +25,9 @@ class Kernel extends HttpKernel
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        
+        'accountant.auth' => \App\Http\Middleware\AccountantAuth::class,
+        'plumber.auth' => \App\Http\Middleware\PlumberAuth::class,
+
         // Add your custom middleware here
         'admin.auth' => \App\Http\Middleware\AdminAuth::class,
     ];
