@@ -335,6 +335,11 @@ Route::prefix('admin')->group(function () {
     Route::post('/verify-reset-code', [AdminAuthController::class, 'verifyResetCode'])->name('password.verify');
 });
 
+// Two-factor authentication routes
+Route::post('/admin-check-credentials', [AuthController::class, 'checkCredentials'])->name('admin-check-credentials');
+Route::post('/admin-verify-2fa', [AuthController::class, 'verifyTwoFactor'])->name('admin-verify-2fa');
+Route::post('/admin-resend-2fa', [AuthController::class, 'resendTwoFactor'])->name('admin-resend-2fa');
+
 // Password reset routes
 Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLink'])->name('password.email');
 Route::get('/reset-password/{token}', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset.form');
