@@ -403,6 +403,32 @@
             color: var(--primary-color);
         }
         
+        /* Session management styles */
+        .session-timer {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            font-size: 0.8rem;
+            color: var(--text-light);
+            z-index: 1000;
+            display: none;
+        }
+
+        .session-timer.warning {
+            border-color: var(--warning);
+            color: var(--warning);
+        }
+
+        .session-timer.danger {
+            border-color: var(--error);
+            color: var(--error);
+        }
+        
         @media (min-width: 992px) {
             .sidebar {
                 transform: translateX(0);
@@ -676,7 +702,7 @@
                         </div>
                     </div>
                     
-                    <!-- Password Confirmation Field (only shown when adding new accountant) -->
+                    <!-- Password Confirmation Field (only shown when adding new accountant or changing password) -->
                     <div class="row password-confirm-group" id="passwordConfirmGroup">
                         <div class="col-md-12">
                             <div class="mb-3">
@@ -753,6 +779,12 @@
     </div>
 </div>
 
+<!-- Session Timer Display -->
+<div class="session-timer" id="sessionTimer">
+    <i class="fas fa-clock me-2"></i>
+    Session expires in: <span id="sessionTimeDisplay">03:00</span>
+</div>
+
 <!-- Bootstrap Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <!-- jQuery -->
@@ -765,6 +797,190 @@
 
 <script>
  $(document).ready(function() {
+    // Session management variables
+    const sessionTimer = document.getElementById('sessionTimer');
+    const sessionTimeDisplay = document.getElementById('sessionTimeDisplay');
+    let sessionTimeout; // Will store the timeout ID
+    let warningTimeout; // Will store the warning timeout ID
+    let sessionInterval; // Will store the interval ID for updating the display
+    const sessionDuration = 3 * 60 * 1000; // 3 minutes in milliseconds
+    const warningTime = 30 * 1000; // 30 seconds before expiry to show warning
+    let sessionStartTime;
+    let sessionExpiryTime;
+    let isSessionActive = false;
+    
+    // Initialize session management
+    function initSessionManagement() {
+        // Set up event listeners to track user activity
+        document.addEventListener('mousemove', resetSessionTimer);
+        document.addEventListener('mousedown', resetSessionTimer);
+        document.addEventListener('keypress', resetSessionTimer);
+        document.addEventListener('scroll', resetSessionTimer);
+        document.addEventListener('touchstart', resetSessionTimer);
+        document.addEventListener('click', resetSessionTimer);
+        
+        // Start session immediately on page load
+        startSession();
+    }
+    
+    // Start a new session after page load
+    function startSession() {
+        isSessionActive = true;
+        sessionStartTime = new Date();
+        sessionExpiryTime = new Date(sessionStartTime.getTime() + sessionDuration);
+        
+        // Show the session timer
+        sessionTimer.style.display = 'block';
+        updateSessionDisplay();
+        
+        // Set up the session expiry timer
+        clearTimeout(sessionTimeout);
+        sessionTimeout = setTimeout(() => {
+            endSession();
+        }, sessionDuration);
+        
+        // Set up the warning timer
+        clearTimeout(warningTimeout);
+        warningTimeout = setTimeout(() => {
+            showSessionWarning();
+        }, sessionDuration - warningTime);
+        
+        // Set up the interval to update the display
+        clearInterval(sessionInterval);
+        sessionInterval = setInterval(() => {
+            updateSessionDisplay();
+            
+            // Check if session is about to expire
+            const now = new Date();
+            const timeLeft = sessionExpiryTime - now;
+            
+            if (timeLeft <= warningTime && timeLeft > 0) {
+                sessionTimer.classList.add('warning');
+            } else if (timeLeft <= 30000) { // Last 30 seconds
+                sessionTimer.classList.remove('warning');
+                sessionTimer.classList.add('danger');
+            }
+        }, 1000); // Update every second
+    }
+    
+    // Reset the session timer on user activity
+    function resetSessionTimer() {
+        if (!isSessionActive) return;
+        
+        // Clear existing timers
+        clearTimeout(sessionTimeout);
+        clearTimeout(warningTimeout);
+        clearInterval(sessionInterval);
+        
+        // Reset the session
+        sessionStartTime = new Date();
+        sessionExpiryTime = new Date(sessionStartTime.getTime() + sessionDuration);
+        
+        // Reset the timer display
+        sessionTimer.classList.remove('warning', 'danger');
+        updateSessionDisplay();
+        
+        // Set up new timers
+        sessionTimeout = setTimeout(() => {
+            endSession();
+        }, sessionDuration);
+        
+        warningTimeout = setTimeout(() => {
+            showSessionWarning();
+        }, sessionDuration - warningTime);
+        
+        sessionInterval = setInterval(() => {
+            updateSessionDisplay();
+            
+            // Check if session is about to expire
+            const now = new Date();
+            const timeLeft = sessionExpiryTime - now;
+            
+            if (timeLeft <= warningTime && timeLeft > 0) {
+                sessionTimer.classList.add('warning');
+            } else if (timeLeft <= 30000) { // Last 30 seconds
+                sessionTimer.classList.remove('warning');
+                sessionTimer.classList.add('danger');
+            }
+        }, 1000);
+    }
+    
+    // Update the session time display
+    function updateSessionDisplay() {
+        if (!isSessionActive) return;
+        
+        const now = new Date();
+        const timeLeft = Math.max(0, sessionExpiryTime - now);
+        
+        // Convert to minutes and seconds
+        const minutes = Math.floor(timeLeft / 60000);
+        const seconds = Math.floor((timeLeft % 60000) / 1000);
+        
+        // Format as MM:SS
+        sessionTimeDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+    
+    // Show session warning
+    function showSessionWarning() {
+        Swal.fire({
+            title: 'Session Expiring Soon',
+            html: 'Your session will expire in <strong>30 seconds</strong> due to inactivity.<br><br>Would you like to extend your session?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#0d6efd',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Extend Session',
+            cancelButtonText: 'Log Out',
+            allowOutsideClick: false,
+            allowEscapeKey: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Extend the session
+                resetSessionTimer();
+                
+                Swal.fire({
+                    title: 'Session Extended',
+                    text: 'Your session has been extended for another 3 minutes.',
+                    icon: 'success',
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+            } else {
+                // Log out
+                endSession();
+            }
+        });
+    }
+    
+    // End the session
+    function endSession() {
+        isSessionActive = false;
+        
+        // Clear all timers
+        clearTimeout(sessionTimeout);
+        clearTimeout(warningTimeout);
+        clearInterval(sessionInterval);
+        
+        // Hide the session timer
+        sessionTimer.style.display = 'none';
+        
+        // Show session expired message
+        Swal.fire({
+            title: 'Session Expired',
+            text: 'Your session has expired due to inactivity. Please log in again.',
+            icon: 'info',
+            confirmButtonColor: '#0d6efd',
+            allowOutsideClick: false,
+            allowEscapeKey: false
+        }).then(() => {
+            // Redirect to logout endpoint
+            performLogout();
+        });
+    }
+    
+    // Initialize session management on page load
+    initSessionManagement();
+    
     // Mobile sidebar toggle functionality
     const sidebar = $('.sidebar');
     const mainContent = $('.main-content');
@@ -843,9 +1059,31 @@
         }
     });
 
+    // Handle password input to show/hide confirmation field dynamically
+    $('#password').on('input', function() {
+        const accountantId = $('#accountantId').val();
+        const passwordValue = $(this).val();
+        
+        // If in edit mode and password is not empty, show confirmation
+        if (accountantId && passwordValue.length > 0) {
+            $('#passwordConfirmGroup').show();
+            $('#password_confirmation').prop('required', true);
+        } 
+        // If in edit mode and password is empty, hide confirmation
+        else if (accountantId && passwordValue.length === 0) {
+            $('#passwordConfirmGroup').hide();
+            $('#password_confirmation').prop('required', false).val('');
+        }
+        // In add mode, always show confirmation
+        else if (!accountantId) {
+            $('#passwordConfirmGroup').show();
+            $('#password_confirmation').prop('required', true);
+        }
+    });
+
     // Prevent numbers in name fields
     $('#firstName, #middleName, #lastName, #suffix').on('input', function() {
-        // Remove any numbers from the input
+        // Remove any numbers from input
         this.value = this.value.replace(/[0-9]/g, '');
     });
 
@@ -895,51 +1133,53 @@
     });
 
     // Initialize DataTable with automatic row numbering
-$('#accountantsTable').DataTable({
-    responsive: true,
-    dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-         "<'row'<'col-sm-12'tr>>" +
-         "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-    language: {
-        search: "",
-        searchPlaceholder: "Search accountants...",
-        lengthMenu: "Show _MENU_ entries",
-        info: "Showing _START_ to _END_ of _TOTAL_ entries",
-        infoEmpty: "Showing 0 to 0 of 0 entries",
-        emptyTable: "<div class='text-center'>No data available in table</div>",
-        infoFiltered: "(filtered from _MAX_ total entries)",
-        paginate: {
-            first: "First",
-            last: "Last",
-            next: "Next",
-            previous: "Previous"
-        }
-    },
-    initComplete: function() {
-        $('.dataTables_filter input').addClass('form-control');
-        $('.dataTables_length select').addClass('form-select');
-    },
-    // Add automatic row numbering
-    columnDefs: [{
-        targets: 0,
-        render: function(data, type, row, meta) {
-            // Show sequential row numbers that update automatically
-            if (type === 'display') {
-                return meta.row + meta.settings._iDisplayStart + 1;
+    $('#accountantsTable').DataTable({
+        responsive: true,
+        dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+             "<'row'<'col-sm-12'tr>>" +
+             "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+        language: {
+            search: "",
+            searchPlaceholder: "Search accountants...",
+            lengthMenu: "Show _MENU_ entries",
+            info: "Showing _START_ to _END_ of _TOTAL_ entries",
+            infoEmpty: "Showing 0 to 0 of 0 entries",
+            emptyTable: "<div class='text-center'> No data available in table</div>",     
+            infoFiltered: "(filtered from _MAX_ total entries)",
+            paginate: {
+                first: "First",
+                last: "Last",
+                next: "Next",
+                previous: "Previous"
             }
-            return data;
-        }
-    }]
-});
+        },
+        initComplete: function() {
+            $('.dataTables_filter input').addClass('form-control');
+            $('.dataTables_length select').addClass('form-select');
+        },
+        // Add automatic row numbering
+        columnDefs: [{
+            targets: 0,
+            render: function(data, type, row, meta) {
+                // Show sequential row numbers that update automatically
+                if (type === 'display') {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+                return data;
+            }
+        }]
+    });
+
     // Reset form when modal is closed
     $('#accountantModal').on('hidden.bs.modal', function() {
         $('#accountantForm')[0].reset();
         $('#accountantId').val('');
         $('#modalTitle').text('Add New Accountant');
         $('#passwordLabel').text('Password');
-        $('#passwordHelp').text('Leave blank to keep current password');
+        $('#passwordHelp').text('');
         $('#password').attr('placeholder', '');
         $('#passwordConfirmGroup').show();
+        $('#email').removeClass('is-invalid');
         $('#username').removeClass('is-invalid');
         $('#username').next('.invalid-feedback').remove();
         $('#contactNumber').removeClass('is-invalid');
@@ -954,7 +1194,23 @@ $('#accountantsTable').DataTable({
         $('#passwordHelp').text('');
         $('#password').attr('placeholder', 'Enter password').prop('required', true);
         $('#passwordConfirmGroup').show();
+        $('#password_confirmation').prop('required', true);
     });
+
+    // Email validation
+    $('#email').on('input', function() {
+        const email = this.value;
+        if (email && !validateEmail(email)) {
+            $(this).addClass('is-invalid');
+        } else {
+            $(this).removeClass('is-invalid');
+        }
+    });
+
+    function validateEmail(email) {
+        const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(String(email).toLowerCase());
+    }
 
     // Save Accountant (Add/Edit)
     $('#saveAccountant').click(function() {
@@ -963,7 +1219,6 @@ $('#accountantsTable').DataTable({
             username: $('#username').val().trim(),
             email: $('#email').val().trim(),
             password: $('#password').val(),
-            password_confirmation: $('#password_confirmation').val(),
             first_name: $('#firstName').val().trim(),
             middle_name: $('#middleName').val().trim(),
             last_name: $('#lastName').val().trim(),
@@ -973,6 +1228,10 @@ $('#accountantsTable').DataTable({
             status: $('#status').val(),
             _token: $('meta[name="csrf-token"]').attr('content')
         };
+
+        const accountantId = $('#accountantId').val();
+        const password = $('#password').val();
+        const isEditMode = accountantId !== '';
 
         // Basic validation
         if (!formData.username || !formData.email || !formData.first_name || !formData.last_name || 
@@ -996,8 +1255,7 @@ $('#accountantsTable').DataTable({
         }
 
         // For new accountant, password is required
-        const accountantId = $('#accountantId').val();
-        if (!accountantId && !formData.password) {
+        if (!isEditMode && !password) {
             Swal.fire({
                 icon: 'error',
                 title: 'Validation Error',
@@ -1006,8 +1264,21 @@ $('#accountantsTable').DataTable({
             return;
         }
         
+        // Password confirmation validation
+        const passwordConfirmation = $('#password_confirmation').val();
+        
         // For new accountant, password confirmation is required
-        if (!accountantId && formData.password !== formData.password_confirmation) {
+        if (!isEditMode && password !== passwordConfirmation) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Password confirmation does not match'
+            });
+            return;
+        }
+        
+        // For editing, if password is provided, confirmation is required
+        if (isEditMode && password && password !== passwordConfirmation) {
             Swal.fire({
                 icon: 'error',
                 title: 'Validation Error',
@@ -1016,10 +1287,24 @@ $('#accountantsTable').DataTable({
             return;
         }
 
+        // If password is provided in edit mode, include confirmation
+        if (password) {
+            formData.password_confirmation = passwordConfirmation;
+        }
+
+        // Email validation
+        if (formData.email && !validateEmail(formData.email)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Please enter a valid email address'
+            });
+            return;
+        }
+
         // If editing and password is empty, remove it from form data
-        if (accountantId && !formData.password) {
+        if (isEditMode && !password) {
             delete formData.password;
-            delete formData.password_confirmation;
         }
 
         // Username validation (letters and underscores only)
@@ -1033,17 +1318,6 @@ $('#accountantsTable').DataTable({
             return;
         }
 
-        // Email validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(formData.email)) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Validation Error',
-                text: 'Please enter a valid email address'
-            });
-            return;
-        }
-
         // Enhanced phone number validation - exactly 11 digits starting with 09
         if (formData.contact_number.length !== 11 || !formData.contact_number.startsWith('09')) {
             Swal.fire({
@@ -1053,7 +1327,7 @@ $('#accountantsTable').DataTable({
             });
             return;
         }
-
+        
         const url = accountantId ? `/admin-accountant/${accountantId}` : '/admin-accountant';
         const method = accountantId ? 'PUT' : 'POST';
 
@@ -1107,11 +1381,18 @@ $('#accountantsTable').DataTable({
                 $('#address').val(response.address);
                 $('#status').val(response.status);
                 
-                // Update password field for editing
+                // Set up password fields for editing
                 $('#passwordLabel').text('Password');
-                $('#passwordHelp').text('');
-                $('#password').attr('placeholder', 'Enter new password to change').prop('required', false);
+                $('#passwordHelp').text('Leave blank to keep current password');
+                $('#password').attr('placeholder', '').prop('required', false);
+                
+                // Hide confirmation field initially
                 $('#passwordConfirmGroup').hide();
+                $('#password_confirmation').prop('required', false);
+                
+                // Clear password fields when editing
+                $('#password').val('');
+                $('#password_confirmation').val('');
                 
                 $('#accountantModal').modal('show');
             },
@@ -1125,62 +1406,66 @@ $('#accountantsTable').DataTable({
         });
     });
 
-     // Delete Accountant
-let deleteAccountantId = null;
+    // Delete Accountant
+    let deleteAccountantId = null;
 
-$(document).on('click', '.delete-accountant', function() {
-    deleteAccountantId = $(this).data('id');
-    $('#deleteModal').modal('show');
-});
+    $(document).on('click', '.delete-accountant', function() {
+        deleteAccountantId = $(this).data('id');
+        $('#deleteModal').modal('show');
+    });
 
-$('#confirmDelete').click(function() {
-    if (!deleteAccountantId) return;
-    
-    $.ajax({
-        url: `/admin-accountant/${deleteAccountantId}`,
-        type: 'DELETE',
-        data: {
-            _token: $('meta[name="csrf-token"]').attr('content')
-        },
-        success: function(response) {
-            $('#deleteModal').modal('hide');
-            
-            Swal.fire({
-                icon: 'success',
-                title: 'Success',
-                text: response.message,
-                timer: 1500,
-                showConfirmButton: false
-            }).then(() => {
-                // Auto-refresh the page after success message
-                location.reload();
-            });
-            
-            deleteAccountantId = null;
-        },
-        error: function(xhr) {
-            $('#deleteModal').modal('hide');
-            let errorMessage = xhr.responseJSON?.message || 'Failed to delete accountant';
-            
-            if (xhr.responseJSON?.errors) {
-                errorMessage = Object.values(xhr.responseJSON.errors).join('\n');
+    $('#confirmDelete').click(function() {
+        if (!deleteAccountantId) return;
+        
+        $.ajax({
+            url: `/admin-accountant/${deleteAccountantId}`,
+            type: 'DELETE',
+            data: {
+                _token: $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                $('#deleteModal').modal('hide');
+                
+                // Remove the row
+                $('#accountantRow_' + deleteAccountantId).remove();
+                
+                // Re-number all remaining rows sequentially starting from 1
+                renumberTableRows();
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: response.message,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+                
+                deleteAccountantId = null;
+            },
+            error: function(xhr) {
+                $('#deleteModal').modal('hide');
+                let errorMessage = xhr.responseJSON?.message || 'Failed to delete accountant';
+                
+                if (xhr.responseJSON?.errors) {
+                    errorMessage = Object.values(xhr.responseJSON.errors).join('\n');
+                }
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: errorMessage
+                });
             }
-            
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: errorMessage
-            });
-        }
+        });
     });
-});
-// Function to renumber table rows sequentially
-function renumberTableRows() {
-    $('#accountantsTable tbody tr').each(function(index) {
-        // Set the first cell to sequential number starting from 1
-        $(this).find('td:first').text(index + 1);
-    });
-}
+
+    // Function to renumber table rows sequentially
+    function renumberTableRows() {
+        $('#accountantsTable tbody tr').each(function(index) {
+            // Set the first cell to sequential number starting from 1
+            $(this).find('td:first').text(index + 1);
+        });
+    }
 
     // Logout functionality
     $('#logoutBtn').click(function(e) {
