@@ -71,13 +71,7 @@ Options -Indexes
 </IfModule>
 RewriteEngine On
 
-RewriteEngine On
 
-
-# Block direct access to /admin-dashboard
-#RewriteCond %{REQUEST_URI} ^/admin-dashboard/?$ [NC]
-#RewriteCond %{HTTP_REFERER} !^https://santafe-waterbilling\.com/admin-login [NC]
-#ewriteRule ^ - [R=404,L]
 
 
 
