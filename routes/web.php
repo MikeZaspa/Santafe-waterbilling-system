@@ -446,8 +446,6 @@ Route::post('/plumber-login', [PlumberController::class, 'login'])->name('plumbe
 Route::get('/plumber/dashboard', [PlumberController::class, 'dashboard'])->name('plumber.dashboard');
 Route::post('/plumber/logout', [PlumberController::class, 'logout'])->name('plumber.logout');
 
-// Plumber 2FA routes
-
 Route::post('/plumber/verify-2fa', [PlumberController::class, 'verify2FA'])->name('plumber.verify.2fa');
 Route::post('/plumber/resend-2fa', [PlumberController::class, 'resend2FA'])->name('plumber.resend.2fa');
 
