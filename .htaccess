@@ -1,7 +1,5 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    # Check if public directory exists and request is not already for public
-    RewriteCond %{DOCUMENT_ROOT}/public -d
-    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteCond %{REQUEST_URI} !^/public
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
