@@ -297,6 +297,100 @@
             color: var(--primary-color);
         }
         
+        /* Session Timer Styles */
+        .session-timer {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 8px;
+            padding: 10px 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1050;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        
+        .session-timer.warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+        }
+        
+        .session-timer.danger {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .session-timer-icon {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .session-timer-text {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .session-timer-countdown {
+            font-weight: 700;
+            margin-left: 5px;
+        }
+        
+        /* Session Modal Styles */
+        .session-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1100;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .session-modal-content {
+            background-color: white;
+            border-radius: 8px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+        }
+        
+        .session-modal-icon {
+            font-size: 3rem;
+            color: #ffc107;
+            margin-bottom: 15px;
+        }
+        
+        .session-modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .session-modal-message {
+            margin-bottom: 20px;
+            color: #6c757d;
+        }
+        
+        .session-modal-countdown {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #dc3545;
+            margin-bottom: 20px;
+        }
+        
+        .session-modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        
         /* Responsive styles */
         @media (min-width: 992px) {
             .sidebar {
@@ -356,6 +450,17 @@
                 transform: scale(0.8);
                 transform-origin: center center;
             }
+            
+            /* Session timer adjustments for mobile */
+            .session-timer {
+                bottom: 10px;
+                right: 10px;
+                padding: 8px 12px;
+            }
+            
+            .session-timer-text {
+                font-size: 0.8rem;
+            }
         }
         
         @media (max-width: 576px) {
@@ -388,6 +493,20 @@
                 padding: 1rem;
             }
             
+            /* Session timer adjustments for small mobile */
+            .session-timer {
+                bottom: 5px;
+                right: 5px;
+                padding: 6px 10px;
+            }
+            
+            .session-timer-icon {
+                font-size: 1rem;
+            }
+            
+            .session-timer-text {
+                font-size: 0.75rem;
+            }
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -672,6 +791,28 @@
     </div>
 </div>
 
+<!-- Session Timer -->
+<div class="session-timer" id="sessionTimer">
+    <i class="bi bi-clock session-timer-icon"></i>
+    <div class="session-timer-text">
+        Session: <span class="session-timer-countdown" id="sessionCountdown">3:00</span>
+    </div>
+</div>
+
+<!-- Session Warning Modal -->
+<div class="session-modal" id="sessionWarningModal">
+    <div class="session-modal-content">
+        <i class="bi bi-exclamation-triangle session-modal-icon"></i>
+        <h3 class="session-modal-title">Session Expiring</h3>
+        <p class="session-modal-message">Your session will expire in:</p>
+        <div class="session-modal-countdown" id="modalCountdown">30</div>
+        <div class="session-modal-buttons">
+            <button class="btn btn-primary" id="extendSessionBtn">Extend Session</button>
+            <button class="btn btn-outline-secondary" id="signOutNowBtn">Sign Out Now</button>
+        </div>
+    </div>
+</div>
+
 <!-- Bootstrap Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <!-- jQuery -->
@@ -680,6 +821,127 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
  $(document).ready(function() {
+    // Session Management Variables
+    const sessionTimeout = 180000; // 3 minutes in milliseconds
+    const warningTimeout = 30000; // 30 seconds before expiry
+    let sessionTimer;
+    let warningTimer;
+    let timeRemaining = sessionTimeout;
+    let isModalOpen = false;
+    
+    // Start the session timer
+    function startSessionTimer() {
+        resetSessionTimer();
+        
+        // Set up activity event listeners
+        $(document).on('mousemove keydown click scroll', function() {
+            if (!isModalOpen) {
+                resetSessionTimer();
+            }
+        });
+    }
+    
+    // Reset the session timer
+    function resetSessionTimer() {
+        clearTimeout(sessionTimer);
+        clearTimeout(warningTimer);
+        
+        timeRemaining = sessionTimeout;
+        updateSessionTimerDisplay();
+        
+        // Set timer to show warning modal
+        warningTimer = setTimeout(showWarningModal, sessionTimeout - warningTimeout);
+        
+        // Set timer to logout automatically
+        sessionTimer = setTimeout(logoutUser, sessionTimeout);
+    }
+    
+    // Update the session timer display
+    function updateSessionTimerDisplay() {
+        const minutes = Math.floor(timeRemaining / 60000);
+        const seconds = Math.floor((timeRemaining % 60000) / 1000);
+        const display = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        
+        $('#sessionCountdown').text(display);
+        
+        // Change timer color based on remaining time
+        const $sessionTimer = $('#sessionTimer');
+        $sessionTimer.removeClass('warning danger');
+        
+        if (timeRemaining <= 30000) {
+            $sessionTimer.addClass('danger');
+        } else if (timeRemaining <= 60000) {
+            $sessionTimer.addClass('warning');
+        }
+    }
+    
+    // Show warning modal
+    function showWarningModal() {
+        isModalOpen = true;
+        let modalCountdown = Math.floor(warningTimeout / 1000);
+        
+        $('#modalCountdown').text(modalCountdown);
+        $('#sessionWarningModal').css('display', 'flex');
+        
+        // Update modal countdown
+        const modalInterval = setInterval(function() {
+            modalCountdown--;
+            $('#modalCountdown').text(modalCountdown);
+            
+            if (modalCountdown <= 0) {
+                clearInterval(modalInterval);
+                logoutUser();
+            }
+        }, 1000);
+        
+        // Store interval ID to clear it when modal is closed
+        $('#sessionWarningModal').data('interval', modalInterval);
+    }
+    
+    // Hide warning modal
+    function hideWarningModal() {
+        isModalOpen = false;
+        $('#sessionWarningModal').css('display', 'none');
+        
+        // Clear the modal countdown interval
+        const modalInterval = $('#sessionWarningModal').data('interval');
+        if (modalInterval) {
+            clearInterval(modalInterval);
+        }
+    }
+    
+    // Extend session
+    function extendSession() {
+        hideWarningModal();
+        resetSessionTimer();
+        
+        // Show success message
+        showSuccessToast('Session extended for another 3 minutes');
+    }
+    
+    // Logout user
+    function logoutUser() {
+        hideWarningModal();
+        
+        Swal.fire({
+            title: 'Session Expired',
+            text: 'Your session has expired. You will be redirected to the login page.',
+            icon: 'info',
+            confirmButtonText: 'OK',
+            allowOutsideClick: false
+        }).then(function() {
+            performLogout();
+        });
+    }
+    
+    // Countdown timer update
+    const countdownInterval = setInterval(function() {
+        if (timeRemaining > 0) {
+            timeRemaining -= 1000;
+            updateSessionTimerDisplay();
+        }
+    }, 1000);
+    
     // Mobile sidebar toggle functionality
     const sidebar = $('.sidebar');
     const mainContent = $('.main-content');
@@ -847,9 +1109,22 @@
         loadReconnectedConsumers();
     });
 
+    // Session management event handlers
+    $('#extendSessionBtn').click(function() {
+        extendSession();
+    });
+    
+    $('#signOutNowBtn').click(function() {
+        hideWarningModal();
+        performLogout();
+    });
+    
     // Load reconnected consumers on page load
     loadReconnectedConsumers();
-
+    
+    // Start the session timer
+    startSessionTimer();
+    
     // Auto-refresh reconnected consumers every 30 seconds
     setInterval(loadReconnectedConsumers, 30000);
     
