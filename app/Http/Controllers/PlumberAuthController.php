@@ -12,10 +12,7 @@ class PlumberAuthController extends Controller
 {
     public function showLoginForm()
     {
-        // If already logged in, redirect to dashboard
-        if (Session::has('plumber_auth') && Session::get('plumber_auth')) {
-            return redirect()->route('plumber.dashboard');
-        }
+     
         
         return view('auth.plumber-login');
     }
