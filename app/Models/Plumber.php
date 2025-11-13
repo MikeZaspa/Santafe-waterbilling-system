@@ -3,12 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable; // <-- 1. I-import kini
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\Notifiable; // <-- 2. I-import kini (maayo nga i-add)
 
-class Plumber extends Model
+class Plumber extends Authenticatable // <-- 3. I-extend kini diri
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, Notifiable; // <-- 4. Dugang ang Notifiable trait
 
     // Specify the table name explicitly
     protected $table = 'admin_plumbers';
@@ -38,5 +39,4 @@ class Plumber extends Model
         'email_verified_at' => 'datetime',
         'two_factor_expires_at' => 'datetime',
     ];
-
 }
