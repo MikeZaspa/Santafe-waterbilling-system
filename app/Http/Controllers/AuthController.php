@@ -340,19 +340,15 @@ class AuthController extends Controller
 
         $credentials = $request->only('email', 'password');
 
-        // Get location information
-        $locationData = $this->getLocationData($request);
-
         // Check if admin exists first
         $admin = Admin::where('email', $request->email)->first();
 
         if (!$admin) {
-            // Log failed login attempt with location data
+            // Log failed login attempt
             $this->adminLogService->logActivity(
                 null, 
                 'failed_login_attempt - email_not_found', 
-                $request,
-                $locationData
+                $request
             );
 
             return response()->json([
@@ -377,12 +373,11 @@ class AuthController extends Controller
 
         // Check if admin is active
         if (!$admin->active) {
-            // Log attempted login to inactive account with location data
+            // Log attempted login to inactive account
             $this->adminLogService->logActivity(
                 $admin, 
                 'failed_login_attempt - account_inactive', 
-                $request,
-                $locationData
+                $request
             );
 
             return response()->json([
@@ -413,12 +408,11 @@ class AuthController extends Controller
             ]);
         }
 
-        // Log failed login attempt (wrong password) with location data
+        // Log failed login attempt (wrong password)
         $this->adminLogService->logActivity(
             $admin, 
             'failed_login_attempt - wrong_password', 
-            $request,
-            $locationData
+            $request
         );
 
         return response()->json([
@@ -489,11 +483,8 @@ class AuthController extends Controller
         if (Auth::guard('admin')->attempt($credentials)) {
             $request->session()->regenerate();
             
-            // Get location information
-            $locationData = $this->getLocationData($request);
-            
-            // Log successful login with location data
-            $this->adminLogService->logLogin($admin, $request, '2fa_login_successful', $locationData);
+            // Log successful login
+            $this->adminLogService->logLogin($admin, $request, '2fa_login_successful');
             
             return response()->json([
                 'success' => true,
@@ -505,55 +496,6 @@ class AuthController extends Controller
             'success' => false,
             'message' => 'Authentication failed.'
         ], 401);
-    }
-    
-    /**
-     * Get location data from IP address
-     */
-    private function getLocationData(Request $request)
-    {
-        $ipAddress = $request->ip();
-        
-        // For local development, use a public IP for testing
-        if ($ipAddress === '127.0.0.1' || $ipAddress === '::1') {
-            $ipAddress = '8.8.8.8'; // Google's public IP for testing
-        }
-        
-        try {
-            // Using ip-api.com for geolocation (free tier)
-            $response = Http::get("http://ip-api.com/json/{$ipAddress}");
-            
-            if ($response->successful()) {
-                $data = $response->json();
-                
-                return [
-                    'ip_address' => $ipAddress,
-                    'country' => $data['country'] ?? 'Unknown',
-                    'country_code' => $data['countryCode'] ?? 'Unknown',
-                    'region' => $data['regionName'] ?? 'Unknown',
-                    'city' => $data['city'] ?? 'Unknown',
-                    'latitude' => $data['lat'] ?? null,
-                    'longitude' => $data['lon'] ?? null,
-                    'isp' => $data['isp'] ?? 'Unknown',
-                    'timezone' => $data['timezone'] ?? 'Unknown',
-                ];
-            }
-        } catch (\Exception $e) {
-            \Log::error('Error getting location data: ' . $e->getMessage());
-        }
-        
-        // Fallback data if API fails
-        return [
-            'ip_address' => $ipAddress,
-            'country' => 'Unknown',
-            'country_code' => 'Unknown',
-            'region' => 'Unknown',
-            'city' => 'Unknown',
-            'latitude' => null,
-            'longitude' => null,
-            'isp' => 'Unknown',
-            'timezone' => 'Unknown',
-        ];
     }
     
     /**
