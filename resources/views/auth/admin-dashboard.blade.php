@@ -325,6 +325,46 @@
             color: var(--error);
         }
         
+        /* Backup database styles */
+        .backup-section {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .backup-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .backup-item:last-child {
+            border-bottom: none;
+        }
+        
+        .backup-info {
+            flex-grow: 1;
+        }
+        
+        .backup-name {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .backup-meta {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+        
+        .backup-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
         @media (min-width: 992px) {
             .sidebar {
                 transform: translateX(0);
@@ -443,6 +483,11 @@
             <li class="nav-item">
                 <a class="nav-link" href="admin-accountant">
                     <i class="bi bi-cash-stack"></i> Manage Accountant
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#backupModal">
+                    <i class="bi bi-cloud-download"></i> Backup Database
                 </a>
             </li>
         </ul>
@@ -702,6 +747,53 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Backup Database Modal -->
+<div class="modal fade" id="backupModal" tabindex="-1" aria-labelledby="backupModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="backupModalLabel">
+                    <i class="bi bi-cloud-download me-2"></i>Database Backup
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="mb-0">Create New Backup</h6>
+                            <button class="btn btn-primary" id="createBackupBtn">
+                                <i class="bi bi-plus-circle me-1"></i>Create Backup
+                            </button>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Creating a backup will generate a complete copy of your database. This process may take a few moments depending on the size of your database.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-12">
+                        <h6 class="mb-3">Existing Backups</h6>
+                        <div id="backupsList">
+                            <div class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2">Loading backups...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -1489,6 +1581,182 @@
             confirmButtonColor: '#d32f2f'
         });
     });
+    
+    // Backup Database Modal functionality
+    $('#backupModal').on('shown.bs.modal', function() {
+        loadBackups();
+    });
+    
+    // Load existing backups
+    function loadBackups() {
+        $('#backupsList').html(`
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Loading backups...</p>
+            </div>
+        `);
+        
+        // Fetch backups via AJAX
+        $.get('/admin/backups/api', function(data) {
+            renderBackupsList(data.backups);
+        }).fail(function() {
+            $('#backupsList').html(`
+                <div class="text-center py-4">
+                    <i class="fas fa-exclamation-triangle fa-2x text-warning mb-3"></i>
+                    <p class="text-muted">Error loading backups. Please try again.</p>
+                </div>
+            `);
+        });
+    }
+    
+    // Render backups list
+    function renderBackupsList(backups) {
+        if (backups.length === 0) {
+            $('#backupsList').html(`
+                <div class="text-center py-4">
+                    <i class="fas fa-database fa-2x text-muted mb-3"></i>
+                    <p class="text-muted">No backups found. Create your first backup using the button above.</p>
+                </div>
+            `);
+            return;
+        }
+        
+        let html = '';
+        backups.forEach(function(backup) {
+            const createdDate = new Date(backup.created_at).toLocaleString();
+            const fileSize = formatFileSize(backup.size);
+            
+            html += `
+                <div class="backup-item">
+                    <div class="backup-info">
+                        <div class="backup-name">${backup.name}</div>
+                        <div class="backup-meta">
+                            <span><i class="bi bi-calendar me-1"></i>${createdDate}</span>
+                            <span class="ms-3"><i class="bi bi-hdd me-1"></i>${fileSize}</span>
+                        </div>
+                    </div>
+                    <div class="backup-actions">
+                        <button class="btn btn-sm btn-outline-primary" onclick="downloadBackup('${backup.id}', '${backup.name}')">
+                            <i class="bi bi-download me-1"></i>Download
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteBackup('${backup.id}', '${backup.name}')">
+                            <i class="bi bi-trash me-1"></i>Delete
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        $('#backupsList').html(html);
+    }
+    
+    // Format file size
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    // Create backup
+    $('#createBackupBtn').on('click', function() {
+        Swal.fire({
+            title: 'Creating Backup',
+            text: 'Please wait while we create your database backup. This may take a few moments.',
+            icon: 'info',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+        
+        // Create backup via AJAX
+        $.post('/admin/backups/create', function(data) {
+            Swal.fire({
+                title: 'Backup Created',
+                text: 'Your database backup has been created successfully.',
+                icon: 'success',
+                confirmButtonColor: '#d32f2f'
+            }).then(() => {
+                // Reload the backups list
+                loadBackups();
+            });
+        }).fail(function() {
+            Swal.fire({
+                title: 'Backup Failed',
+                text: 'There was an error creating your database backup. Please try again.',
+                icon: 'error',
+                confirmButtonColor: '#d32f2f'
+            });
+        });
+    });
+    
+    // Download backup
+    window.downloadBackup = function(id, name) {
+        Swal.fire({
+            title: 'Downloading Backup',
+            text: 'Please wait while we prepare your download.',
+            icon: 'info',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+        
+        // Download backup via AJAX
+        window.location.href = `/admin/backups/download/${id}`;
+        
+        // Close the loading message after a short delay
+        setTimeout(() => {
+            Swal.close();
+        }, 2000);
+    };
+    
+    // Delete backup
+    window.deleteBackup = function(id, name) {
+        Swal.fire({
+            title: 'Delete Backup',
+            html: `Are you sure you want to delete <strong>${name}</strong>? This action cannot be undone.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d32f2f',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, Delete',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Delete backup via AJAX
+                $.ajax({
+                    url: `/admin/backups/delete/${id}`,
+                    type: 'DELETE',
+                    success: function(data) {
+                        Swal.fire({
+                            title: 'Backup Deleted',
+                            text: 'The backup has been deleted successfully.',
+                            icon: 'success',
+                            confirmButtonColor: '#d32f2f'
+                        }).then(() => {
+                            // Reload the backups list
+                            loadBackups();
+                        });
+                    },
+                    error: function() {
+                        Swal.fire({
+                            title: 'Delete Failed',
+                            text: 'There was an error deleting the backup. Please try again.',
+                            icon: 'error',
+                            confirmButtonColor: '#d32f2f'
+                        });
+                    }
+                });
+            }
+        });
+    };
 });
 
 
