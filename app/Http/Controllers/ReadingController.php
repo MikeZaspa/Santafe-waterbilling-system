@@ -12,10 +12,19 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 class ReadingController extends Controller
 {
+    public function __construct()
+    {
+        // Apply the plumber.auth middleware to all methods
+        $this->middleware('plumber.auth');
+    }
     
     public function index()
     {
       
+        // Check if plumber is logged in
+        if (!Session::get('plumber_logged_in')) {
+            return redirect()->route('plumber.login');
+        }
         // Count readings with both current and previous readings (completed)
         $completedCount = Billing::whereNotNull('current_reading')
                                ->whereNotNull('previous_reading')

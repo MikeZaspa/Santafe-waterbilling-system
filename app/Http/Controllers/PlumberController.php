@@ -14,11 +14,26 @@ use Carbon\Carbon;
 class PlumberController extends Controller
 {
     /**
+     * Create a new controller instance.
+     * Apply the plumber.auth middleware to all methods except login/verification.
+     */
+    public function __construct()
+    {
+        // The 'except' array allows guests to access these specific routes
+        $this->middleware('plumber.auth')->except([
+            'showLoginForm', 
+            'login', 
+            'verify2FA', 
+            'resend2FA'
+        ]);
+    }
+
+    /**
      * Display a listing of plumbers (for admin)
      */
     public function index()
     {
-         // Check if consumer is authenticated
+         // Check if admin is authenticated
         if (!Auth::guard('admin')->check()) {
             return redirect('/admin-login');
         }
@@ -113,8 +128,6 @@ class PlumberController extends Controller
     public function destroy($id)
     {
         $plumber = Plumber::findOrFail($id);
-
-        // Use forceDelete() instead of delete() to permanently remove the record
         $plumber->forceDelete();
 
         return response()->json([
@@ -168,6 +181,8 @@ class PlumberController extends Controller
         try {
             Mail::to($plumber->email)->send(new TwoFactorCodeMailPlumber($code, $plumber->first_name));
         } catch (\Exception $e) {
+            // Log the error for debugging
+            \Log::error('Plumber 2FA Email Error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to send verification code. Please try again.'
@@ -187,7 +202,7 @@ class PlumberController extends Controller
     /**
      * Verify 2FA code
      */
-      public function verify2FA(Request $request)
+    public function verify2FA(Request $request)
     {
         $request->validate([
             'code' => 'required|string|digits:6',
@@ -226,26 +241,27 @@ class PlumberController extends Controller
             ], 401);
         }
         
-        // Clear the 2FA code
+        // Clear the 2FA code from the database
         $plumber->two_factor_code = null;
         $plumber->two_factor_expires_at = null;
         $plumber->save();
         
-        // Log in the plumber
+        // Log in the plumber by setting session variables
         Session::put('plumber_logged_in', true);
         Session::put('plumber_id', $plumber->id);
         Session::put('plumber_data', $plumber->toArray());
         
-        
-        // Clear the temporary session
+        // Clear the temporary session variable used for 2FA
         Session::forget('plumber_id_for_2fa');
         
         return response()->json([
             'success' => true,
             'message' => 'Login successful',
-            'redirect' => '/admin-plumber-dashboard'  // Direct URL to match your route
+            // IMPORTANT: Redirect to the route handled by ReadingController
+            'redirect' => route('plumber.dashboard') 
         ]);
     }
+
     /**
      * Resend 2FA code
      */
@@ -281,6 +297,7 @@ class PlumberController extends Controller
         try {
             Mail::to($plumber->email)->send(new TwoFactorCodeMailPlumber($code, $plumber->first_name));
         } catch (\Exception $e) {
+            \Log::error('Plumber 2FA Resend Email Error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to send verification code. Please try again.'
@@ -294,36 +311,17 @@ class PlumberController extends Controller
     }
     
     /**
-     * Show the plumber dashboard
-     */
-    public function dashboard()
-    {
-        // Check if plumber is logged in using session
-        if (!Session::get('plumber_logged_in')) {
-            return redirect()->route('plumber.login');
-        }
-
-        $plumberId = Session::get('plumber_id');
-        $plumber = Plumber::find($plumberId);
-
-        if (!$plumber) {
-            return redirect()->route('plumber.login');
-        }
-
-        return view('plumber.dashboard', compact('plumber'));
-    }
-
-    /**
      * Logout the plumber
      */
     public function logout(Request $request)
     {
-        // Clear plumber session
+        // Clear all plumber-related session data
         Session::forget('plumber_logged_in');
         Session::forget('plumber_id');
         Session::forget('plumber_data');
         Session::forget('plumber_id_for_2fa');
 
+        // Invalidate the session and regenerate the token for security
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
