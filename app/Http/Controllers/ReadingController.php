@@ -15,10 +15,7 @@ class ReadingController extends Controller
     
     public function index()
     {
-         // If already logged in, redirect to dashboard
-        if (Session::has('plumber_auth') && Session::get('plumber_auth')) {
-            return redirect()->route('plumber.dashboard');
-        }
+      
         // Count readings with both current and previous readings (completed)
         $completedCount = Billing::whereNotNull('current_reading')
                                ->whereNotNull('previous_reading')
