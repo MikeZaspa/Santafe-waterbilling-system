@@ -8,12 +8,20 @@ use Illuminate\Support\Facades\Session;
 
 class PlumberAuth
 {
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure  $next
+     * @return mixed
+     */
     public function handle(Request $request, Closure $next)
     {
-        if (!Session::get('plumber_auth')) {
-            return redirect('/plumber-login');
+        // Check if plumber is logged in
+        if (!Session::get('plumber_logged_in')) {
+            return redirect()->route('plumber.login');
         }
-
+        
         return $next($request);
     }
 }
