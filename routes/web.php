@@ -456,10 +456,10 @@ Route::get('/admin/plumbers/{id}/edit', [PlumberController::class, 'edit'])->nam
 Route::put('/admin/plumbers/{id}', [PlumberController::class, 'update'])->name('admin.plumbers.update');
 Route::delete('/admin/plumbers/{id}', [PlumberController::class, 'destroy'])->name('admin.plumbers.destroy');
 
-// Admin plumber dashboard route
 Route::get('/admin-plumber-dashboard', [ReadingController::class, 'index'])
     ->name('admin.plumber.dashboard')
-    ->middleware('plumber.auth');
+    ->middleware([PlumberAuthMiddleware::class]);
+
 // Accountant Login Routes
 Route::get('/accountant-login', function() {
     return view('auth.accountant-login');
