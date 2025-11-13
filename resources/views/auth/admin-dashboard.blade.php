@@ -304,51 +304,25 @@
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background: white;
-            border: 1px solid #dee2e6;
+            background: var(--white);
+            border: 1px solid var(--border);
             border-radius: 8px;
             padding: 10px 15px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             font-size: 0.8rem;
-            color: #6c757d;
+            color: var(--text-light);
             z-index: 1000;
             display: none;
         }
 
         .session-timer.warning {
-            border-color: #ffc107;
-            color: #856404;
+            border-color: var(--warning);
+            color: var(--warning);
         }
 
         .session-timer.danger {
-            border-color: #dc3545;
-            color: #721c24;
-        }
-        
-        /* Backup progress modal */
-        .backup-progress-container {
-            padding: 20px;
-        }
-        
-        .backup-progress-container h5 {
-            margin-bottom: 20px;
-            color: #333;
-        }
-        
-        .progress {
-            height: 25px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-        }
-        
-        .progress-bar {
-            font-weight: bold;
-            line-height: 25px;
-        }
-        
-        .backup-status {
-            font-size: 0.9rem;
-            color: #6c757d;
+            border-color: var(--error);
+            color: var(--error);
         }
         
         @media (min-width: 992px) {
@@ -469,11 +443,6 @@
             <li class="nav-item">
                 <a class="nav-link" href="admin-accountant">
                     <i class="bi bi-cash-stack"></i> Manage Accountant
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#" id="backupDatabaseBtn">
-                    <i class="bi bi-cloud-download"></i> Backup Database
                 </a>
             </li>
         </ul>
@@ -731,32 +700,6 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Backup Progress Modal -->
-<div class="modal fade" id="backupProgressModal" tabindex="-1" aria-labelledby="backupProgressModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="backupProgressModalLabel">
-                    <i class="bi bi-cloud-download me-2"></i>Creating Database Backup
-                </h5>
-            </div>
-            <div class="modal-body">
-                <div class="backup-progress-container">
-                    <div class="progress mb-3">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" 
-                             role="progressbar" 
-                             style="width: 0%" 
-                             id="backupProgressBar">0%</div>
-                    </div>
-                    <div class="backup-status text-center" id="backupStatus">
-                        Initializing backup process...
                     </div>
                 </div>
             </div>
@@ -1544,100 +1487,6 @@
             title: 'Notifications',
             text: 'You have no new notifications at this time.',
             confirmButtonColor: '#d32f2f'
-        });
-    });
-    
-    // Backup Database functionality
-    $('#backupDatabaseBtn').on('click', function(e) {
-        e.preventDefault();
-        
-        // Show the progress modal
-        const modal = new bootstrap.Modal(document.getElementById('backupProgressModal'));
-        modal.show();
-        
-        // Reset progress
-        $('#backupProgressBar').css('width', '0%').text('0%');
-        $('#backupStatus').text('Initializing backup process...');
-        
-        // Simulate backup progress
-        let progress = 0;
-        const interval = setInterval(() => {
-            progress += Math.random() * 15;
-            if (progress > 90) progress = 90;
-            
-            $('#backupProgressBar').css('width', progress + '%').text(Math.round(progress) + '%');
-            
-            if (progress < 30) {
-                $('#backupStatus').text('Connecting to database...');
-            } else if (progress < 60) {
-                $('#backupStatus').text('Creating database backup...');
-            } else if (progress < 90) {
-                $('#backupStatus').text('Compressing backup file...');
-            }
-        }, 500);
-        
-        // Create backup via AJAX
-        $.ajax({
-            url: '/admin/backup/database',
-            type: 'POST',
-            data: {
-                _token: $('meta[name="csrf-token"]').attr('content')
-            },
-            xhr: function() {
-                const xhr = new window.XMLHttpRequest();
-                xhr.addEventListener('progress', function(evt) {
-                    if (evt.lengthComputable) {
-                        const percentComplete = evt.loaded / evt.total * 100;
-                        $('#backupProgressBar').css('width', percentComplete + '%').text(Math.round(percentComplete) + '%');
-                        $('#backupStatus').text('Downloading backup file...');
-                    }
-                }, false);
-                return xhr;
-            },
-            success: function(response) {
-                clearInterval(interval);
-                
-                // Complete progress
-                $('#backupProgressBar').css('width', '100%').text('100%');
-                $('#backupStatus').text('Backup completed successfully!');
-                
-                // Create download link
-                const downloadUrl = response.download_url;
-                const link = document.createElement('a');
-                link.href = downloadUrl;
-                link.download = response.filename;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                // Close modal after a short delay
-                setTimeout(() => {
-                    modal.hide();
-                    
-                    // Show success message
-                    Swal.fire({
-                        title: 'Backup Completed',
-                        text: 'Database backup has been created and downloaded successfully.',
-                        icon: 'success',
-                        confirmButtonColor: '#d32f2f',
-                        timer: 3000
-                    });
-                }, 1000);
-            },
-            error: function(xhr) {
-                clearInterval(interval);
-                
-                // Hide modal
-                modal.hide();
-                
-                // Show error message
-                Swal.fire({
-                    title: 'Backup Failed',
-                    text: 'There was an error creating the database backup. Please try again.',
-                    icon: 'error',
-                    confirmButtonColor: '#d32f2f'
-                });
-            }
         });
     });
 });

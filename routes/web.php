@@ -480,15 +480,6 @@ Route::get('/consumer/dashboard', [ConsumerAuthController::class, 'dashboard'])-
 Route::post('/consumer/logout', [ConsumerAuthController::class, 'logout'])->name('consumer.logout');
 // Logout route
 
-// Add these routes to your existing routes
-Route::middleware(['auth:admin'])->group(function () {
-    // Backup routes
-    Route::post('/admin/backup/database', [AuthController::class, 'backupDatabase'])->name('admin.backup.create');
-    Route::get('/admin/backup/download/{filename}', [AuthController::class, 'downloadBackup'])->name('admin.backup.download');
-    Route::get('/admin/backups', [AuthController::class, 'getBackups'])->name('admin.backup.list');
-    Route::delete('/admin/backup/{filename}', [AuthController::class, 'deleteBackup'])->name('admin.backup.delete');
-});
-
 Route::post('/accountant/logout', [AccountantManageController::class, 'logout'])->name('accountant.logout');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/', function () {
