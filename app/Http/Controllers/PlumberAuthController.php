@@ -7,59 +7,47 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Log;
 
 class PlumberAuthController extends Controller
 {
     public function showLoginForm()
     {
-        if (Session::has('plumber_auth') && Session::get('plumber_auth')) {
-            return redirect()->route('plumber.dashboard');
-        }
-        
         return view('auth.plumber-login');
     }
 
     public function login(Request $request)
-{
-    $credentials = $request->validate([
-        'username' => 'required|string',
-        'password' => 'required|string',
-    ]);
-
-    // GAMITA ANG 'username' FIELD
-    // Kung ang imong login form naggamit og 'username', gamita ang `username` key.
-    if (Auth::guard('plumber')->attempt(['username' => $credentials['username'], 'password' => $credentials['password']])) {
-        $request->session()->regenerate();
-        
-        // Redirect sa intended page o dashboard
-        return redirect()->intended(route('plumber.dashboard'));
-    }
-
-    // Kung fail, ibalik sa login uban sa error
-    return back()->withErrors([
-        'username' => 'The provided credentials do not match our records.',
-    ])->withInput($request->only('username'));
-}
-
-    private function isValidPlumber($credentials)
     {
-        // Example: Check against database
-        $plumber = Plumber::where('username', $credentials['username'])->first();
+        $request->validate([
+            'username' => 'required|string',
+            'password' => 'required|string',
+        ]);
 
-        if ($plumber && Hash::check($credentials['password'], $plumber->password)) {
-            return true;
+        $plumber = Plumber::where('username', $request->username)
+                         ->where('status', 'active')
+                         ->first();
+
+        if ($plumber && Hash::check($request->password, $plumber->password)) {
+            // Create plumber session
+            Session::put('plumber_auth', true);
+            Session::put('plumber_id', $plumber->id);
+            Session::put('plumber_name', $plumber->first_name . ' ' . $plumber->last_name);
+            Session::put('plumber_role', 'plumber');
+
+            return redirect()->intended('admin-plumber-dashboard');
         }
 
-        return false;
+        return back()->withErrors([
+            'username' => 'Invalid credentials or account inactive.',
+        ])->withInput($request->only('username'));
     }
 
     public function logout(Request $request)
     {
         Session::forget('plumber_auth');
         Session::forget('plumber_id');
-        Session::save();
+        Session::forget('plumber_name');
+        Session::forget('plumber_role');
 
-        return redirect('/plumber/login')->with('success', 'You have been logged out successfully.');
+        return redirect('/plumber/login');
     }
 }

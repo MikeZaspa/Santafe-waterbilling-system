@@ -36,7 +36,6 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\AdminLogController;
 use App\Http\Controllers\AccountantNotificationController;
-use App\Http\Middleware\PlumberAuthMiddleware;
 
 Route::get('/admin-register', [AuthController::class, 'showRegistrationForm'])->name('admin-register');
 Route::post('/admin-register', [AuthController::class, 'register']);
@@ -457,12 +456,8 @@ Route::get('/admin/plumbers/{id}/edit', [PlumberController::class, 'edit'])->nam
 Route::put('/admin/plumbers/{id}', [PlumberController::class, 'update'])->name('admin.plumbers.update');
 Route::delete('/admin/plumbers/{id}', [PlumberController::class, 'destroy'])->name('admin.plumbers.destroy');
 
-Route::get('/plumber/login', [PlumberAuthController::class, 'showLoginForm'])->name('plumber.login');
-Route::post('/plumber/login', [PlumberAuthController::class, 'login']);
-
-Route::get('/admin-plumber-dashboard', [ReadingController::class, 'index'])
-    ->name('admin.plumber.dashboard')
-    ->middleware([PlumberAuthMiddleware::class]);
+// Admin plumber dashboard route
+Route::get('/admin-plumber-dashboard', [ReadingController::class, 'index'])->name('admin.plumber.dashboard');
 
 // Accountant Login Routes
 Route::get('/accountant-login', function() {
