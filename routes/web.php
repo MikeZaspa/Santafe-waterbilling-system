@@ -36,6 +36,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\AdminLogController;
 use App\Http\Controllers\AccountantNotificationController;
+use App\Http\Middleware\PlumberAuth;
 
 Route::get('/admin-register', [AuthController::class, 'showRegistrationForm'])->name('admin-register');
 Route::post('/admin-register', [AuthController::class, 'register']);
