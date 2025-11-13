@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
 use App\Mail\TwoFactorCodeMailPlumber;
-use App\Http\Middleware\PlumberMiddleware;
 use Carbon\Carbon;
 
 class PlumberController extends Controller
