@@ -7,12 +7,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Log;
 
 class PlumberAuthController extends Controller
 {
     public function showLoginForm()
     {
-        // If already logged in, redirect to dashboard
         if (Session::has('plumber_auth') && Session::get('plumber_auth')) {
             return redirect()->route('plumber.dashboard');
         }
@@ -20,43 +20,47 @@ class PlumberAuthController extends Controller
         return view('auth.plumber-login');
     }
 
-    // In your PlumberLoginController
-public function login(Request $request)
-{
-    // Validate credentials
-    $credentials = $request->validate([
-        'email' => 'required|email',
-        'password' => 'required',
-    ]);
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'username' => 'required|string',
+            'password' => 'required|string',
+        ]);
 
-    // Check plumber credentials (adjust this according to your logic)
-    if ($this->isValidPlumber($credentials)) {
-        // Set session properly
-        Session::put('plumber_auth', true);
-        Session::save(); // Force save
-        
-        // Debug: log successful login
-        Log::info('Plumber login successful', ['session_id' => Session::getId()]);
-        
-        return redirect()->route('admin.plumber.dashboard');
+        // Check plumber credentials (adjust this according to your logic)
+        if ($this->isValidPlumber($credentials)) {
+            // Set session properly
+            Session::put('plumber_auth', true);
+            Session::save(); // Force save
+
+            // Optional: Store plumber ID for future use
+            Session::put('plumber_id', $plumber->id); // if you have plumber object
+
+            Log::info('Plumber login successful', ['session_id' => Session::getId()]);
+            
+            return redirect()->route('plumber.dashboard');
+        }
+
+        return back()->withErrors(['username' => 'Invalid credentials']);
     }
 
-    return back()->withErrors(['email' => 'Invalid credentials']);
-}
+    private function isValidPlumber($credentials)
+    {
+        // Example: Check against database
+        $plumber = Plumber::where('username', $credentials['username'])->first();
 
-private function isValidPlumber($credentials)
-{
-    // Your plumber validation logic here
-    // This could be checking against a database, config file, etc.
-    return true; // Replace with actual validation
-}
+        if ($plumber && Hash::check($credentials['password'], $plumber->password)) {
+            return true;
+        }
+
+        return false;
+    }
 
     public function logout(Request $request)
     {
         Session::forget('plumber_auth');
         Session::forget('plumber_id');
-        Session::forget('plumber_name');
-        Session::forget('plumber_role');
+        Session::save();
 
         return redirect('/plumber/login')->with('success', 'You have been logged out successfully.');
     }
