@@ -707,4 +707,217 @@ class AuthController extends Controller
         
         return response()->json(['success' => false], 401);
     }
+public function backupDatabase(Request $request)
+    {
+        // Check if admin is authenticated
+        if (!Auth::guard('admin')->check()) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        try {
+            // Get database configuration
+            $database = config('database.connections.mysql');
+            $host = $database['host'];
+            $username = $database['username'];
+            $password = $database['password'];
+            $databaseName = $database['database'];
+            
+            // Create backup filename with timestamp
+            $timestamp = Carbon::now()->format('Y_m_d_His');
+            $filename = "backup_{$databaseName}_{$timestamp}.sql";
+            $backupPath = storage_path("app/backups/{$filename}");
+            
+            // Ensure backups directory exists
+            if (!Storage::disk('local')->exists('backups')) {
+                Storage::disk('local')->makeDirectory('backups');
+            }
+            
+            // Create the backup using mysqldump
+            $command = sprintf(
+                'mysqldump --user=%s --password=%s --host=%s %s > %s',
+                escapeshellarg($username),
+                escapeshellarg($password),
+                escapeshellarg($host),
+                escapeshellarg($databaseName),
+                escapeshellarg($backupPath)
+            );
+            
+            // Execute the backup command
+            exec($command, $output, $returnCode);
+            
+            if ($returnCode !== 0) {
+                throw new \Exception('Failed to create database backup');
+            }
+            
+            // Log the backup activity
+            $this->adminLogService->logActivity(
+                Auth::guard('admin')->user(),
+                'database_backup_created',
+                $request,
+                ['filename' => $filename]
+            );
+            
+            // Create a download URL that will be valid for 5 minutes
+            $downloadUrl = route('admin.backup.download', ['filename' => $filename]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Backup created successfully',
+                'filename' => $filename,
+                'download_url' => $downloadUrl
+            ]);
+            
+        } catch (\Exception $e) {
+            // Log the error
+            \Log::error('Database backup failed: ' . $e->getMessage());
+            
+            // Log the failed backup attempt
+            $this->adminLogService->logActivity(
+                Auth::guard('admin')->user(),
+                'database_backup_failed',
+                $request,
+                ['error' => $e->getMessage()]
+            );
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create database backup: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    /**
+     * Download backup file
+     */
+    public function downloadBackup(Request $request, $filename)
+    {
+        // Check if admin is authenticated
+        if (!Auth::guard('admin')->check()) {
+            abort(401);
+        }
+        
+        // Validate filename to prevent directory traversal
+        if (!preg_match('/^backup_[a-zA-Z0-9_]+_\d{8}_\d{6}\.sql$/', $filename)) {
+            abort(404);
+        }
+        
+        $backupPath = storage_path("app/backups/{$filename}");
+        
+        // Check if file exists
+        if (!file_exists($backupPath)) {
+            abort(404);
+        }
+        
+        // Log the download activity
+        $this->adminLogService->logActivity(
+            Auth::guard('admin')->user(),
+            'database_backup_downloaded',
+            $request,
+            ['filename' => $filename]
+        );
+        
+        // Return the file for download
+        return response()->download($backupPath, $filename, [
+            'Content-Type' => 'application/sql',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"'
+        ]);
+    }
+    
+    /**
+     * Get list of available backups
+     */
+    public function getBackups(Request $request)
+    {
+        // Check if admin is authenticated
+        if (!Auth::guard('admin')->check()) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+        
+        try {
+            $backupsPath = storage_path('app/backups');
+            $backups = [];
+            
+            if (is_dir($backupsPath)) {
+                $files = scandir($backupsPath);
+                
+                foreach ($files as $file) {
+                    if ($file !== '.' && $file !== '.' && preg_match('/^backup_[a-zA-Z0-9_]+_\d{8}_\d{6}\.sql$/', $file)) {
+                        $filePath = $backupsPath . '/' . $file;
+                        $backups[] = [
+                            'name' => $file,
+                            'size' => filesize($filePath),
+                            'created_at' => date('Y-m-d H:i:s', filemtime($filePath)),
+                            'download_url' => route('admin.backup.download', ['filename' => $file])
+                        ];
+                    }
+                }
+            }
+            
+            // Sort by creation date (newest first)
+            usort($backups, function($a, $b) {
+                return strtotime($b['created_at']) - strtotime($a['created_at']);
+            });
+            
+            return response()->json([
+                'success' => true,
+                'backups' => $backups
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve backups: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    /**
+     * Delete backup file
+     */
+    public function deleteBackup(Request $request, $filename)
+    {
+        // Check if admin is authenticated
+        if (!Auth::guard('admin')->check()) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+        
+        // Validate filename to prevent directory traversal
+        if (!preg_match('/^backup_[a-zA-Z0-9_]+_\d{8}_\d{6}\.sql$/', $filename)) {
+            return response()->json(['error' => 'Invalid filename'], 400);
+        }
+        
+        $backupPath = storage_path("app/backups/{$filename}");
+        
+        // Check if file exists
+        if (!file_exists($backupPath)) {
+            return response()->json(['error' => 'Backup file not found'], 404);
+        }
+        
+        try {
+            // Delete the file
+            if (unlink($backupPath)) {
+                // Log the deletion activity
+                $this->adminLogService->logActivity(
+                    Auth::guard('admin')->user(),
+                    'database_backup_deleted',
+                    $request,
+                    ['filename' => $filename]
+                );
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Backup deleted successfully'
+                ]);
+            } else {
+                throw new \Exception('Failed to delete backup file');
+            }
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete backup: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    
 }
