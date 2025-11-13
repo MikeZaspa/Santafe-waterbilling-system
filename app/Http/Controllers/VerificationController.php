@@ -13,6 +13,12 @@ class VerificationController extends Controller
     // Show verification form
     public function showVerificationForm(Request $request)
     {
+          // Check if consumer is authenticated
+        if (!Auth::guard('admin')->check()) {
+            return redirect('/admin-login');
+        }
+
+        
         $email = $request->session()->get('verification_email');
         
         if (!$email) {
