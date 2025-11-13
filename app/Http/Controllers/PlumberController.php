@@ -17,16 +17,6 @@ class PlumberController extends Controller
      * Create a new controller instance.
      * Apply the plumber.auth middleware to all methods except login/verification.
      */
-    public function __construct()
-    {
-        // The 'except' array allows guests to access these specific routes
-        $this->middleware('plumber.auth')->except([
-            'showLoginForm', 
-            'login', 
-            'verify2FA', 
-            'resend2FA'
-        ]);
-    }
 
     /**
      * Display a listing of plumbers (for admin)
