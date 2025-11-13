@@ -21,28 +21,26 @@ class PlumberAuthController extends Controller
     }
 
     public function login(Request $request)
-    {
-        $credentials = $request->validate([
-            'username' => 'required|string',
-            'password' => 'required|string',
-        ]);
+{
+    $credentials = $request->validate([
+        'username' => 'required|string',
+        'password' => 'required|string',
+    ]);
 
-        // Check plumber credentials (adjust this according to your logic)
-        if ($this->isValidPlumber($credentials)) {
-            // Set session properly
-            Session::put('plumber_auth', true);
-            Session::save(); // Force save
-
-            // Optional: Store plumber ID for future use
-            Session::put('plumber_id', $plumber->id); // if you have plumber object
-
-            Log::info('Plumber login successful', ['session_id' => Session::getId()]);
-            
-            return redirect()->route('plumber.dashboard');
-        }
-
-        return back()->withErrors(['username' => 'Invalid credentials']);
+    // GAMITA ANG 'username' FIELD
+    // Kung ang imong login form naggamit og 'username', gamita ang `username` key.
+    if (Auth::guard('plumber')->attempt(['username' => $credentials['username'], 'password' => $credentials['password']])) {
+        $request->session()->regenerate();
+        
+        // Redirect sa intended page o dashboard
+        return redirect()->intended(route('plumber.dashboard'));
     }
+
+    // Kung fail, ibalik sa login uban sa error
+    return back()->withErrors([
+        'username' => 'The provided credentials do not match our records.',
+    ])->withInput($request->only('username'));
+}
 
     private function isValidPlumber($credentials)
     {
