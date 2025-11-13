@@ -12,6 +12,11 @@ class PlumberAuthController extends Controller
 {
     public function showLoginForm()
     {
+        // If already logged in, redirect to dashboard
+        if (Session::has('plumber_auth') && Session::get('plumber_auth')) {
+            return redirect()->route('plumber.dashboard');
+        }
+        
         return view('auth.plumber-login');
     }
 
@@ -33,7 +38,7 @@ class PlumberAuthController extends Controller
             Session::put('plumber_name', $plumber->first_name . ' ' . $plumber->last_name);
             Session::put('plumber_role', 'plumber');
 
-            return redirect()->intended('admin-plumber-dashboard');
+            return redirect()->route('plumber.dashboard');
         }
 
         return back()->withErrors([
@@ -48,6 +53,6 @@ class PlumberAuthController extends Controller
         Session::forget('plumber_name');
         Session::forget('plumber_role');
 
-        return redirect('/plumber/login');
+        return redirect('/plumber/login')->with('success', 'You have been logged out successfully.');
     }
 }

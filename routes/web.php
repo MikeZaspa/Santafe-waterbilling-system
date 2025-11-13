@@ -457,7 +457,10 @@ Route::put('/admin/plumbers/{id}', [PlumberController::class, 'update'])->name('
 Route::delete('/admin/plumbers/{id}', [PlumberController::class, 'destroy'])->name('admin.plumbers.destroy');
 
 // Admin plumber dashboard route
-Route::get('/admin-plumber-dashboard', [ReadingController::class, 'index'])->name('admin.plumber.dashboard');
+Route::middleware(['plumber.auth'])->prefix('admin-plumber')->group(function () {
+    Route::get('/admin-plumber-dashboard', [ReadingController::class, 'index'])->name('admin.plumber.dashboard');
+    Route::get('/admin-plumber-consumer', [ReadingController::class, 'consumer'])->name('admin.plumber.consumer');    // Add any other plumber-specific routes here
+});
 
 // Accountant Login Routes
 Route::get('/accountant-login', function() {
