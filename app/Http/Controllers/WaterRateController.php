@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\WaterRate;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class WaterRateController extends Controller
