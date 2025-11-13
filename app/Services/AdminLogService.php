@@ -2,125 +2,134 @@
 
 namespace App\Services;
 
+use App\Models\Admin;
 use App\Models\AdminLog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class AdminLogService
 {
-    /**
-     * Log admin activity
-     */
-    public function logActivity($admin, $activity, Request $request, $locationData = [])
+    public function logLogin(Admin $admin, Request $request, string $activity = 'admin-login')
     {
-        $logData = [
-            'admin_id' => $admin ? $admin->id : null,
-            'activity' => $activity,
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-            'browser' => $this->getBrowser($request->userAgent()),
-            'platform' => $this->getPlatform($request->userAgent()),
-            'login_at' => now(),
-        ];
-        
-        // Add location data if available
-        if (!empty($locationData)) {
-            $logData = array_merge($logData, $locationData);
-        }
-        
-        AdminLog::create($logData);
-    }
-    
-    /**
-     * Log admin login
-     */
-    public function logLogin($admin, Request $request, $activity = 'login_successful', $locationData = [])
-    {
-        $logData = [
+        $ip = $request->ip();
+        $geolocation = $this->getGeolocation($ip);
+        $userAgent = $request->userAgent();
+        $deviceInfo = $this->parseUserAgent($userAgent);
+
+        return AdminLog::create([
             'admin_id' => $admin->id,
+            'email' => $admin->email,
+            'ip_address' => $ip,
+            'country' => $geolocation['country'] ?? null,
+            'city' => $geolocation['city'] ?? null,
+            'region' => $geolocation['region'] ?? null,
+            'timezone' => $geolocation['timezone'] ?? null,
+            'browser' => $deviceInfo['browser'],
+            'platform' => $deviceInfo['platform'],
+            'device' => $deviceInfo['device'],
+            'user_agent' => $userAgent,
             'activity' => $activity,
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-            'browser' => $this->getBrowser($request->userAgent()),
-            'platform' => $this->getPlatform($request->userAgent()),
             'login_at' => now(),
-        ];
-        
-        // Add location data if available
-        if (!empty($locationData)) {
-            $logData = array_merge($logData, $locationData);
-        }
-        
-        AdminLog::create($logData);
+        ]);
     }
-    
-    /**
-     * Log admin logout
-     */
-    public function logLogout($admin)
+
+    public function logLogout(Admin $admin)
     {
-        // Find the most recent login log without logout time
-        $log = AdminLog::where('admin_id', $admin->id)
+        $latestLog = AdminLog::where('admin_id', $admin->id)
             ->whereNull('logout_at')
-            ->orderBy('login_at', 'desc')
+            ->latest()
             ->first();
-            
-        if ($log) {
-            $log->logout_at = now();
-            
-            // Calculate session duration in seconds
-            $loginTime = $log->login_at;
-            $logoutTime = now();
-            $duration = $logoutTime->diffInSeconds($loginTime);
-            
-            $log->session_duration = $duration;
-            $log->save();
+
+        if ($latestLog) {
+            $latestLog->update([
+                'logout_at' => now(),
+                'session_duration' => now()->diffInSeconds($latestLog->login_at),
+            ]);
         }
     }
-    
-    /**
-     * Extract browser name from user agent
-     */
-    private function getBrowser($userAgent)
+
+    public function logActivity(Admin $admin, string $activity, Request $request = null)
     {
-        $browsers = [
-            'Chrome' => 'Chrome',
-            'Firefox' => 'Firefox',
-            'Safari' => 'Safari',
-            'Edge' => 'Edge',
-            'Opera' => 'Opera',
-            'MSIE' => 'Internet Explorer',
-        ];
-        
-        foreach ($browsers as $key => $value) {
-            if (preg_match("/$key/i", $userAgent)) {
-                return $value;
-            }
-        }
-        
-        return 'Unknown';
+        $ip = $request ? $request->ip() : null;
+        $userAgent = $request ? $request->userAgent() : null;
+
+        return AdminLog::create([
+            'admin_id' => $admin->id,
+            'email' => $admin->email,
+            'ip_address' => $ip,
+            'activity' => $activity,
+            'login_at' => now(),
+        ]);
     }
-    
-    /**
-     * Extract platform name from user agent
-     */
-    private function getPlatform($userAgent)
+
+    private function getGeolocation(string $ip)
     {
-        $platforms = [
-            'Windows' => 'Windows',
-            'Mac' => 'Mac',
-            'Linux' => 'Linux',
-            'Android' => 'Android',
-            'iOS' => 'iOS',
-            'iPhone' => 'iPhone',
-            'iPad' => 'iPad',
-        ];
-        
-        foreach ($platforms as $key => $value) {
-            if (preg_match("/$key/i", $userAgent)) {
-                return $value;
-            }
+        // For local IPs or testing, return empty data
+        if ($ip === '127.0.0.1' || strpos($ip, '192.168.') === 0 || strpos($ip, '10.') === 0) {
+            return [
+                'country' => 'Local',
+                'city' => 'Local Network',
+                'region' => 'Local',
+                'timezone' => config('app.timezone', 'UTC'),
+            ];
         }
-        
-        return 'Unknown';
+
+        try {
+            // Using ipapi.co (free tier available)
+            $response = Http::timeout(5)->get("http://ipapi.co/{$ip}/json/");
+            
+            if ($response->successful()) {
+                $data = $response->json();
+                return [
+                    'country' => $data['country_name'] ?? null,
+                    'city' => $data['city'] ?? null,
+                    'region' => $data['region'] ?? null,
+                    'timezone' => $data['timezone'] ?? null,
+                ];
+            }
+        } catch (\Exception $e) {
+            // Log error or use fallback
+            \Log::error('Geolocation error: ' . $e->getMessage());
+        }
+
+        return [];
+    }
+
+    private function parseUserAgent(string $userAgent)
+    {
+        $browser = 'Unknown';
+        $platform = 'Unknown';
+        $device = 'Desktop';
+
+        // Simple parsing - you might want to use a package like jenssegers/agent
+        if (strpos($userAgent, 'Firefox') !== false) {
+            $browser = 'Firefox';
+        } elseif (strpos($userAgent, 'Chrome') !== false) {
+            $browser = 'Chrome';
+        } elseif (strpos($userAgent, 'Safari') !== false) {
+            $browser = 'Safari';
+        } elseif (strpos($userAgent, 'Edge') !== false) {
+            $browser = 'Edge';
+        }
+
+        if (strpos($userAgent, 'Windows') !== false) {
+            $platform = 'Windows';
+        } elseif (strpos($userAgent, 'Mac') !== false) {
+            $platform = 'Mac';
+        } elseif (strpos($userAgent, 'Linux') !== false) {
+            $platform = 'Linux';
+        } elseif (strpos($userAgent, 'Android') !== false) {
+            $platform = 'Android';
+            $device = 'Mobile';
+        } elseif (strpos($userAgent, 'iPhone') !== false || strpos($userAgent, 'iPad') !== false) {
+            $platform = 'iOS';
+            $device = strpos($userAgent, 'iPad') !== false ? 'Tablet' : 'Mobile';
+        }
+
+        return [
+            'browser' => $browser,
+            'platform' => $platform,
+            'device' => $device,
+        ];
     }
 }
