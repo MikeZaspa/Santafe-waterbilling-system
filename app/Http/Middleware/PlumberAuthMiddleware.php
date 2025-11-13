@@ -12,17 +12,19 @@ class PlumberAuthMiddleware
      * Handle an incoming request.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @return mixed
+     * @param  \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse)  $next
+     * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
      */
     public function handle(Request $request, Closure $next)
     {
-        // Check if plumber is authenticated
+        // Check if the plumber is authenticated by verifying the session
         if (!Session::has('plumber_auth') || !Session::get('plumber_auth')) {
-            // Redirect to login page with error message
-            return redirect('/plumber/login')->with('error', 'Please login to access the plumber dashboard.');
+            // If not authenticated, abort the request with a 403 Forbidden error.
+            // This is a clear, secure response that stops all further processing.
+            abort(403, 'Unauthorized action. Please log in to access the Plumber Portal.');
         }
-        
+
+        // If authenticated, allow the request to proceed to the controller
         return $next($request);
     }
 }
