@@ -9,6 +9,12 @@ class WaterRateController extends Controller
 {
     public function index()
     {
+          // Check if consumer is authenticated
+        if (!Auth::guard('admin')->check()) {
+            return redirect('/admin-login');
+        }
+
+        
         $rates = WaterRate::orderBy('type')->orderBy('range')->get();
         return view('auth.water-rates', compact('rates'));
     }
