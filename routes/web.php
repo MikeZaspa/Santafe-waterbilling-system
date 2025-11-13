@@ -457,10 +457,15 @@ Route::get('/admin/plumbers/{id}/edit', [PlumberController::class, 'edit'])->nam
 Route::put('/admin/plumbers/{id}', [PlumberController::class, 'update'])->name('admin.plumbers.update');
 Route::delete('/admin/plumbers/{id}', [PlumberController::class, 'destroy'])->name('admin.plumbers.destroy');
 
-Route::get('/admin-plumber-dashboard', [ReadingController::class, 'index'])
-    ->name('admin.plumber.dashboard')
-    ->middleware([PlumberAuthMiddleware::class]);
+Route::get('/plumber/login', [PlumberAuthController::class, 'showLoginForm'])->name('plumber.login');
+Route::post('/plumber/login', [PlumberAuthController::class, 'login']);
 
+// Protected routes (WITH middleware)
+Route::middleware(['plumber.auth'])->group(function () {
+    Route::get('/admin-plumber-dashboard', [ReadingController::class, 'index'])
+        ->name('admin.plumber.dashboard');
+    // Other protected routes...
+});
 // Accountant Login Routes
 Route::get('/accountant-login', function() {
     return view('auth.accountant-login');

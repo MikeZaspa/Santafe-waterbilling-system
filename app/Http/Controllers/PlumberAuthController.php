@@ -20,31 +20,36 @@ class PlumberAuthController extends Controller
         return view('auth.plumber-login');
     }
 
-    public function login(Request $request)
-    {
-        $request->validate([
-            'username' => 'required|string',
-            'password' => 'required|string',
-        ]);
+    // In your PlumberLoginController
+public function login(Request $request)
+{
+    // Validate credentials
+    $credentials = $request->validate([
+        'email' => 'required|email',
+        'password' => 'required',
+    ]);
 
-        $plumber = Plumber::where('username', $request->username)
-                         ->where('status', 'active')
-                         ->first();
-
-        if ($plumber && Hash::check($request->password, $plumber->password)) {
-            // Create plumber session
-            Session::put('plumber_auth', true);
-            Session::put('plumber_id', $plumber->id);
-            Session::put('plumber_name', $plumber->first_name . ' ' . $plumber->last_name);
-            Session::put('plumber_role', 'plumber');
-
-            return redirect()->route('plumber.dashboard');
-        }
-
-        return back()->withErrors([
-            'username' => 'Invalid credentials or account inactive.',
-        ])->withInput($request->only('username'));
+    // Check plumber credentials (adjust this according to your logic)
+    if ($this->isValidPlumber($credentials)) {
+        // Set session properly
+        Session::put('plumber_auth', true);
+        Session::save(); // Force save
+        
+        // Debug: log successful login
+        Log::info('Plumber login successful', ['session_id' => Session::getId()]);
+        
+        return redirect()->route('admin.plumber.dashboard');
     }
+
+    return back()->withErrors(['email' => 'Invalid credentials']);
+}
+
+private function isValidPlumber($credentials)
+{
+    // Your plumber validation logic here
+    // This could be checking against a database, config file, etc.
+    return true; // Replace with actual validation
+}
 
     public function logout(Request $request)
     {
