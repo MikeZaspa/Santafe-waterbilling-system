@@ -299,9 +299,16 @@
             <h2 class="portal-title">Plumber Portal</h2>
         </div> 
         
+        <!-- ALERT MESSAGES SECTION -->
         @if(session('success'))
             <div class="alert-success">
                 {{ session('success') }}
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="alert-danger" style="background-color: #f8d7da; color: #721c24; padding: 0.75rem 1.25rem; margin-bottom: 1rem; border: 1px solid #f5c6cb; border-radius: 4px;">
+                {{ session('error') }}
             </div>
         @endif
         
