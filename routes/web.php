@@ -483,6 +483,14 @@ Route::post('/consumer/resend-2fa', [ConsumerAuthController::class, 'resend2FA']
 Route::get('/consumer/dashboard', [ConsumerAuthController::class, 'dashboard'])->name('consumer.dashboard');
 Route::post('/consumer/logout', [ConsumerAuthController::class, 'logout'])->name('consumer.logout');
 // Logout route
+Route::post('/validate-plumber-session', function (Request $request) {
+    // Check if the plumber session exists
+    if (Session::has('plumber_id')) {
+        return response()->json(['valid' => true]);
+    } else {
+        return response()->json(['valid' => false], 401); // 401 Unauthorized
+    }
+})->name('validate.plumber.session');
 
 Route::post('/accountant/logout', [AccountantManageController::class, 'logout'])->name('accountant.logout');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
