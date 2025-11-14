@@ -657,7 +657,7 @@ $(document).ready(function() {
                         img.id = 'verifyProofImage';
                         img.className = 'img-fluid rounded shadow-sm';
                         img.alt = 'Proof of Payment';
-                        img.style.maxHeight = '300px';
+                        img.style.maxHeight = '500px';
                         img.style.objectFit = 'contain';
                         
                         img.onload = function() {
