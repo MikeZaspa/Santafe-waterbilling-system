@@ -12,18 +12,20 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 class ReadingController extends Controller
 {
+    public function __construct()
+    {
+        // Apply the auth check to all methods in this controller
+        $this->middleware(function ($request, $next) {
+            if (!Session::get('plumber_auth')) {
+                abort(404, 'Page not found');
+            }
+            return $next($request);
+        });
+    }
     
     public function index()
     {
-       // Temporary debug - remove after testing
-    \Log::info('All session data:', Session::all());
-    \Log::info('plumber_auth: ' . (Session::get('plumber_auth') ? 'TRUE' : 'FALSE'));
-    \Log::info('plumber_logged_in: ' . (Session::get('plumber_logged_in') ? 'TRUE' : 'FALSE'));
-    
-    // Your existing check
-    if (!Session::get('plumber_auth')) {
-        abort(404, 'Page not found');
-    }
+       
         // Count readings with both current and previous readings (completed)
         $completedCount = Billing::whereNotNull('current_reading')
                                ->whereNotNull('previous_reading')
