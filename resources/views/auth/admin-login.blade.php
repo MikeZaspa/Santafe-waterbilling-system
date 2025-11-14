@@ -470,14 +470,10 @@
                     <div class="modal-header">
                         <div class="logo">
                             <!-- Icon from the design -->
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="#111"><path d="M3 3h3v3H3V3zm4 0h3v3H7V3zm4 0h3v3h-3V3zm4 0h3v3h-3V3zm-8 4h3v3H7V7zm4 0h3v3h-3V7zm4 0h3v3h-3V7zm-8 4h3v3H7v-3zm4 0h3v3h-3v-3zm4 0h3v3h-3v-3zm-8 4h3v3H7v-3zm4 0h3v3h-3v-3zm4 0h3v3h-3v-3z"/></svg>
-                            Spark
+                            <svg xmlns="{{ asset('image/santafe.png') }}" viewBox="0 0 24 24" width="24" height="24" fill="#111"><path d="M3 3h3v3H3V3zm4 0h3v3H7V3zm4 0h3v3h-3V3zm4 0h3v3h-3V3zm-8 4h3v3H7V7zm4 0h3v3h-3V7zm4 0h3v3h-3V7zm-8 4h3v3H7v-3zm4 0h3v3h-3v-3zm4 0h3v3h-3v-3zm-8 4h3v3H7v-3zm4 0h3v3h-3v-3zm4 0h3v3h-3v-3z"/></svg>
+                             Santa Fe Water Billing
                         </div>
-                        <nav>
-                            <a href="#">About</a>
-                            <a href="#">FAQ</a>
-                            <a href="#">Docs</a>
-                        </nav>
+                        
                     </div>
                     <div class="modal-body">
                         <h1>Forgot Password</h1>
