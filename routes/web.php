@@ -37,6 +37,7 @@ use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\AdminLogController;
 use App\Http\Controllers\AccountantNotificationController;
 use App\Http\Controllers\Admin\BackupController;
+use Illuminate\Support\Facades\Session;
 
 Route::get('/admin/backup-database', [BackupController::class, 'backupDatabase'])->name('admin.backup.database');
 
@@ -459,11 +460,14 @@ Route::get('/admin/plumbers/{id}/edit', [PlumberController::class, 'edit'])->nam
 Route::put('/admin/plumbers/{id}', [PlumberController::class, 'update'])->name('admin.plumbers.update');
 Route::delete('/admin/plumbers/{id}', [PlumberController::class, 'destroy'])->name('admin.plumbers.destroy');
 
-// Admin plumber dashboard route
 Route::get('/admin-plumber-dashboard', [ReadingController::class, 'index'])
-    ->middleware('plumber.auth') // MAKE SURE THIS IS APPLIED
+    ->middleware(function ($request, $next) {
+        if (!Session::get('plumber_auth')) {
+            abort(404, 'Page not found');
+        }
+        return $next($request);
+    })
     ->name('admin.plumber.dashboard');
-
 // Accountant Login Routes
 Route::get('/accountant-login', function() {
     return view('auth.accountant-login');
