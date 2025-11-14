@@ -651,50 +651,50 @@ $(document).ready(function() {
                     );
                     
                     // Set proof image
-if (payment.proof_image) {
-    // Create image element with error handling
-    const img = document.createElement('img');
-    img.id = 'verifyProofImage';
-    img.className = 'img-fluid rounded shadow-sm';
-    img.alt = 'Proof of Payment';
-    img.style.maxHeight = '300px';
-    img.style.objectFit = 'contain';
-    
-    img.onload = function() {
-        $('#imageContainer').html(img);
-    };
-    
-    img.onerror = function() {
-        $('#imageContainer').html(`
-            <div class="image-placeholder">
-                <div class="text-center text-muted">
-                    <i class="bi bi-x-circle" style="font-size: 3rem;"></i>
-                    <p class="mt-2">Failed to load image</p>
-                    <div class="mt-3">
-                        <button class="btn btn-sm btn-outline-primary me-2" onclick="window.open('/payment-proof/${paymentId}', '_blank')">
-                            <i class="bi bi-box-arrow-up-right"></i> Open in New Tab
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `);
-    };
-    
-    // Use the dedicated endpoint
-    const imagePath = `/payment-proof/${paymentId}`;
-    console.log("Loading image from:", imagePath);
-    img.src = imagePath;
-} else {
-    // Show placeholder when no image is available
-    $('#imageContainer').html(`
-        <div class="image-placeholder">
-            <div class="text-center text-muted">
-                <i class="bi bi-image" style="font-size: 3rem;"></i>
-                <p class="mt-2">No proof image available</p>
-            </div>
-        </div>
-    `);
-}
+                    if (payment.proof_image) {
+                        // Create image element with error handling
+                        const img = document.createElement('img');
+                        img.id = 'verifyProofImage';
+                        img.className = 'img-fluid rounded shadow-sm';
+                        img.alt = 'Proof of Payment';
+                        img.style.maxHeight = '300px';
+                        img.style.objectFit = 'contain';
+                        
+                        img.onload = function() {
+                            $('#imageContainer').html(img);
+                        };
+                        
+                        img.onerror = function() {
+                            $('#imageContainer').html(`
+                                <div class="image-placeholder">
+                                    <div class="text-center text-muted">
+                                        <i class="bi bi-x-circle" style="font-size: 3rem;"></i>
+                                        <p class="mt-2">Failed to load image</p>
+                                        <div class="mt-3">
+                                            <button class="btn btn-sm btn-outline-primary me-2" onclick="window.open('/payment-proof/${paymentId}', '_blank')">
+                                                <i class="bi bi-box-arrow-up-right"></i> Open in New Tab
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `);
+                        };
+                        
+                        // Use the dedicated endpoint
+                        const imagePath = `/payment-proof/${paymentId}`;
+                        console.log("Loading image from:", imagePath);
+                        img.src = imagePath;
+                    } else {
+                        // Show placeholder when no image is available
+                        $('#imageContainer').html(`
+                            <div class="image-placeholder">
+                                <div class="text-center text-muted">
+                                    <i class="bi bi-image" style="font-size: 3rem;"></i>
+                                    <p class="mt-2">No proof image available</p>
+                                </div>
+                            </div>
+                        `);
+                    }
                     
                     // Set admin notes if exists
                     $('#adminNotes').val(payment.admin_notes || '');
