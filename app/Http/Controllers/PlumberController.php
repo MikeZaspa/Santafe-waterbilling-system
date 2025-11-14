@@ -133,23 +133,19 @@ class PlumberController extends Controller
     /**
      * Handle plumber login request
      */
-    public function login(Request $request)
-    {
-        $credentials = $request->validate([
-            'username' => 'required|string',
-            'password' => 'required|string',
-        ]);
+   public function login(Request $request)
+{
+    $credentials = $request->validate([
+        'username' => 'required|string',
+        'password' => 'required|string',
+    ]);
 
-        $plumber = Plumber::where('username', $credentials['username'])->first();
-
-        if (!$plumber || !Hash::check($credentials['password'], $plumber->password)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'The provided credentials do not match our records.'
-            ], 401);
-        }
+    // Attempt to authenticate using plumber guard
+    if (Auth::guard('plumber')->attempt(['username' => $credentials['username'], 'password' => $credentials['password']])) {
+        $plumber = Auth::guard('plumber')->user();
 
         if ($plumber->status !== 'active') {
+            Auth::guard('plumber')->logout();
             return response()->json([
                 'success' => false,
                 'message' => 'Your account is inactive. Please contact the administrator.'
@@ -168,6 +164,7 @@ class PlumberController extends Controller
         try {
             Mail::to($plumber->email)->send(new TwoFactorCodeMailPlumber($code, $plumber->first_name));
         } catch (\Exception $e) {
+            Auth::guard('plumber')->logout();
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to send verification code. Please try again.'
@@ -184,68 +181,71 @@ class PlumberController extends Controller
         ]);
     }
 
+    return response()->json([
+        'success' => false,
+        'message' => 'The provided credentials do not match our records.'
+    ], 401);
+}
+
     /**
      * Verify 2FA code
      */
-      public function verify2FA(Request $request)
-    {
-        $request->validate([
-            'code' => 'required|string|digits:6',
-        ]);
-        
-        $plumberId = Session::get('plumber_id_for_2fa');
-        
-        if (!$plumberId) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Session expired. Please login again.'
-            ], 401);
-        }
-        
-        $plumber = Plumber::find($plumberId);
-        
-        if (!$plumber) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid session. Please login again.'
-            ], 401);
-        }
-        
-        // Check if the code matches and hasn't expired
-        if ($plumber->two_factor_code !== $request->code) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid verification code.'
-            ], 401);
-        }
-        
-        if (Carbon::now()->gt($plumber->two_factor_expires_at)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Verification code has expired. Please request a new one.'
-            ], 401);
-        }
-        
-        // Clear the 2FA code
-        $plumber->two_factor_code = null;
-        $plumber->two_factor_expires_at = null;
-        $plumber->save();
-        
-        // Log in the plumber
-        Session::put('plumber_logged_in', true);
-        Session::put('plumber_id', $plumber->id);
-        Session::put('plumber_data', $plumber->toArray());
-        
-        
-        // Clear the temporary session
-        Session::forget('plumber_id_for_2fa');
-        
+     public function verify2FA(Request $request)
+{
+    $request->validate([
+        'code' => 'required|string|digits:6',
+    ]);
+    
+    $plumberId = Session::get('plumber_id_for_2fa');
+    
+    if (!$plumberId) {
         return response()->json([
-            'success' => true,
-            'message' => 'Login successful',
-            'redirect' => '/admin-plumber-dashboard'  // Direct URL to match your route
-        ]);
+            'success' => false,
+            'message' => 'Session expired. Please login again.'
+        ], 401);
     }
+    
+    $plumber = Plumber::find($plumberId);
+    
+    if (!$plumber) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Invalid session. Please login again.'
+        ], 401);
+    }
+    
+    // Check if the code matches and hasn't expired
+    if ($plumber->two_factor_code !== $request->code) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Invalid verification code.'
+        ], 401);
+    }
+    
+    if (Carbon::now()->gt($plumber->two_factor_expires_at)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Verification code has expired. Please request a new one.'
+        ], 401);
+    }
+    
+    // Clear the 2FA code
+    $plumber->two_factor_code = null;
+    $plumber->two_factor_expires_at = null;
+    $plumber->save();
+    
+    // Log in the plumber using Auth guard (INSTEAD OF SESSION)
+    Auth::guard('plumber')->login($plumber);
+    
+    // Clear the temporary session
+    Session::forget('plumber_id_for_2fa');
+    
+    return response()->json([
+        'success' => true,
+        'message' => 'Login successful',
+        'redirect' => '/admin-plumber-dashboard'
+    ]);
+}
     /**
      * Resend 2FA code
      */

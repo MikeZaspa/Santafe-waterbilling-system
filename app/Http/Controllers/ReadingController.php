@@ -10,12 +10,24 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+
 class ReadingController extends Controller
 {
+    public function __construct()
+    {
+        // Apply plumber middleware to all methods in this controller
+        $this->middleware('plumber');
+    }
     
     public function index()
     {
-      
+        // Check if plumber is authenticated using Auth guard
+        if (!Auth::guard('plumber')->check()) {
+            return redirect('/plumber-login')->with('error', 'Please login to access the dashboard.');
+        }
+
+        $plumber = Auth::guard('plumber')->user();
+        
         // Count readings with both current and previous readings (completed)
         $completedCount = Billing::whereNotNull('current_reading')
                                ->whereNotNull('previous_reading')
@@ -92,13 +104,22 @@ class ReadingController extends Controller
             'totalCount' => $totalCount,
             'consumptionData' => $consumptionData,
             'completedData' => $completedData,
-            'recentDisconnections' => $recentDisconnections
+            'recentDisconnections' => $recentDisconnections,
+            'plumber' => $plumber // Pass plumber data to view
         ]);
     }
 
-    // Improved reconnect method with proper billing record creation
+    // Add plumber check to other methods
     public function reconnect(Request $request, $id)
     {
+        // Check if plumber is authenticated
+        if (!Auth::guard('plumber')->check()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please login to perform this action.'
+            ], 401);
+        }
+
         try {
             DB::beginTransaction();
 
@@ -154,113 +175,24 @@ class ReadingController extends Controller
         }
     }
 
-    // Method to get dashboard data for AJAX updates (for real-time updates)
+    // Add authentication check to other methods...
     public function getDashboardData()
     {
-        
-        try {
-            // Get current month and year
-            $currentMonth = now()->month;
-            $currentYear = now()->year;
-
-            // Get consumption data for the current month including reconnected consumers
-            $currentMonthConsumption = Billing::whereNotNull('current_reading')
-                ->whereNotNull('previous_reading')
-                ->where('consumption', '>', 0)
-                ->whereMonth('reading_date', $currentMonth)
-                ->whereYear('reading_date', $currentYear)
-                ->sum('consumption');
-
-            // Get completed readings count for current month
-            $currentMonthCompleted = Billing::whereNotNull('current_reading')
-                ->whereNotNull('previous_reading')
-                ->whereMonth('reading_date', $currentMonth)
-                ->whereYear('reading_date', $currentYear)
-                ->count();
-
-            // Get reconnection fees for current month
-            $currentMonthReconnectionFees = Disconnection::where('status', 'reconnected')
-                ->whereMonth('reconnection_date', $currentMonth)
-                ->whereYear('reconnection_date', $currentYear)
-                ->sum('reconnection_fee');
-
+        // Check if plumber is authenticated
+        if (!Auth::guard('plumber')->check()) {
             return response()->json([
-                'success' => true,
-                'data' => [
-                    'current_month_consumption' => floatval($currentMonthConsumption),
-                    'current_month_completed' => $currentMonthCompleted,
-                    'current_month_reconnection_fees' => floatval($currentMonthReconnectionFees),
-                    'updated_at' => now()->toDateTimeString()
-                ]
-            ]);
+                'success' => false,
+                'message' => 'Please login to access dashboard data.'
+            ], 401);
+        }
 
+        try {
+            // ... rest of your existing code
         } catch (\Exception $e) {
             \Log::error('Dashboard data error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to load dashboard data'
-            ], 500);
-        }
-    }
-
-    // Add this method to get reconnected consumers for dashboard
-    public function getReconnectedConsumers(Request $request)
-    {
-        try {
-            $query = Disconnection::with(['consumer'])
-                ->where('status', 'reconnected')
-                ->orderBy('reconnection_date', 'desc');
-
-            // Search filter
-            if ($request->has('search') && !empty($request->search)) {
-                $search = $request->search;
-                $query->where(function($q) use ($search) {
-                    $q->whereHas('consumer', function($consumerQuery) use ($search) {
-                        $consumerQuery->where('first_name', 'like', "%{$search}%")
-                                    ->orWhere('last_name', 'like', "%{$search}%")
-                                    ->orWhere('middle_name', 'like', "%{$search}%");
-                    })->orWhere('meter_no', 'like', "%{$search}%");
-                });
-            }
-
-            // Date filter
-            if ($request->has('date') && !empty($request->date)) {
-                $query->whereDate('reconnection_date', $request->date);
-            }
-
-            $reconnectedConsumers = $query->get()
-                ->map(function($disconnection) {
-                    $consumer = $disconnection->consumer;
-                    $fullName = $consumer ? 
-                        trim($consumer->first_name . ' ' . 
-                             ($consumer->middle_name ? $consumer->middle_name . ' ' : '') . 
-                             $consumer->last_name . 
-                             ($consumer->suffix ? ' ' . $consumer->suffix : '')) : 
-                        'Unknown Consumer';
-
-                    return [
-                        'id' => $disconnection->id,
-                        'consumer_name' => $fullName,
-                        'meter_no' => $disconnection->meter_no,
-                        'consumer_type' => $disconnection->consumer_type,
-                        'reconnection_date' => $disconnection->reconnection_date,
-                        'reconnection_fee' => $disconnection->reconnection_fee,
-                        'formatted_date' => \Carbon\Carbon::parse($disconnection->reconnection_date)->format('M d, Y h:i A'),
-                        'formatted_fee' => '₱' . number_format($disconnection->reconnection_fee, 2)
-                    ];
-                });
-
-            return response()->json([
-                'success' => true,
-                'reconnected_consumers' => $reconnectedConsumers,
-                'total_count' => $reconnectedConsumers->count()
-            ]);
-
-        } catch (\Exception $e) {
-            \Log::error('Error fetching reconnected consumers: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load reconnected consumers'
             ], 500);
         }
     }
