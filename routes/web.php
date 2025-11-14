@@ -461,12 +461,6 @@ Route::put('/admin/plumbers/{id}', [PlumberController::class, 'update'])->name('
 Route::delete('/admin/plumbers/{id}', [PlumberController::class, 'destroy'])->name('admin.plumbers.destroy');
 
 Route::get('/admin-plumber-dashboard', [ReadingController::class, 'index'])
-    ->middleware(function ($request, $next) {
-        if (!Session::get('plumber_auth')) {
-            abort(404, 'Page not found');
-        }
-        return $next($request);
-    })
     ->name('admin.plumber.dashboard');
 // Accountant Login Routes
 Route::get('/accountant-login', function() {
