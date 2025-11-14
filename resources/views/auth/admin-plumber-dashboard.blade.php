@@ -1541,32 +1541,39 @@
         });
     });
 
-    function performLogout() {
-        // Show loading state
-        Swal.fire({
-            title: 'Signing Out...',
-            text: 'Please wait',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
+    // This function is on your admin-plumber-dashboard.blade.php page
 
-        // Send logout request to server
-        $.ajax({
-            url: '/logout',
-            type: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) {
-                window.location.href = '/admin-login';
-            },
-            error: function(xhr) {
-                window.location.href = '/admin-login';
-            }
-        });
-    }
+function performLogout() {
+    // Show loading state
+    Swal.fire({
+        title: 'Signing Out...',
+        text: 'Please wait',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    // IMPORTANT: Clear the session flag on logout
+    sessionStorage.removeItem('plumberLoggedIn');
+
+    // Send logout request to server
+    $.ajax({
+        url: '/logout',
+        type: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function(response) {
+            // After the server confirms logout, redirect to the login page
+            window.location.href = '/admin-login';
+        },
+        error: function(xhr) {
+            // Even if there's an error, still redirect to the login page
+            window.location.href = '/admin-login';
+        }
+    });
+}
 });
 </script>
 
