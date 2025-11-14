@@ -468,11 +468,6 @@
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <div class="logo">
-                            <!-- Icon from the design -->
-                            <svg xmlns="{{ asset('image/santafe.png') }}" viewBox="0 0 24 24" width="24" height="24" fill="#111"><path d="M3 3h3v3H3V3zm4 0h3v3H7V3zm4 0h3v3h-3V3zm4 0h3v3h-3V3zm-8 4h3v3H7V7zm4 0h3v3h-3V7zm4 0h3v3h-3V7zm-8 4h3v3H7v-3zm4 0h3v3h-3v-3zm4 0h3v3h-3v-3zm-8 4h3v3H7v-3zm4 0h3v3h-3v-3zm4 0h3v3h-3v-3z"/></svg>
-                             Santa Fe Water Billing
-                        </div>
                         
                     </div>
                     <div class="modal-body">
