@@ -15,16 +15,7 @@ class ReadingController extends Controller
     
     public function index()
     {
-      if (!Auth::guard('plumber')->check()) {
-            return redirect()->route('plumber.login')->with('error', 'Please login to access the dashboard.');
-        }
-
-        // Get the authenticated plumber
-        $plumber = Auth::guard('plumber')->user();
-        
-        // Your dashboard logic here
-        return view('plumber.dashboard', compact('plumber'));
-        
+      
         // Count readings with both current and previous readings (completed)
         $completedCount = Billing::whereNotNull('current_reading')
                                ->whereNotNull('previous_reading')

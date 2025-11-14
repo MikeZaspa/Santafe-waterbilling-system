@@ -231,8 +231,11 @@ class PlumberController extends Controller
         $plumber->two_factor_expires_at = null;
         $plumber->save();
         
-        // Log in the plumber using Auth guard
-        Auth::guard('plumber')->login($plumber);
+        // Log in the plumber
+        Session::put('plumber_logged_in', true);
+        Session::put('plumber_id', $plumber->id);
+        Session::put('plumber_data', $plumber->toArray());
+        
         
         // Clear the temporary session
         Session::forget('plumber_id_for_2fa');
@@ -240,10 +243,9 @@ class PlumberController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Login successful',
-            'redirect' => '/admin-plumber-dashboard'
+            'redirect' => '/admin-plumber-dashboard'  // Direct URL to match your route
         ]);
     }
-
     /**
      * Resend 2FA code
      */
@@ -290,6 +292,27 @@ class PlumberController extends Controller
             'message' => 'A new verification code has been sent to your email.'
         ]);
     }
+    
+    /**
+     * Show the plumber dashboard
+     */
+    public function dashboard()
+    {
+        // Check if plumber is logged in using session
+        if (!Session::get('plumber_logged_in')) {
+            return redirect()->route('plumber.login');
+        }
+
+        $plumberId = Session::get('plumber_id');
+        $plumber = Plumber::find($plumberId);
+
+        if (!$plumber) {
+            return redirect()->route('plumber.login');
+        }
+
+        return view('plumber.dashboard', compact('plumber'));
+    }
+
     /**
      * Logout the plumber
      */
