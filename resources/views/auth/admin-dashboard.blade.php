@@ -445,6 +445,11 @@
                     <i class="bi bi-cash-stack"></i> Manage Accountant
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" id="backupDatabaseBtn">
+                    <i class="bi bi-cloud-download"></i> Backup Database
+                </a>
+            </li>
         </ul>
     </nav>
 </div>
@@ -464,7 +469,9 @@
         </div>
         
         <div class="header-right">
-            
+            <div class="position-relative me-3 d-none d-sm-block">
+                <i class="bi bi-cloud-download header-icon" id="backupDatabaseIcon" title="Backup Database"></i>
+            </div>
             <div class="position-relative me-3 d-none d-sm-block">
                 <i class="bi bi-clock-history header-icon" id="adminLogsIcon" data-bs-toggle="modal" data-bs-target="#adminLogsModal" title="Admin Logs"></i>
             </div>
@@ -489,30 +496,6 @@
                 </ul>
             </div>
         </div>
-        <!-- Add this to your dashboard cards section -->
-<div class="col-md-6 col-lg-3">
-    <div class="card border-0 shadow-sm h-100">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-muted mb-2">Database Backup</h6>
-                    <h3 class="mb-0"><i class="bi bi-database-check"></i></h3>
-                    <small class="text-info">
-                        <i class="bi bi-shield-check"></i> Secure backup
-                    </small>
-                </div>
-                <div class="bg-info bg-opacity-10 p-3 rounded">
-                    <i class="bi bi-database text-info fs-4"></i>
-                </div>
-            </div>
-            <div class="mt-3">
-                <button class="btn btn-outline-info btn-sm w-100" id="backupDatabaseBtn">
-                    <i class="bi bi-download me-1"></i> Download Backup
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
     </header>
     
     <div class="content-wrapper">
@@ -1108,6 +1091,84 @@
                 setTimeout(() => {
                     document.getElementById('logout-form').submit();
                 }, 1000);
+            }
+        });
+    });
+    
+    // Database Backup functionality
+    $('#backupDatabaseIcon, #backupDatabaseBtn').on('click', function(e) {
+        e.preventDefault();
+        
+        Swal.fire({
+            title: 'Backup Database',
+            text: 'Are you sure you want to backup the database? This may take a few moments.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#d32f2f',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Backup Now',
+            cancelButtonText: 'Cancel',
+            reverseButtons: false,
+            customClass: {
+                confirmButton: 'btn btn-danger',
+                cancelButton: 'btn btn-secondary'
+            },
+            buttonsStyling: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show loading state
+                Swal.fire({
+                    title: 'Creating Backup...',
+                    text: 'Please wait while we create a backup of your database.',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                // Make AJAX request to backup endpoint
+                $.ajax({
+                    url: '/admin/backup-database',
+                    type: 'GET',
+                    xhrFields: {
+                        responseType: 'blob'
+                    },
+                    success: function(data, status, xhr) {
+                        // Get filename from Content-Disposition header if available
+                        const filename = xhr.getResponseHeader('Content-Disposition') 
+                            ? xhr.getResponseHeader('Content-Disposition').split('filename=')[1].replace(/"/g, '')
+                            : 'database_backup_' + new Date().toISOString().slice(0, 10) + '.sql';
+                        
+                        // Create download link
+                        const url = window.URL.createObjectURL(data);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                        
+                        // Show success message
+                        Swal.fire({
+                            title: 'Backup Successful',
+                            text: 'Database backup has been downloaded successfully.',
+                            icon: 'success',
+                            confirmButtonColor: '#d32f2f',
+                            timer: 3000,
+                            showConfirmButton: false
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        // Show error message
+                        Swal.fire({
+                            title: 'Backup Failed',
+                            text: 'There was an error creating the database backup. Please try again.',
+                            icon: 'error',
+                            confirmButtonColor: '#d32f2f'
+                        });
+                    }
+                });
             }
         });
     });
