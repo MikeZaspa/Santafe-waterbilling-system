@@ -229,17 +229,17 @@
         }
         
         .forgot-password-modal .modal-content {
-            border: none;
-            border-radius: 0;
-            box-shadow: none;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         
         .forgot-password-modal .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 0;
-            border-bottom: 1px solid #ddd;
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
         }
         
         .forgot-password-modal .modal-title {
@@ -250,7 +250,7 @@
         }
         
         .forgot-password-modal .modal-body {
-            padding: 30px 0;
+            padding: 30px 20px;
         }
         
         .forgot-password-modal .logo {
@@ -452,7 +452,7 @@
                             </div>
                             
                             <div class="resend-code text-center">
-                                <p>Didn't receive the code? 
+                                <p>Didn't receive code? 
                                     <button type="button" id="resendCodeBtn">Resend</button>
                                 </p>
                                 <p class="countdown" id="countdown" style="display: none;">Resend code in <span id="countdownTime">60</span> seconds</p>
@@ -467,6 +467,18 @@
         <div class="modal fade forgot-password-modal" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="logo">
+                            <!-- Icon from the design -->
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="#111"><path d="M3 3h3v3H3V3zm4 0h3v3H7V3zm4 0h3v3h-3V3zm4 0h3v3h-3V3zm-8 4h3v3H7V7zm4 0h3v3h-3V7zm4 0h3v3h-3V7zm-8 4h3v3H7v-3zm4 0h3v3h-3v-3zm4 0h3v3h-3v-3zm-8 4h3v3H7v-3zm4 0h3v3h-3v-3zm4 0h3v3h-3v-3z"/></svg>
+                            Spark
+                        </div>
+                        <nav>
+                            <a href="#">About</a>
+                            <a href="#">FAQ</a>
+                            <a href="#">Docs</a>
+                        </nav>
+                    </div>
                     <div class="modal-body">
                         <h1>Forgot Password</h1>
                         <form id="forgotPasswordForm">
