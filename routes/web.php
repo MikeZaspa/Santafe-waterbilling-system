@@ -36,7 +36,6 @@ use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\AdminLogController;
 use App\Http\Controllers\AccountantNotificationController;
 use App\Http\Controllers\Admin\BackupController;
-use App\Http\Middleware\PlumberAuth;
 
 Route::get('/admin/backup-database', [BackupController::class, 'backupDatabase'])->name('admin.backup.database');
 
@@ -446,11 +445,7 @@ Route::get('/plumber-login', [PlumberController::class, 'showLoginForm'])->name(
 Route::post('/plumber-login', [PlumberController::class, 'login'])->name('plumber.login.submit');
 
 
-// In your routes/web.php file
-
-Route::get('/plumber-dashboard', [PlumberController::class, 'dashboard'])
-    ->name('plumber.dashboard')
-    ->middleware('plumber.auth');
+Route::get('/plumber/dashboard', [PlumberController::class, 'dashboard'])->name('plumber.dashboard');
 Route::post('/plumber/logout', [PlumberController::class, 'logout'])->name('plumber.logout');
 
 Route::post('/plumber/verify-2fa', [PlumberController::class, 'verify2FA'])->name('plumber.verify.2fa');
@@ -464,11 +459,7 @@ Route::put('/admin/plumbers/{id}', [PlumberController::class, 'update'])->name('
 Route::delete('/admin/plumbers/{id}', [PlumberController::class, 'destroy'])->name('admin.plumbers.destroy');
 
 // Admin plumber dashboard route
-// In your routes/web.php file
-
-Route::get('/admin-plumber-dashboard', [ReadingController::class, 'index'])
-    ->name('admin.plumber.dashboard')
-    ->middleware(PlumberAuth::class);
+Route::get('/admin-plumber-dashboard', [ReadingController::class, 'index'])->name('admin.plumber.dashboard');
 
 // Accountant Login Routes
 Route::get('/accountant-login', function() {

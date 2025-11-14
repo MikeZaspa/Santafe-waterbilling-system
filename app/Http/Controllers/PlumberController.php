@@ -296,25 +296,23 @@ class PlumberController extends Controller
     /**
      * Show the plumber dashboard
      */
-    /**
- * Show the plumber dashboard
- */
-public function dashboard()
-{
-    // The middleware will handle authentication, but keep this as a backup
-    if (!Session::get('plumber_logged_in')) {
-        return redirect()->route('plumber.login');
+    public function dashboard()
+    {
+        // Check if plumber is logged in using session
+        if (!Session::get('plumber_logged_in')) {
+            return redirect()->route('plumber.login');
+        }
+
+        $plumberId = Session::get('plumber_id');
+        $plumber = Plumber::find($plumberId);
+
+        if (!$plumber) {
+            return redirect()->route('plumber.login');
+        }
+
+        return view('plumber.dashboard', compact('plumber'));
     }
 
-    $plumberId = Session::get('plumber_id');
-    $plumber = Plumber::find($plumberId);
-
-    if (!$plumber) {
-        return redirect()->route('plumber.login');
-    }
-
-    return view('plumber.dashboard', compact('plumber'));
-}
     /**
      * Logout the plumber
      */
