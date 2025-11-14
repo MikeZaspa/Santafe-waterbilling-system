@@ -27,8 +27,8 @@ class PlumberAuthController extends Controller
                          ->first();
 
         if ($plumber && Hash::check($request->password, $plumber->password)) {
-            // Create plumber session
-            Session::put('plumber_auth', true);
+            // Create plumber session - USE 'plumber_logged_in' consistently
+            Session::put('plumber_logged_in', true); // Change this
             Session::put('plumber_id', $plumber->id);
             Session::put('plumber_name', $plumber->first_name . ' ' . $plumber->last_name);
             Session::put('plumber_role', 'plumber');
@@ -43,7 +43,7 @@ class PlumberAuthController extends Controller
 
     public function logout(Request $request)
     {
-        Session::forget('plumber_auth');
+        Session::forget('plumber_logged_in'); // Change this
         Session::forget('plumber_id');
         Session::forget('plumber_name');
         Session::forget('plumber_role');

@@ -15,9 +15,7 @@ class ReadingController extends Controller
     
     public function index()
     {
-      
-        // Check if plumber is logged in using session
-    if (!Session::get('plumber_logged_in')) {
+         if (!Session::get('plumber_auth')) {
         abort(404, 'Page not found');
     }
     
