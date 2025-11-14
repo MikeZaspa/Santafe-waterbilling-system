@@ -13,12 +13,7 @@ use Illuminate\Support\Facades\Session;
 
 class ReadingController extends Controller
 {
-    public function __construct()
-    {
-        // Apply plumber middleware to all methods in this controller
-        $this->middleware('plumber');
-    }
-    
+   
     public function index()
     {
         // Check if plumber is authenticated using Auth guard
