@@ -391,87 +391,6 @@
             gap: 10px;
         }
         
-        /* Auth Guard Loading Screen */
-        .auth-guard-loading {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.9);
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .auth-guard-loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--primary-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* 404 Error Page Styles */
-        .error-404-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #f8f9fa;
-            z-index: 9999;
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .error-404-container.active {
-            display: flex;
-        }
-        
-        .error-404-content {
-            max-width: 600px;
-        }
-        
-        .error-404-code {
-            font-size: 8rem;
-            font-weight: 700;
-            color: #dc3545;
-            line-height: 1;
-            margin-bottom: 20px;
-        }
-        
-        .error-404-title {
-            font-size: 2rem;
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: #333;
-        }
-        
-        .error-404-message {
-            font-size: 1.1rem;
-            color: #6c757d;
-            margin-bottom: 30px;
-        }
-        
-        .error-404-actions {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-        }
-        
         /* Responsive styles */
         @media (min-width: 992px) {
             .sidebar {
@@ -588,52 +507,11 @@
             .session-timer-text {
                 font-size: 0.75rem;
             }
-            
-            /* 404 Error Page Mobile Adjustments */
-            .error-404-code {
-                font-size: 5rem;
-            }
-            
-            .error-404-title {
-                font-size: 1.5rem;
-            }
-            
-            .error-404-actions {
-                flex-direction: column;
-                width: 100%;
-            }
-            
-            .error-404-actions .btn {
-                width: 100%;
-            }
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-
-<!-- Auth Guard Loading Screen -->
-<div class="auth-guard-loading" id="authGuardLoading">
-    <div class="auth-guard-loading-spinner"></div>
-    <p class="mt-3">Verifying authentication...</p>
-</div>
-
-<!-- 404 Error Page -->
-<div class="error-404-container" id="error404Container">
-    <div class="error-404-content">
-        <div class="error-404-code">404</div>
-        <h1 class="error-404-title">Access Denied</h1>
-        <p class="error-404-message">You don't have permission to access this page. Please log in with the appropriate credentials.</p>
-        <div class="error-404-actions">
-            <a href="/admin-portal" class="btn btn-primary">
-                <i class="bi bi-box-arrow-in-right me-2"></i>Go to Login
-            </a>
-            <button class="btn btn-outline-secondary" id="retryAccessBtn">
-                <i class="bi bi-arrow-clockwise me-2"></i>Retry Access
-            </button>
-        </div>
-    </div>
-</div>
 
 <!-- Mobile Overlay -->
 <div class="mobile-overlay"></div>
@@ -943,874 +821,714 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
  $(document).ready(function() {
-    // AUTHENTICATION GUARD
-    // Check if user is authenticated before loading the dashboard
-    function checkAuthentication() {
-        // Check if user came from login page or has valid session
-        const referrer = document.referrer;
-        const currentPath = window.location.pathname;
-        
-        // Check for session token in localStorage
-        const sessionToken = localStorage.getItem('plumberSessionToken');
-        const sessionExpiry = localStorage.getItem('plumberSessionExpiry');
-        
-        // Check if session is valid
-        const isSessionValid = sessionToken && sessionExpiry && new Date().getTime() < parseInt(sessionExpiry);
-        
-        // Check if user is coming from login page or has valid session
-        if (!isSessionValid && !referrer.includes('admin-portal') && !referrer.includes('admin-login')) {
-            // User is trying to directly access the dashboard without authentication
-            show404Error();
-            return false;
-        }
-        
-        // If session is expired, redirect to login
-        if (sessionExpiry && new Date().getTime() > parseInt(sessionExpiry)) {
-            redirectToLogin();
-            return false;
-        }
-        
-        // Verify authentication with server
-        $.ajax({
-            url: '/api/check-auth',
-            type: 'GET',
-            success: function(response) {
-                // User is authenticated, hide loading screen and continue
-                $('#authGuardLoading').fadeOut(300, function() {
-                    $(this).remove();
-                    initializeDashboard();
-                });
-            },
-            error: function(xhr) {
-                // User is not authenticated, show 404 error
-                if (xhr.status === 401) {
-                    show404Error();
-                } else {
-                    // Handle other errors
-                    $('#authGuardLoading').fadeOut(300, function() {
-                        $(this).remove();
-                        show404Error();
-                    });
-                }
-            }
-        });
-        
-        return true;
-    }
+    // Session Management Variables
+    const sessionTimeout = 180000; // 3 minutes in milliseconds
+    const warningTimeout = 30000; // 30 seconds before expiry
+    let sessionTimer;
+    let warningTimer;
+    let timeRemaining = sessionTimeout;
+    let isModalOpen = false;
     
-    // Show 404 error page
-    function show404Error() {
-        $('#authGuardLoading').fadeOut(300, function() {
-            $(this).remove();
-            $('#error404Container').addClass('active');
-            
-            // Log the unauthorized access attempt
-            console.warn('Unauthorized access attempt to admin-plumber-dashboard', {
-                timestamp: new Date().toISOString(),
-                userAgent: navigator.userAgent,
-                referrer: document.referrer,
-                ip: null // IP would need to be collected server-side
-            });
-        });
-    }
-    
-    // Redirect to login page
-    function redirectToLogin() {
-        $('#authGuardLoading').fadeOut(300, function() {
-            $(this).remove();
-            window.location.href = '/admin-portal';
-        });
-    }
-    
-    // Retry access button handler
-    $('#retryAccessBtn').click(function() {
-        // Show loading screen again
-        $('#error404Container').removeClass('active');
-        $('body').append('<div class="auth-guard-loading" id="authGuardLoading"><div class="auth-guard-loading-spinner"></div><p class="mt-3">Retrying authentication...</p></div>');
+    // Start the session timer
+    function startSessionTimer() {
+        resetSessionTimer();
         
-        // Retry authentication check
-        setTimeout(function() {
-            checkAuthentication();
-        }, 1000);
-    });
-    
-    // Prevent direct access by checking browser history
-    function preventDirectAccess() {
-        // Check if browser back/forward buttons were used
-        let navigationEntries = performance.getEntriesByType('navigation');
-        
-        if (navigationEntries.length > 0 && navigationEntries[0].type === 'back_forward') {
-            // User navigated using browser back/forward buttons
-            // Check if they have a valid session
-            const sessionToken = localStorage.getItem('plumberSessionToken');
-            const sessionExpiry = localStorage.getItem('plumberSessionExpiry');
-            
-            if (!sessionToken || !sessionExpiry || new Date().getTime() > parseInt(sessionExpiry)) {
-                // No valid session, redirect to login
-                redirectToLogin();
-                return false;
-            }
-        }
-        
-        return true;
-    }
-    
-    // Prevent right-click and view source for additional security
-    function preventViewSource() {
-        // Disable right-click
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-            return false;
-        });
-        
-        // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
-        document.addEventListener('keydown', function(e) {
-            if (e.keyCode === 123 || // F12
-                (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || // Ctrl+Shift+I/J
-                (e.ctrlKey && e.keyCode === 85)) { // Ctrl+U
-                e.preventDefault();
-                return false;
+        // Set up activity event listeners
+        $(document).on('mousemove keydown click scroll', function() {
+            if (!isModalOpen) {
+                resetSessionTimer();
             }
         });
     }
     
-    // Initialize the dashboard after authentication check
-    function initializeDashboard() {
-        // Session Management Variables
-        const sessionTimeout = 180000; // 3 minutes in milliseconds
-        const warningTimeout = 30000; // 30 seconds before expiry
-        let sessionTimer;
-        let warningTimer;
-        let timeRemaining = sessionTimeout;
-        let isModalOpen = false;
+    // Reset the session timer
+    function resetSessionTimer() {
+        clearTimeout(sessionTimer);
+        clearTimeout(warningTimer);
         
-        // Store session token and expiry in localStorage
-        const sessionToken = 'plumber_' + Math.random().toString(36).substr(2, 9);
-        const sessionExpiry = new Date().getTime() + sessionTimeout;
+        timeRemaining = sessionTimeout;
+        updateSessionTimerDisplay();
         
-        localStorage.setItem('plumberSessionToken', sessionToken);
-        localStorage.setItem('plumberSessionExpiry', sessionExpiry.toString());
+        // Set timer to show warning modal
+        warningTimer = setTimeout(showWarningModal, sessionTimeout - warningTimeout);
         
-        // Start the session timer
-        function startSessionTimer() {
-            resetSessionTimer();
-            
-            // Set up activity event listeners
-            $(document).on('mousemove keydown click scroll', function() {
-                if (!isModalOpen) {
-                    resetSessionTimer();
-                }
-            });
+        // Set timer to logout automatically
+        sessionTimer = setTimeout(logoutUser, sessionTimeout);
+    }
+    
+    // Update the session timer display
+    function updateSessionTimerDisplay() {
+        const minutes = Math.floor(timeRemaining / 60000);
+        const seconds = Math.floor((timeRemaining % 60000) / 1000);
+        const display = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        
+        $('#sessionCountdown').text(display);
+        
+        // Change timer color based on remaining time
+        const $sessionTimer = $('#sessionTimer');
+        $sessionTimer.removeClass('warning danger');
+        
+        if (timeRemaining <= 30000) {
+            $sessionTimer.addClass('danger');
+        } else if (timeRemaining <= 60000) {
+            $sessionTimer.addClass('warning');
         }
+    }
+    
+    // Show warning modal
+    function showWarningModal() {
+        isModalOpen = true;
+        let modalCountdown = Math.floor(warningTimeout / 1000);
         
-        // Reset the session timer
-        function resetSessionTimer() {
-            clearTimeout(sessionTimer);
-            clearTimeout(warningTimer);
-            
-            timeRemaining = sessionTimeout;
-            updateSessionTimerDisplay();
-            
-            // Update session expiry in localStorage
-            const newExpiry = new Date().getTime() + sessionTimeout;
-            localStorage.setItem('plumberSessionExpiry', newExpiry.toString());
-            
-            // Set timer to show warning modal
-            warningTimer = setTimeout(showWarningModal, sessionTimeout - warningTimeout);
-            
-            // Set timer to logout automatically
-            sessionTimer = setTimeout(logoutUser, sessionTimeout);
-        }
+        $('#modalCountdown').text(modalCountdown);
+        $('#sessionWarningModal').css('display', 'flex');
         
-        // Update the session timer display
-        function updateSessionTimerDisplay() {
-            const minutes = Math.floor(timeRemaining / 60000);
-            const seconds = Math.floor((timeRemaining % 60000) / 1000);
-            const display = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-            
-            $('#sessionCountdown').text(display);
-            
-            // Change timer color based on remaining time
-            const $sessionTimer = $('#sessionTimer');
-            $sessionTimer.removeClass('warning danger');
-            
-            if (timeRemaining <= 30000) {
-                $sessionTimer.addClass('danger');
-            } else if (timeRemaining <= 60000) {
-                $sessionTimer.addClass('warning');
-            }
-        }
-        
-        // Show warning modal
-        function showWarningModal() {
-            isModalOpen = true;
-            let modalCountdown = Math.floor(warningTimeout / 1000);
-            
+        // Update modal countdown
+        const modalInterval = setInterval(function() {
+            modalCountdown--;
             $('#modalCountdown').text(modalCountdown);
-            $('#sessionWarningModal').css('display', 'flex');
             
-            // Update modal countdown
-            const modalInterval = setInterval(function() {
-                modalCountdown--;
-                $('#modalCountdown').text(modalCountdown);
-                
-                if (modalCountdown <= 0) {
-                    clearInterval(modalInterval);
-                    logoutUser();
-                }
-            }, 1000);
-            
-            // Store interval ID to clear it when modal is closed
-            $('#sessionWarningModal').data('interval', modalInterval);
-        }
-        
-        // Hide warning modal
-        function hideWarningModal() {
-            isModalOpen = false;
-            $('#sessionWarningModal').css('display', 'none');
-            
-            // Clear the modal countdown interval
-            const modalInterval = $('#sessionWarningModal').data('interval');
-            if (modalInterval) {
+            if (modalCountdown <= 0) {
                 clearInterval(modalInterval);
-            }
-        }
-        
-        // Extend session
-        function extendSession() {
-            hideWarningModal();
-            resetSessionTimer();
-            
-            // Show success message
-            showSuccessToast('Session extended for another 3 minutes');
-        }
-        
-        // Logout user
-        function logoutUser() {
-            hideWarningModal();
-            
-            // Clear session from localStorage
-            localStorage.removeItem('plumberSessionToken');
-            localStorage.removeItem('plumberSessionExpiry');
-            
-            Swal.fire({
-                title: 'Session Expired',
-                text: 'Your session has expired. You will be redirected to the login page.',
-                icon: 'info',
-                confirmButtonText: 'OK',
-                allowOutsideClick: false
-            }).then(function() {
-                performLogout();
-            });
-        }
-        
-        // Countdown timer update
-        const countdownInterval = setInterval(function() {
-            if (timeRemaining > 0) {
-                timeRemaining -= 1000;
-                updateSessionTimerDisplay();
+                logoutUser();
             }
         }, 1000);
         
-        // Mobile sidebar toggle functionality
-        const sidebar = $('.sidebar');
-        const mainContent = $('.main-content');
-        const header = $('.header');
-        const sidebarToggle = $('#sidebarToggle');
-        const mobileOverlay = $('.mobile-overlay');
+        // Store interval ID to clear it when modal is closed
+        $('#sessionWarningModal').data('interval', modalInterval);
+    }
+    
+    // Hide warning modal
+    function hideWarningModal() {
+        isModalOpen = false;
+        $('#sessionWarningModal').css('display', 'none');
         
-        sidebarToggle.on('click', function() {
-            sidebar.toggleClass('active');
-            mainContent.toggleClass('active');
-            mobileOverlay.toggleClass('active');
-            
-            // Add overlay to header when sidebar is active
-            if (sidebar.hasClass('active')) {
-                header.css('background-color', 'var(--overlay-color)');
-                $('body').css('overflow', 'hidden');
-            } else {
-                header.css('background-color', 'white');
-                $('body').css('overflow', '');
-            }
-        });
-
-        let allReconnectedConsumers = [];
-
-        function loadReconnectedConsumers() {
-            // Show loading state
-            $('#loadingReconnected').removeClass('d-none');
-            $('#emptyReconnected').addClass('d-none');
-            
-            $.ajax({
-                url: '/reconnected-consumers',
-                type: 'GET',
-                success: function(response) {
-                    // Hide loading state
-                    $('#loadingReconnected').addClass('d-none');
-                    
-                    if (response.success) {
-                        allReconnectedConsumers = response.reconnected_consumers;
-                        filterAndDisplayConsumers($('#searchReconnected').val());
-                    } else {
-                        showNoReconnectedConsumers();
-                    }
-                },
-                error: function(xhr) {
-                    $('#loadingReconnected').addClass('d-none');
-                    console.error('Failed to load reconnected consumers');
-                    showErrorState();
-                }
-            });
+        // Clear the modal countdown interval
+        const modalInterval = $('#sessionWarningModal').data('interval');
+        if (modalInterval) {
+            clearInterval(modalInterval);
         }
-
-        function filterAndDisplayConsumers(searchTerm = '') {
-            let filteredConsumers = allReconnectedConsumers;
-            
-            if (searchTerm) {
-                const searchLower = searchTerm.toLowerCase();
-                filteredConsumers = allReconnectedConsumers.filter(consumer => 
-                    consumer.consumer_name.toLowerCase().includes(searchLower) ||
-                    consumer.meter_no.toLowerCase().includes(searchLower)
-                );
-            }
-            
-            if (filteredConsumers.length > 0) {
-                updateReconnectedList(filteredConsumers);
-                $('#emptyReconnected').addClass('d-none');
-            } else {
-                showNoReconnectedConsumers(searchTerm);
-            }
-        }
-
-        // Real-time search with client-side filtering
-        $('#searchReconnected').on('input', function() {
-            const searchTerm = $(this).val().trim();
-            const $clearBtn = $('#clearSearch');
-            
-            if (searchTerm.length > 0) {
-                $clearBtn.show();
-            } else {
-                $clearBtn.hide();
-            }
-            
-            filterAndDisplayConsumers(searchTerm);
-        });
-
-        function updateReconnectedList(consumers) {
-            const container = $('#reconnectedConsumersList');
-            container.empty();
-            
-            consumers.forEach(consumer => {
-                const item = `
-                    <div class="reconnection-item mb-3 p-3 border-start border-success border-3">
-                        <div class="consumer-name fw-bold text-success">
-                            <i class="bi bi-check-circle-fill me-2"></i>
-                            ${consumer.consumer_name}
-                        </div>
-                        <div class="reconnection-date small text-muted">
-                            <i class="bi bi-calendar-event me-1"></i>
-                            ${new Date(consumer.reconnection_date).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                            })}
-                        </div>
-                        <div class="meter-info small text-muted">
-                            <i class="bi bi-speedometer2 me-1"></i>
-                            Meter: ${consumer.meter_no}
-                        </div>
-                    </div>
-                `;
-                container.append(item);
-            });
-            
-            // Update the count badge
-            $('#reconnectedCount').text(consumers.length);
-        }
-
-        function showNoReconnectedConsumers() {
-            const container = $('#reconnectedConsumersList');
-            container.html(`
-                <div class="text-center text-muted py-5" id="emptyReconnected">
-                    <i class="bi bi-arrow-repeat display-4 d-block mb-3 text-muted"></i>
-                    <h6 class="text-muted mb-2">No Reconnected Consumers</h6>
-                </div>
-            `);
-            
-            // Update the count badge to 0
-            $('#reconnectedCount').text('0');
-        }
-
-        function showErrorState() {
-            const container = $('#reconnectedConsumersList');
-            container.html(`
-                <div class="text-center text-danger py-5">
-                    <i class="bi bi-exclamation-triangle display-4 d-block mb-3"></i>
-                    <h6 class="text-danger mb-2">Failed to Load Data</h6>
-                    <p class="small text-muted mb-3">Unable to load reconnected consumers at this time.</p>
-                    <button class="btn btn-sm btn-outline-danger" onclick="loadReconnectedConsumers()">
-                        <i class="bi bi-arrow-clockwise me-1"></i> Try Again
-                    </button>
-                </div>
-            `);
-        }
-
-        // Refresh button click handler
-        $('#refreshReconnectedBtn').click(function() {
-            const $btn = $(this);
-            const originalText = $btn.html();
-            
-            $btn.html('<span class="spinner-border spinner-border-sm me-1" role="status"></span> Refreshing...');
-            $btn.prop('disabled', true);
-            
-            loadReconnectedConsumers();
-            
-            // Re-enable button after 2 seconds
-            setTimeout(() => {
-                $btn.html(originalText);
-                $btn.prop('disabled', false);
-            }, 2000);
-        });
-
-        // Clear search button
-        $('#clearSearch').click(function() {
-            $('#searchReconnected').val('');
-            loadReconnectedConsumers();
-        });
-
-        // Session management event handlers
-        $('#extendSessionBtn').click(function() {
-            extendSession();
-        });
+    }
+    
+    // Extend session
+    function extendSession() {
+        hideWarningModal();
+        resetSessionTimer();
         
-        $('#signOutNowBtn').click(function() {
-            hideWarningModal();
+        // Show success message
+        showSuccessToast('Session extended for another 3 minutes');
+    }
+    
+    // Logout user
+    function logoutUser() {
+        hideWarningModal();
+        
+        Swal.fire({
+            title: 'Session Expired',
+            text: 'Your session has expired. You will be redirected to the login page.',
+            icon: 'info',
+            confirmButtonText: 'OK',
+            allowOutsideClick: false
+        }).then(function() {
             performLogout();
         });
+    }
+    
+    // Countdown timer update
+    const countdownInterval = setInterval(function() {
+        if (timeRemaining > 0) {
+            timeRemaining -= 1000;
+            updateSessionTimerDisplay();
+        }
+    }, 1000);
+    
+    // Mobile sidebar toggle functionality
+    const sidebar = $('.sidebar');
+    const mainContent = $('.main-content');
+    const header = $('.header');
+    const sidebarToggle = $('#sidebarToggle');
+    const mobileOverlay = $('.mobile-overlay');
+    
+    sidebarToggle.on('click', function() {
+        sidebar.toggleClass('active');
+        mainContent.toggleClass('active');
+        mobileOverlay.toggleClass('active');
         
-        // Load reconnected consumers on page load
+        // Add overlay to header when sidebar is active
+        if (sidebar.hasClass('active')) {
+            header.css('background-color', 'var(--overlay-color)');
+            $('body').css('overflow', 'hidden');
+        } else {
+            header.css('background-color', 'white');
+            $('body').css('overflow', '');
+        }
+    });
+
+    let allReconnectedConsumers = [];
+
+    function loadReconnectedConsumers() {
+        // Show loading state
+        $('#loadingReconnected').removeClass('d-none');
+        $('#emptyReconnected').addClass('d-none');
+        
+        $.ajax({
+            url: '/reconnected-consumers',
+            type: 'GET',
+            success: function(response) {
+                // Hide loading state
+                $('#loadingReconnected').addClass('d-none');
+                
+                if (response.success) {
+                    allReconnectedConsumers = response.reconnected_consumers;
+                    filterAndDisplayConsumers($('#searchReconnected').val());
+                } else {
+                    showNoReconnectedConsumers();
+                }
+            },
+            error: function(xhr) {
+                $('#loadingReconnected').addClass('d-none');
+                console.error('Failed to load reconnected consumers');
+                showErrorState();
+            }
+        });
+    }
+
+    function filterAndDisplayConsumers(searchTerm = '') {
+        let filteredConsumers = allReconnectedConsumers;
+        
+        if (searchTerm) {
+            const searchLower = searchTerm.toLowerCase();
+            filteredConsumers = allReconnectedConsumers.filter(consumer => 
+                consumer.consumer_name.toLowerCase().includes(searchLower) ||
+                consumer.meter_no.toLowerCase().includes(searchLower)
+            );
+        }
+        
+        if (filteredConsumers.length > 0) {
+            updateReconnectedList(filteredConsumers);
+            $('#emptyReconnected').addClass('d-none');
+        } else {
+            showNoReconnectedConsumers(searchTerm);
+        }
+    }
+
+    // Real-time search with client-side filtering
+    $('#searchReconnected').on('input', function() {
+        const searchTerm = $(this).val().trim();
+        const $clearBtn = $('#clearSearch');
+        
+        if (searchTerm.length > 0) {
+            $clearBtn.show();
+        } else {
+            $clearBtn.hide();
+        }
+        
+        filterAndDisplayConsumers(searchTerm);
+    });
+
+    function updateReconnectedList(consumers) {
+        const container = $('#reconnectedConsumersList');
+        container.empty();
+        
+        consumers.forEach(consumer => {
+            const item = `
+                <div class="reconnection-item mb-3 p-3 border-start border-success border-3">
+                    <div class="consumer-name fw-bold text-success">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        ${consumer.consumer_name}
+                    </div>
+                    <div class="reconnection-date small text-muted">
+                        <i class="bi bi-calendar-event me-1"></i>
+                        ${new Date(consumer.reconnection_date).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        })}
+                    </div>
+                    <div class="meter-info small text-muted">
+                        <i class="bi bi-speedometer2 me-1"></i>
+                        Meter: ${consumer.meter_no}
+                    </div>
+                </div>
+            `;
+            container.append(item);
+        });
+        
+        // Update the count badge
+        $('#reconnectedCount').text(consumers.length);
+    }
+
+    function showNoReconnectedConsumers() {
+        const container = $('#reconnectedConsumersList');
+        container.html(`
+            <div class="text-center text-muted py-5" id="emptyReconnected">
+                <i class="bi bi-arrow-repeat display-4 d-block mb-3 text-muted"></i>
+                <h6 class="text-muted mb-2">No Reconnected Consumers</h6>
+            </div>
+        `);
+        
+        // Update the count badge to 0
+        $('#reconnectedCount').text('0');
+    }
+
+    function showErrorState() {
+        const container = $('#reconnectedConsumersList');
+        container.html(`
+            <div class="text-center text-danger py-5">
+                <i class="bi bi-exclamation-triangle display-4 d-block mb-3"></i>
+                <h6 class="text-danger mb-2">Failed to Load Data</h6>
+                <p class="small text-muted mb-3">Unable to load reconnected consumers at this time.</p>
+                <button class="btn btn-sm btn-outline-danger" onclick="loadReconnectedConsumers()">
+                    <i class="bi bi-arrow-clockwise me-1"></i> Try Again
+                </button>
+            </div>
+        `);
+    }
+
+    // Refresh button click handler
+    $('#refreshReconnectedBtn').click(function() {
+        const $btn = $(this);
+        const originalText = $btn.html();
+        
+        $btn.html('<span class="spinner-border spinner-border-sm me-1" role="status"></span> Refreshing...');
+        $btn.prop('disabled', true);
+        
         loadReconnectedConsumers();
         
-        // Start the session timer
-        startSessionTimer();
-        
-        // Auto-refresh reconnected consumers every 30 seconds
-        setInterval(loadReconnectedConsumers, 30000);
-        
-        // Close sidebar when clicking on overlay
-        mobileOverlay.on('click', function() {
+        // Re-enable button after 2 seconds
+        setTimeout(() => {
+            $btn.html(originalText);
+            $btn.prop('disabled', false);
+        }, 2000);
+    });
+
+    // Clear search button
+    $('#clearSearch').click(function() {
+        $('#searchReconnected').val('');
+        loadReconnectedConsumers();
+    });
+
+    // Session management event handlers
+    $('#extendSessionBtn').click(function() {
+        extendSession();
+    });
+    
+    $('#signOutNowBtn').click(function() {
+        hideWarningModal();
+        performLogout();
+    });
+    
+    // Load reconnected consumers on page load
+    loadReconnectedConsumers();
+    
+    // Start the session timer
+    startSessionTimer();
+    
+    // Auto-refresh reconnected consumers every 30 seconds
+    setInterval(loadReconnectedConsumers, 30000);
+    
+    // Close sidebar when clicking on overlay
+    mobileOverlay.on('click', function() {
+        sidebar.removeClass('active');
+        mainContent.removeClass('active');
+        mobileOverlay.removeClass('active');
+        header.css('background-color', 'white');
+        $('body').css('overflow', '');
+    });
+    
+    // Close sidebar when clicking on a nav link (for mobile)
+    $('.sidebar-menu .nav-link').on('click', function() {
+        if ($(window).width() < 992) {
             sidebar.removeClass('active');
             mainContent.removeClass('active');
             mobileOverlay.removeClass('active');
             header.css('background-color', 'white');
             $('body').css('overflow', '');
-        });
-        
-        // Close sidebar when clicking on a nav link (for mobile)
-        $('.sidebar-menu .nav-link').on('click', function() {
-            if ($(window).width() < 992) {
-                sidebar.removeClass('active');
-                mainContent.removeClass('active');
-                mobileOverlay.removeClass('active');
-                header.css('background-color', 'white');
-                $('body').css('overflow', '');
-            }
-        });
-        
-        // Handle window resize
-        $(window).on('resize', function() {
-            // Close sidebar if window is resized to desktop size
-            if ($(window).width() >= 992) {
-                sidebar.removeClass('active');
-                mainContent.removeClass('active');
-                mobileOverlay.removeClass('active');
-                header.css('background-color', 'white');
-                $('body').css('overflow', '');
-            }
-        });
-        
-        // Initialize charts
-        const consumptionCtx = document.getElementById('consumptionTrendChart').getContext('2d');
-        const consumptionChart = new Chart(consumptionCtx, {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                datasets: [{
-                    label: 'Water Consumption (m³)',
-                    data: @json($consumptionData),
-                    backgroundColor: 'rgba(23, 162, 184, 0.2)',
-                    borderColor: 'rgba(23, 162, 184, 1)',
-                    borderWidth: 2,
-                    tension: 0.4,
-                    fill: true
-                }]
+        }
+    });
+    
+    // Handle window resize
+    $(window).on('resize', function() {
+        // Close sidebar if window is resized to desktop size
+        if ($(window).width() >= 992) {
+            sidebar.removeClass('active');
+            mainContent.removeClass('active');
+            mobileOverlay.removeClass('active');
+            header.css('background-color', 'white');
+            $('body').css('overflow', '');
+        }
+    });
+    
+    // Initialize charts
+    const consumptionCtx = document.getElementById('consumptionTrendChart').getContext('2d');
+    const consumptionChart = new Chart(consumptionCtx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            datasets: [{
+                label: 'Water Consumption (m³)',
+                data: @json($consumptionData),
+                backgroundColor: 'rgba(23, 162, 184, 0.2)',
+                borderColor: 'rgba(23, 162, 184, 1)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.dataset.label}: ${context.raw} m³`;
+                        }
+                    }
+                }
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                        callbacks: {
-                            label: function(context) {
-                                return `${context.dataset.label}: ${context.raw} m³`;
-                            }
-                        }
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Cubic Meters (m³)'
                     }
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Cubic Meters (m³)'
-                        }
-                    },
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Month'
-                        }
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Month'
                     }
                 }
             }
-        });
+        }
+    });
 
-        const completedCtx = document.getElementById('completedReadingsChart').getContext('2d');
-        const completedChart = new Chart(completedCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                datasets: [{
-                    label: 'Completed Readings',
-                    data: @json($completedData),
-                    backgroundColor: 'rgba(40, 167, 69, 0.5)',
-                    borderColor: 'rgba(40, 167, 69, 1)',
-                    borderWidth: 1
-                }]
+    const completedCtx = document.getElementById('completedReadingsChart').getContext('2d');
+    const completedChart = new Chart(completedCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            datasets: [{
+                label: 'Completed Readings',
+                data: @json($completedData),
+                backgroundColor: 'rgba(40, 167, 69, 0.5)',
+                borderColor: 'rgba(40, 167, 69, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.dataset.label}: ${context.raw}`;
+                        }
+                    }
+                }
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Readings'
                     },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return `${context.dataset.label}: ${context.raw}`;
-                            }
-                        }
+                    ticks: {
+                        precision: 0
                     }
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Number of Readings'
-                        },
-                        ticks: {
-                            precision: 0
-                        }
-                    },
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Month'
-                        }
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Month'
                     }
                 }
             }
-        });
-        
-        // Handle window resize for charts
-        $(window).on('resize', function() {
-            consumptionChart.resize();
-            completedChart.resize();
-        });
-
-        // DASHBOARD UPDATE FUNCTIONS - INSERTED HERE
-
-        // Function to update dashboard charts and data after reconnection
-        function updateDashboardAfterReconnection() {
-            // Show loading state
-            const loadingToast = Swal.fire({
-                title: 'Updating Dashboard...',
-                text: 'Refreshing consumption data',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-
-            // Reload the page to get updated data (simple approach)
-            setTimeout(() => {
-                window.location.reload();
-            }, 1500);
-
-            // Alternative: AJAX approach to update charts without page reload
-            // updateDashboardCharts();
         }
+    });
+    
+    // Handle window resize for charts
+    $(window).on('resize', function() {
+        consumptionChart.resize();
+        completedChart.resize();
+    });
 
-        // AJAX function to update charts without page reload
-        function updateDashboardCharts() {
-            $.ajax({
-                url: '/dashboard-data',
-                type: 'GET',
-                success: function(response) {
-                    if (response.success) {
-                        // Update consumption chart
-                        updateConsumptionChart(response.data.current_month_consumption);
-                        
-                        // Update completed readings count
-                        updateCompletedReadings(response.data.current_month_completed);
-                        
-                        // Update reconnection fees
-                        updateReconnectionFees(response.data.current_month_reconnection_fees);
-                        
-                        Swal.close();
-                        showSuccessToast('Dashboard updated successfully!');
-                    }
-                },
-                error: function(xhr) {
-                    Swal.close();
-                    console.error('Failed to update dashboard data');
-                    // Fallback to page reload
-                    window.location.reload();
-                }
-            });
-        }
+    // DASHBOARD UPDATE FUNCTIONS - INSERTED HERE
 
-        // Function to update consumption chart
-        function updateConsumptionChart(newConsumption) {
-            const consumptionChart = Chart.getChart('consumptionTrendChart');
-            if (consumptionChart) {
-                const currentMonth = new Date().getMonth();
-                const data = consumptionChart.data.datasets[0].data;
-                
-                // Update current month's consumption
-                data[currentMonth] = newConsumption;
-                
-                consumptionChart.update('active');
+    // Function to update dashboard charts and data after reconnection
+    function updateDashboardAfterReconnection() {
+        // Show loading state
+        const loadingToast = Swal.fire({
+            title: 'Updating Dashboard...',
+            text: 'Refreshing consumption data',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
             }
-        }
+        });
 
-        // Function to update completed readings
-        function updateCompletedReadings(newCount) {
-            const completedChart = Chart.getChart('completedReadingsChart');
-            if (completedChart) {
-                const currentMonth = new Date().getMonth();
-                const data = completedChart.data.datasets[0].data;
-                
-                // Update current month's completed readings
-                data[currentMonth] = newCount;
-                
-                completedChart.update('active');
-            }
-        }
+        // Reload the page to get updated data (simple approach)
+        setTimeout(() => {
+            window.location.reload();
+        }, 1500);
 
-        // Function to update reconnection fees display
-        function updateReconnectionFees(newFees) {
-            // Update the reconnection fees card
-            $('.card:has(.fa-cash-coin) h3').text('₱' + newFees.toLocaleString());
-        }
+        // Alternative: AJAX approach to update charts without page reload
+        // updateDashboardCharts();
+    }
 
-        // Modify the reconnect function to call dashboard update
-        function restoreDisconnectedConsumer(consumerId, consumerName, isFromMainView = false) {
-            Swal.fire({
-                title: 'Reconnect Consumer?',
-                html: `
-                    <p>Are you sure you want to reconnect <strong>${consumerName}</strong>?</p>
-                    <p class="text-info"><i class="bi bi-info-circle me-2"></i>A reconnection fee of ₱500 will be applied.</p>
-                    <div class="form-group mt-3">
-                        <label for="reconnectionNotes" class="form-label">Notes (Optional)</label>
-                        <textarea id="reconnectionNotes" class="form-control" rows="3" placeholder="Add any notes about this reconnection..."></textarea>
-                    </div>
-                `,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#198754',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, Reconnect Consumer',
-                cancelButtonText: 'Cancel',
-                reverseButtons: true,
-                width: '500px'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const notes = document.getElementById('reconnectionNotes').value;
+    // AJAX function to update charts without page reload
+    function updateDashboardCharts() {
+        $.ajax({
+            url: '/dashboard-data',
+            type: 'GET',
+            success: function(response) {
+                if (response.success) {
+                    // Update consumption chart
+                    updateConsumptionChart(response.data.current_month_consumption);
                     
-                    // Show loading state
-                    Swal.fire({
-                        title: 'Reconnecting Consumer...',
-                        text: 'Please wait while we reconnect the consumer',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
-
-                    $.ajax({
-                        url: `/disconnections/${consumerId}/restore`,
-                        type: 'POST',
-                        data: {
-                            notes: notes,
-                            _token: $('meta[name="csrf-token"]').attr('content')
-                        },
-                        success: function(response) {
-                            Swal.close();
-                            
-                            if (response.success) {
-                                showSuccessAlert('Success!', response.message);
-                                
-                                // Update dashboard data after successful reconnection
-                                updateDashboardAfterReconnection();
-                                
-                                // Reload the main billing table to show the reconnected consumer
-                                if (typeof table !== 'undefined') {
-                                    table.ajax.reload(null, false);
-                                }
-                                
-                                // If we're in the disconnected consumers modal, close it
-                                if ($('#disconnectedConsumersListModal').is(':visible')) {
-                                    $('#disconnectedConsumersListModal').modal('hide');
-                                }
-                                
-                                // Show success message
-                                showSuccessToast(`${consumerName} has been successfully reconnected!`);
-                            } else {
-                                showErrorAlert('Reconnection Failed!', response.message);
-                            }
-                        },
-                        error: function(xhr) {
-                            Swal.close();
-                            const errorMessage = xhr.responseJSON?.message || 'Failed to reconnect consumer';
-                            showErrorAlert('Reconnection Failed!', errorMessage);
-                        }
-                    });
+                    // Update completed readings count
+                    updateCompletedReadings(response.data.current_month_completed);
+                    
+                    // Update reconnection fees
+                    updateReconnectionFees(response.data.current_month_reconnection_fees);
+                    
+                    Swal.close();
+                    showSuccessToast('Dashboard updated successfully!');
                 }
-            });
-        }
-
-        // Auto-refresh dashboard data every 30 seconds
-        setInterval(function() {
-            if (!$('.modal').is(':visible')) { // Only refresh if no modal is open
-                updateDashboardCharts();
+            },
+            error: function(xhr) {
+                Swal.close();
+                console.error('Failed to update dashboard data');
+                // Fallback to page reload
+                window.location.reload();
             }
-        }, 30000);
-
-        // Helper functions for notifications
-        function showSuccessAlert(title, message) {
-            Swal.fire({
-                icon: 'success',
-                title: title,
-                text: message,
-                timer: 3000
-            });
-        }
-
-        function showErrorAlert(title, message) {
-            Swal.fire({
-                icon: 'error',
-                title: title,
-                html: message
-            });
-        }
-
-        function showErrorToast(message) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: message,
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 3000
-            });
-        }
-
-        function showSuccessToast(message) {
-            const Toast = Swal.mixin({
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 4000,
-                timerProgressBar: true,
-                didOpen: (toast) => {
-                    toast.addEventListener('mouseenter', Swal.stopTimer)
-                    toast.addEventListener('mouseleave', Swal.resumeTimer)
-                }
-            });
-
-            Toast.fire({
-                icon: 'success',
-                title: message
-            });
-        }
-
-        // Logout functionality
-        $('#logoutBtn').click(function(e) {
-            e.preventDefault();
-            
-            Swal.fire({
-                title: 'Sign Out?',
-                text: 'Are you sure you want to sign out?',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, Sign Out',
-                cancelButtonText: 'Cancel'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    performLogout();
-                }
-            });
         });
+    }
 
-        function performLogout() {
-            // Clear session from localStorage
-            localStorage.removeItem('plumberSessionToken');
-            localStorage.removeItem('plumberSessionExpiry');
+    // Function to update consumption chart
+    function updateConsumptionChart(newConsumption) {
+        const consumptionChart = Chart.getChart('consumptionTrendChart');
+        if (consumptionChart) {
+            const currentMonth = new Date().getMonth();
+            const data = consumptionChart.data.datasets[0].data;
             
-            // Show loading state
-            Swal.fire({
-                title: 'Signing Out...',
-                text: 'Please wait',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-
-            // Send logout request to server
-            $.ajax({
-                url: '/logout',
-                type: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function(response) {
-                    window.location.href = '/admin-portal';
-                },
-                error: function(xhr) {
-                    window.location.href = '/admin-portal';
-                }
-            });
+            // Update current month's consumption
+            data[currentMonth] = newConsumption;
+            
+            consumptionChart.update('active');
         }
     }
-    
-    // Start authentication check
-    if (checkAuthentication()) {
-        // Additional security measures
-        preventDirectAccess();
-        preventViewSource();
+
+    // Function to update completed readings
+    function updateCompletedReadings(newCount) {
+        const completedChart = Chart.getChart('completedReadingsChart');
+        if (completedChart) {
+            const currentMonth = new Date().getMonth();
+            const data = completedChart.data.datasets[0].data;
+            
+            // Update current month's completed readings
+            data[currentMonth] = newCount;
+            
+            completedChart.update('active');
+        }
+    }
+
+    // Function to update reconnection fees display
+    function updateReconnectionFees(newFees) {
+        // Update the reconnection fees card
+        $('.card:has(.fa-cash-coin) h3').text('₱' + newFees.toLocaleString());
+    }
+
+    // Modify the reconnect function to call dashboard update
+    function restoreDisconnectedConsumer(consumerId, consumerName, isFromMainView = false) {
+        Swal.fire({
+            title: 'Reconnect Consumer?',
+            html: `
+                <p>Are you sure you want to reconnect <strong>${consumerName}</strong>?</p>
+                <p class="text-info"><i class="bi bi-info-circle me-2"></i>A reconnection fee of ₱500 will be applied.</p>
+                <div class="form-group mt-3">
+                    <label for="reconnectionNotes" class="form-label">Notes (Optional)</label>
+                    <textarea id="reconnectionNotes" class="form-control" rows="3" placeholder="Add any notes about this reconnection..."></textarea>
+                </div>
+            `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#198754',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, Reconnect Consumer',
+            cancelButtonText: 'Cancel',
+            reverseButtons: true,
+            width: '500px'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const notes = document.getElementById('reconnectionNotes').value;
+                
+                // Show loading state
+                Swal.fire({
+                    title: 'Reconnecting Consumer...',
+                    text: 'Please wait while we reconnect the consumer',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                $.ajax({
+                    url: `/disconnections/${consumerId}/restore`,
+                    type: 'POST',
+                    data: {
+                        notes: notes,
+                        _token: $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        Swal.close();
+                        
+                        if (response.success) {
+                            showSuccessAlert('Success!', response.message);
+                            
+                            // Update dashboard data after successful reconnection
+                            updateDashboardAfterReconnection();
+                            
+                            // Reload the main billing table to show the reconnected consumer
+                            if (typeof table !== 'undefined') {
+                                table.ajax.reload(null, false);
+                            }
+                            
+                            // If we're in the disconnected consumers modal, close it
+                            if ($('#disconnectedConsumersListModal').is(':visible')) {
+                                $('#disconnectedConsumersListModal').modal('hide');
+                            }
+                            
+                            // Show success message
+                            showSuccessToast(`${consumerName} has been successfully reconnected!`);
+                        } else {
+                            showErrorAlert('Reconnection Failed!', response.message);
+                        }
+                    },
+                    error: function(xhr) {
+                        Swal.close();
+                        const errorMessage = xhr.responseJSON?.message || 'Failed to reconnect consumer';
+                        showErrorAlert('Reconnection Failed!', errorMessage);
+                    }
+                });
+            }
+        });
+    }
+
+    // Auto-refresh dashboard data every 30 seconds
+    setInterval(function() {
+        if (!$('.modal').is(':visible')) { // Only refresh if no modal is open
+            updateDashboardCharts();
+        }
+    }, 30000);
+
+    // Helper functions for notifications
+    function showSuccessAlert(title, message) {
+        Swal.fire({
+            icon: 'success',
+            title: title,
+            text: message,
+            timer: 3000
+        });
+    }
+
+    function showErrorAlert(title, message) {
+        Swal.fire({
+            icon: 'error',
+            title: title,
+            html: message
+        });
+    }
+
+    function showErrorToast(message) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: message,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+    }
+
+    function showSuccessToast(message) {
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 4000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        });
+
+        Toast.fire({
+            icon: 'success',
+            title: message
+        });
+    }
+
+    // Logout functionality
+    $('#logoutBtn').click(function(e) {
+        e.preventDefault();
+        
+        Swal.fire({
+            title: 'Sign Out?',
+            text: 'Are you sure you want to sign out?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, Sign Out',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                performLogout();
+            }
+        });
+    });
+
+    function performLogout() {
+        // Show loading state
+        Swal.fire({
+            title: 'Signing Out...',
+            text: 'Please wait',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // Send logout request to server
+        $.ajax({
+            url: '/logout',
+            type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                window.location.href = '/admin-login';
+            },
+            error: function(xhr) {
+                window.location.href = '/admin-login';
+            }
+        });
     }
 });
 </script>
