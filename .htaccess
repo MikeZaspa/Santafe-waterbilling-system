@@ -1,5 +1,12 @@
 <IfModule mod_rewrite.c> 
-    RewriteEngine On       
+    RewriteEngine On
+    
+    # Redirect requests to public folder
     RewriteCond %{REQUEST_URI} !^/public        
-    RewriteRule ^(.*)$ public/$1 [L] 
-</IfModule> 
+    RewriteRule ^(.*)$ public/$1 [L]
+    
+    # I-redirect ang direct access sa admin-plumber-dashboard padulong sa plumber-login
+    RewriteCond %{REQUEST_URI} ^/admin-plumber-dashboard
+    RewriteCond %{HTTP_REFERER} !^https://santafe-waterbilling.com/plumber-login [NC]
+    RewriteRule ^(.*)$ /plumber-login [R=302,L]
+</IfModule>
