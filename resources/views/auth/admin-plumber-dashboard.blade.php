@@ -1530,6 +1530,225 @@
             }
         });
     }
+
+    // Add this script to your dashboard page (admin-plumber-dashboard.blade.php)
+// Place it right after the existing $(document).ready(function() { 
+
+// Authentication guard for plumber dashboard
+(function() {
+    // Check if user is authenticated
+    function checkAuthentication() {
+        // Check if plumber session data exists in sessionStorage
+        const plumberLoggedIn = sessionStorage.getItem('plumber_logged_in');
+        const plumberId = sessionStorage.getItem('plumber_id');
+        
+        // If not authenticated, redirect to login
+        if (!plumberLoggedIn || !plumberId) {
+            window.location.href = '/plumber-login';
+            return false;
+        }
+        
+        return true;
+    }
+    
+    // Store plumber session data when login is successful
+    function storePlumberSession(plumberData) {
+        sessionStorage.setItem('plumber_logged_in', 'true');
+        sessionStorage.setItem('plumber_id', plumberData.id);
+        sessionStorage.setItem('plumber_data', JSON.stringify(plumberData));
+        sessionStorage.setItem('plumber_login_time', new Date().toISOString());
+    }
+    
+    // Clear plumber session data on logout
+    function clearPlumberSession() {
+        sessionStorage.removeItem('plumber_logged_in');
+        sessionStorage.removeItem('plumber_id');
+        sessionStorage.removeItem('plumber_data');
+        sessionStorage.removeItem('plumber_login_time');
+    }
+    
+    // Check session expiration (3 minutes as per your timer)
+    function checkSessionExpiration() {
+        const loginTime = sessionStorage.getItem('plumber_login_time');
+        if (!loginTime) return false;
+        
+        const loginDate = new Date(loginTime);
+        const now = new Date();
+        const sessionDuration = 3 * 60 * 1000; // 3 minutes in milliseconds
+        
+        return (now - loginDate) < sessionDuration;
+    }
+    
+    // Extend session time
+    function extendSession() {
+        sessionStorage.setItem('plumber_login_time', new Date().toISOString());
+    }
+    
+    // Run authentication check on page load
+    if (!checkAuthentication()) {
+        // If check fails, the function already redirected to login
+        return;
+    }
+    
+    // Check if session has expired
+    if (!checkSessionExpiration()) {
+        clearPlumberSession();
+        window.location.href = '/plumber-login?message=Session expired. Please login again.';
+        return;
+    }
+    
+    // Periodic authentication checks (every 30 seconds)
+    setInterval(function() {
+        if (!checkAuthentication() || !checkSessionExpiration()) {
+            clearPlumberSession();
+            window.location.href = '/plumber-login?message=Session expired. Please login again.';
+        }
+    }, 30000);
+    
+    // Check authentication when page becomes visible again (e.g., switching tabs)
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            if (!checkAuthentication() || !checkSessionExpiration()) {
+                clearPlumberSession();
+                window.location.href = '/plumber-login?message=Session expired. Please login again.';
+            }
+        }
+    });
+    
+    // Override the existing session timer functions to use sessionStorage
+    const originalExtendSession = window.extendSession;
+    window.extendSession = function() {
+        // Call the original function if it exists
+        if (typeof originalExtendSession === 'function') {
+            originalExtendSession();
+        }
+        
+        // Also extend our sessionStorage session
+        extendSession();
+    };
+    
+    // Override the logout function to clear sessionStorage
+    const originalPerformLogout = window.performLogout;
+    window.performLogout = function() {
+        // Clear our session data
+        clearPlumberSession();
+        
+        // Call the original function if it exists
+        if (typeof originalPerformLogout === 'function') {
+            originalPerformLogout();
+        } else {
+            // Fallback logout behavior
+            window.location.href = '/plumber-login';
+        }
+    };
+    
+    // Make these functions globally available
+    window.checkAuthentication = checkAuthentication;
+    window.storePlumberSession = storePlumberSession;
+    window.clearPlumberSession = clearPlumberSession;
+    window.checkSessionExpiration = checkSessionExpiration;
+    window.extendSession = extendSession;
+})();
+
+// Modify your existing verify2FA success handler to store session data
+// Find the part of your code that handles successful 2FA verification
+// and add this line after Session::put('plumber_logged_in', true);
+
+// If you're using AJAX for 2FA verification, modify the success callback:
+ $.ajax({
+    url: '/verify-2fa',
+    type: 'POST',
+    data: formData,
+    success: function(response) {
+        if (response.success) {
+            // Store plumber session data in sessionStorage
+            sessionStorage.setItem('plumber_logged_in', 'true');
+            sessionStorage.setItem('plumber_id', response.plumber_id);
+            sessionStorage.setItem('plumber_data', JSON.stringify(response.plumber_data));
+            sessionStorage.setItem('plumber_login_time', new Date().toISOString());
+            
+            // Redirect to dashboard
+            window.location.href = response.redirect;
+        }
+    }
+});
+
+
+// If you're not using AJAX for 2FA verification, add this to your verify2FA method in PHP:
+
+// After successful verification, add this to your response:
+return response()->json([
+    'success' => true,
+    'message' => 'Login successful',
+    'redirect' => '/admin-plumber-dashboard',
+    'plumber_id' => $plumber->id,
+    'plumber_data' => $plumber->toArray()
+]);
+
+// Add this to your plumber login page (plumber-login.blade.php)
+// Place it inside your $(document).ready(function() {
+
+// Handle form submission for 2FA verification
+ $('#verify2faForm').on('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        code: $('#code').val(),
+        _token: $('meta[name="csrf-token"]').attr('content')
+    };
+    
+    $.ajax({
+        url: '/verify-2fa',
+        type: 'POST',
+        data: formData,
+        beforeSend: function() {
+            $('#verifyBtn').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span> Verifying...');
+        },
+        success: function(response) {
+            if (response.success) {
+                // Store plumber session data in sessionStorage
+                sessionStorage.setItem('plumber_logged_in', 'true');
+                sessionStorage.setItem('plumber_id', response.plumber_id);
+                sessionStorage.setItem('plumber_data', JSON.stringify(response.plumber_data));
+                sessionStorage.setItem('plumber_login_time', new Date().toISOString());
+                
+                // Show success message
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Login Successful',
+                    text: response.message,
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(function() {
+                    // Redirect to dashboard
+                    window.location.href = response.redirect;
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Verification Failed',
+                    text: response.message
+                });
+            }
+        },
+        error: function(xhr) {
+            let errorMessage = 'An error occurred during verification.';
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+                errorMessage = xhr.responseJSON.message;
+            }
+            
+            Swal.fire({
+                icon: 'error',
+                title: 'Verification Failed',
+                text: errorMessage
+            });
+        },
+        complete: function() {
+            $('#verifyBtn').prop('disabled', false).html('Verify');
+        }
+    });
+});
+
 });
 </script>
 

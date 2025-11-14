@@ -241,10 +241,12 @@ class PlumberController extends Controller
         Session::forget('plumber_id_for_2fa');
         
         return response()->json([
-            'success' => true,
-            'message' => 'Login successful',
-            'redirect' => '/admin-plumber-dashboard'  // Direct URL to match your route
-        ]);
+        'success' => true,
+        'message' => 'Login successful',
+        'redirect' => '/admin-plumber-dashboard',
+        'plumber_id' => $plumber->id,
+        'plumber_data' => $plumber->toArray()
+    ]);
     }
     /**
      * Resend 2FA code
