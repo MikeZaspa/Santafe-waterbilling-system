@@ -17,11 +17,11 @@ class PlumberAuth
      */
     public function handle(Request $request, Closure $next)
     {
-        // Check if plumber is logged in
+        // Check if plumber is logged in using session
         if (!Session::get('plumber_logged_in')) {
             return redirect()->route('plumber.login');
         }
-        
+
         return $next($request);
     }
 }

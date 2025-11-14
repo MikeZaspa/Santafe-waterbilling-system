@@ -445,7 +445,11 @@ Route::get('/plumber-login', [PlumberController::class, 'showLoginForm'])->name(
 Route::post('/plumber-login', [PlumberController::class, 'login'])->name('plumber.login.submit');
 
 
-Route::get('/plumber/dashboard', [PlumberController::class, 'dashboard'])->name('plumber.dashboard');
+// In your routes/web.php file
+
+Route::get('/plumber-dashboard', [PlumberController::class, 'dashboard'])
+    ->name('plumber.dashboard')
+    ->middleware('plumber.auth');
 Route::post('/plumber/logout', [PlumberController::class, 'logout'])->name('plumber.logout');
 
 Route::post('/plumber/verify-2fa', [PlumberController::class, 'verify2FA'])->name('plumber.verify.2fa');
@@ -459,7 +463,11 @@ Route::put('/admin/plumbers/{id}', [PlumberController::class, 'update'])->name('
 Route::delete('/admin/plumbers/{id}', [PlumberController::class, 'destroy'])->name('admin.plumbers.destroy');
 
 // Admin plumber dashboard route
-Route::get('/admin-plumber-dashboard', [ReadingController::class, 'index'])->name('admin.plumber.dashboard');
+// In your routes/web.php file
+
+Route::get('/admin-plumber-dashboard', [ReadingController::class, 'index'])
+    ->name('admin.plumber.dashboard')
+    ->middleware('plumber.auth');
 
 // Accountant Login Routes
 Route::get('/accountant-login', function() {

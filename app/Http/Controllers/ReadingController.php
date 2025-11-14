@@ -12,7 +12,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 class ReadingController extends Controller
 {
-    
+    public function __construct()
+    {
+        // Apply plumber authentication middleware to all methods
+        $this->middleware('plumber.auth');
+    }
     public function index()
     {
         
