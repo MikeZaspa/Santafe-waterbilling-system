@@ -821,40 +821,6 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
  $(document).ready(function() {
-    
-    // =============================================================
-    // START: NEW DIRECT ACCESS PREVENTION LOGIC
-    // =============================================================
-    
-    /**
-     * Checks if the user has a valid session flag.
-     * If not, it redirects them to the login page.
-     */
-    function checkDirectAccess() {
-        // Check if our session flag exists
-        if (sessionStorage.getItem('plumberLoggedIn') !== 'true') {
-            // If not, the user likely accessed the URL directly.
-            // Redirect them to the login page.
-            window.location.href = '/admin-login'; // Make sure this is your correct login URL
-            return false; // Stop further script execution
-        }
-        return true; // Allow access
-    }
-
-    // Run the check immediately. If it fails, the rest of the script won't run.
-    if (!checkDirectAccess()) {
-        return; 
-    }
-
-    // Optional: You might want to clear the flag after checking,
-    // but keeping it allows for page refreshes within the session.
-    // If you want to force re-login on every new tab/window, uncomment the line below:
-    // sessionStorage.removeItem('plumberLoggedIn');
-
-    // =============================================================
-    // END: NEW DIRECT ACCESS PREVENTION LOGIC
-    // =============================================================
-
     // Session Management Variables
     const sessionTimeout = 180000; // 3 minutes in milliseconds
     const warningTimeout = 30000; // 30 seconds before expiry
@@ -956,9 +922,6 @@
     // Logout user
     function logoutUser() {
         hideWarningModal();
-        
-        // IMPORTANT: Clear the session flag on logout
-        sessionStorage.removeItem('plumberLoggedIn');
         
         Swal.fire({
             title: 'Session Expired',
@@ -1541,39 +1504,32 @@
         });
     });
 
-    // This function is on your admin-plumber-dashboard.blade.php page
+    function performLogout() {
+        // Show loading state
+        Swal.fire({
+            title: 'Signing Out...',
+            text: 'Please wait',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
 
-function performLogout() {
-    // Show loading state
-    Swal.fire({
-        title: 'Signing Out...',
-        text: 'Please wait',
-        allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
-    });
-
-    // IMPORTANT: Clear the session flag on logout
-    sessionStorage.removeItem('plumberLoggedIn');
-
-    // Send logout request to server
-    $.ajax({
-        url: '/logout',
-        type: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
-        success: function(response) {
-            // After the server confirms logout, redirect to the login page
-            window.location.href = '/admin-login';
-        },
-        error: function(xhr) {
-            // Even if there's an error, still redirect to the login page
-            window.location.href = '/admin-login';
-        }
-    });
-}
+        // Send logout request to server
+        $.ajax({
+            url: '/logout',
+            type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                window.location.href = '/admin-login';
+            },
+            error: function(xhr) {
+                window.location.href = '/admin-login';
+            }
+        });
+    }
 });
 </script>
 
