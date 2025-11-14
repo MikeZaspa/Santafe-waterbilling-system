@@ -489,6 +489,30 @@
                 </ul>
             </div>
         </div>
+        <!-- Add this to your dashboard cards section -->
+<div class="col-md-6 col-lg-3">
+    <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-2">Database Backup</h6>
+                    <h3 class="mb-0"><i class="bi bi-database-check"></i></h3>
+                    <small class="text-info">
+                        <i class="bi bi-shield-check"></i> Secure backup
+                    </small>
+                </div>
+                <div class="bg-info bg-opacity-10 p-3 rounded">
+                    <i class="bi bi-database text-info fs-4"></i>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button class="btn btn-outline-info btn-sm w-100" id="backupDatabaseBtn">
+                    <i class="bi bi-download me-1"></i> Download Backup
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
     </header>
     
     <div class="content-wrapper">
