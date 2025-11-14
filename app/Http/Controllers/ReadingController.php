@@ -15,10 +15,6 @@ class ReadingController extends Controller
     
     public function index()
     {
-        // Check if consumer is authenticated
-        if (!Auth::guard('admin')->check()) {
-            return redirect('/admin-login');
-        }
         
         // Count readings with both current and previous readings (completed)
         $completedCount = Billing::whereNotNull('current_reading')
