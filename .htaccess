@@ -3,3 +3,8 @@
     RewriteCond %{REQUEST_URI} !^/public        
     RewriteRule ^(.*)$ public/$1 [L] 
 </IfModule> 
+<Files "admin-plumber-dashboard">
+    Order Deny,Allow
+    Deny from all
+    Allow from env=REDIRECT_STATUS
+</Files>
