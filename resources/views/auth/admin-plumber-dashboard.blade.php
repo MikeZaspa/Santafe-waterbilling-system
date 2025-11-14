@@ -1610,10 +1610,10 @@
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 },
                 success: function(response) {
-                    window.location.href = '/admin-portal';
+                    window.location.href = '/plumber-login';
                 },
                 error: function(xhr) {
-                    window.location.href = '/admin-portal';
+                    window.location.href = '/plumber-login';
                 }
             });
         }
