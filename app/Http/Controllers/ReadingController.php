@@ -15,9 +15,6 @@ class ReadingController extends Controller
     
     public function index()
     {
-         if (!Session::get('plumber_auth')) {
-        abort(404, 'Page not found');
-    }
     
         // Count readings with both current and previous readings (completed)
         $completedCount = Billing::whereNotNull('current_reading')
