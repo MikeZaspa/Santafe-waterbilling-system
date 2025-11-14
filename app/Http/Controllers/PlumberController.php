@@ -187,7 +187,7 @@ class PlumberController extends Controller
     /**
      * Verify 2FA code
      */
-      public function verify2FA(Request $request)
+    public function verify2FA(Request $request)
     {
         $request->validate([
             'code' => 'required|string|digits:6',
@@ -231,11 +231,10 @@ class PlumberController extends Controller
         $plumber->two_factor_expires_at = null;
         $plumber->save();
         
-        // Log in the plumber
-        Session::put('plumber_logged_in', true);
+        // Create authenticated session
+        Session::put('plumber_authenticated', true);
         Session::put('plumber_id', $plumber->id);
         Session::put('plumber_data', $plumber->toArray());
-        
         
         // Clear the temporary session
         Session::forget('plumber_id_for_2fa');
@@ -243,7 +242,18 @@ class PlumberController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Login successful',
-            'redirect' => '/admin-plumber-dashboard'  // Direct URL to match your route
+            'redirect' => '/admin-plumber-dashboard'
+        ]);
+    }
+
+    /**
+     * Check if plumber is authenticated
+     */
+    public function checkAuth()
+    {
+        return response()->json([
+            'authenticated' => Session::get('plumber_authenticated', false),
+            'plumber' => Session::get('plumber_data')
         ]);
     }
     /**

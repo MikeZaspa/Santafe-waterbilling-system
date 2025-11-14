@@ -1530,6 +1530,48 @@
             }
         });
     }
+
+     checkAuthentication();
+    
+    // Function to check if user is authenticated
+    function checkAuthentication() {
+        $.ajax({
+            url: '/plumber/check-auth',
+            type: 'GET',
+            success: function(response) {
+                if (!response.authenticated) {
+                    redirectToLogin();
+                }
+                // If authenticated, continue loading the dashboard
+            },
+            error: function(xhr) {
+                redirectToLogin();
+            }
+        });
+    }
+    
+    // Function to redirect to login page
+    function redirectToLogin() {
+        Swal.fire({
+            title: 'Authentication Required',
+            text: 'Please login to access the dashboard',
+            icon: 'warning',
+            confirmButtonText: 'Go to Login',
+            allowOutsideClick: false
+        }).then((result) => {
+            window.location.href = '/plumber-login';
+        });
+    }
+
+    // Add authentication check for AJAX requests
+    $(document).ajaxComplete(function(event, xhr, settings) {
+        if (xhr.status === 401) {
+            const response = JSON.parse(xhr.responseText);
+            if (response.redirect) {
+                redirectToLogin();
+            }
+        }
+    });
 });
 </script>
 

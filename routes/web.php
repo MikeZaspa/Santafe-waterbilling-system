@@ -324,6 +324,10 @@ Route::post('/main-form', [AuthController::class, 'main']);
 Route::get('/plumber/login', [PlumberAuthController::class, 'showLoginForm'])->name('plumber.login');
 Route::post('/plumber/login', [PlumberAuthController::class, 'login'])->name('plumber.login.submit');
 
+Route::get('/plumber-login', function () {
+    return view('auth.plumber-login'); // Make sure you have this view
+})->name('plumber.login');
+
 // Accountant Login Routes  
 Route::get('/accountant/login', [AccountantAuthController::class, 'showLoginForm'])->name('accountant.login');
 Route::post('/accountant/login', [AccountantAuthController::class, 'login'])->name('accountant.login.submit');
