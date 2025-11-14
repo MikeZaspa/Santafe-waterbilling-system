@@ -272,7 +272,7 @@ Route::get('/consumer-dashboard', function() {
                     ->orderBy('created_at', 'desc')
                     ->get();
     
-    return view('auth.consumer-dashboard', [
+    return view('auth.consumer/dashboard', [
         'consumer' => $consumer,
         'bills' => $bills
     ]);
