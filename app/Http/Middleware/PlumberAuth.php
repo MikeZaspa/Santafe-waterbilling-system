@@ -12,6 +12,7 @@ class PlumberAuth
     public function handle(Request $request, Closure $next): Response
     {
         if (!Session::get('plumber_auth')) { // Change to 'plumber_auth'
+            // Instead of redirecting, return 404 if not logged in
             abort(404, 'Page not found');
         }
 
