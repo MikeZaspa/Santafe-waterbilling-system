@@ -140,57 +140,26 @@
             font-size: 0.8rem;
         }
         
-        .divider {
-            display: flex;
-            align-items: center;
-            margin: 2rem 0;
+        .back-link {
+            margin-top: 1rem;
+            text-align: center;
+        }
+        
+        .back-link a {
             color: var(--text-light);
-            font-size: 0.8rem;
-        }
-        
-        .divider::before, .divider::after {
-            content: "";
-            flex: 1;
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .divider::before {
-            margin-right: 1rem;
-        }
-        
-        .divider::after {
-            margin-left: 1rem;
-        }
-        
-        .signup-link {
-            display: flex;
-            justify-content: center;
-            margin-top: 2rem;
+            text-decoration: none;
             font-size: 0.9rem;
-            color: var(--text-light);
+            display: inline-flex;
+            align-items: center;
+            transition: color 0.2s ease;
         }
         
-        .signup-link a {
+        .back-link a:hover {
             color: var(--primary);
-            text-decoration: none;
-            font-weight: 500;
-            margin-left: 0.5rem;
         }
         
-        .language-selector {
-            margin-top: 2rem;
-            font-size: 0.8rem;
-            color: var(--text-light);
-        }
-        
-        .language-selector a {
-            color: var(--text);
-            text-decoration: none;
-            margin: 0 0.3rem;
-        }
-        
-        .language-selector a.active {
-            color: var(--primary);
+        .back-link a i {
+            margin-right: 5px;
         }
         
         .error-message {
@@ -199,80 +168,139 @@
             margin-top: 0.4rem;
         }
         
-        .attempts-warning {
-            color: var(--warning);
-            font-size: 0.8rem;
-            margin-top: 0.4rem;
-            font-weight: 500;
+        /* Forgot Password Modal Styles */
+        .modal-content {
+            border: none;
+            border-radius: 8px;
+            overflow: hidden;
         }
         
-        @media (max-width: 480px) {
-            .login-container {
-                padding: 1.5rem;
-                border: none;
-            }
-        }
-        
-        .alert-success {
-            background-color: #e6ffed;
-            color: var(--success);
-            padding: 0.75rem 1.25rem;
-            margin-bottom: 1rem;
-            border: 1px solid #a3d9a5;
-            border-radius: 4px;
-        }
-        
-        .countdown-timer {
-            color: var(--warning);
-            font-weight: 600;
-            margin-top: 0.5rem;
-        }
-        
-        .recaptcha-info {
-            font-size: 0.7rem;
-            color: var(--text-light);
-            margin-top: 0.5rem;
+        .modal-header {
+            background-color: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem;
             text-align: center;
         }
         
-        .recaptcha-info a {
-            color: var(--primary);
-            text-decoration: none;
-        }
-
-        .portal-links {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-
-        .portal-link {
-            display: block;
-            padding: 0.8rem;
-            background-color: var(--light);
-            color: var(--primary);
-            text-decoration: none;
-            border-radius: 6px;
-            font-size: 0.9rem;
+        .modal-title {
+            font-size: 1.5rem;
             font-weight: 500;
-            transition: all 0.3s ease;
-            border: 1px solid var(--border);
-        }
-
-        .portal-link:hover {
-            background-color: var(--primary);
-            color: var(--white);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(26, 115, 232, 0.2);
+            color: var(--text);
+            margin: 0;
         }
         
-        .divider {
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        .modal-body {
+            padding: 2rem;
         }
-
+        
+        .forgot-form {
+            text-align: center;
+        }
+        
+        .forgot-form .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        
+        .forgot-form .form-group input {
+            padding-left: 3rem;
+        }
+        
+        .forgot-form .input-icon-left {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+        }
+        
+        .form-text {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-top: 0.5rem;
+            text-align: left;
+        }
+        
+        .btn-forgot {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+        
+        .btn-forgot:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn-forgot:disabled {
+            background-color: var(--text-light);
+            cursor: not-allowed;
+        }
+        
+        .btn-cancel {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-cancel:hover {
+            background-color: var(--primary);
+            color: var(--white);
+        }
+        
+        .btn-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-light);
+            cursor: pointer;
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+        }
+        
+        .btn-close:hover {
+            color: var(--text);
+        }
+        
+        /* Success Screen Styles */
+        .success-screen {
+            display: none;
+            text-align: center;
+        }
+        
+        .success-icon {
+            font-size: 4rem;
+            color: var(--success);
+            margin-bottom: 1.5rem;
+        }
+        
+        .success-title {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 1rem;
+        }
+        
+        .success-message {
+            color: var(--text-light);
+            margin-bottom: 2rem;
+        }
+        
         /* Two-factor authentication styles */
         .verification-code-inputs {
             display: flex;
@@ -324,6 +352,13 @@
             color: var(--warning);
             font-weight: 600;
         }
+        
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 1.5rem;
+                border: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -367,12 +402,12 @@
             <button type="submit" class="btn-login" id="loginBtn">
                 <span>Log In</span>
             </button>
+            
             <div class="back-link">
                 <a href="{{ url('/consumer-portal') }}">
                     <i class="fas fa-arrow-left"></i> Back to Main Login
                 </a>
             </div>
-            
         </form>
 
         <!-- Two-Factor Authentication Modal -->
@@ -423,30 +458,49 @@
             </div>
         </div>
 
-        
-
         <!-- Forgot Password Modal -->
         <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content shadow-lg border-0 rounded-4">
-                    <div class="modal-header bg-primary text-white rounded-top-4">
-                        <h5 class="modal-title" id="forgotPasswordModalLabel">Reset Your Password</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="forgotPasswordForm">
-                            @csrf
-                            <div class="mb-3">
-                                <label for="resetEmail" class="form-label">Email Address</label>
-                                <input type="email" class="form-control" id="resetEmail" name="email" required placeholder="Enter your registered email">
-                                <div class="form-text">We'll send a password reset link to your email.</div>
-                            </div>
-                            <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-primary" id="sendResetLink">
-                                    <i class="fas fa-paper-plane me-2"></i>Send Reset Link
+                <div class="modal-content">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    
+                    <!-- Forgot Password Form -->
+                    <div class="forgot-form" id="forgotForm">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="forgotPasswordModalLabel">Forgot Password</h5>
+                        </div>
+                        <div class="modal-body">
+                            <form id="forgotPasswordForm">
+                                @csrf
+                                <div class="form-group">
+                                    <i class="fas fa-envelope input-icon-left"></i>
+                                    <input type="email" class="form-control" id="resetEmail" name="email" required placeholder="Enter your email">
+                                    <div class="form-text">We will send a recovery link to this email</div>
+                                    <div class="error-message" id="emailError"></div>
+                                </div>
+                                <button type="submit" class="btn-forgot" id="sendResetLink">
+                                    Send
                                 </button>
-                            </div>
-                        </form>
+                                <button type="button" class="btn-cancel" data-bs-dismiss="modal">
+                                    Sign in
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Success Screen -->
+                    <div class="success-screen" id="successScreen">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Check Your Email</h5>
+                        </div>
+                        <div class="modal-body">
+                            <i class="fas fa-envelope-open-text success-icon"></i>
+                            <h3 class="success-title">Email Sent!</h3>
+                            <p class="success-message">We've sent a password reset link to your email address. Please check your inbox and follow the instructions to reset your password.</p>
+                            <button type="button" class="btn-forgot" data-bs-dismiss="modal">
+                                Got it
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -472,6 +526,14 @@
         const countdownElement = document.getElementById('countdown');
         const countdownTimeElement = document.getElementById('countdownTime');
         const recaptchaResponse2FA = document.getElementById('g-recaptcha-response-2fa');
+        
+        // Forgot Password Modal Elements
+        const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+        const sendResetLinkBtn = document.getElementById('sendResetLink');
+        const forgotForm = document.getElementById('forgotForm');
+        const successScreen = document.getElementById('successScreen');
+        const resetEmailInput = document.getElementById('resetEmail');
+        const emailError = document.getElementById('emailError');
         
         // Track login attempts
         let loginAttempts = 0;
@@ -899,18 +961,27 @@
         });
         
         // Forgot Password Form Handling
-        const forgotPasswordForm = document.getElementById('forgotPasswordForm');
-        const sendResetLinkBtn = document.getElementById('sendResetLink');
-
         if (forgotPasswordForm) {
             forgotPasswordForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
-                const email = document.getElementById('resetEmail').value;
+                // Validate email
+                const email = resetEmailInput.value;
+                
+                if (!email) {
+                    emailError.textContent = 'Email is required';
+                    return;
+                } else if (!/\S+@\S+\.\S+/.test(email)) {
+                    emailError.textContent = 'Please enter a valid email address';
+                    return;
+                } else {
+                    emailError.textContent = '';
+                }
+                
                 const originalBtnText = sendResetLinkBtn.innerHTML;
                 
                 // Show loading state
-                sendResetLinkBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+                sendResetLinkBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
                 sendResetLinkBtn.disabled = true;
                 
                 try {
@@ -927,35 +998,18 @@
                     const data = await response.json();
                     
                     if (response.ok && data.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success!',
-                            text: data.message,
-                            confirmButtonColor: '#1a73e8'
-                        });
-                        
-                        // Close modal
-                        const modal = bootstrap.Modal.getInstance(document.getElementById('forgotPasswordModal'));
-                        modal.hide();
+                        // Show success screen
+                        forgotForm.style.display = 'none';
+                        successScreen.style.display = 'block';
                         
                         // Reset form
                         forgotPasswordForm.reset();
                     } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: data.message || 'An error occurred. Please try again.',
-                            confirmButtonColor: '#1a73e8'
-                        });
+                        emailError.textContent = data.message || 'An error occurred. Please try again.';
                     }
                 } catch (error) {
                     console.error('Error:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'An error occurred. Please try again.',
-                        confirmButtonColor: '#1a73e8'
-                    });
+                    emailError.textContent = 'An error occurred. Please try again.';
                 } finally {
                     // Reset button
                     sendResetLinkBtn.innerHTML = originalBtnText;
@@ -963,6 +1017,17 @@
                 }
             });
         }
+        
+        // Reset modal when it's hidden
+        document.getElementById('forgotPasswordModal').addEventListener('hidden.bs.modal', function () {
+            // Reset to forgot form
+            forgotForm.style.display = 'block';
+            successScreen.style.display = 'none';
+            
+            // Reset form and errors
+            forgotPasswordForm.reset();
+            emailError.textContent = '';
+        });
     });
 </script>
 </body>
