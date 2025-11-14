@@ -12,21 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 class ReadingController extends Controller
 {
-     private function checkPlumberAuth()
-    {
-        return Session::get('plumber_authenticated', false);
-    }
-     private function redirectToLogin()
-    {
-        if (request()->expectsJson()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Authentication required',
-                'redirect' => '/plumber-login'
-            ], 401);
-        }
-        return redirect('/plumber-login');
-    }
+    
     public function index()
     {
       
