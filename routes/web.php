@@ -473,7 +473,8 @@ Route::post('/accountant-login/submit', [AccountantManageController::class, 'sen
 Route::get('/accountant-2fa', [AccountantManageController::class, 'show2FAModal'])->name('accountant.2fa.show');
 Route::post('/accountant-2fa/verify', [AccountantManageController::class, 'verify2FACode'])->name('accountant.2fa.verify');
 Route::post('/accountant-2fa/resend', [AccountantManageController::class, 'resend2FACode'])->name('accountant.2fa.resend');
-
+// Add this route for serving images
+Route::get('/payment-proof/{id}', [OnlinePaymentController::class, 'getProofImage'])->name('payment.proof.image');
 // Add these routes to your web.php file
 Route::get('/consumer-portal', [ConsumerAuthController::class, 'showLoginForm'])->name('consumer.login.form');
 Route::post('/consumer/login', [ConsumerAuthController::class, 'login'])->name('consumer.login');

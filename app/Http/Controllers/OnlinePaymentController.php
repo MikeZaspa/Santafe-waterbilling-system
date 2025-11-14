@@ -299,5 +299,23 @@ class OnlinePaymentController extends Controller
         return $this->store($request);
     }
 
+    public function getProofImage($id)
+{
+    $payment = OnlinePayment::findOrFail($id);
     
+    if (!$payment->proof_image) {
+        abort(404, 'Image not found');
+    }
+    
+    $path = storage_path('app/public/' . $payment->proof_image);
+    
+    if (!file_exists($path)) {
+        abort(404, 'Image file not found');
+    }
+    
+    $file = File::get($path);
+    $type = File::mimeType($path);
+    
+    return response($file, 200)->header('Content-Type', $type);
+}
 }
