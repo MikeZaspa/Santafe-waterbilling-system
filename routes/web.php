@@ -468,7 +468,7 @@ Route::delete('/admin/plumbers/{id}', [PlumberController::class, 'destroy'])->na
 
 Route::get('/admin-plumber-dashboard', [ReadingController::class, 'index'])
     ->name('admin.plumber.dashboard')
-    ->middleware('plumber.auth');
+    ->middleware(PlumberAuth::class);
 
 // Accountant Login Routes
 Route::get('/accountant-login', function() {
