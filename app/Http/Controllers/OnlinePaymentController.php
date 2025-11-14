@@ -8,6 +8,7 @@ use App\Models\AdminConsumer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
 
 class OnlinePaymentController extends Controller
 {
