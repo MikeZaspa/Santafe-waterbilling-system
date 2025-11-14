@@ -36,6 +36,9 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\AdminLogController;
 use App\Http\Controllers\AccountantNotificationController;
+use App\Http\Controllers\Admin\BackupController;
+
+Route::get('/admin/backup-database', [BackupController::class, 'backupDatabase'])->name('admin.backup.database');
 
 Route::get('/admin-register', [AuthController::class, 'showRegistrationForm'])->name('admin-register');
 Route::post('/admin-register', [AuthController::class, 'register']);

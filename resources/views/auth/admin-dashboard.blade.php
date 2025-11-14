@@ -1096,82 +1096,61 @@
     });
     
     // Database Backup functionality
-    $('#backupDatabaseIcon, #backupDatabaseBtn').on('click', function(e) {
-        e.preventDefault();
-        
-        Swal.fire({
-            title: 'Backup Database',
-            text: 'Are you sure you want to backup the database? This may take a few moments.',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#d32f2f',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Backup Now',
-            cancelButtonText: 'Cancel',
-            reverseButtons: false,
-            customClass: {
-                confirmButton: 'btn btn-danger',
-                cancelButton: 'btn btn-secondary'
-            },
-            buttonsStyling: false
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Show loading state
+ $('#backupDatabaseIcon, #backupDatabaseBtn').on('click', function(e) {
+    e.preventDefault();
+    
+    Swal.fire({
+        title: 'Backup Database',
+        text: 'Are you sure you want to backup the database? This may take a few moments for large databases.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#d32f2f',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Backup Now',
+        cancelButtonText: 'Cancel',
+        reverseButtons: false,
+        customClass: {
+            confirmButton: 'btn btn-danger',
+            cancelButton: 'btn btn-secondary'
+        },
+        buttonsStyling: false
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Show loading state with progress
+            Swal.fire({
+                title: 'Creating Backup...',
+                html: 'Please wait while we create a backup of your database.<br><small>This may take a few moments for large databases.</small>',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            // Create a hidden iframe to handle the download
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = '/admin/backup-database';
+            document.body.appendChild(iframe);
+            
+            // Show success message after a short delay
+            setTimeout(() => {
                 Swal.fire({
-                    title: 'Creating Backup...',
-                    text: 'Please wait while we create a backup of your database.',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
+                    title: 'Backup Started',
+                    text: 'Your database backup is being downloaded. Check your downloads folder.',
+                    icon: 'success',
+                    confirmButtonColor: '#d32f2f',
+                    timer: 3000,
+                    showConfirmButton: false
                 });
                 
-                // Make AJAX request to backup endpoint
-                $.ajax({
-                    url: '/admin/backup-database',
-                    type: 'GET',
-                    xhrFields: {
-                        responseType: 'blob'
-                    },
-                    success: function(data, status, xhr) {
-                        // Get filename from Content-Disposition header if available
-                        const filename = xhr.getResponseHeader('Content-Disposition') 
-                            ? xhr.getResponseHeader('Content-Disposition').split('filename=')[1].replace(/"/g, '')
-                            : 'database_backup_' + new Date().toISOString().slice(0, 10) + '.sql';
-                        
-                        // Create download link
-                        const url = window.URL.createObjectURL(data);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = filename;
-                        document.body.appendChild(a);
-                        a.click();
-                        window.URL.revokeObjectURL(url);
-                        document.body.removeChild(a);
-                        
-                        // Show success message
-                        Swal.fire({
-                            title: 'Backup Successful',
-                            text: 'Database backup has been downloaded successfully.',
-                            icon: 'success',
-                            confirmButtonColor: '#d32f2f',
-                            timer: 3000,
-                            showConfirmButton: false
-                        });
-                    },
-                    error: function(xhr, status, error) {
-                        // Show error message
-                        Swal.fire({
-                            title: 'Backup Failed',
-                            text: 'There was an error creating the database backup. Please try again.',
-                            icon: 'error',
-                            confirmButtonColor: '#d32f2f'
-                        });
-                    }
-                });
-            }
-        });
+                // Clean up iframe
+                setTimeout(() => {
+                    document.body.removeChild(iframe);
+                }, 1000);
+            }, 1000);
+        }
     });
+});
     
     // Admin Logs Modal functionality
     let map;
