@@ -4,24 +4,32 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
 
-class PlumberAuth
+class AdminAuth
 {
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @return mixed
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): Response
     {
-        // Check if plumber is logged in
-        if (!Session::get('plumber_logged_in')) {
-            return redirect()->route('plumber.login');
+        if (!Auth::guard('admin')->check()) {
+            // If it's an AJAX request, return JSON response
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized. Please log in.',
+                    'redirect' => route('admin-login')
+                ], 401);
+            }
+            
+            // For normal requests, redirect to login
+            return redirect()->route('admin-login')->with('error', 'Please log in to access this page.');
         }
-        
+
         return $next($request);
     }
 }
