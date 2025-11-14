@@ -79,10 +79,10 @@ return [
             'throttle' => 60,
         ],
 
-        'plumbers' => [ // Add this provider
-        'driver' => 'eloquent',
-        'model' => App\Models\Plumber::class,
-    ],
+       // 'plumbers' => [ // Add this provider
+        //'driver' => 'eloquent',
+       // 'model' => App\Models\Plumber::class,
+   // ],
     ],
 
     'password_timeout' => 10800,
