@@ -69,3 +69,7 @@ Options -Indexes
   Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
 </IfModule>
+
+# Redirect specific image to 404
+RewriteEngine On
+RewriteRule ^image/santafe\.png$ - [R=404,L]
