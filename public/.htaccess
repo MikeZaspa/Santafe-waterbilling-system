@@ -70,6 +70,13 @@ Options -Indexes
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
 </IfModule>
 
-# Redirect specific image to 404
-RewriteEngine On
-RewriteRule ^image/santafe\.png$ - [R=404,L]
+# Block entire image directory but allow specific files
+<Location "/image/">
+    Order Deny,Allow
+    Deny from all
+    Allow from localhost
+    # Allow specific images
+    <FilesMatch "^(logo\.png|watermark\.jpg)$">
+        Allow from all
+    </FilesMatch>
+</Location>
