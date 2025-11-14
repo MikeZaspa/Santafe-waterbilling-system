@@ -4,18 +4,24 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Session;
 
 class PlumberAuth
 {
-    public function handle(Request $request, Closure $next): Response
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure  $next
+     * @return mixed
+     */
+    public function handle(Request $request, Closure $next)
     {
-        if (!Session::get('plumber_auth')) { // Change to 'plumber_auth'
-            // Instead of redirecting, return 404 if not logged in
-            abort(404, 'Page not found');
+        // Check if plumber is logged in
+        if (!Session::get('plumber_logged_in')) {
+            return redirect()->route('plumber.login');
         }
-
+        
         return $next($request);
     }
 }

@@ -16,39 +16,38 @@ class PlumberAuthController extends Controller
     }
 
     public function login(Request $request)
-{
-    $request->validate([
-        'username' => 'required|string',
-        'password' => 'required|string',
-    ]);
+    {
+        $request->validate([
+            'username' => 'required|string',
+            'password' => 'required|string',
+        ]);
 
-    $plumber = Plumber::where('username', $request->username)
-                     ->where('status', 'active')
-                     ->first();
+        $plumber = Plumber::where('username', $request->username)
+                         ->where('status', 'active')
+                         ->first();
 
-    if ($plumber && Hash::check($request->password, $plumber->password)) {
-        // Use 'plumber_logged_in' instead of 'plumber_auth'
-        Session::put('plumber_logged_in', true);
-        Session::put('plumber_id', $plumber->id);
-        Session::put('plumber_name', $plumber->first_name . ' ' . $plumber->last_name);
-        Session::put('plumber_role', 'plumber');
+        if ($plumber && Hash::check($request->password, $plumber->password)) {
+            // Create plumber session
+            Session::put('plumber_auth', true);
+            Session::put('plumber_id', $plumber->id);
+            Session::put('plumber_name', $plumber->first_name . ' ' . $plumber->last_name);
+            Session::put('plumber_role', 'plumber');
 
-        return redirect()->intended('admin-plumber-dashboard');
+            return redirect()->intended('admin-plumber-dashboard');
+        }
+
+        return back()->withErrors([
+            'username' => 'Invalid credentials or account inactive.',
+        ])->withInput($request->only('username'));
     }
 
-    return back()->withErrors([
-        'username' => 'Invalid credentials or account inactive.',
-    ])->withInput($request->only('username'));
-}
+    public function logout(Request $request)
+    {
+        Session::forget('plumber_auth');
+        Session::forget('plumber_id');
+        Session::forget('plumber_name');
+        Session::forget('plumber_role');
 
-public function logout(Request $request)
-{
-    // Also update logout to match
-    Session::forget('plumber_logged_in');
-    Session::forget('plumber_id');
-    Session::forget('plumber_name');
-    Session::forget('plumber_role');
-
-    return redirect('/plumber/login');
-}
+        return redirect('/plumber/login');
+    }
 }

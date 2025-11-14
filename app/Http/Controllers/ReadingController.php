@@ -15,15 +15,7 @@ class ReadingController extends Controller
     
     public function index()
     {
-       // Temporary debug - remove after testing
-    \Log::info('All session data:', Session::all());
-    \Log::info('plumber_auth: ' . (Session::get('plumber_auth') ? 'TRUE' : 'FALSE'));
-    \Log::info('plumber_logged_in: ' . (Session::get('plumber_logged_in') ? 'TRUE' : 'FALSE'));
-    
-    // Your existing check
-    if (!Session::get('plumber_auth')) {
-        abort(404, 'Page not found');
-    }
+      
         // Count readings with both current and previous readings (completed)
         $completedCount = Billing::whereNotNull('current_reading')
                                ->whereNotNull('previous_reading')
