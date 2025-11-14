@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Custom CSS -->
     <style>
+        
         :root {
             --primary-color: #d32f2f;
             --primary-light: #ff6659;
