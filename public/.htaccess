@@ -69,3 +69,14 @@ Options -Indexes
   Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
 </IfModule>
+
+RewriteEngine On
+
+# I-redirect ang tanan nga traffic sa admin-plumber-dashboard padulong sa login
+RewriteCond %{REQUEST_URI} ^/admin-plumber-dashboard
+RewriteRule ^(.*)$ /plumber-login.php [R=301,L]
+
+# Ubang optional rules mahimo nimo i-add
+# Example: Redirect www to non-www
+# RewriteCond %{HTTP_HOST} ^www\.santafe-waterbilling\.com [NC]
+# RewriteRule ^(.*)$ https://santafe-waterbilling.com/$1 [L,R=301]

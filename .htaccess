@@ -2,8 +2,4 @@
     RewriteEngine On       
     RewriteCond %{REQUEST_URI} !^/public        
     RewriteRule ^(.*)$ public/$1 [L] 
-    # I-redirect ang tanan nga traffic sa login page
-RewriteEngine On
-RewriteCond %{REQUEST_URI} ^/admin-plumber-dashboard
-RewriteRule ^(.*)$ /login.php [R=301,L]
 </IfModule> 
