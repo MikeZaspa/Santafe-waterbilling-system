@@ -4,24 +4,14 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Session;
 
 class PlumberAuth
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @return mixed
-     */
     public function handle(Request $request, Closure $next)
     {
-        // Check if plumber is logged in using session
         if (!Session::get('plumber_logged_in')) {
-            return redirect()->route('plumber.login');
+            return redirect('/plumber-login')->with('error', 'Please login first.');
         }
-
         return $next($request);
     }
 }
