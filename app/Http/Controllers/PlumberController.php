@@ -239,6 +239,7 @@ class PlumberController extends Controller
         
         // Clear the temporary session
         Session::forget('plumber_id_for_2fa');
+        Auth::guard('plumber')->login($plumber);
         
         return response()->json([
             'success' => true,

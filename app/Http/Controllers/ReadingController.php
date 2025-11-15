@@ -15,10 +15,10 @@ class ReadingController extends Controller
     
     public function index()
     {
-      // FIX: Check if plumber is NOT authenticated, then redirect to login
-        if (!Auth::guard('plumber')->check()) {
-            return redirect('/plumber-login');
-        }
+       // Check if plumber is authenticated using session
+    if (!Session::get('plumber_logged_in') && !Auth::guard('plumber')->check()) {
+        return redirect('/plumber-login');
+    }
         // Count readings with both current and previous readings (completed)
         $completedCount = Billing::whereNotNull('current_reading')
                                ->whereNotNull('previous_reading')
