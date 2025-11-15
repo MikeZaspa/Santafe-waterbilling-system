@@ -36,6 +36,7 @@ use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\AdminLogController;
 use App\Http\Controllers\AccountantNotificationController;
 use App\Http\Controllers\Admin\BackupController;
+use Illuminate\Support\Facades\Session; 
 
 Route::get('/admin/backup-database', [BackupController::class, 'backupDatabase'])->name('admin.backup.database');
 
@@ -458,12 +459,18 @@ Route::get('/admin/plumbers/{id}/edit', [PlumberController::class, 'edit'])->nam
 Route::put('/admin/plumbers/{id}', [PlumberController::class, 'update'])->name('admin.plumbers.update');
 Route::delete('/admin/plumbers/{id}', [PlumberController::class, 'destroy'])->name('admin.plumbers.destroy');
 
-// Admin plumber dashboard route
-Route::middleware(['plumber.auth'])->group(function () {
+// Protected plumber routes using a Closure
+Route::middleware(function ($request, $next) {
+    if (!Session::get('plumber_logged_in')) {
+        return redirect('/plumber-login')->with('error', 'Please login to access this page.');
+    }
+    return $next($request);
+})->group(function () {
     Route::get('/admin-plumber-dashboard', [ReadingController::class, 'index'])->name('admin.plumber.dashboard');
     Route::get('/dashboard-data', [ReadingController::class, 'getDashboardData']);
     Route::get('/reconnected-consumers', [ReadingController::class, 'getReconnectedConsumers']);
     Route::post('/reconnect/{id}', [ReadingController::class, 'reconnect']);
+    Route::post('/plumber-logout', [PlumberController::class, 'logout'])->name('plumber.logout');
 });
 // Accountant Login Routes
 Route::get('/accountant-login', function() {
