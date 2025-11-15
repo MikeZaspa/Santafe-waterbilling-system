@@ -12,10 +12,22 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 class ReadingController extends Controller
 {
-    
+    public function __construct()
+    {
+        $this->middleware('auth:plumber');
+    }
     public function index()
     {
-      
+       // Debug logging
+    \Log::info('Current guard: plumber');
+    \Log::info('Is authenticated: ' . Auth::guard('plumber')->check());
+    \Log::info('Current user: ' . (Auth::guard('plumber')->user() ? 'Found' : 'Not found'));
+    
+    // Check if plumber is authenticated
+    if (!Auth::guard('plumber')->check()) {
+        return redirect('/plumber-login');
+    }
+        
         // Count readings with both current and previous readings (completed)
         $completedCount = Billing::whereNotNull('current_reading')
                                ->whereNotNull('previous_reading')

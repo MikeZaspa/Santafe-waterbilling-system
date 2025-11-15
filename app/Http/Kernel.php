@@ -24,5 +24,7 @@ class Kernel extends HttpKernel
         'admin.auth' => \App\Http\Middleware\AdminAuth::class,
         'accountant.auth' => \App\Http\Middleware\AccountantAuth::class,
         'plumber.auth' => \App\Http\Middleware\PlumberAuth::class, // <-- ENSURE THIS LINE IS HERE
+        'auth' => \Illuminate\Auth\Middleware\Authenticate::class,
+        'auth:plumber' => \Illuminate\Auth\Middleware\Authenticate::class,
     ];
 }
