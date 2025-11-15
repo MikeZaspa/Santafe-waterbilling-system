@@ -70,11 +70,6 @@ Options -Indexes
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
 </IfModule>
 
-<Files "santafe.png">
-    Order allow,deny
-    Deny from all
-</Files>
-
 
 
 
