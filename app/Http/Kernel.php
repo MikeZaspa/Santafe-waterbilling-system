@@ -13,7 +13,7 @@ class Kernel extends HttpKernel
      *
      * @var array<string, class-string|string>
      */
-    protected $routeMiddleware = [
+    protected $middlewareAliases  = [
         // ... other middleware entries
         'auth' => \App\Http\Middleware\Authenticate::class,
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
@@ -27,7 +27,7 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'accountant.auth' => \App\Http\Middleware\AccountantAuth::class,
         'plumber.auth' => \App\Http\Middleware\PlumberAuth::class,
-
+'plumber.auth' => \App\Http\Middleware\PlumberAuthMiddleware::class,   
         // Add your custom middleware here
         'admin.auth' => \App\Http\Middleware\AdminAuth::class,
     ];
