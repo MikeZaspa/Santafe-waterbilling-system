@@ -459,7 +459,17 @@ Route::put('/admin/plumbers/{id}', [PlumberController::class, 'update'])->name('
 Route::delete('/admin/plumbers/{id}', [PlumberController::class, 'destroy'])->name('admin.plumbers.destroy');
 
 // Admin plumber dashboard route
-Route::get('/admin-plumber-dashboard', [ReadingController::class, 'index'])->name('admin.plumber.dashboard');
+// Protected plumber routes
+Route::middleware(['plumber.auth'])->group(function () {
+    // Admin plumber dashboard route
+    Route::get('/admin-plumber-dashboard', [ReadingController::class, 'index'])->name('admin.plumber.dashboard');
+
+    // Add any other routes that only logged-in plumbers should access here
+    // For example:
+    // Route::post('/reconnect/{id}', [ReadingController::class, 'reconnect']);
+    // Route::get('/dashboard-data', [ReadingController::class, 'getDashboardData']);
+    // Route::post('/plumber-logout', [PlumberController::class, 'logout'])->name('plumber.logout');
+});
 
 // Accountant Login Routes
 Route::get('/accountant-login', function() {
