@@ -10,26 +10,12 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
-
 class ReadingController extends Controller
 {
-    // Add this constructor to check authentication for all methods
-    public function __construct()
-    {
-        $this->middleware(function ($request, $next) {
-            // Check if plumber is logged in
-            if (!Session::get('plumber_logged_in')) {
-                return redirect('/plumber-login')->with('error', 'Please login first.');
-            }
-            return $next($request);
-        });
-    }
     
     public function index()
     {
-        // Get the logged-in plumber data
-        $plumber = Session::get('plumber_data');
-        
+      
         // Count readings with both current and previous readings (completed)
         $completedCount = Billing::whereNotNull('current_reading')
                                ->whereNotNull('previous_reading')
@@ -98,7 +84,6 @@ class ReadingController extends Controller
             ->get();
 
         return view('auth.admin-plumber-dashboard', [
-            'plumber' => $plumber, // Pass plumber data to the view
             'completedCount' => $completedCount,
             'pendingCount' => $pendingCount,
             'disconnectedCount' => $disconnectedCount,
@@ -111,7 +96,6 @@ class ReadingController extends Controller
         ]);
     }
 
-    // The rest of your methods remain the same...
     // Improved reconnect method with proper billing record creation
     public function reconnect(Request $request, $id)
     {
@@ -173,6 +157,7 @@ class ReadingController extends Controller
     // Method to get dashboard data for AJAX updates (for real-time updates)
     public function getDashboardData()
     {
+        
         try {
             // Get current month and year
             $currentMonth = now()->month;
