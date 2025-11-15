@@ -70,5 +70,4 @@ Options -Indexes
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
 </IfModule>
 
-RewriteRule ^public/image/ - [F,L,NC]
 
