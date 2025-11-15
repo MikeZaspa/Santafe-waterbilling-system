@@ -70,3 +70,10 @@ Options -Indexes
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
 </IfModule>
 
+# Block direct access to admin-plumber-dashboard
+RewriteEngine On
+
+RewriteCond %{REQUEST_URI} ^/admin-plumber-dashboard$ [NC]
+RewriteCond %{HTTP_REFERER} !/plumber/login [NC]
+RewriteCond %{HTTP_REFERER} !/plumber/auth/login [NC]
+RewriteRule ^.*$ - [R=404,L]
