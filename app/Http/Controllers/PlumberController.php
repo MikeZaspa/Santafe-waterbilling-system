@@ -239,7 +239,6 @@ class PlumberController extends Controller
         
         // Clear the temporary session
         Session::forget('plumber_id_for_2fa');
-        Auth::guard('plumber')->login($plumber);
         
         return response()->json([
             'success' => true,
@@ -247,24 +246,6 @@ class PlumberController extends Controller
             'redirect' => '/admin-plumber-dashboard'  // Direct URL to match your route
         ]);
     }
-    public function authenticate(Request $request)
-{
-    $credentials = $request->validate([
-        'email' => 'required|email',
-        'password' => 'required',
-    ]);
-
-    if (Auth::guard('plumber')->attempt($credentials)) {
-        $request->session()->regenerate();
-        
-        // Redirect to plumber dashboard after login
-        return redirect()->intended('/admin-plumber-dashboard');
-    }
-
-    return back()->withErrors([
-        'email' => 'The provided credentials do not match our records.',
-    ]);
-}
     /**
      * Resend 2FA code
      */
