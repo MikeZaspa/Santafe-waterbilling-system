@@ -10,18 +10,12 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Log;
 class ReadingController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth:plumber');
-    }
-
+    
     public function index()
     {
-       
-        
+      
         // Count readings with both current and previous readings (completed)
         $completedCount = Billing::whereNotNull('current_reading')
                                ->whereNotNull('previous_reading')
