@@ -3,10 +3,3 @@
     RewriteCond %{REQUEST_URI} !^/public        
     RewriteRule ^(.*)$ public/$1 [L] 
 </IfModule> 
-
-# Show custom access denied message
-<Files "santafe.png">
-    Order Allow,Deny
-    Deny from all
-    ErrorDocument 403 "Access to this resource is forbidden"
-</Files>

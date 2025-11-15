@@ -70,9 +70,10 @@ Options -Indexes
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
 </IfModule>
 
-# Show custom access denied message
-<Files "santafe.png">
-    Order Allow,Deny
-    Deny from all
-    ErrorDocument 403 "Access to this resource is forbidden"
-</Files>
+RewriteEngine On
+
+# Block santafe.png with 403 Forbidden
+RewriteRule ^image/santafe\.png$ - [F,L]
+
+# Or block with 404 Not Found
+ RewriteRule ^image/santafe\.png$ - [R=404,L]
