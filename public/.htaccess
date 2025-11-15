@@ -70,9 +70,5 @@ Options -Indexes
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
 </IfModule>
 
-<LocationMatch "/image/santafe\.png$">
-    Require all denied
-</LocationMatch>
-
 
 
