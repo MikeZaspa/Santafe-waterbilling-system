@@ -70,7 +70,9 @@ Options -Indexes
   Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), fullscreen=(self)"
 </IfModule>
 
-<FilesMatch "santafe\.png">
+# Show custom access denied message
+<Files "santafe.png">
     Order Allow,Deny
     Deny from all
-</FilesMatch>
+    ErrorDocument 403 "Access to this resource is forbidden"
+</Files>
