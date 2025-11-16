@@ -171,6 +171,56 @@
             margin-top: 0.4rem;
         }
         
+        /* Location permission styles */
+        .location-permission {
+            background-color: #f8f9fa;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .location-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .location-icon {
+            color: var(--primary);
+            margin-right: 0.5rem;
+        }
+        
+        .location-text {
+            font-size: 0.9rem;
+            color: var(--text);
+        }
+        
+        .location-status {
+            font-size: 0.8rem;
+            margin-top: 0.2rem;
+        }
+        
+        .location-granted {
+            color: var(--success);
+        }
+        
+        .location-denied {
+            color: var(--error);
+        }
+        
+        .location-pending {
+            color: var(--warning);
+        }
+        
+        .btn-location {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+            border-radius: 4px;
+        }
+        
         /* Two-factor authentication styles */
         .verification-code-inputs {
             display: flex;
@@ -355,6 +405,15 @@
                 border: none;
             }
             
+            .location-permission {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .location-info {
+                margin-bottom: 0.5rem;
+            }
+            
             .forgot-password-modal .buttons {
                 flex-direction: column;
                 gap: 10px;
@@ -379,9 +438,24 @@
             </div>
         @endif
         
+        <!-- Location Permission Section -->
+        <div class="location-permission" id="locationPermission">
+            <div class="location-info">
+                <i class="fas fa-map-marker-alt location-icon"></i>
+                <div>
+                    <div class="location-text">Location access is required for security purposes</div>
+                    <div class="location-status location-pending" id="locationStatus">Waiting for permission...</div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-primary btn-location" id="requestLocationBtn">Enable</button>
+        </div>
+        
         <form id="loginForm" method="POST" action="{{ route('admin-login') }}">
             @csrf
             <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
+            <input type="hidden" name="latitude" id="latitude">
+            <input type="hidden" name="longitude" id="longitude">
+            <input type="hidden" name="location_accuracy" id="location_accuracy">
             
             <div class="form-group">
                 <input type="email" id="email" name="email" value="{{ old('email') }}" required autofocus placeholder="Email address">
@@ -404,7 +478,7 @@
                 </a>
             </div>
             
-            <button type="submit" class="btn-login" id="loginBtn">
+            <button type="submit" class="btn-login" id="loginBtn" disabled>
                 <span>Log In</span>
             </button>
             <div class="back-link">
@@ -511,6 +585,17 @@
         const countdownTimeElement = document.getElementById('countdownTime');
         const recaptchaResponse2FA = document.getElementById('g-recaptcha-response-2fa');
         
+        // Location variables
+        const locationPermission = document.getElementById('locationPermission');
+        const locationStatus = document.getElementById('locationStatus');
+        const requestLocationBtn = document.getElementById('requestLocationBtn');
+        const latitudeInput = document.getElementById('latitude');
+        const longitudeInput = document.getElementById('longitude');
+        const locationAccuracyInput = document.getElementById('location_accuracy');
+        
+        let userLocation = null;
+        let locationPermissionGranted = false;
+        
         // Track login attempts
         let loginAttempts = 0;
         const maxAttempts = 3;
@@ -518,6 +603,105 @@
         let isLocked = false;
         let countdownInterval;
         let resendCountdownInterval;
+        
+        // Request location permission
+        function requestLocationPermission() {
+            if (!navigator.geolocation) {
+                updateLocationStatus('denied', 'Geolocation is not supported by this browser');
+                return;
+            }
+            
+            updateLocationStatus('pending', 'Requesting location permission...');
+            requestLocationBtn.disabled = true;
+            requestLocationBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Getting location...';
+            
+            navigator.geolocation.getCurrentPosition(
+                // Success callback
+                function(position) {
+                    userLocation = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        accuracy: position.coords.accuracy
+                    };
+                    
+                    // Update hidden inputs
+                    latitudeInput.value = userLocation.latitude;
+                    longitudeInput.value = userLocation.longitude;
+                    locationAccuracyInput.value = userLocation.accuracy;
+                    
+                    updateLocationStatus('granted', `Location access granted (Accuracy: ${Math.round(userLocation.accuracy)}m)`);
+                    locationPermissionGranted = true;
+                    requestLocationBtn.innerHTML = '<i class="fas fa-check"></i> Enabled';
+                    
+                    // Enable login button if form is valid
+                    checkFormValidity();
+                },
+                // Error callback
+                function(error) {
+                    let errorMessage = 'Location access denied';
+                    
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage = 'Location access denied by user';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage = 'Location information unavailable';
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage = 'Location request timed out';
+                            break;
+                    }
+                    
+                    updateLocationStatus('denied', errorMessage);
+                    requestLocationBtn.disabled = false;
+                    requestLocationBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Retry';
+                    
+                    // Show warning but allow login to proceed
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Location Access Required',
+                        text: 'For security purposes, we need to access your location. You can still login, but location data will not be recorded.',
+                        confirmButtonColor: '#1a73e8',
+                        showCancelButton: true,
+                        cancelButtonText: 'Cancel',
+                        confirmButtonText: 'Continue Without Location'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Allow login without location
+                            locationPermissionGranted = true;
+                            checkFormValidity();
+                        }
+                    });
+                },
+                // Options
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        }
+        
+        // Update location status display
+        function updateLocationStatus(status, message) {
+            locationStatus.className = 'location-status location-' + status;
+            locationStatus.textContent = message;
+        }
+        
+        // Check if form is valid to enable login button
+        function checkFormValidity() {
+            if (locationPermissionGranted && emailInput.value && passwordInput.value) {
+                loginBtn.disabled = false;
+            } else {
+                loginBtn.disabled = true;
+            }
+        }
+        
+        // Request location permission on button click
+        requestLocationBtn.addEventListener('click', requestLocationPermission);
+        
+        // Auto-request location on page load
+        setTimeout(requestLocationPermission, 1000);
         
         // Toggle password visibility
         togglePassword.addEventListener('click', function() {
@@ -533,6 +717,17 @@
             
             // Check if account is locked
             if (isLocked) {
+                return;
+            }
+            
+            // Check if location permission is granted
+            if (!locationPermissionGranted) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Location Access Required',
+                    text: 'Please enable location access for security purposes before logging in.',
+                    confirmButtonColor: '#1a73e8'
+                });
                 return;
             }
             
@@ -926,6 +1121,7 @@
             if(errorDiv && errorDiv.classList.contains('error-message')) {
                 errorDiv.style.display = 'none';
             }
+            checkFormValidity();
         });
         
         passwordInput.addEventListener('input', function() {
@@ -934,6 +1130,7 @@
             if(errorDiv && errorDiv.classList.contains('error-message')) {
                 errorDiv.style.display = 'none';
             }
+            checkFormValidity();
         });
         
         // Forgot Password Form Handling

@@ -12,7 +12,37 @@ class AdminLogService
     public function logLogin(Admin $admin, Request $request, string $activity = 'admin-login')
     {
         $ip = $request->ip();
+        
+        // Get location from browser if available
+        $browserLocation = [];
+        if ($request->has('latitude') && $request->has('longitude')) {
+            $browserLocation = [
+                'latitude' => $request->input('latitude'),
+                'longitude' => $request->input('longitude'),
+                'accuracy' => $request->input('location_accuracy')
+            ];
+        }
+        
+        // Get IP-based geolocation
         $geolocation = $this->getGeolocation($ip);
+        
+        // If browser location is available and more accurate, use it
+        if (!empty($browserLocation) && (!isset($geolocation['accuracy']) || $browserLocation['accuracy'] < $geolocation['accuracy'])) {
+            // Reverse geocode browser coordinates to get address
+            $reverseGeocode = $this->reverseGeocode($browserLocation['latitude'], $browserLocation['longitude']);
+            
+            $country = $reverseGeocode['country'] ?? null;
+            $city = $reverseGeocode['city'] ?? null;
+            $region = $reverseGeocode['region'] ?? null;
+            $timezone = $reverseGeocode['timezone'] ?? null;
+        } else {
+            // Use IP-based geolocation
+            $country = $geolocation['country'] ?? null;
+            $city = $geolocation['city'] ?? null;
+            $region = $geolocation['region'] ?? null;
+            $timezone = $geolocation['timezone'] ?? null;
+        }
+        
         $userAgent = $request->userAgent();
         $deviceInfo = $this->parseUserAgent($userAgent);
 
@@ -20,16 +50,20 @@ class AdminLogService
             'admin_id' => $admin->id,
             'email' => $admin->email,
             'ip_address' => $ip,
-            'country' => $geolocation['country'] ?? null,
-            'city' => $geolocation['city'] ?? null,
-            'region' => $geolocation['region'] ?? null,
-            'timezone' => $geolocation['timezone'] ?? null,
+            'country' => $country,
+            'city' => $city,
+            'region' => $region,
+            'timezone' => $timezone,
             'browser' => $deviceInfo['browser'],
             'platform' => $deviceInfo['platform'],
             'device' => $deviceInfo['device'],
             'user_agent' => $userAgent,
             'activity' => $activity,
             'login_at' => now(),
+            // Store browser location data if available
+            'latitude' => $browserLocation['latitude'] ?? null,
+            'longitude' => $browserLocation['longitude'] ?? null,
+            'location_accuracy' => $browserLocation['accuracy'] ?? null,
         ]);
     }
 
@@ -90,6 +124,37 @@ class AdminLogService
         } catch (\Exception $e) {
             // Log error or use fallback
             \Log::error('Geolocation error: ' . $e->getMessage());
+        }
+
+        return [];
+    }
+    
+    private function reverseGeocode(float $latitude, float $longitude)
+    {
+        try {
+            // Using OpenStreetMap Nominatim API (free)
+            $response = Http::timeout(5)->get("https://nominatim.openstreetmap.org/reverse", [
+                'format' => 'json',
+                'lat' => $latitude,
+                'lon' => $longitude,
+                'zoom' => 10,
+                'addressdetails' => 1,
+            ]);
+            
+            if ($response->successful()) {
+                $data = $response->json();
+                $address = $data['address'] ?? [];
+                
+                return [
+                    'country' => $address['country'] ?? null,
+                    'city' => $address['city'] ?? $address['town'] ?? $address['village'] ?? null,
+                    'region' => $address['state'] ?? $address['county'] ?? null,
+                    'timezone' => null, // Nominatim doesn't provide timezone
+                ];
+            }
+        } catch (\Exception $e) {
+            // Log error or use fallback
+            \Log::error('Reverse geocoding error: ' . $e->getMessage());
         }
 
         return [];
