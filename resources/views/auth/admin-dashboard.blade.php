@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Santa Fe Water Billing System</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -780,24 +779,24 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-  $(document).ready(function() {
+ $(document).ready(function() {
     // Session management variables
     const sessionTimer = document.getElementById('sessionTimer');
     const sessionTimeDisplay = document.getElementById('sessionTimeDisplay');
-    let sessionTimeout;
-    let warningTimeout;
-    let sessionInterval;
-    const sessionDuration = 3 * 60 * 1000; // 3 minutes
-    const warningTime = 30 * 1000; // 30 seconds warning
+    let sessionTimeout; // Will store timeout ID
+    let warningTimeout; // Will store warning timeout ID
+    let sessionInterval; // Will store the interval ID for updating the display
+    const sessionDuration = 3 * 60 * 1000; // 3 minutes in milliseconds
+    const warningTime = 30 * 1000; // 30 seconds before expiry to show warning
     let sessionStartTime;
     let sessionExpiryTime;
     let isSessionActive = false;
-    let map;
-    let currentMarker;
-    let locationCache = {}; // Cache for location data
+    let map; // Will store the map instance
+    let currentMarker; // Will store the current marker
     
     // Initialize session management
     function initSessionManagement() {
+        // Set up event listeners to track user activity
         document.addEventListener('mousemove', resetSessionTimer);
         document.addEventListener('mousedown', resetSessionTimer);
         document.addEventListener('keypress', resetSessionTimer);
@@ -805,82 +804,108 @@
         document.addEventListener('touchstart', resetSessionTimer);
         document.addEventListener('click', resetSessionTimer);
         
+        // Start session immediately on page load
         startSession();
     }
     
+    // Start a new session after page load
     function startSession() {
         isSessionActive = true;
         sessionStartTime = new Date();
         sessionExpiryTime = new Date(sessionStartTime.getTime() + sessionDuration);
         
+        // Show the session timer
         sessionTimer.style.display = 'block';
         updateSessionDisplay();
         
+        // Set up the session expiry timer
         clearTimeout(sessionTimeout);
-        sessionTimeout = setTimeout(() => endSession(), sessionDuration);
+        sessionTimeout = setTimeout(() => {
+            endSession();
+        }, sessionDuration);
         
+        // Set up the warning timer
         clearTimeout(warningTimeout);
-        warningTimeout = setTimeout(() => showSessionWarning(), sessionDuration - warningTime);
+        warningTimeout = setTimeout(() => {
+            showSessionWarning();
+        }, sessionDuration - warningTime);
         
+        // Set up the interval to update the display
         clearInterval(sessionInterval);
         sessionInterval = setInterval(() => {
             updateSessionDisplay();
             
+            // Check if session is about to expire
             const now = new Date();
             const timeLeft = sessionExpiryTime - now;
             
             if (timeLeft <= warningTime && timeLeft > 0) {
                 sessionTimer.classList.add('warning');
-            } else if (timeLeft <= 30000) {
+            } else if (timeLeft <= 30000) { // Last 30 seconds
                 sessionTimer.classList.remove('warning');
                 sessionTimer.classList.add('danger');
             }
-        }, 1000);
+        }, 1000); // Update every second
     }
     
+    // Reset the session timer on user activity
     function resetSessionTimer() {
         if (!isSessionActive) return;
         
+        // Clear existing timers
         clearTimeout(sessionTimeout);
         clearTimeout(warningTimeout);
         clearInterval(sessionInterval);
         
+        // Reset the session
         sessionStartTime = new Date();
         sessionExpiryTime = new Date(sessionStartTime.getTime() + sessionDuration);
         
+        // Reset the timer display
         sessionTimer.classList.remove('warning', 'danger');
         updateSessionDisplay();
         
-        sessionTimeout = setTimeout(() => endSession(), sessionDuration);
-        warningTimeout = setTimeout(() => showSessionWarning(), sessionDuration - warningTime);
+        // Set up new timers
+        sessionTimeout = setTimeout(() => {
+            endSession();
+        }, sessionDuration);
+        
+        warningTimeout = setTimeout(() => {
+            showSessionWarning();
+        }, sessionDuration - warningTime);
         
         sessionInterval = setInterval(() => {
             updateSessionDisplay();
             
+            // Check if session is about to expire
             const now = new Date();
             const timeLeft = sessionExpiryTime - now;
             
             if (timeLeft <= warningTime && timeLeft > 0) {
                 sessionTimer.classList.add('warning');
-            } else if (timeLeft <= 30000) {
+            } else if (timeLeft <= 30000) { // Last 30 seconds
                 sessionTimer.classList.remove('warning');
                 sessionTimer.classList.add('danger');
             }
         }, 1000);
     }
     
+    // Update the session time display
     function updateSessionDisplay() {
         if (!isSessionActive) return;
         
         const now = new Date();
         const timeLeft = Math.max(0, sessionExpiryTime - now);
         
+        // Convert to minutes and seconds
         const minutes = Math.floor(timeLeft / 60000);
         const seconds = Math.floor((timeLeft % 60000) / 1000);
         
+        // Format as MM:SS
         sessionTimeDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
     
+    // Show session warning
     function showSessionWarning() {
         Swal.fire({
             title: 'Session Expiring Soon',
@@ -895,7 +920,9 @@
             allowEscapeKey: false
         }).then((result) => {
             if (result.isConfirmed) {
+                // Extend the session
                 resetSessionTimer();
+                
                 Swal.fire({
                     title: 'Session Extended',
                     text: 'Your session has been extended for another 3 minutes.',
@@ -904,20 +931,25 @@
                     showConfirmButton: false
                 });
             } else {
+                // Log out
                 endSession();
             }
         });
     }
     
+    // End the session
     function endSession() {
         isSessionActive = false;
         
+        // Clear all timers
         clearTimeout(sessionTimeout);
         clearTimeout(warningTimeout);
         clearInterval(sessionInterval);
         
+        // Hide the session timer
         sessionTimer.style.display = 'none';
         
+        // Show session expired message
         Swal.fire({
             title: 'Session Expired',
             text: 'Your session has expired due to inactivity. Please log in again.',
@@ -926,13 +958,15 @@
             allowOutsideClick: false,
             allowEscapeKey: false
         }).then(() => {
+            // Redirect to logout endpoint
             document.getElementById('logout-form').submit();
         });
     }
     
+    // Initialize session management on page load
     initSessionManagement();
     
-    // Mobile sidebar toggle
+    // Mobile sidebar toggle functionality
     const sidebar = $('.sidebar');
     const mainContent = $('.main-content');
     const header = $('.header');
@@ -943,6 +977,7 @@
         sidebar.toggleClass('active');
         mobileOverlay.toggleClass('active');
         
+        // Add overlay to header when sidebar is active
         if (sidebar.hasClass('active')) {
             header.css('background-color', 'var(--overlay-color)');
             $('body').css('overflow', 'hidden');
@@ -952,6 +987,7 @@
         }
     });
 
+    // Close sidebar when clicking on overlay
     mobileOverlay.on('click', function() {
         sidebar.removeClass('active');
         mobileOverlay.removeClass('active');
@@ -959,6 +995,7 @@
         $('body').css('overflow', '');
     });
     
+    // Close sidebar when clicking on a nav link (for mobile)
     $('.sidebar-menu .nav-link').on('click', function() {
         if ($(window).width() < 992) {
             sidebar.removeClass('active');
@@ -968,7 +1005,9 @@
         }
     });
     
+    // Handle window resize
     $(window).on('resize', function() {
+        // Close sidebar if window is resized to desktop size
         if ($(window).width() >= 992) {
             sidebar.removeClass('active');
             mobileOverlay.removeClass('active');
@@ -977,7 +1016,7 @@
         }
     });
 
-    // Consumer Status Pie Chart
+    // Consumer Status Pie Chart - Now showing only active consumers
     const consumerStatusCtx = document.getElementById('consumerStatusChart').getContext('2d');
     const consumerStatusChart = new Chart(consumerStatusCtx, {
         type: 'doughnut',
@@ -985,7 +1024,9 @@
             labels: ['Active Consumers'],
             datasets: [{
                 data: [{{ $activeConsumers }}],
-                backgroundColor: ['#28a745'],
+                backgroundColor: [
+                    '#28a745', // Green for active
+                ],
                 borderWidth: 1
             }]
         },
@@ -993,7 +1034,9 @@
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'bottom' },
+                legend: {
+                    position: 'bottom',
+                },
                 tooltip: {
                     callbacks: {
                         label: function(context) {
@@ -1007,11 +1050,12 @@
         }
     });
 
-    // Total Consumers Line Chart
+    // Total Consumers Line Chart (monthlyGrowth from controller)
     const totalConsumersCtx = document.getElementById('totalConsumersChart').getContext('2d');
     const monthlyGrowth = @json($monthlyGrowth);
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+    // Fill missing months with 0 if necessary
     let growthData = Array(12).fill(0);
     monthlyGrowth.forEach((count, idx) => {
         growthData[idx] = count;
@@ -1039,11 +1083,16 @@
             scales: {
                 y: {
                     beginAtZero: true,
-                    title: { display: true, text: 'Consumers' }
+                    title: {
+                        display: true,
+                        text: 'Consumers'
+                    }
                 }
             },
             plugins: {
-                legend: { position: 'top' },
+                legend: {
+                    position: 'top',
+                },
                 tooltip: {
                     callbacks: {
                         label: function(context) {
@@ -1055,7 +1104,7 @@
         }
     }); 
 
-    // Logout Confirmation
+    // SweetAlert2 Logout Confirmation - With reversed buttons
     $('#logoutLink').on('click', function(e) {
         e.preventDefault();
         
@@ -1068,7 +1117,7 @@
             cancelButtonColor: '#6c757d',
             confirmButtonText: 'Yes, Logout!',
             cancelButtonText: 'Cancel',
-            reverseButtons: false,
+            reverseButtons: false, // This reverses the button order
             customClass: {
                 confirmButton: 'btn btn-danger',
                 cancelButton: 'btn btn-secondary'
@@ -1076,13 +1125,17 @@
             buttonsStyling: false
         }).then((result) => {
             if (result.isConfirmed) {
+                // Show loading state
                 Swal.fire({
                     title: 'Logging out...',
                     text: 'Please wait while we securely log you out.',
                     allowOutsideClick: false,
-                    didOpen: () => Swal.showLoading()
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
                 });
                 
+                // Submit the logout form
                 setTimeout(() => {
                     document.getElementById('logout-form').submit();
                 }, 1000);
@@ -1090,7 +1143,7 @@
         });
     });
     
-    // Database Backup
+    // Database Backup functionality
     $('#backupDatabaseIcon').on('click', function(e) {
         e.preventDefault();
         
@@ -1111,22 +1164,30 @@
             buttonsStyling: false
         }).then((result) => {
             if (result.isConfirmed) {
+                // Show loading state
                 Swal.fire({
                     title: 'Creating Backup...',
                     text: 'Please wait while we create a backup of your database.',
                     allowOutsideClick: false,
-                    didOpen: () => Swal.showLoading()
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
                 });
                 
+                // Make AJAX request to backup endpoint
                 $.ajax({
                     url: '/admin/backup-database',
                     type: 'GET',
-                    xhrFields: { responseType: 'blob' },
+                    xhrFields: {
+                        responseType: 'blob'
+                    },
                     success: function(data, status, xhr) {
+                        // Get filename from Content-Disposition header if available
                         const filename = xhr.getResponseHeader('Content-Disposition') 
                             ? xhr.getResponseHeader('Content-Disposition').split('filename=')[1].replace(/"/g, '')
                             : 'database_backup_' + new Date().toISOString().slice(0, 10) + '.sql';
                         
+                        // Create download link
                         const url = window.URL.createObjectURL(data);
                         const a = document.createElement('a');
                         a.href = url;
@@ -1136,6 +1197,7 @@
                         window.URL.revokeObjectURL(url);
                         document.body.removeChild(a);
                         
+                        // Show success message
                         Swal.fire({
                             title: 'Backup Successful',
                             text: 'Database backup has been downloaded successfully.',
@@ -1145,7 +1207,8 @@
                             showConfirmButton: false
                         });
                     },
-                    error: function() {
+                    error: function(xhr, status, error) {
+                        // Show error message
                         Swal.fire({
                             title: 'Backup Failed',
                             text: 'There was an error creating the database backup. Please try again.',
@@ -1158,51 +1221,209 @@
         });
     });
     
-    // Admin Logs Modal
+    // Admin Logs Modal functionality
     let currentPage = 1;
     
+    // Initialize when modal is shown
     $('#adminLogsModal').on('shown.bs.modal', function() {
         loadAdminLogs();
         loadAdmins();
     });
     
-    // Map initialization with improved setup
+    // Initialize map when modal is shown
     $('#mapModal').on('shown.bs.modal', function() {
+        // Initialize map if it doesn't exist
         if (!map) {
-            map = L.map('locationMap').setView([20, 0], 2);
+            map = L.map('locationMap').setView([0, 0], 2);
             
+            // Add tile layer
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                maxZoom: 18
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(map);
         } else {
-            setTimeout(() => map.invalidateSize(), 200);
+            // Refresh the map to fix display issues
+            setTimeout(function() {
+                map.invalidateSize();
+            }, 100);
         }
     });
     
-    // Complete location detection process
+    // Load admin logs
+function loadAdminLogs(page = 1) {
+    currentPage = page;
+    
+    // Show loading state
+    $('#logsTableBody').html(`
+        <tr id="loadingRow">
+            <td id="loadingCell" colspan="11" class="text-center py-4">
+                <div id="loadingSpinner" class="spinner-border text-primary" role="status">
+                    <span id="loadingSpinnerText" class="visually-hidden">Loading...</span>
+                </div>
+                <p id="loadingText" class="mt-2">Loading logs...</p>
+            </td>
+        </tr>
+    `);
+    
+    // Get filter values
+    const activity = $('#activityFilter').val();
+    const dateFrom = $('#dateFromFilter').val();
+    const dateTo = $('#dateToFilter').val();
+    
+    // Build query string
+    let queryString = `?page=${page}`;
+    if (activity) queryString += `&activity=${activity}`;
+    if (dateFrom) queryString += `&date_from=${dateFrom}`;
+    if (dateTo) queryString += `&date_to=${dateTo}`;
+    
+    // Fetch logs via AJAX
+    $.get(`/admin/logs/api${queryString}`, function(data) {
+        renderLogsTable(data.logs.data);
+        renderPagination(data.logs);
+        updateStatistics(data.statistics);
+    }).fail(function() {
+        $('#logsTableBody').html(`
+            <tr id="errorRow">
+                <td id="errorCell" colspan="11" class="text-center py-4">
+                    <i id="errorIcon" class="fas fa-exclamation-triangle fa-2x text-warning mb-3"></i>
+                    <p id="errorMessage" class="text-muted">Error loading logs. Please try again.</p>
+                </td>
+            </tr>
+        `);
+    });
+}
+    
+    // Render logs table
+function renderLogsTable(logs) {
+    if (logs.length === 0) {
+        $('#logsTableBody').html(`
+            <tr id="noDataRow">
+                <td id="noDataCell" colspan="11" class="text-center py-4">
+                    <i id="noDataIcon" class="fas fa-search fa-2x text-muted mb-3"></i>
+                    <p id="noDataMessage" class="text-muted">No logs found</p>
+                </td>
+            </tr>
+        `);
+        return;
+    }
+    
+    let html = '';
+    logs.forEach(function(log, index) {
+        const logId = `log-${log.id}`;
+        const rowId = `log-row-${index}`;
+        const displayId = index + 1; // This will make IDs start from 1
+        const loginTime = new Date(log.login_at).toLocaleString();
+        const logoutTime = log.logout_at ? new Date(log.logout_at).toLocaleString() : '';
+        const duration = log.session_duration ? formatDuration(log.session_duration) : '-';
+        const status = log.logout_at ? 
+            '<span class="badge bg-secondary">Completed</span>' : 
+            '<span class="badge bg-success">Active</span>';
+        
+        const activityBadge = log.activity.includes('successful') ? 
+            'bg-success' : log.activity.includes('failed') ? 'bg-danger' : 'bg-primary';
+        
+        const location = log.city && log.country ? 
+            `<div id="location-${log.id}" class="d-flex align-items-center">
+                <span id="locationText-${log.id}">${log.city}, ${log.country}</span>
+            </div>` : 
+            `<span id="unknownLocation-${log.id}" class="text-muted">Unknown</span>`;
+        
+        html += `
+            <tr id="${rowId}" data-log-id="${log.id}" 
+                data-ip="${log.ip_address}"
+                data-country="${log.country}"
+                data-city="${log.city}"
+                data-region="${log.region || ''}"
+                data-email="${log.email}"
+                data-activity="${log.activity}"
+                data-login-time="${loginTime}"
+                data-browser="${log.browser}"
+                data-platform="${log.platform}"
+                data-latitude="${log.latitude || ''}"
+                data-longitude="${log.longitude || ''}">
+                <td id="idCell-${log.id}">
+                    <span id="logId-${log.id}" class="badge bg-secondary">${displayId}</span>
+                </td>
+                <td id="emailCell-${log.id}">
+                    <div id="adminInfo-${log.id}" class="d-flex align-items-center">
+                        <div id="adminAvatar-${log.id}" class="avatar-sm bg-primary rounded-circle text-white d-flex align-items-center justify-content-center me-2">
+                            ${log.email.charAt(0).toUpperCase()}
+                        </div>
+                        <div id="adminDetails-${log.id}">
+                            <div id="adminEmail-${log.id}" class="fw-bold">${log.email}</div>
+                        </div>
+                    </div>
+                </td>
+                <td id="ipCell-${log.id}">
+                    <code id="ipAddress-${log.id}">${log.ip_address}</code>
+                </td>
+                <td id="locationCell-${log.id}">${location}</td>
+                <td id="deviceCell-${log.id}">
+                    <small>
+                        <i id="browserIcon-${log.id}" class="fas fa-desktop me-1 text-muted"></i> <span id="browser-${log.id}">${log.browser}</span><br>
+                        <i id="platformIcon-${log.id}" class="fas fa-laptop me-1 text-muted"></i> <span id="platform-${log.id}">${log.platform}</span>
+                    </small>
+                </td>
+                <td id="activityCell-${log.id}">
+                    <span id="activityBadge-${log.id}" class="badge ${activityBadge}">${log.activity}</span>
+                </td>
+                <td id="loginTimeCell-${log.id}">
+                    <small>
+                        <span id="loginDate-${log.id}">${loginTime.split(',')[0]}</span><br>
+                        <span id="loginTime-${log.id}">${loginTime.split(',')[1]}</span>
+                    </small>
+                </td>
+                <td id="logoutTimeCell-${log.id}">
+                    ${logoutTime ? 
+                        `<small>
+                            <span id="logoutDate-${log.id}">${logoutTime.split(',')[0]}</span><br>
+                            <span id="logoutTime-${log.id}">${logoutTime.split(',')[1]}</span>
+                        </small>` : 
+                        `<span id="activeBadge-${log.id}" class="badge bg-warning">Active</span>`
+                    }
+                </td>
+                <td id="durationCell-${log.id}">
+                    ${duration !== '-' ? 
+                        `<span id="durationBadge-${log.id}" class="badge bg-info">${duration}</span>` : 
+                        `<span id="noDuration-${log.id}" class="text-muted">-</span>`
+                    }
+                </td>
+                <td id="statusCell-${log.id}">${status}</td>
+                <td id="actionsCell-${log.id}">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-sm btn-outline-primary view-map-btn" data-log-id="${log.id}" title="View on Map">
+                            <i class="fas fa-map-marked-alt"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    
+    $('#logsTableBody').html(html);
+    
+    // Add click event for view map buttons
     $('.view-map-btn').on('click', function() {
         const logId = $(this).data('log-id');
-        const row = $(`tr[data-log-id="${logId}"]`);
+        const row = $(`#log-row-${logId - 1}`); // Adjust index to match row ID
         
-        // Extract all data from the row
-        const logData = {
-            id: logId,
-            ip: row.data('ip'),
-            country: row.data('country'),
-            city: row.data('city'),
-            region: row.data('region'),
-            email: row.data('email'),
-            activity: row.data('activity'),
-            loginTime: row.data('login-time'),
-            browser: row.data('browser'),
-            platform: row.data('platform'),
-            latitude: row.data('latitude'),
-            longitude: row.data('longitude')
-        };
+        // Get data from row
+        const ip = row.data('ip');
+        const country = row.data('country');
+        const city = row.data('city');
+        const region = row.data('region');
+        const email = row.data('email');
+        const activity = row.data('activity');
+        const loginTime = row.data('login-time');
+        const browser = row.data('browser');
+        const platform = row.data('platform');
+        const latitude = row.data('latitude');
+        const longitude = row.data('longitude');
         
-        // Update info panel immediately
-        updateLocationInfo(logData);
+        // Update map info
+        $('#ipAddressValue').text(ip);
+        $('#locationValue').text(city && country ? `${city}, ${region ? region + ', ' : ''}${country}` : 'Unknown');
+        $('#loginTimeValue').text(loginTime);
+        $('#deviceValue').text(`${browser} on ${platform}`);
         
         // Show map modal
         $('#mapModal').modal('show');
@@ -1210,421 +1431,175 @@
         // Show loading indicator
         $('#mapLoading').removeClass('d-none');
         
-        // Start the location detection process
-        detectLocation(logData);
-    });
-    
-    // Update location info panel
-    function updateLocationInfo(data) {
-        $('#ipAddressValue').text(data.ip || 'Unknown');
-        $('#locationValue').text(
-            data.city && data.country ? 
-                `${data.city}, ${data.region ? data.region + ', ' : ''}${data.country}` : 
-                'Unknown'
-        );
-        $('#loginTimeValue').text(data.loginTime || 'Unknown');
-        $('#deviceValue').text(
-            data.browser && data.platform ? 
-                `${data.browser} on ${data.platform}` : 
-                'Unknown'
-        );
-    }
-    
-    // Main location detection function with multiple fallback methods
-    function detectLocation(data) {
-        // Method 1: Use stored coordinates if available
-        if (data.latitude && data.longitude) {
-            const lat = parseFloat(data.latitude);
-            const lon = parseFloat(data.longitude);
+        // Check if we have coordinates directly from the database
+        if (latitude && longitude) {
+            // Use the coordinates from the database
+            const lat = parseFloat(latitude);
+            const lon = parseFloat(longitude);
             
-            updateMapWithLocation(lat, lon, {
-                ...data,
-                resolvedLocation: `${data.city}, ${data.region ? data.region + ', ' : ''}${data.country}`
-            });
+            // Update coordinates display
+            $('#coordinatesValue').text(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
             
-            return;
-        }
-        
-        // Method 2: Try IP-based geolocation
-        if (data.ip) {
-            getLocationFromIP(data)
-                .then(locationData => {
-                    updateMapWithLocation(locationData.lat, locationData.lon, {
-                        ...data,
-                        ...locationData,
-                        resolvedLocation: locationData.text
-                    });
-                })
-                .catch(() => {
-                    // Method 3: Try geocoding city/country
-                    if (data.city && data.country) {
-                        geocodeLocation(data.city, data.country, data.region)
-                            .then(locationData => {
-                                updateMapWithLocation(locationData.lat, locationData.lon, {
-                                    ...data,
-                                    ...locationData,
-                                    resolvedLocation: locationData.text
-                                });
-                            })
-                            .catch(() => {
-                                showLocationError("Unable to determine location for this log entry.");
-                            });
-                    } else {
-                        showLocationError("No location information available for this log entry.");
-                    }
-                });
+            // Set map view to the location
+            map.setView([lat, lon], 10);
             
-            return;
-        }
-        
-        // Method 4: Try geocoding without IP
-        if (data.city && data.country) {
-            geocodeLocation(data.city, data.country, data.region)
-                .then(locationData => {
-                    updateMapWithLocation(locationData.lat, locationData.lon, {
-                        ...data,
-                        ...locationData,
-                        resolvedLocation: locationData.text
-                    });
-                })
-                .catch(() => {
-                    showLocationError("Unable to determine location for this log entry.");
-                });
-        } else {
-            showLocationError("No location information available for this log entry.");
-        }
-    }
-    
-    // Get location from IP address using multiple services
-    function getLocationFromIP(data) {
-        return new Promise((resolve, reject) => {
-            // Check cache first
-            const cacheKey = `ip_${data.ip}`;
-            if (locationCache[cacheKey]) {
-                resolve(locationCache[cacheKey]);
-                return;
+            // Remove existing marker if it exists
+            if (currentMarker) {
+                map.removeLayer(currentMarker);
             }
             
-            // Try ipapi.co first (more reliable)
-            $.ajax({
-                url: `https://ipapi.co/${data.ip}/json/`,
-                method: 'GET',
-                timeout: 5000,
-                success: function(response) {
-                    if (response && response.latitude && response.longitude) {
-                        const locationData = {
-                            lat: response.latitude,
-                            lon: response.longitude,
-                            city: response.city || data.city,
-                            region: response.region || data.region,
-                            country: response.country_name || data.country,
-                            text: `${response.city || data.city}, ${response.region || data.region ? (response.region || data.region) + ', ' : ''}${response.country_name || data.country}`,
-                            isp: response.org || 'Unknown'
-                        };
-                        
-                        // Cache the result
-                        locationCache[cacheKey] = locationData;
-                        resolve(locationData);
-                    } else {
-                        reject();
-                    }
-                },
-                error: function() {
-                    // Try ip-api.com as backup
-                    $.ajax({
-                        url: `http://ip-api.com/json/${data.ip}`,
-                        method: 'GET',
-                        timeout: 5000,
-                        success: function(response) {
-                            if (response && response.status === 'success' && response.lat && response.lon) {
-                                const locationData = {
-                                    lat: response.lat,
-                                    lon: response.lon,
-                                    city: response.city || data.city,
-                                    region: response.regionName || data.region,
-                                    country: response.country || data.country,
-                                    text: `${response.city || data.city}, ${response.regionName || data.region ? (response.regionName || data.region) + ', ' : ''}${response.country || data.country}`,
-                                    isp: response.isp || 'Unknown'
-                                };
-                                
-                                // Cache the result
-                                locationCache[cacheKey] = locationData;
-                                resolve(locationData);
-                            } else {
-                                reject();
-                            }
-                        },
-                        error: function() {
-                            reject();
-                        }
-                    });
-                }
-            });
-        });
-    }
-    
-    // Geocode location using Nominatim
-    function geocodeLocation(city, country, region) {
-        return new Promise((resolve, reject) => {
+            // Add new marker
+            currentMarker = L.marker([lat, lon]).addTo(map);
+            
+            // Add popup with location info
+            currentMarker.bindPopup(`
+                <div>
+                    <strong>IP Address:</strong> ${ip}<br>
+                    <strong>Location:</strong> ${city}, ${region ? region + ', ' : ''}${country}<br>
+                    <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
+                    <strong>Login Time:</strong> ${loginTime}<br>
+                    <strong>Device:</strong> ${browser} on ${platform}
+                </div>
+            `).openPopup();
+            
+            // Hide loading indicator
+            $('#mapLoading').addClass('d-none');
+        } else if (city && country) {
+            // If we don't have coordinates, try to geocode the location
             const query = `${city}, ${region ? region + ', ' : ''}${country}`;
-            const cacheKey = `geo_${query}`;
             
-            // Check cache first
-            if (locationCache[cacheKey]) {
-                resolve(locationCache[cacheKey]);
-                return;
-            }
-            
+            // First try ip-api.com for more accurate location based on IP
             $.ajax({
-                url: `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&addressdetails=1`,
+                url: `http://ip-api.com/json/${ip}`,
                 method: 'GET',
-                timeout: 5000,
-                success: function(response) {
-                    if (response && response.length > 0) {
-                        const result = response[0];
-                        const locationData = {
-                            lat: parseFloat(result.lat),
-                            lon: parseFloat(result.lon),
-                            city: result.address.city || result.address.town || city,
-                            region: result.address.state || region,
-                            country: result.address.country || country,
-                            text: `${result.address.city || result.address.town || city}, ${result.address.state || region ? (result.address.state || region) + ', ' : ''}${result.address.country || country}`
-                        };
+                dataType: 'json',
+                success: function(data) {
+                    if (data && data.status === 'success') {
+                        const lat = data.lat;
+                        const lon = data.lon;
                         
-                        // Cache the result
-                        locationCache[cacheKey] = locationData;
-                        resolve(locationData);
+                        // Update coordinates display
+                        $('#coordinatesValue').text(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
+                        
+                        // Set map view to the location
+                        map.setView([lat, lon], 10);
+                        
+                        // Remove existing marker if it exists
+                        if (currentMarker) {
+                            map.removeLayer(currentMarker);
+                        }
+                        
+                        // Add new marker
+                        currentMarker = L.marker([lat, lon]).addTo(map);
+                        
+                        // Add popup with location info
+                        currentMarker.bindPopup(`
+                            <div>
+                                <strong>IP Address:</strong> ${ip}<br>
+                                <strong>Location:</strong> ${data.city}, ${data.regionName}, ${data.country}<br>
+                                <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
+                                <strong>ISP:</strong> ${data.isp || 'Unknown'}<br>
+                                <strong>Login Time:</strong> ${loginTime}<br>
+                                <strong>Device:</strong> ${browser} on ${platform}
+                            </div>
+                        `).openPopup();
+                        
+                        // Hide loading indicator
+                        $('#mapLoading').addClass('d-none');
+                        
+                        // Update the location display with more accurate data
+                        $('#locationValue').text(`${data.city}, ${data.regionName}, ${data.country}`);
                     } else {
-                        reject();
+                        // If IP-based lookup fails, try Nominatim
+                        geocodeWithNominatim(query, ip, city, region, country, loginTime, browser, platform);
                     }
                 },
                 error: function() {
-                    reject();
+                    // If IP-based lookup fails, try Nominatim
+                    geocodeWithNominatim(query, ip, city, region, country, loginTime, browser, platform);
                 }
             });
-        });
-    }
-    
-    // Update map with location data
-    function updateMapWithLocation(lat, lon, data) {
-        // Update coordinates display
-        $('#coordinatesValue').text(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
-        
-        // Update location display if we have resolved location
-        if (data.resolvedLocation) {
-            $('#locationValue').text(data.resolvedLocation);
+        } else {
+            // If location is unknown, show a message
+            $('#mapLoading').addClass('d-none');
+            Swal.fire({
+                title: 'Unknown Location',
+                text: 'No location information available for this log entry.',
+                icon: 'info',
+                confirmButtonColor: '#d32f2f'
+            });
         }
-        
-        // Set map view to the location with appropriate zoom
-        map.setView([lat, lon], 12);
-        
-        // Remove existing marker if it exists
-        if (currentMarker) {
-            map.removeLayer(currentMarker);
-        }
-        
-        // Create custom icon
-        const customIcon = L.icon({
-            iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-            shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowSize: [41, 41]
-        });
-        
-        // Add new marker
-        currentMarker = L.marker([lat, lon], { icon: customIcon }).addTo(map);
-        
-        // Create popup content
-        const popupContent = `
-            <div style="min-width: 250px;">
-                <h6 class="mb-2">Login Location Details</h6>
-                <hr class="my-2">
-                <p class="mb-1"><strong>IP Address:</strong> ${data.ip}</p>
-                <p class="mb-1"><strong>Location:</strong> ${data.resolvedLocation || 'Unknown'}</p>
-                <p class="mb-1"><strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}</p>
-                ${data.isp ? `<p class="mb-1"><strong>ISP:</strong> ${data.isp}</p>` : ''}
-                <p class="mb-1"><strong>Login Time:</strong> ${data.loginTime}</p>
-                <p class="mb-0"><strong>Device:</strong> ${data.browser} on ${data.platform}</p>
-            </div>
-        `;
-        
-        // Add popup to marker and open it
-        currentMarker.bindPopup(popupContent).openPopup();
-        
-        // Hide loading indicator
-        $('#mapLoading').addClass('d-none');
-    }
+    });
+}
     
-    // Show location error
-    function showLocationError(message) {
-        $('#mapLoading').addClass('d-none');
-        
-        Swal.fire({
-            title: 'Location Issue',
-            text: message,
-            icon: 'warning',
-            confirmButtonColor: '#d32f2f',
-            showClass: {
-                popup: 'animate__animated animate__fadeInDown'
+    // Function to geocode using Nominatim as fallback
+    function geocodeWithNominatim(query, ip, city, region, country, loginTime, browser, platform) {
+        // Use Nominatim API to geocode the location
+        $.ajax({
+            url: `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`,
+            method: 'GET',
+            success: function(data) {
+                if (data && data.length > 0) {
+                    const lat = parseFloat(data[0].lat);
+                    const lon = parseFloat(data[0].lon);
+                    
+                    // Update coordinates display
+                    $('#coordinatesValue').text(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
+                    
+                    // Set map view to the location
+                    map.setView([lat, lon], 10);
+                    
+                    // Remove existing marker if it exists
+                    if (currentMarker) {
+                        map.removeLayer(currentMarker);
+                    }
+                    
+                    // Add new marker
+                    currentMarker = L.marker([lat, lon]).addTo(map);
+                    
+                    // Add popup with location info
+                    currentMarker.bindPopup(`
+                        <div>
+                            <strong>IP Address:</strong> ${ip}<br>
+                            <strong>Location:</strong> ${city}, ${region ? region + ', ' : ''}${country}<br>
+                            <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
+                            <strong>Login Time:</strong> ${loginTime}<br>
+                            <strong>Device:</strong> ${browser} on ${platform}
+                        </div>
+                    `).openPopup();
+                } else {
+                    // If geocoding fails, show a message
+                    Swal.fire({
+                        title: 'Location Not Found',
+                        text: 'Unable to find coordinates for this location. Showing default view.',
+                        icon: 'warning',
+                        confirmButtonColor: '#d32f2f',
+                        timer: 3000
+                    });
+                }
+                
+                // Hide loading indicator
+                $('#mapLoading').addClass('d-none');
             },
-            hideClass: {
-                popup: 'animate__animated animate__fadeOutUp'
+            error: function() {
+                // If API call fails, show a message
+                Swal.fire({
+                    title: 'Geocoding Error',
+                    text: 'Unable to get coordinates for this location. Showing default view.',
+                    icon: 'error',
+                    confirmButtonColor: '#d32f2f',
+                    timer: 3000
+                });
+                
+                // Hide loading indicator
+                $('#mapLoading').addClass('d-none');
             }
         });
-    }
-    
-    // Load admin logs
-    function loadAdminLogs(page = 1) {
-        currentPage = page;
-        
-        $('#logsTableBody').html(`
-            <tr>
-                <td colspan="11" class="text-center py-4">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <p class="mt-2">Loading logs...</p>
-                </td>
-            </tr>
-        `);
-        
-        const activity = $('#activityFilter').val();
-        const dateFrom = $('#dateFromFilter').val();
-        const dateTo = $('#dateToFilter').val();
-        
-        let queryString = `?page=${page}`;
-        if (activity) queryString += `&activity=${activity}`;
-        if (dateFrom) queryString += `&date_from=${dateFrom}`;
-        if (dateTo) queryString += `&date_to=${dateTo}`;
-        
-        $.get(`/admin/logs/api${queryString}`, function(data) {
-            renderLogsTable(data.logs.data);
-            renderPagination(data.logs);
-            updateStatistics(data.statistics);
-        }).fail(function() {
-            $('#logsTableBody').html(`
-                <tr>
-                    <td colspan="11" class="text-center py-4">
-                        <i class="fas fa-exclamation-triangle fa-2x text-warning mb-3"></i>
-                        <p class="text-muted">Error loading logs. Please try again.</p>
-                    </td>
-                </tr>
-            `);
-        });
-    }
-    
-    // Render logs table
-    function renderLogsTable(logs) {
-        if (logs.length === 0) {
-            $('#logsTableBody').html(`
-                <tr>
-                    <td colspan="11" class="text-center py-4">
-                        <i class="fas fa-search fa-2x text-muted mb-3"></i>
-                        <p class="text-muted">No logs found</p>
-                    </td>
-                </tr>
-            `);
-            return;
-        }
-        
-        let html = '';
-        logs.forEach(function(log, index) {
-            const displayId = index + 1;
-            const loginTime = new Date(log.login_at).toLocaleString();
-            const logoutTime = log.logout_at ? new Date(log.logout_at).toLocaleString() : '';
-            const duration = log.session_duration ? formatDuration(log.session_duration) : '-';
-            const status = log.logout_at ? 
-                '<span class="badge bg-secondary">Completed</span>' : 
-                '<span class="badge bg-success">Active</span>';
-            
-            const activityBadge = log.activity.includes('successful') ? 
-                'bg-success' : log.activity.includes('failed') ? 'bg-danger' : 'bg-primary';
-            
-            const location = log.city && log.country ? 
-                `<div class="d-flex align-items-center">
-                    <span>${log.city}, ${log.country}</span>
-                </div>` : 
-                `<span class="text-muted">Unknown</span>`;
-            
-            html += `
-                <tr data-log-id="${log.id}" 
-                    data-ip="${log.ip_address}"
-                    data-country="${log.country}"
-                    data-city="${log.city}"
-                    data-region="${log.region || ''}"
-                    data-email="${log.email}"
-                    data-activity="${log.activity}"
-                    data-login-time="${loginTime}"
-                    data-browser="${log.browser}"
-                    data-platform="${log.platform}"
-                    data-latitude="${log.latitude || ''}"
-                    data-longitude="${log.longitude || ''}">
-                    <td>
-                        <span class="badge bg-secondary">${displayId}</span>
-                    </td>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            <div class="avatar-sm bg-primary rounded-circle text-white d-flex align-items-center justify-content-center me-2">
-                                ${log.email.charAt(0).toUpperCase()}
-                            </div>
-                            <div>
-                                <div class="fw-bold">${log.email}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <code>${log.ip_address}</code>
-                    </td>
-                    <td>${location}</td>
-                    <td>
-                        <small>
-                            <i class="fas fa-desktop me-1 text-muted"></i> ${log.browser}<br>
-                            <i class="fas fa-laptop me-1 text-muted"></i> ${log.platform}
-                        </small>
-                    </td>
-                    <td>
-                        <span class="badge ${activityBadge}">${log.activity}</span>
-                    </td>
-                    <td>
-                        <small>
-                            <span>${loginTime.split(',')[0]}</span><br>
-                            <span>${loginTime.split(',')[1]}</span>
-                        </small>
-                    </td>
-                    <td>
-                        ${logoutTime ? 
-                            `<small>
-                                <span>${logoutTime.split(',')[0]}</span><br>
-                                <span>${logoutTime.split(',')[1]}</span>
-                            </small>` : 
-                            `<span class="badge bg-warning">Active</span>`
-                        }
-                    </td>
-                    <td>
-                        ${duration !== '-' ? 
-                            `<span class="badge bg-info">${duration}</span>` : 
-                            `<span class="text-muted">-</span>`
-                        }
-                    </td>
-                    <td>${status}</td>
-                    <td>
-                        <div class="btn-group" role="group">
-                            <button type="button" class="btn btn-sm btn-outline-primary view-map-btn" data-log-id="${log.id}" title="View on Map">
-                                <i class="fas fa-map-marked-alt"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `;
-        });
-        
-        $('#logsTableBody').html(html);
     }
     
     // Render pagination
     function renderPagination(logs) {
+        // Update pagination info
         $('#showingFrom').text(logs.from);
         $('#showingTo').text(logs.to);
         $('#totalRecords').text(logs.total);
@@ -1638,27 +1613,31 @@
         
         let html = '<ul class="pagination">';
         
+        // Previous button
         html += `<li class="page-item ${logs.current_page === 1 ? 'disabled' : ''}">
-            <a class="page-link" href="#" onclick="loadAdminLogs(${logs.current_page - 1}); return false;">Previous</a>
+            <a id="prevPageBtn" class="page-link" href="#" onclick="loadAdminLogs(${logs.current_page - 1}); return false;">Previous</a>
         </li>`;
         
+        // Page numbers
         for (let i = 1; i <= logs.last_page; i++) {
             if (i === 1 || i === logs.last_page || (i >= logs.current_page - 2 && i <= logs.current_page + 2)) {
                 html += `<li class="page-item ${i === logs.current_page ? 'active' : ''}">
-                    <a class="page-link" href="#" onclick="loadAdminLogs(${i}); return false;">${i}</a>
+                    <a id="page-${i}" class="page-link" href="#" onclick="loadAdminLogs(${i}); return false;">${i}</a>
                 </li>`;
             } else if (i === logs.current_page - 3 || i === logs.current_page + 3) {
-                html += `<li class="page-item disabled"><a class="page-link" href="#">...</a></li>`;
+                html += `<li class="page-item disabled"><a id="ellipsis-${i}" class="page-link" href="#">...</a></li>`;
             }
         }
         
+        // Next button
         html += `<li class="page-item ${logs.current_page === logs.last_page ? 'disabled' : ''}">
-            <a class="page-link" href="#" onclick="loadAdminLogs(${logs.current_page + 1}); return false;">Next</a>
+            <a id="nextPageBtn" class="page-link" href="#" onclick="loadAdminLogs(${logs.current_page + 1}); return false;">Next</a>
         </li>`;
         
         html += '</ul>';
         $('#logsPagination').html(html);
         
+        // Enable/disable navigation buttons based on current page
         $('#startFirstBtn').prop('disabled', logs.current_page === 1);
         $('#endLastBtn').prop('disabled', logs.current_page === logs.last_page);
     }
@@ -1671,7 +1650,7 @@
         $('#activeSessionsCount').text(stats.active);
     }
     
-    // Format duration
+    // Format duration from seconds to HH:MM:SS
     function formatDuration(seconds) {
         const hours = Math.floor(seconds / 3600);
         const minutes = Math.floor((seconds % 3600) / 60);
@@ -1686,22 +1665,24 @@
     
     // Reset filters
     $('#resetLogsBtn').on('click', function() {
+        $('#adminFilter').val('');
         $('#activityFilter').val('');
         $('#dateFromFilter').val('');
         $('#dateToFilter').val('');
         loadAdminLogs(1);
     });
     
-    // Pagination buttons
+    // Start from first button
     $('#startFirstBtn').on('click', function() {
         loadAdminLogs(1);
     });
     
+    // Go to last button
     $('#endLastBtn').on('click', function() {
         loadAdminLogs($('#totalRecords').text());
     });
     
-    // Notification icon
+    // Notification icon click handler
     $('#notificationIcon').on('click', function() {
         Swal.fire({
             icon: 'info',
@@ -1711,16 +1692,21 @@
         });
     });
     
-    // Modal state management
+    // Add ID to admin logs modal display
     $('#adminLogsModal').on('shown.bs.modal', function() {
+        // Store the modal display state
         localStorage.setItem('adminLogsModalVisible', 'true');
     });
     
+    // Hide admin logs modal display
     $('#adminLogsModal').on('hidden.bs.modal', function() {
+        // Store the modal display state
         localStorage.setItem('adminLogsModalVisible', 'false');
     });
     
+    // Check if modal should be shown on page load (based on stored state)
     if (localStorage.getItem('adminLogsModalVisible') === 'true') {
+        // Show the modal
         $('#adminLogsModal').modal('show');
     }
 });
