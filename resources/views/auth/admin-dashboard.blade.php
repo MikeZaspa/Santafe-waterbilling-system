@@ -1404,9 +1404,7 @@ function renderLogsTable(logs) {
     // Add click event for view map buttons
     $('.view-map-btn').on('click', function() {
         const logId = $(this).data('log-id');
-        
-        // Find the row with matching log ID
-        const row = $(`tr[data-log-id="${logId}"]`);
+        const row = $(`#log-row-${logId - 1}`); // Adjust index to match row ID
         
         // Get data from row
         const ip = row.data('ip');
