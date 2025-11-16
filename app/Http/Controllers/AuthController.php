@@ -329,7 +329,17 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required',
+            'location_method' => 'required|in:browser,ip',
         ]);
+
+        // Only validate location coordinates if browser method is used
+        if ($request->input('location_method') === 'browser') {
+            $validator->addRules([
+                'latitude' => 'required|numeric',
+                'longitude' => 'required|numeric',
+                'location_accuracy' => 'required|numeric',
+            ]);
+        }
 
         if ($validator->fails()) {
             return response()->json([
@@ -536,7 +546,17 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required',
+            'location_method' => 'required|in:browser,ip',
         ]);
+
+        // Only validate location coordinates if browser method is used
+        if ($request->input('location_method') === 'browser') {
+            $validator->addRules([
+                'latitude' => 'required|numeric',
+                'longitude' => 'required|numeric',
+                'location_accuracy' => 'required|numeric',
+            ]);
+        }
 
         if ($validator->fails()) {
             if ($request->expectsJson()) {

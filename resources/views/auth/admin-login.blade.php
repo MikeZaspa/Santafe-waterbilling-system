@@ -172,15 +172,19 @@
         }
         
         /* Location permission styles */
-        .location-permission {
+        .location-section {
             background-color: #f8f9fa;
             border: 1px solid #dadce0;
             border-radius: 8px;
             padding: 1rem;
             margin-bottom: 1.5rem;
+        }
+        
+        .location-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            margin-bottom: 0.5rem;
         }
         
         .location-info {
@@ -208,16 +212,15 @@
         }
         
         .location-denied {
-            color: var(--error);
+            color: var(--warning);
         }
         
         .location-pending {
             color: var(--warning);
         }
         
-        .location-required {
-            color: var(--error);
-            font-weight: 600;
+        .location-fallback {
+            color: var(--text-light);
         }
         
         .btn-location {
@@ -226,24 +229,19 @@
             border-radius: 4px;
         }
         
-        /* Location denied warning */
-        .location-denied-warning {
-            background-color: #fef2f2;
-            border: 1px solid #fecaca;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-            display: none;
+        .location-details {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid var(--border);
         }
         
-        .location-denied-warning .warning-icon {
-            color: var(--error);
-            margin-right: 0.5rem;
-        }
-        
-        .location-denied-warning .warning-text {
-            font-size: 0.9rem;
-            color: var(--text);
+        .location-explanation {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-top: 0.5rem;
+            text-align: left;
         }
         
         /* Two-factor authentication styles */
@@ -430,7 +428,7 @@
                 border: none;
             }
             
-            .location-permission {
+            .location-header {
                 flex-direction: column;
                 align-items: flex-start;
             }
@@ -463,26 +461,25 @@
             </div>
         @endif
         
-        <!-- Location Permission Section -->
-        <div class="location-permission" id="locationPermission">
-            <div class="location-info">
-                <i class="fas fa-map-marker-alt location-icon"></i>
-                <div>
-                    <div class="location-text">Location access is required for security purposes</div>
-                    <div class="location-status location-pending" id="locationStatus">Waiting for permission...</div>
+        <!-- Location Section -->
+        <div class="location-section">
+            <div class="location-header">
+                <div class="location-info">
+                    <i class="fas fa-map-marker-alt location-icon"></i>
+                    <div>
+                        <div class="location-text">Location for security purposes</div>
+                        <div class="location-status location-pending" id="locationStatus">Initializing...</div>
+                    </div>
                 </div>
+                <button type="button" class="btn btn-primary btn-location" id="requestLocationBtn">Enable</button>
             </div>
-            <button type="button" class="btn btn-primary btn-location" id="requestLocationBtn">Enable</button>
-        </div>
-        
-        <!-- Location Denied Warning -->
-        <div class="location-denied-warning" id="locationDeniedWarning">
-            <div class="d-flex align-items-center">
-                <i class="fas fa-exclamation-triangle warning-icon"></i>
-                <div class="warning-text">
-                    <strong>Location Access Required</strong><br>
-                    You must enable location access to log in for security purposes. Please click "Enable" and allow location access when prompted.
-                </div>
+            
+            <div class="location-explanation" id="locationExplanation">
+                We use location data to enhance security and verify your identity. This helps protect your account from unauthorized access.
+            </div>
+            
+            <div class="location-details" id="locationDetails" style="display: none;">
+                <div id="locationInfoText"></div>
             </div>
         </div>
         
@@ -492,6 +489,7 @@
             <input type="hidden" name="latitude" id="latitude">
             <input type="hidden" name="longitude" id="longitude">
             <input type="hidden" name="location_accuracy" id="location_accuracy">
+            <input type="hidden" name="location_method" id="location_method">
             
             <div class="form-group">
                 <input type="email" id="email" name="email" value="{{ old('email') }}" required autofocus placeholder="Email address">
@@ -514,7 +512,7 @@
                 </a>
             </div>
             
-            <button type="submit" class="btn-login" id="loginBtn" disabled>
+            <button type="submit" class="btn-login" id="loginBtn">
                 <span>Log In</span>
             </button>
             <div class="back-link">
@@ -622,17 +620,18 @@
         const recaptchaResponse2FA = document.getElementById('g-recaptcha-response-2fa');
         
         // Location variables
-        const locationPermission = document.getElementById('locationPermission');
         const locationStatus = document.getElementById('locationStatus');
         const requestLocationBtn = document.getElementById('requestLocationBtn');
-        const locationDeniedWarning = document.getElementById('locationDeniedWarning');
+        const locationExplanation = document.getElementById('locationExplanation');
+        const locationDetails = document.getElementById('locationDetails');
+        const locationInfoText = document.getElementById('locationInfoText');
         const latitudeInput = document.getElementById('latitude');
         const longitudeInput = document.getElementById('longitude');
         const locationAccuracyInput = document.getElementById('location_accuracy');
+        const locationMethodInput = document.getElementById('location_method');
         
-        let userLocation = null;
-        let locationPermissionGranted = false;
-        let locationPermissionDenied = false;
+        let locationInitialized = false;
+        let locationMethod = 'none';
         
         // Track login attempts
         let loginAttempts = 0;
@@ -642,15 +641,27 @@
         let countdownInterval;
         let resendCountdownInterval;
         
-        // Request location permission
-        function requestLocationPermission() {
+        // Initialize location detection
+        function initializeLocation() {
+            updateLocationStatus('pending', 'Checking location capabilities...');
+            
+            // Check if geolocation is supported
             if (!navigator.geolocation) {
-                updateLocationStatus('denied', 'Geolocation is not supported by this browser');
-                locationPermissionDenied = true;
-                showLocationDeniedWarning();
+                updateLocationStatus('fallback', 'Browser location not supported, using IP-based location');
+                locationMethod = 'ip';
+                locationInitialized = true;
+                requestLocationBtn.style.display = 'none';
+                locationExplanation.textContent = 'Your browser doesn\'t support precise location. We\'ll use your IP address for location tracking.';
+                checkFormValidity();
                 return;
             }
             
+            // Try to get browser location
+            requestLocationPermission();
+        }
+        
+        // Request location permission
+        function requestLocationPermission() {
             updateLocationStatus('pending', 'Requesting location permission...');
             requestLocationBtn.disabled = true;
             requestLocationBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Getting location...';
@@ -658,7 +669,7 @@
             navigator.geolocation.getCurrentPosition(
                 // Success callback
                 function(position) {
-                    userLocation = {
+                    const userLocation = {
                         latitude: position.coords.latitude,
                         longitude: position.coords.longitude,
                         accuracy: position.coords.accuracy
@@ -668,25 +679,27 @@
                     latitudeInput.value = userLocation.latitude;
                     longitudeInput.value = userLocation.longitude;
                     locationAccuracyInput.value = userLocation.accuracy;
+                    locationMethodInput.value = 'browser';
+                    locationMethod = 'browser';
                     
-                    updateLocationStatus('granted', `Location access granted (Accuracy: ${Math.round(userLocation.accuracy)}m)`);
-                    locationPermissionGranted = true;
-                    locationPermissionDenied = false;
+                    updateLocationStatus('granted', `Precise location enabled (Accuracy: ${Math.round(userLocation.accuracy)}m)`);
+                    locationInitialized = true;
                     requestLocationBtn.innerHTML = '<i class="fas fa-check"></i> Enabled';
+                    requestLocationBtn.disabled = false;
                     
-                    // Hide warning if shown
-                    locationDeniedWarning.style.display = 'none';
+                    // Show location details
+                    locationInfoText.textContent = `Using your device's GPS for precise location tracking`;
+                    locationDetails.style.display = 'block';
                     
-                    // Enable login button if form is valid
                     checkFormValidity();
                 },
                 // Error callback
                 function(error) {
-                    let errorMessage = 'Location access denied';
+                    let errorMessage = 'Location access not available';
                     
                     switch(error.code) {
                         case error.PERMISSION_DENIED:
-                            errorMessage = 'Location access denied by user';
+                            errorMessage = 'Location permission denied by user';
                             break;
                         case error.POSITION_UNAVAILABLE:
                             errorMessage = 'Location information unavailable';
@@ -696,13 +709,20 @@
                             break;
                     }
                     
-                    updateLocationStatus('denied', errorMessage);
-                    locationPermissionDenied = true;
+                    // Fall back to IP-based location
+                    updateLocationStatus('fallback', 'Using IP-based location (less precise)');
+                    locationMethod = 'ip';
+                    locationInitialized = true;
+                    locationMethodInput.value = 'ip';
+                    requestLocationBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Try Again';
                     requestLocationBtn.disabled = false;
-                    requestLocationBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Retry';
                     
-                    // Show warning message
-                    showLocationDeniedWarning();
+                    // Show explanation
+                    locationExplanation.textContent = 'Precise location is not available. We\'ll use your IP address for location tracking. This is less accurate but still provides security benefits.';
+                    locationInfoText.textContent = 'IP-based location will be determined during login';
+                    locationDetails.style.display = 'block';
+                    
+                    checkFormValidity();
                 },
                 // Options
                 {
@@ -713,12 +733,6 @@
             );
         }
         
-        // Show location denied warning
-        function showLocationDeniedWarning() {
-            locationDeniedWarning.style.display = 'block';
-            updateLocationStatus('required', 'Location access is required to login');
-        }
-        
         // Update location status display
         function updateLocationStatus(status, message) {
             locationStatus.className = 'location-status location-' + status;
@@ -727,7 +741,7 @@
         
         // Check if form is valid to enable login button
         function checkFormValidity() {
-            if (locationPermissionGranted && emailInput.value && passwordInput.value) {
+            if (locationInitialized && emailInput.value && passwordInput.value) {
                 loginBtn.disabled = false;
             } else {
                 loginBtn.disabled = true;
@@ -735,10 +749,15 @@
         }
         
         // Request location permission on button click
-        requestLocationBtn.addEventListener('click', requestLocationPermission);
+        requestLocationBtn.addEventListener('click', function() {
+            if (locationMethod === 'ip') {
+                // Try again to get browser location
+                requestLocationPermission();
+            }
+        });
         
-        // Auto-request location on page load
-        setTimeout(requestLocationPermission, 1000);
+        // Initialize location on page load
+        setTimeout(initializeLocation, 1000);
         
         // Toggle password visibility
         togglePassword.addEventListener('click', function() {
@@ -757,18 +776,13 @@
                 return;
             }
             
-            // Check if location permission is granted
-            if (!locationPermissionGranted) {
+            // Check if location is initialized
+            if (!locationInitialized) {
                 Swal.fire({
-                    icon: 'error',
-                    title: 'Location Access Required',
-                    text: 'You must enable location access to log in for security purposes. Please click the "Enable" button and allow location access when prompted.',
-                    confirmButtonColor: '#1a73e8',
-                    confirmButtonText: 'Enable Location'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        requestLocationPermission();
-                    }
+                    icon: 'warning',
+                    title: 'Location Check in Progress',
+                    text: 'Please wait while we check your location capabilities.',
+                    confirmButtonColor: '#1a73e8'
                 });
                 return;
             }
