@@ -491,9 +491,6 @@ Route::post('/validate-plumber-session', function (Request $request) {
     }
 })->name('validate.plumber.session');
 
-Route::post('/admin-confirm-location', [AuthController::class, 'confirmLocation'])->name('admin.confirm.location');
-Route::get('/admin/logs/api', [AdminController::class, 'getLogsApi'])->name('admin.logs.api');
-
 Route::post('/accountant/logout', [AccountantManageController::class, 'logout'])->name('accountant.logout');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/', function () {
