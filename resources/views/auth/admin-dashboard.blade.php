@@ -630,10 +630,21 @@
                     </div>
 
                     <!-- Pagination -->
-                    <div id="paginationContainer" class="d-flex justify-content-center mt-3">
-                        <nav id="logsPagination">
-                            <!-- Pagination will be loaded here -->
-                        </nav>
+                    <div id="paginationContainer" class="d-flex justify-content-between align-items-center mt-3">
+                        <div id="paginationInfo" class="text-muted me-3">
+                            Showing <span id="showingFrom">0</span> to <span id="showingTo">0</span> of <span id="totalRecords">0</span> entries
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <button id="startFirstBtn" type="button" class="btn btn-sm btn-outline-secondary me-1" title="Start">
+                                <i class="bi bi-chevron-double-left"></i>
+                            </button>
+                            <nav id="logsPagination">
+                                <!-- Pagination will be loaded here -->
+                            </nav>
+                            <button id="endLastBtn" type="button" class="btn btn-sm btn-outline-secondary ms-1" title="End">
+                                <i class="bi bi-chevron-double-right"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Statistics -->
@@ -1304,8 +1315,15 @@
     
     // Render pagination
     function renderPagination(logs) {
+        // Update pagination info
+        $('#showingFrom').text(logs.from);
+        $('#showingTo').text(logs.to);
+        $('#totalRecords').text(logs.total);
+        
         if (logs.last_page <= 1) {
             $('#logsPagination').html('');
+            $('#startFirstBtn').prop('disabled', true);
+            $('#endLastBtn').prop('disabled', true);
             return;
         }
         
@@ -1334,6 +1352,10 @@
         
         html += '</ul>';
         $('#logsPagination').html(html);
+        
+        // Enable/disable navigation buttons based on current page
+        $('#startFirstBtn').prop('disabled', logs.current_page === 1);
+        $('#endLastBtn').prop('disabled', logs.current_page === logs.last_page);
     }
     
     // Update statistics
@@ -1364,6 +1386,16 @@
         $('#dateFromFilter').val('');
         $('#dateToFilter').val('');
         loadAdminLogs(1);
+    });
+    
+    // Start from first button
+    $('#startFirstBtn').on('click', function() {
+        loadAdminLogs(1);
+    });
+    
+    // Go to last button
+    $('#endLastBtn').on('click', function() {
+        loadAdminLogs($('#totalRecords').text());
     });
     
     // Notification icon click handler
