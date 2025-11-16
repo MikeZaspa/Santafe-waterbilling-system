@@ -1147,285 +1147,257 @@
     });
     
     // Admin Logs Modal functionality
-let currentPage = 1;
-
-// Initialize when modal is shown
-$('#adminLogsModal').on('shown.bs.modal', function() {
-    loadAdminLogs();
-    loadAdmins();
-});
-
-// Load admin logs
-function loadAdminLogs(page = 1) {
-    currentPage = page;
+    let currentPage = 1;
     
-    // Show loading state with numbered IDs
-    $('#logsTableBody1').html(`
-        <tr id="loadingRow1">
-            <td id="loadingCell1" colspan="11" class="text-center py-4">
-                <div id="loadingSpinner1" class="spinner-border text-primary" role="status">
-                    <span id="loadingSpinnerText1" class="visually-hidden">Loading...</span>
-                </div>
-                <p id="loadingText1" class="mt-2">Loading logs...</p>
-            </td>
-        </tr>
-    `);
-    
-    // Get filter values
-    const adminId = $('#adminFilter').val();
-    const activity = $('#activityFilter').val();
-    const dateFrom = $('#dateFromFilter').val();
-    const dateTo = $('#dateToFilter').val();
-    
-    // Build query string
-    let queryString = `?page=${page}`;
-    if (adminId) queryString += `&admin_id=${adminId}`;
-    if (activity) queryString += `&activity=${activity}`;
-    if (dateFrom) queryString += `&date_from=${dateFrom}`;
-    if (dateTo) queryString += `&date_to=${dateTo}`;
-    
-    // Fetch logs via AJAX
-    $.get(`/admin/logs/api${queryString}`, function(data) {
-        renderLogsTable(data.logs.data);
-        renderPagination(data.logs);
-        updateStatistics(data.statistics);
-    }).fail(function() {
-        $('#logsTableBody1').html(`
-            <tr id="errorRow1">
-                <td id="errorCell1" colspan="11" class="text-center py-4">
-                    <i id="errorIcon1" class="fas fa-exclamation-triangle fa-2x text-warning mb-3"></i>
-                    <p id="errorMessage1" class="text-muted">Error loading logs. Please try again.</p>
-                </td>
-            </tr>
-        `);
+    // Initialize when modal is shown
+    $('#adminLogsModal').on('shown.bs.modal', function() {
+        loadAdminLogs();
+        loadAdmins();
     });
-}
-
-// Load admins for filter dropdown
-function loadAdmins() {
-    $.get('/admin/admins/api', function(data) {
-        let options = '<option value="">All Admins</option>';
-        data.forEach(function(admin, index) {
-            options += `<option value="${admin.id}" id="adminOption${index + 1}">${admin.email}</option>`;
-        });
-        $('#adminFilter').html(options);
-    });
-}
-
-// Render logs table with numbered IDs
-function renderLogsTable(logs) {
-    if (logs.length === 0) {
-        $('#logsTableBody1').html(`
-            <tr id="noDataRow1">
-                <td id="noDataCell1" colspan="11" class="text-center py-4">
-                    <i id="noDataIcon1" class="fas fa-search fa-2x text-muted mb-3"></i>
-                    <p id="noDataMessage1" class="text-muted">No logs found</p>
-                </td>
-            </tr>
-        `);
-        return;
-    }
     
-    let html = '';
-    logs.forEach(function(log, index) {
-        const rowNumber = index + 1;
-        const loginTime = new Date(log.login_at).toLocaleString();
-        const logoutTime = log.logout_at ? new Date(log.logout_at).toLocaleString() : '';
-        const duration = log.session_duration ? formatDuration(log.session_duration) : '-';
-        const status = log.logout_at ? 
-            '<span class="badge bg-secondary">Completed</span>' : 
-            '<span class="badge bg-success">Active</span>';
+    // Load admin logs
+    function loadAdminLogs(page = 1) {
+        currentPage = page;
         
-        const activityBadge = log.activity.includes('successful') ? 
-            'bg-success' : log.activity.includes('failed') ? 'bg-danger' : 'bg-primary';
-        
-        const location = log.city && log.country ? 
-            `<div id="locationInfo${rowNumber}" class="d-flex align-items-center">
-                <span id="locationText${rowNumber}">${log.city}, ${log.country}</span>
-            </div>` : 
-            `<span id="unknownLocation${rowNumber}" class="text-muted">Unknown</span>`;
-        
-        html += `
-            <tr id="logRow${rowNumber}" 
-                data-log-id="${log.id}" 
-                data-ip="${log.ip_address}"
-                data-country="${log.country}"
-                data-city="${log.city}"
-                data-region="${log.region || ''}"
-                data-email="${log.email}"
-                data-activity="${log.activity}"
-                data-login-time="${loginTime}">
-                
-                <!-- Column 1: ID -->
-                <td id="idCell${rowNumber}">
-                    <span id="logId${rowNumber}" class="badge bg-secondary">${log.id}</span>
-                </td>
-                
-                <!-- Column 2: Admin -->
-                <td id="adminCell${rowNumber}">
-                    <div id="adminInfo${rowNumber}" class="d-flex align-items-center">
-                        <div id="adminAvatar${rowNumber}" class="avatar-sm bg-primary rounded-circle text-white d-flex align-items-center justify-content-center me-2">
-                            ${log.email.charAt(0).toUpperCase()}
-                        </div>
-                        <div id="adminDetails${rowNumber}">
-                            <div id="adminName${rowNumber}" class="fw-bold">${log.admin ? `${log.admin.first_name} ${log.admin.last_name}` : 'Admin Deleted'}</div>
-                            <small id="adminEmail${rowNumber}" class="text-muted">${log.email}</small>
-                        </div>
+        // Show loading state
+        $('#logsTableBody').html(`
+            <tr id="loadingRow">
+                <td id="loadingCell" colspan="10" class="text-center py-4">
+                    <div id="loadingSpinner" class="spinner-border text-primary" role="status">
+                        <span id="loadingSpinnerText" class="visually-hidden">Loading...</span>
                     </div>
+                    <p id="loadingText" class="mt-2">Loading logs...</p>
                 </td>
-                
-                <!-- Column 3: Email -->
-                <td id="emailCell${rowNumber}">
-                    <span id="emailDisplay${rowNumber}">${log.email}</span>
-                </td>
-                
-                <!-- Column 4: IP Address -->
-                <td id="ipCell${rowNumber}">
-                    <code id="ipAddress${rowNumber}">${log.ip_address}</code>
-                </td>
-                
-                <!-- Column 5: Location -->
-                <td id="locationCell${rowNumber}">${location}</td>
-                
-                <!-- Column 6: Device -->
-                <td id="deviceCell${rowNumber}">
-                    <small>
-                        <i id="browserIcon${rowNumber}" class="fas fa-desktop me-1 text-muted"></i> 
-                        <span id="browser${rowNumber}">${log.browser}</span><br>
-                        <i id="platformIcon${rowNumber}" class="fas fa-laptop me-1 text-muted"></i> 
-                        <span id="platform${rowNumber}">${log.platform}</span>
-                    </small>
-                </td>
-                
-                <!-- Column 7: Activity -->
-                <td id="activityCell${rowNumber}">
-                    <span id="activityBadge${rowNumber}" class="badge ${activityBadge}">${log.activity}</span>
-                </td>
-                
-                <!-- Column 8: Login Time -->
-                <td id="loginTimeCell${rowNumber}">
-                    <small>
-                        <span id="loginDate${rowNumber}">${loginTime.split(',')[0]}</span><br>
-                        <span id="loginTime${rowNumber}">${loginTime.split(',')[1]}</span>
-                    </small>
-                </td>
-                
-                <!-- Column 9: Logout Time -->
-                <td id="logoutTimeCell${rowNumber}">
-                    ${logoutTime ? 
-                        `<small>
-                            <span id="logoutDate${rowNumber}">${logoutTime.split(',')[0]}</span><br>
-                            <span id="logoutTime${rowNumber}">${logoutTime.split(',')[1]}</span>
-                        </small>` : 
-                        `<span id="activeBadge${rowNumber}" class="badge bg-warning">Active</span>`
-                    }
-                </td>
-                
-                <!-- Column 10: Duration -->
-                <td id="durationCell${rowNumber}">
-                    ${duration !== '-' ? 
-                        `<span id="durationBadge${rowNumber}" class="badge bg-info">${duration}</span>` : 
-                        `<span id="noDuration${rowNumber}" class="text-muted">-</span>`
-                    }
-                </td>
-                
-                <!-- Column 11: Status -->
-                <td id="statusCell${rowNumber}">${status}</td>
             </tr>
-        `;
+        `);
+        
+        // Get filter values
+        const adminId = $('#adminFilter').val();
+        const activity = $('#activityFilter').val();
+        const dateFrom = $('#dateFromFilter').val();
+        const dateTo = $('#dateToFilter').val();
+        
+        // Build query string
+        let queryString = `?page=${page}`;
+        if (adminId) queryString += `&admin_id=${adminId}`;
+        if (activity) queryString += `&activity=${activity}`;
+        if (dateFrom) queryString += `&date_from=${dateFrom}`;
+        if (dateTo) queryString += `&date_to=${dateTo}`;
+        
+        // Fetch logs via AJAX
+        $.get(`/admin/logs/api${queryString}`, function(data) {
+            renderLogsTable(data.logs.data);
+            renderPagination(data.logs);
+            updateStatistics(data.statistics);
+        }).fail(function() {
+            $('#logsTableBody').html(`
+                <tr id="errorRow">
+                    <td id="errorCell" colspan="10" class="text-center py-4">
+                        <i id="errorIcon" class="fas fa-exclamation-triangle fa-2x text-warning mb-3"></i>
+                        <p id="errorMessage" class="text-muted">Error loading logs. Please try again.</p>
+                    </td>
+                </tr>
+            `);
+        });
+    }
+    
+    // Load admins for filter dropdown
+    function loadAdmins() {
+        $.get('/admin/admins/api', function(data) {
+            let options = '<option value="">All Admins</option>';
+            data.forEach(function(admin) {
+                options += `<option value="${admin.id}">${admin.email}</option>`;
+            });
+            $('#adminFilter').html(options);
+        });
+    }
+    
+    // Render logs table
+    function renderLogsTable(logs) {
+        if (logs.length === 0) {
+            $('#logsTableBody').html(`
+                <tr id="noDataRow">
+                    <td id="noDataCell" colspan="10" class="text-center py-4">
+                        <i id="noDataIcon" class="fas fa-search fa-2x text-muted mb-3"></i>
+                        <p id="noDataMessage" class="text-muted">No logs found</p>
+                    </td>
+                </tr>
+            `);
+            return;
+        }
+        
+        let html = '';
+        logs.forEach(function(log, index) {
+            const logId = `log-${log.id}`;
+            const rowId = `log-row-${index}`;
+            const loginTime = new Date(log.login_at).toLocaleString();
+            const logoutTime = log.logout_at ? new Date(log.logout_at).toLocaleString() : '';
+            const duration = log.session_duration ? formatDuration(log.session_duration) : '-';
+            const status = log.logout_at ? 
+                '<span class="badge bg-secondary">Completed</span>' : 
+                '<span class="badge bg-success">Active</span>';
+            
+            const activityBadge = log.activity.includes('successful') ? 
+                'bg-success' : log.activity.includes('failed') ? 'bg-danger' : 'bg-primary';
+            
+            const location = log.city && log.country ? 
+                `<div id="location-${log.id}" class="d-flex align-items-center">
+                    <span id="locationText-${log.id}">${log.city}, ${log.country}</span>
+                </div>` : 
+                `<span id="unknownLocation-${log.id}" class="text-muted">Unknown</span>`;
+            
+            html += `
+                <tr id="${rowId}" data-log-id="${log.id}" 
+                    data-ip="${log.ip_address}"
+                    data-country="${log.country}"
+                    data-city="${log.city}"
+                    data-region="${log.region || ''}"
+                    data-email="${log.email}"
+                    data-activity="${log.activity}"
+                    data-login-time="${loginTime}">
+                    <td id="idCell-${log.id}">
+                        <span id="logId-${log.id}" class="badge bg-secondary">${log.id}</span>
+                    </td>
+                    <td id="adminCell-${log.id}">
+                        <div id="adminInfo-${log.id}" class="d-flex align-items-center">
+                            <div id="adminAvatar-${log.id}" class="avatar-sm bg-primary rounded-circle text-white d-flex align-items-center justify-content-center me-2">
+                                ${log.email.charAt(0).toUpperCase()}
+                            </div>
+                            <div id="adminDetails-${log.id}">
+                                <div id="adminName-${log.id}" class="fw-bold">${log.admin ? `${log.admin.first_name} ${log.admin.last_name}` : 'Admin Deleted'}</div>
+                                <small id="adminEmail-${log.id}" class="text-muted">${log.email}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td id="emailCell-${log.id}">
+                        <span id="emailDisplay-${log.id}">${log.email}</span>
+                    </td>
+                    <td id="ipCell-${log.id}">
+                        <code id="ipAddress-${log.id}">${log.ip_address}</code>
+                    </td>
+                    <td id="locationCell-${log.id}">${location}</td>
+                    <td id="deviceCell-${log.id}">
+                        <small>
+                            <i id="browserIcon-${log.id}" class="fas fa-desktop me-1 text-muted"></i> <span id="browser-${log.id}">${log.browser}</span><br>
+                            <i id="platformIcon-${log.id}" class="fas fa-laptop me-1 text-muted"></i> <span id="platform-${log.id}">${log.platform}</span>
+                        </small>
+                    </td>
+                    <td id="activityCell-${log.id}">
+                        <span id="activityBadge-${log.id}" class="badge ${activityBadge}">${log.activity}</span>
+                    </td>
+                    <td id="loginTimeCell-${log.id}">
+                        <small>
+                            <span id="loginDate-${log.id}">${loginTime.split(',')[0]}</span><br>
+                            <span id="loginTime-${log.id}">${loginTime.split(',')[1]}</span>
+                        </small>
+                    </td>
+                    <td id="logoutTimeCell-${log.id}">
+                        ${logoutTime ? 
+                            `<small>
+                                <span id="logoutDate-${log.id}">${logoutTime.split(',')[0]}</span><br>
+                                <span id="logoutTime-${log.id}">${logoutTime.split(',')[1]}</span>
+                            </small>` : 
+                            `<span id="activeBadge-${log.id}" class="badge bg-warning">Active</span>`
+                        }
+                    </td>
+                    <td id="durationCell-${log.id}">
+                        ${duration !== '-' ? 
+                            `<span id="durationBadge-${log.id}" class="badge bg-info">${duration}</span>` : 
+                            `<span id="noDuration-${log.id}" class="text-muted">-</span>`
+                        }
+                    </td>
+                    <td id="statusCell-${log.id}">${status}</td>
+                </tr>
+            `;
+        });
+        
+        $('#logsTableBody').html(html);
+    }
+    
+    // Render pagination
+    function renderPagination(logs) {
+        // Update pagination info
+        $('#showingFrom').text(logs.from);
+        $('#showingTo').text(logs.to);
+        $('#totalRecords').text(logs.total);
+        
+        if (logs.last_page <= 1) {
+            $('#logsPagination').html('');
+            $('#startFirstBtn').prop('disabled', true);
+            $('#endLastBtn').prop('disabled', true);
+            return;
+        }
+        
+        let html = '<ul class="pagination">';
+        
+        // Previous button
+        html += `<li class="page-item ${logs.current_page === 1 ? 'disabled' : ''}">
+            <a id="prevPageBtn" class="page-link" href="#" onclick="loadAdminLogs(${logs.current_page - 1}); return false;">Previous</a>
+        </li>`;
+        
+        // Page numbers
+        for (let i = 1; i <= logs.last_page; i++) {
+            if (i === 1 || i === logs.last_page || (i >= logs.current_page - 2 && i <= logs.current_page + 2)) {
+                html += `<li class="page-item ${i === logs.current_page ? 'active' : ''}">
+                    <a id="page-${i}" class="page-link" href="#" onclick="loadAdminLogs(${i}); return false;">${i}</a>
+                </li>`;
+            } else if (i === logs.current_page - 3 || i === logs.current_page + 3) {
+                html += `<li class="page-item disabled"><a id="ellipsis-${i}" class="page-link" href="#">...</a></li>`;
+            }
+        }
+        
+        // Next button
+        html += `<li class="page-item ${logs.current_page === logs.last_page ? 'disabled' : ''}">
+            <a id="nextPageBtn" class="page-link" href="#" onclick="loadAdminLogs(${logs.current_page + 1}); return false;">Next</a>
+        </li>`;
+        
+        html += '</ul>';
+        $('#logsPagination').html(html);
+        
+        // Enable/disable navigation buttons based on current page
+        $('#startFirstBtn').prop('disabled', logs.current_page === 1);
+        $('#endLastBtn').prop('disabled', logs.current_page === logs.last_page);
+    }
+    
+    // Update statistics
+    function updateStatistics(stats) {
+        $('#totalLogsCount').text(stats.total);
+        $('#successfulLoginsCount').text(stats.successful);
+        $('#failedAttemptsCount').text(stats.failed);
+        $('#activeSessionsCount').text(stats.active);
+    }
+    
+    // Format duration from seconds to HH:MM:SS
+    function formatDuration(seconds) {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+    
+    // Filter logs
+    $('#filterLogsBtn').on('click', function() {
+        loadAdminLogs(1);
     });
     
-    $('#logsTableBody1').html(html);
-}
-
-// Render pagination with numbered IDs
-function renderPagination(logs) {
-    // Update pagination info with numbered IDs
-    $('#showingFrom1').text(logs.from || 0);
-    $('#showingTo1').text(logs.to || 0);
-    $('#totalRecords1').text(logs.total || 0);
+    // Reset filters
+    $('#resetLogsBtn').on('click', function() {
+        $('#adminFilter').val('');
+        $('#activityFilter').val('');
+        $('#dateFromFilter').val('');
+        $('#dateToFilter').val('');
+        loadAdminLogs(1);
+    });
     
-    if (logs.last_page <= 1) {
-        $('#logsPagination1').html('');
-        $('#startFirstBtn1').prop('disabled', true);
-        $('#endLastBtn1').prop('disabled', true);
-        return;
-    }
+    // Start from first button
+    $('#startFirstBtn').on('click', function() {
+        loadAdminLogs(1);
+    });
     
-    let html = '<ul class="pagination">';
-    
-    // Previous button
-    html += `<li class="page-item ${logs.current_page === 1 ? 'disabled' : ''}">
-        <a id="prevPageBtn1" class="page-link" href="#" onclick="loadAdminLogs(${logs.current_page - 1}); return false;">Previous</a>
-    </li>`;
-    
-    // Page numbers
-    for (let i = 1; i <= logs.last_page; i++) {
-        if (i === 1 || i === logs.last_page || (i >= logs.current_page - 2 && i <= logs.current_page + 2)) {
-            html += `<li class="page-item ${i === logs.current_page ? 'active' : ''}">
-                <a id="pageLink${i}" class="page-link" href="#" onclick="loadAdminLogs(${i}); return false;">${i}</a>
-            </li>`;
-        } else if (i === logs.current_page - 3 || i === logs.current_page + 3) {
-            html += `<li class="page-item disabled"><a id="ellipsis${i}" class="page-link" href="#">...</a></li>`;
-        }
-    }
-    
-    // Next button
-    html += `<li class="page-item ${logs.current_page === logs.last_page ? 'disabled' : ''}">
-        <a id="nextPageBtn1" class="page-link" href="#" onclick="loadAdminLogs(${logs.current_page + 1}); return false;">Next</a>
-    </li>`;
-    
-    html += '</ul>';
-    $('#logsPagination1').html(html);
-    
-    // Enable/disable navigation buttons based on current page
-    $('#startFirstBtn1').prop('disabled', logs.current_page === 1);
-    $('#endLastBtn1').prop('disabled', logs.current_page === logs.last_page);
-}
-
-// Update statistics with numbered IDs
-function updateStatistics(stats) {
-    $('#totalLogsCount1').text(stats.total);
-    $('#successfulLoginsCount1').text(stats.successful);
-    $('#failedAttemptsCount1').text(stats.failed);
-    $('#activeSessionsCount1').text(stats.active);
-}
-
-// Format duration from seconds to HH:MM:SS
-function formatDuration(seconds) {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-}
-
-// Filter logs
-$('#filterLogsBtn').on('click', function() {
-    loadAdminLogs(1);
-});
-
-// Reset filters
-$('#resetLogsBtn').on('click', function() {
-    $('#adminFilter').val('');
-    $('#activityFilter').val('');
-    $('#dateFromFilter').val('');
-    $('#dateToFilter').val('');
-    loadAdminLogs(1);
-});
-
-// Start from first button
-$('#startFirstBtn1').on('click', function() {
-    loadAdminLogs(1);
-});
-
-// Go to last button
-$('#endLastBtn1').on('click', function() {
-    // Get total pages from the pagination info
-    const totalRecords = $('#totalRecords1').text();
-    const perPage = 20; // Adjust based on your pagination setup
-    const totalPages = Math.ceil(totalRecords / perPage);
-    loadAdminLogs(totalPages);
-});
+    // Go to last button
+    $('#endLastBtn').on('click', function() {
+        loadAdminLogs($('#totalRecords').text());
+    });
     
     // Notification icon click handler
     $('#notificationIcon').on('click', function() {
