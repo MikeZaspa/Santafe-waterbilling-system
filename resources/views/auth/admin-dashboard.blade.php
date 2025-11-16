@@ -1246,7 +1246,10 @@ function renderLogsTable(logs) {
             </div>` : 
             `<span id="unknownLocation-${log.id}" class="text-muted">Unknown</span>`;
         
-
+        // Get admin name - if not available, show email or leave empty
+        const adminName = log.admin ? 
+            `${log.admin.first_name} ${log.admin.last_name}` : 
+            log.email; // Fallback to email if admin data is not available
         
         html += `
             <tr id="${rowId}" data-log-id="${log.id}" 
