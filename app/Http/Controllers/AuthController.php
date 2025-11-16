@@ -326,101 +326,115 @@ return back()->with('error', $message);
 */
 public function checkCredentials(Request $request)
 {
-$validator = Validator::make($request->all(), [
-'email' => 'required|email',
-'password' => 'required',
-]);
+    $validator = Validator::make($request->all(), [
+        'email' => 'required|email',
+        'password' => 'required',
+    ]);
 
-if ($validator->fails()) {
-return response()->json([
-'success' => false,
-'errors' => $validator->errors()
-], 422);
-}
+    if ($validator->fails()) {
+        // Log failed validation attempt
+        $this->adminLogService->logActivity(
+            null,
+            'failed_login_attempt - validation_failed',
+            $request
+        );
+        
+        return response()->json([
+            'success' => false,
+            'errors' => $validator->errors()
+        ], 422);
+    }
 
-$credentials = $request->only('email', 'password');
+    $credentials = $request->only('email', 'password');
 
-// Check if admin exists first
-$admin = Admin::where('email', $request->email)->first();
+    // Check if admin exists first
+    $admin = Admin::where('email', $request->email)->first();
 
-if (!$admin) {
-// Log failed login attempt
-$this->adminLogService->logActivity(
-null,
-'failed_login_attempt - email_not_found',
-$request
-);
+    if (!$admin) {
+        // Log failed login attempt
+        $this->adminLogService->logActivity(
+            null,
+            'failed_login_attempt - email_not_found',
+            $request
+        );
 
-return response()->json([
-'success' => false,
-'errors' => [
-'email' => 'The provided email does not exist in our system.'
-]
-], 401);
-}
+        return response()->json([
+            'success' => false,
+            'errors' => [
+                'email' => 'The provided email does not exist in our system.'
+            ]
+        ], 401);
+    }
 
-// Check if email is verified
-if (!$admin->email_verified_at) {
-// Store email in session for verification
-$request->session()->put('verification_email', $admin->email);
+    // Check if email is verified
+    if (!$admin->email_verified_at) {
+        // Store email in session for verification
+        $request->session()->put('verification_email', $admin->email);
+        
+        // Log verification required attempt
+        $this->adminLogService->logActivity(
+            $admin,
+            'failed_login_attempt - email_not_verified',
+            $request
+        );
 
-return response()->json([
-'success' => false,
-'redirect' => route('verify'),
-'message' => 'Please verify your email address before logging in.'
-], 403);
-}
+        return response()->json([
+            'success' => false,
+            'redirect' => route('verify'),
+            'message' => 'Please verify your email address before logging in.'
+        ], 403);
+    }
 
-// Check if admin is active
-if (!$admin->active) {
-// Log attempted login to inactive account
-$this->adminLogService->logActivity(
-$admin,
-'failed_login_attempt - account_inactive',
-$request
-);
+    // Check if admin is active
+    if (!$admin->active) {
+        // Log attempted login to inactive account
+        $this->adminLogService->logActivity(
+            $admin,
+            'failed_login_attempt - account_inactive',
+            $request
+        );
 
-return response()->json([
-'success' => false,
-'errors' => [
-'email' => 'Your account is inactive. Please contact administrator.'
-]
-], 403);
-}
+        return response()->json([
+            'success' => false,
+            'errors' => [
+                'email' => 'Your account is inactive. Please contact administrator.'
+            ]
+        ], 403);
+    }
 
-// Attempt authentication
-if (Auth::guard('admin')->attempt($credentials)) {
-// Don't log in yet, just verify credentials
-Auth::guard('admin')->logout();
+    // Attempt authentication
+    if (Auth::guard('admin')->attempt($credentials)) {
+        // Don't log in yet, just verify credentials
+        Auth::guard('admin')->logout();
 
-// Generate and send 2FA code
-$twoFactorCode = rand(100000, 999999);
-$admin->two_factor_code = $twoFactorCode;
-$admin->two_factor_expires_at = now()->addMinutes(10);
-$admin->save();
+        // Generate and send 2FA code
+        $twoFactorCode = rand(100000, 999999);
+        $admin->two_factor_code = $twoFactorCode;
+        $admin->two_factor_expires_at = now()->addMinutes(10);
+        $admin->save();
 
-// Send 2FA code via email
-Mail::to($admin->email)->send(new TwoFactorCodeMail($twoFactorCode));
+        // Send 2FA code via email
+        Mail::to($admin->email)->send(new TwoFactorCodeMail($twoFactorCode));
 
-return response()->json([
-'success' => true,
-'message' => 'Credentials verified. Please check your email for the verification code.'
-]);
-}
+        return response()->json([
+            'success' => true,
+            'message' => 'Credentials verified. Please check your email for the verification code.'
+        ]);
+    }
 
-// Log failed login attempt (wrong password)
-$this->adminLogService->logActivity(
-$admin,
-'failed_login_attempt - wrong_password',
-$request
-);
+    // Log failed login attempt (wrong password)
+    $this->adminLogService->logActivity(
+        $admin,
+        'failed_login_attempt - wrong_password',
+        $request
+    );
 
-return response()->json([
-'success' => false,
-'errors' => [
-'password' => 'The provided password is incorrect.'
-]
-], 401);
+    return response()->json([
+        'success' => false,
+        'errors' => [
+            'password' => 'The provided password is incorrect.'
+        ]
+    ], 401);
 }
 
 /**

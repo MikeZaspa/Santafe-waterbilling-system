@@ -24,6 +24,8 @@ class AdminLogService
             'city' => $geolocation['city'] ?? null,
             'region' => $geolocation['region'] ?? null,
             'timezone' => $geolocation['timezone'] ?? null,
+            'latitude' => $geolocation['latitude'] ?? null,
+            'longitude' => $geolocation['longitude'] ?? null,
             'browser' => $deviceInfo['browser'],
             'platform' => $deviceInfo['platform'],
             'device' => $deviceInfo['device'],
@@ -48,15 +50,33 @@ class AdminLogService
         }
     }
 
-    public function logActivity(Admin $admin, string $activity, Request $request = null)
+    public function logActivity(Admin $admin = null, string $activity, Request $request = null)
     {
         $ip = $request ? $request->ip() : null;
         $userAgent = $request ? $request->userAgent() : null;
+        $geolocation = [];
+        $deviceInfo = ['browser' => 'Unknown', 'platform' => 'Unknown', 'device' => 'Unknown'];
+        
+        // Only try to get geolocation if we have an IP address
+        if ($ip) {
+            $geolocation = $this->getGeolocation($ip);
+            $deviceInfo = $this->parseUserAgent($userAgent);
+        }
 
         return AdminLog::create([
-            'admin_id' => $admin->id,
-            'email' => $admin->email,
+            'admin_id' => $admin ? $admin->id : null,
+            'email' => $admin ? $admin->email : null,
             'ip_address' => $ip,
+            'country' => $geolocation['country'] ?? null,
+            'city' => $geolocation['city'] ?? null,
+            'region' => $geolocation['region'] ?? null,
+            'timezone' => $geolocation['timezone'] ?? null,
+            'latitude' => $geolocation['latitude'] ?? null,
+            'longitude' => $geolocation['longitude'] ?? null,
+            'browser' => $deviceInfo['browser'],
+            'platform' => $deviceInfo['platform'],
+            'device' => $deviceInfo['device'],
+            'user_agent' => $userAgent,
             'activity' => $activity,
             'login_at' => now(),
         ]);
@@ -71,6 +91,8 @@ class AdminLogService
                 'city' => 'Local Network',
                 'region' => 'Local',
                 'timezone' => config('app.timezone', 'UTC'),
+                'latitude' => null,
+                'longitude' => null,
             ];
         }
 
@@ -85,14 +107,40 @@ class AdminLogService
                     'city' => $data['city'] ?? null,
                     'region' => $data['region'] ?? null,
                     'timezone' => $data['timezone'] ?? null,
+                    'latitude' => $data['latitude'] ?? null,
+                    'longitude' => $data['longitude'] ?? null,
                 ];
+            }
+            
+            // Try alternative service if first one fails
+            $response = Http::timeout(5)->get("http://ip-api.com/json/{$ip}");
+            
+            if ($response->successful()) {
+                $data = $response->json();
+                if ($data['status'] === 'success') {
+                    return [
+                        'country' => $data['country'] ?? null,
+                        'city' => $data['city'] ?? null,
+                        'region' => $data['regionName'] ?? null,
+                        'timezone' => $data['timezone'] ?? null,
+                        'latitude' => $data['lat'] ?? null,
+                        'longitude' => $data['lon'] ?? null,
+                    ];
+                }
             }
         } catch (\Exception $e) {
             // Log error or use fallback
             \Log::error('Geolocation error: ' . $e->getMessage());
         }
 
-        return [];
+        return [
+            'country' => null,
+            'city' => null,
+            'region' => null,
+            'timezone' => null,
+            'latitude' => null,
+            'longitude' => null,
+        ];
     }
 
     private function parseUserAgent(string $userAgent)

@@ -1420,65 +1420,62 @@ const location = log.city || log.country ?
         const latitude = row.data('latitude');
         const longitude = row.data('longitude');
         
-        // Update map info
         $('#ipAddressValue').text(ip);
-        $('#locationValue').text(city && country ? `${city}, ${region ? region + ', ' : ''}${country}` : 'Unknown');
-        $('#loginTimeValue').text(loginTime);
-        $('#deviceValue').text(`${browser} on ${platform}`);
-        
-        // Show map modal
-        $('#mapModal').modal('show');
-        
-        // Show loading indicator
-        $('#mapLoading').removeClass('d-none');
-        
-        // Check if we have coordinates directly from the database
-        if (latitude && longitude) {
-            // Use the coordinates from the database
-            const lat = parseFloat(latitude);
-            const lon = parseFloat(longitude);
-            
-            // Update coordinates display
-            $('#coordinatesValue').text(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
-            
-            // Set map view to the location
-            map.setView([lat, lon], 10);
-            
-            // Remove existing marker if it exists
-            if (currentMarker) {
-                map.removeLayer(currentMarker);
-            }
-            
-            // Add new marker
-            currentMarker = L.marker([lat, lon]).addTo(map);
-            
-            // Add popup with location info
-            currentMarker.bindPopup(`
-                <div>
-                    <strong>IP Address:</strong> ${ip}<br>
-                    <strong>Location:</strong> ${city}, ${region ? region + ', ' : ''}${country}<br>
-                    <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
-                    <strong>Login Time:</strong> ${loginTime}<br>
-                    <strong>Device:</strong> ${browser} on ${platform}
-                </div>
-            `).openPopup();
-            
-            // Hide loading indicator
-            $('#mapLoading').addClass('d-none');
-        } else if (ip) {
-            // If we don't have coordinates, try to get location from IP
-            // Try multiple geolocation services for better accuracy
-            getLocationFromIP(ip, city, country, region, loginTime, browser, platform);
-        } else {
-            // If location is unknown, show a message
-            $('#mapLoading').addClass('d-none');
-            Swal.fire({
-                title: 'Unknown Location',
-                text: 'No location information available for this log entry.',
-                icon: 'info',
-                confirmButtonColor: '#d32f2f'
-            });
-        }
+ $('#locationValue').text(city && country ? `${city}, ${region ? region + ', ' : ''}${country}` : 'Unknown');
+ $('#loginTimeValue').text(loginTime);
+ $('#deviceValue').text(`${browser} on ${platform}`);
+
+// Show map modal
+ $('#mapModal').modal('show');
+
+// Show loading indicator
+ $('#mapLoading').removeClass('d-none');
+
+// Check if we have coordinates directly from the database
+if (latitude && longitude) {
+    // Use the coordinates from the database
+    const lat = parseFloat(latitude);
+    const lon = parseFloat(longitude);
+    
+    // Update coordinates display
+    $('#coordinatesValue').text(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
+    
+    // Set map view to the location
+    map.setView([lat, lon], 10);
+    
+    // Remove existing marker if it exists
+    if (currentMarker) {
+        map.removeLayer(currentMarker);
+    }
+    
+    // Add new marker
+    currentMarker = L.marker([lat, lon]).addTo(map);
+    
+    // Add popup with location info
+    currentMarker.bindPopup(`
+        <div>
+            <strong>IP Address:</strong> ${ip}<br>
+            <strong>Location:</strong> ${city}, ${region ? region + ', ' : ''}${country}<br>
+            <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
+            <strong>Login Time:</strong> ${loginTime}<br>
+            <strong>Device:</strong> ${browser} on ${platform}
+        </div>
+    `).openPopup();
+    
+    // Hide loading indicator
+    $('#mapLoading').addClass('d-none');
+} else if (ip) {
+    // If we don't have coordinates, try to get location from IP
+    // Try multiple geolocation services for better accuracy
+    getLocationFromIP(ip, city, country, region, loginTime, browser, platform);
+} else {
+    // If location is unknown, show a message
+    $('#mapLoading').addClass('d-none');
+    Swal.fire({
+        title: 'Unknown Location',
+        text: 'No location information available for this log entry.',
+        icon: 'info',
+        confirmButtonColor: '#d32f2f'
     });
 }
     
