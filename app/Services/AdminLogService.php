@@ -10,30 +10,28 @@ use Illuminate\Support\Facades\Http;
 class AdminLogService
 {
     public function logLogin(Admin $admin, Request $request, string $activity = 'admin-login')
-{
-    $ip = $request->ip();
-    $geolocation = $this->getGeolocation($ip);
-    $userAgent = $request->userAgent();
-    $deviceInfo = $this->parseUserAgent($userAgent);
+    {
+        $ip = $request->ip();
+        $geolocation = $this->getGeolocation($ip);
+        $userAgent = $request->userAgent();
+        $deviceInfo = $this->parseUserAgent($userAgent);
 
-    return AdminLog::create([
-        'admin_id' => $admin->id,
-        'email' => $admin->email,
-        'ip_address' => $ip,
-        'country' => $geolocation['country'] ?? null,
-        'city' => $geolocation['city'] ?? null,
-        'region' => $geolocation['region'] ?? null,
-        'timezone' => $geolocation['timezone'] ?? null,
-        'latitude' => $geolocation['latitude'] ?? null,
-        'longitude' => $geolocation['longitude'] ?? null,
-        'browser' => $deviceInfo['browser'],
-        'platform' => $deviceInfo['platform'],
-        'device' => $deviceInfo['device'],
-        'user_agent' => $userAgent,
-        'activity' => $activity,
-        'login_at' => now(),
-    ]);
-}
+        return AdminLog::create([
+            'admin_id' => $admin->id,
+            'email' => $admin->email,
+            'ip_address' => $ip,
+            'country' => $geolocation['country'] ?? null,
+            'city' => $geolocation['city'] ?? null,
+            'region' => $geolocation['region'] ?? null,
+            'timezone' => $geolocation['timezone'] ?? null,
+            'browser' => $deviceInfo['browser'],
+            'platform' => $deviceInfo['platform'],
+            'device' => $deviceInfo['device'],
+            'user_agent' => $userAgent,
+            'activity' => $activity,
+            'login_at' => now(),
+        ]);
+    }
 
     public function logLogout(Admin $admin)
     {
@@ -65,41 +63,37 @@ class AdminLogService
     }
 
     private function getGeolocation(string $ip)
-{
-    // For local IPs or testing, return empty data
-    if ($ip === '127.0.0.1' || strpos($ip, '192.168.') === 0 || strpos($ip, '10.') === 0) {
-        return [
-            'country' => 'Local',
-            'city' => 'Local Network',
-            'region' => 'Local',
-            'timezone' => config('app.timezone', 'UTC'),
-            'latitude' => 14.5995, // Default to Philippines coordinates
-            'longitude' => 120.9842,
-        ];
-    }
-
-    try {
-        // Using ipapi.co (free tier available)
-        $response = Http::timeout(5)->get("http://ipapi.co/{$ip}/json/");
-        
-        if ($response->successful()) {
-            $data = $response->json();
+    {
+        // For local IPs or testing, return empty data
+        if ($ip === '127.0.0.1' || strpos($ip, '192.168.') === 0 || strpos($ip, '10.') === 0) {
             return [
-                'country' => $data['country_name'] ?? null,
-                'city' => $data['city'] ?? null,
-                'region' => $data['region'] ?? null,
-                'timezone' => $data['timezone'] ?? null,
-                'latitude' => $data['latitude'] ?? null,
-                'longitude' => $data['longitude'] ?? null,
+                'country' => 'Local',
+                'city' => 'Local Network',
+                'region' => 'Local',
+                'timezone' => config('app.timezone', 'UTC'),
             ];
         }
-    } catch (\Exception $e) {
-        // Log error or use fallback
-        \Log::error('Geolocation error: ' . $e->getMessage());
-    }
 
-    return [];
-}
+        try {
+            // Using ipapi.co (free tier available)
+            $response = Http::timeout(5)->get("http://ipapi.co/{$ip}/json/");
+            
+            if ($response->successful()) {
+                $data = $response->json();
+                return [
+                    'country' => $data['country_name'] ?? null,
+                    'city' => $data['city'] ?? null,
+                    'region' => $data['region'] ?? null,
+                    'timezone' => $data['timezone'] ?? null,
+                ];
+            }
+        } catch (\Exception $e) {
+            // Log error or use fallback
+            \Log::error('Geolocation error: ' . $e->getMessage());
+        }
+
+        return [];
+    }
 
     private function parseUserAgent(string $userAgent)
     {

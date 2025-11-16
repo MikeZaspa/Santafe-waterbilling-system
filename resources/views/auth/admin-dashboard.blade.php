@@ -636,7 +636,6 @@
                         <table class="table table-striped table-hover">
                             <thead class="table-light">
                                 <tr>
-                                    <th>ID</th>
                                     <th>Admin</th>
                                     <th>IP Address</th>
                                     <th>Location</th>
@@ -1224,50 +1223,35 @@
         if (dateTo) queryString += `&date_to=${dateTo}`;
         
         // Fetch logs via AJAX
-        $.ajax({
-            url: `/admin/logs/api${queryString}`,
-            type: 'GET',
-            dataType: 'json',
-            success: function(data) {
-                renderLogsTable(data.logs.data);
-                renderPagination(data.logs);
-                updateStatistics(data.statistics);
-                
-                // Load map data if map is visible
-                if (mapVisible) {
-                    loadAllLocations(data.logs.data);
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('Error loading logs:', error);
-                $('#logsTableBody').html(`
-                    <tr>
-                        <td colspan="9" class="text-center py-4">
-                            <i class="fas fa-exclamation-triangle fa-2x text-warning mb-3"></i>
-                            <p class="text-muted">Error loading logs. Please try again.</p>
-                        </td>
-                    </tr>
-                `);
+        $.get(`/admin/logs/api${queryString}`, function(data) {
+            renderLogsTable(data.logs.data);
+            renderPagination(data.logs);
+            updateStatistics(data.statistics);
+            
+            // Load map data if map is visible
+            if (mapVisible) {
+                loadAllLocations(data.logs.data);
             }
+        }).fail(function() {
+            $('#logsTableBody').html(`
+                <tr>
+                    <td colspan="9" class="text-center py-4">
+                        <i class="fas fa-exclamation-triangle fa-2x text-warning mb-3"></i>
+                        <p class="text-muted">Error loading logs. Please try again.</p>
+                    </td>
+                </tr>
+            `);
         });
     }
     
     // Load admins for filter dropdown
     function loadAdmins() {
-        $.ajax({
-            url: '/admin/admins/api',
-            type: 'GET',
-            dataType: 'json',
-            success: function(data) {
-                let options = '<option value="">All Admins</option>';
-                data.forEach(function(admin) {
-                    options += `<option value="${admin.id}">${admin.email}</option>`;
-                });
-                $('#adminFilter').html(options);
-            },
-            error: function(xhr, status, error) {
-                console.error('Error loading admins:', error);
-            }
+        $.get('/admin/admins/api', function(data) {
+            let options = '<option value="">All Admins</option>';
+            data.forEach(function(admin) {
+                options += `<option value="${admin.id}">${admin.email}</option>`;
+            });
+            $('#adminFilter').html(options);
         });
     }
     
@@ -1276,7 +1260,7 @@
         if (logs.length === 0) {
             $('#logsTableBody').html(`
                 <tr>
-                    <td colspan="10" class="text-center py-4">
+                    <td colspan="9" class="text-center py-4">
                         <i class="fas fa-search fa-2x text-muted mb-3"></i>
                         <p class="text-muted">No logs found</p>
                     </td>
@@ -1301,7 +1285,7 @@
                 `<div class="d-flex align-items-center">
                     <span>${log.city}, ${log.country}</span>
                     <i class="fas fa-map-marker-alt location-pin ms-2" 
-                       onclick="showLocationOnMap('${log.id}', '${log.ip_address}', '${log.city}', '${log.country}', '${log.region || ''}', '${log.email}', '${log.activity}', '${loginTime}')"
+                       onclick="showLocationOnMap('${log.ip_address}', '${log.city}', '${log.country}', '${log.region || ''}', '${log.email}', '${log.activity}', '${loginTime}')"
                        title="Show on map"></i>
                 </div>` : 
                 '<span class="text-muted">Unknown</span>';
@@ -1315,7 +1299,6 @@
                     data-email="${log.email}"
                     data-activity="${log.activity}"
                     data-login-time="${loginTime}">
-                    <td><span class="badge bg-light text-dark">#${log.id}</span></td>
                     <td>
                         <div class="d-flex align-items-center">
                             <div class="avatar-sm bg-primary rounded-circle text-white d-flex align-items-center justify-content-center me-2">
@@ -1455,7 +1438,6 @@
             logs = [];
             $('#logsTableBody tr[data-country]').each(function() {
                 logs.push({
-                    id: $(this).data('log-id'),
                     country: $(this).data('country'),
                     city: $(this).data('city'),
                     region: $(this).data('region'),
@@ -1531,7 +1513,7 @@
     }
     
     // Show specific location on map
-    window.showLocationOnMap = function(logId, ip, city, country, region, email, activity, loginTime) {
+    window.showLocationOnMap = function(ip, city, country, region, email, activity, loginTime) {
         // Show map if hidden
         if (!mapVisible) {
             $('#toggleMapBtn').click();

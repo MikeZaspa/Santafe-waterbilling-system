@@ -694,48 +694,6 @@ class AuthController extends Controller
             'last_activity' => $request->session()->get('admin_last_activity')
         ]);
     }
-    
-    // In AuthController.php
-
-public function confirmLocation(Request $request)
-{
-    $request->validate([
-        'email' => 'required|email',
-        'password' => 'required',
-        'latitude' => 'required|numeric',
-        'longitude' => 'required|numeric',
-    ]);
-
-    $admin = Admin::where('email', $request->email)->first();
-    
-    if (!$admin) {
-        return response()->json([
-            'success' => false,
-            'message' => 'User not found.'
-        ], 404);
-    }
-
-    // Store location in session
-    $request->session()->put('admin_location', [
-        'latitude' => $request->latitude,
-        'longitude' => $request->longitude,
-        'confirmed' => true
-    ]);
-
-    // Now proceed with 2FA verification
-    $twoFactorCode = rand(100000, 999999);
-    $admin->two_factor_code = $twoFactorCode;
-    $admin->two_factor_expires_at = now()->addMinutes(10);
-    $admin->save();
-    
-    // Send 2FA code via email
-    Mail::to($admin->email)->send(new TwoFactorCodeMail($twoFactorCode));
-    
-    return response()->json([
-        'success' => true,
-        'message' => 'Location confirmed. Please check your email for the verification code.'
-    ]);
-}
     /**
      * Refresh session to prevent timeout
      */
