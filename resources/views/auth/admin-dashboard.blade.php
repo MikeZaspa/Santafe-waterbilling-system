@@ -8,6 +8,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Font Awesome for additional icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Custom CSS for minor adjustments -->
     <style>
         :root {
@@ -19,6 +21,11 @@
             --sidebar-hover: rgba(0,0,255,0.1);
             --overlay-color: rgba(7, 7, 7, 0.1);
             --header-height: 70px;
+            --white: #ffffff;
+            --border: #e0e0e0;
+            --text-light: #6c757d;
+            --warning: #ffc107;
+            --error: #dc3545;
         }
         
         body {
@@ -560,30 +567,30 @@
                 <button id="adminLogsModalClose" type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div id="adminLogsModalBody" class="modal-body p-0">
-                <div class="container-fluid p-3">
+                <div id="adminLogsModalContainer" class="container-fluid p-3">
                     <!-- Filters -->
                     <div id="logsFilters" class="row mb-3">
-                        <div class="col-12">
+                        <div id="filtersContainer" class="col-12">
                             <form id="logsFilterForm" class="row g-2">
-                                <div class="col-md-3">
-                                    <label class="form-label">Admin</label>
+                                <div id="adminFilterContainer" class="col-md-3">
+                                    <label id="adminFilterLabel" class="form-label">Admin</label>
                                     <select name="admin_id" id="adminFilter" class="form-select form-select-sm">
                                         <option value="">All Admins</option>
                                     </select>
                                 </div>
-                                <div class="col-md-3">
-                                    <label class="form-label">Activity</label>
+                                <div id="activityFilterContainer" class="col-md-3">
+                                    <label id="activityFilterLabel" class="form-label">Activity</label>
                                     <input type="text" name="activity" id="activityFilter" class="form-control form-control-sm" placeholder="Search activity...">
                                 </div>
-                                <div class="col-md-2">
-                                    <label class="form-label">Date From</label>
+                                <div id="dateFromFilterContainer" class="col-md-2">
+                                    <label id="dateFromFilterLabel" class="form-label">Date From</label>
                                     <input type="date" name="date_from" id="dateFromFilter" class="form-control form-control-sm">
                                 </div>
-                                <div class="col-md-2">
-                                    <label class="form-label">Date To</label>
+                                <div id="dateToFilterContainer" class="col-md-2">
+                                    <label id="dateToFilterLabel" class="form-label">Date To</label>
                                     <input type="date" name="date_to" id="dateToFilter" class="form-control form-control-sm">
                                 </div>
-                                <div class="col-md-2 d-flex align-items-end">
+                                <div id="filterButtonsContainer" class="col-md-2 d-flex align-items-end">
                                     <button type="button" id="filterLogsBtn" class="btn btn-primary btn-sm me-1">Filter</button>
                                     <button type="button" id="resetLogsBtn" class="btn btn-secondary btn-sm">Reset</button>
                                 </div>
@@ -593,27 +600,27 @@
 
                     <!-- Logs Table -->
                     <div id="logsTableContainer" class="table-responsive">
-                        <table class="table table-striped table-hover">
-                            <thead class="table-light">
+                        <table id="logsTable" class="table table-striped table-hover">
+                            <thead id="logsTableHead" class="table-light">
                                 <tr>
-                                    <th>Admin</th>
-                                    <th>IP Address</th>
-                                    <th>Location</th>
-                                    <th>Device</th>
-                                    <th>Activity</th>
-                                    <th>Login Time</th>
-                                    <th>Logout Time</th>
-                                    <th>Duration</th>
-                                    <th>Status</th>
+                                    <th id="adminColumnHeader">Admin</th>
+                                    <th id="ipColumnHeader">IP Address</th>
+                                    <th id="locationColumnHeader">Location</th>
+                                    <th id="deviceColumnHeader">Device</th>
+                                    <th id="activityColumnHeader">Activity</th>
+                                    <th id="loginTimeColumnHeader">Login Time</th>
+                                    <th id="logoutTimeColumnHeader">Logout Time</th>
+                                    <th id="durationColumnHeader">Duration</th>
+                                    <th id="statusColumnHeader">Status</th>
                                 </tr>
                             </thead>
                             <tbody id="logsTableBody">
                                 <tr>
                                     <td colspan="9" class="text-center py-4">
-                                        <div class="spinner-border text-primary" role="status">
+                                        <div id="loadingSpinner" class="spinner-border text-primary" role="status">
                                             <span class="visually-hidden">Loading...</span>
                                         </div>
-                                        <p class="mt-2">Loading logs...</p>
+                                        <p id="loadingText" class="mt-2">Loading logs...</p>
                                     </td>
                                 </tr>
                             </tbody>
@@ -629,33 +636,33 @@
 
                     <!-- Statistics -->
                     <div id="statisticsContainer" class="row mt-3">
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h6 class="card-title">Quick Statistics</h6>
-                                    <div class="row text-center">
-                                        <div class="col-md-3">
-                                            <div class="border rounded p-2">
-                                                <h4 class="text-primary mb-0" id="totalLogsCount">0</h4>
-                                                <small class="text-muted">Total Logs</small>
+                        <div id="statisticsCardContainer" class="col-12">
+                            <div id="statisticsCard" class="card">
+                                <div id="statisticsCardBody" class="card-body">
+                                    <h6 id="statisticsTitle" class="card-title">Quick Statistics</h6>
+                                    <div id="statisticsRow" class="row text-center">
+                                        <div id="totalLogsContainer" class="col-md-3">
+                                            <div id="totalLogsCard" class="border rounded p-2">
+                                                <h4 id="totalLogsCount" class="text-primary mb-0">0</h4>
+                                                <small id="totalLogsLabel" class="text-muted">Total Logs</small>
                                             </div>
                                         </div>
-                                        <div class="col-md-3">
-                                            <div class="border rounded p-2">
-                                                <h4 class="text-success mb-0" id="successfulLoginsCount">0</h4>
-                                                <small class="text-muted">Successful Logins</small>
+                                        <div id="successfulLoginsContainer" class="col-md-3">
+                                            <div id="successfulLoginsCard" class="border rounded p-2">
+                                                <h4 id="successfulLoginsCount" class="text-success mb-0">0</h4>
+                                                <small id="successfulLoginsLabel" class="text-muted">Successful Logins</small>
                                             </div>
                                         </div>
-                                        <div class="col-md-3">
-                                            <div class="border rounded p-2">
-                                                <h4 class="text-danger mb-0" id="failedAttemptsCount">0</h4>
-                                                <small class="text-muted">Failed Attempts</small>
+                                        <div id="failedAttemptsContainer" class="col-md-3">
+                                            <div id="failedAttemptsCard" class="border rounded p-2">
+                                                <h4 id="failedAttemptsCount" class="text-danger mb-0">0</h4>
+                                                <small id="failedAttemptsLabel" class="text-muted">Failed Attempts</small>
                                             </div>
                                         </div>
-                                        <div class="col-md-3">
-                                            <div class="border rounded p-2">
-                                                <h4 class="text-warning mb-0" id="activeSessionsCount">0</h4>
-                                                <small class="text-muted">Active Sessions</small>
+                                        <div id="activeSessionsContainer" class="col-md-3">
+                                            <div id="activeSessionsCard" class="border rounded p-2">
+                                                <h4 id="activeSessionsCount" class="text-warning mb-0">0</h4>
+                                                <small id="activeSessionsLabel" class="text-muted">Active Sessions</small>
                                             </div>
                                         </div>
                                     </div>
@@ -1009,7 +1016,7 @@
     }); 
 
     // SweetAlert2 Logout Confirmation - With reversed buttons
-    $('#logout-btn').on('click', function(e) {
+    $('#logoutLink').on('click', function(e) {
         e.preventDefault();
         
         Swal.fire({
@@ -1048,7 +1055,7 @@
     });
     
     // Database Backup functionality
-    $('#backupDatabaseIcon, #backupDatabaseBtn').on('click', function(e) {
+    $('#backupDatabaseIcon').on('click', function(e) {
         e.preventDefault();
         
         Swal.fire({
