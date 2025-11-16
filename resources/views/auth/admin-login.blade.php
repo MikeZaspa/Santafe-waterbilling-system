@@ -223,30 +223,6 @@
             font-weight: 600;
         }
         
-        /* Location permission modal styles */
-        .location-modal {
-            max-width: 500px;
-        }
-        
-        .location-icon {
-            font-size: 3rem;
-            color: var(--primary);
-            margin-bottom: 1rem;
-        }
-        
-        .location-benefits {
-            text-align: left;
-            margin: 1rem 0;
-        }
-        
-        .location-benefits ul {
-            padding-left: 1.5rem;
-        }
-        
-        .location-benefits li {
-            margin-bottom: 0.5rem;
-        }
-        
         /* Spark Forgot Password Modal Styles */
         .forgot-password-modal .modal-dialog {
             max-width: 600px;
@@ -543,10 +519,6 @@
         let countdownInterval;
         let resendCountdownInterval;
         
-        // Location data storage
-        let locationData = null;
-        let locationPermissionGranted = false;
-        
         // Toggle password visibility
         togglePassword.addEventListener('click', function() {
             const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
@@ -555,177 +527,15 @@
             this.classList.toggle('fa-eye-slash');
         });
         
-        // Function to get location data
-        function getLocationData(callback) {
-            const locationInfo = {
-                ip: null,
-                latitude: null,
-                longitude: null,
-                accuracy: null,
-                city: null,
-                region: null,
-                country: null,
-                timezone: null,
-                isp: null,
-                timestamp: new Date().toISOString()
-            };
-            
-            let completedTasks = 0;
-            const totalTasks = 2; // GPS location and IP geolocation
-            
-            // Task 1: Get GPS location if available
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    position => {
-                        locationInfo.latitude = position.coords.latitude;
-                        locationInfo.longitude = position.coords.longitude;
-                        locationInfo.accuracy = position.coords.accuracy;
-                        locationPermissionGranted = true;
-                        
-                        completedTasks++;
-                        if (completedTasks === totalTasks) {
-                            callback(locationInfo);
-                        }
-                    },
-                    error => {
-                        console.warn('GPS location error:', error.message);
-                        locationPermissionGranted = false;
-                        
-                        completedTasks++;
-                        if (completedTasks === totalTasks) {
-                            callback(locationInfo);
-                        }
-                    },
-                    {
-                        enableHighAccuracy: true,
-                        timeout: 10000,
-                        maximumAge: 0
-                    }
-                );
-            } else {
-                locationPermissionGranted = false;
-                completedTasks++;
-                if (completedTasks === totalTasks) {
-                    callback(locationInfo);
-                }
-            }
-            
-            // Task 2: Get IP-based location
-            fetch('https://ipapi.co/json/')
-                .then(response => response.json())
-                .then(data => {
-                    locationInfo.ip = data.ip;
-                    locationInfo.city = data.city;
-                    locationInfo.region = data.region;
-                    locationInfo.country = data.country_name;
-                    locationInfo.timezone = data.timezone;
-                    locationInfo.isp = data.org;
-                    
-                    // If GPS wasn't available, use IP coordinates as fallback
-                    if (!locationInfo.latitude && data.latitude && data.longitude) {
-                        locationInfo.latitude = data.latitude;
-                        locationInfo.longitude = data.longitude;
-                    }
-                    
-                    completedTasks++;
-                    if (completedTasks === totalTasks) {
-                        callback(locationInfo);
-                    }
-                })
-                .catch(error => {
-                    console.error('IP geolocation error:', error);
-                    completedTasks++;
-                    if (completedTasks === totalTasks) {
-                        callback(locationInfo);
-                    }
-                });
-        }
-        
-        // Function to show location permission modal
-        function showLocationPermissionModal(callback) {
-            Swal.fire({
-                title: 'Location Permission Required',
-                html: `
-                    <div class="text-left">
-                        <div class="text-center mb-3">
-                            <i class="fas fa-map-marker-alt location-icon"></i>
-                        </div>
-                        <p>For security purposes, we need to access your location when you log in.</p>
-                        <div class="location-benefits">
-                            <p>This helps us:</p>
-                            <ul>
-                                <li>Verify your identity</li>
-                                <li>Detect suspicious login attempts</li>
-                                <li>Provide better security for your account</li>
-                            </ul>
-                        </div>
-                        <p>Your location data is encrypted and only used for security purposes.</p>
-                    </div>
-                `,
-                icon: null,
-                showCancelButton: true,
-                confirmButtonColor: '#1a73e8',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Allow Location Access',
-                cancelButtonText: 'Continue Without Location',
-                customClass: {
-                    popup: 'location-modal'
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // User granted permission, get location
-                    getLocationData(callback);
-                } else {
-                    // User denied permission, proceed without GPS
-                    getLocationData(callback);
-                }
-            });
-        }
-        
-        // Form submission handler
+        // Form validation
         form.addEventListener('submit', function(e) {
-            e.preventDefault();
+            e.preventDefault(); // Prevent default form submission
             
             // Check if account is locked
             if (isLocked) {
                 return;
             }
             
-            // Check if we already have location data
-            if (locationData) {
-                processLoginWithLocation(locationData);
-                return;
-            }
-            
-            // Show loading state
-            loginBtn.disabled = true;
-            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Getting location...';
-            
-            // Check if we need to ask for location permission
-            if (!navigator.permissions || !navigator.permissions.query({name: 'geolocation'})) {
-                // Browser doesn't support permissions API, just get location
-                getLocationData(processLoginWithLocation);
-            } else {
-                navigator.permissions.query({name: 'geolocation'}).then(result => {
-                    if (result.state === 'granted') {
-                        // Permission already granted, get location
-                        getLocationData(processLoginWithLocation);
-                    } else if (result.state === 'prompt') {
-                        // Need to ask for permission
-                        showLocationPermissionModal(processLoginWithLocation);
-                    } else {
-                        // Permission denied, proceed without GPS
-                        getLocationData(processLoginWithLocation);
-                    }
-                });
-            }
-        });
-        
-        // Function to process login with location data
-        function processLoginWithLocation(locData) {
-            locationData = locData;
-            
-            // Validate form
             let isValid = true;
             
             // Validate email
@@ -759,21 +569,8 @@
             }
             
             if(!isValid) {
-                loginBtn.disabled = false;
-                loginBtn.innerHTML = '<span>Log In</span>';
                 return;
             }
-            
-            // Add location data to form
-            const locationInput = document.createElement('input');
-            locationInput.type = 'hidden';
-            locationInput.name = 'location_data';
-            locationInput.value = JSON.stringify(locationData);
-            form.appendChild(locationInput);
-            
-            // Show loading state
-            loginBtn.disabled = true;
-            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying credentials...';
             
             // Execute reCAPTCHA
             grecaptcha.ready(function() {
@@ -782,12 +579,12 @@
                     recaptchaResponse.value = token;
                     
                     // Submit the form via AJAX to check credentials
-                    checkCredentials(locationData);
+                    checkCredentials();
                 });
             });
-        }
+        });
         
-        function checkCredentials(locData) {
+        function checkCredentials() {
             const formData = new FormData(form);
             
             // Show loading state
@@ -809,9 +606,6 @@
                     twoFactorEmailInput.value = emailInput.value;
                     twoFactorPasswordInput.value = passwordInput.value;
                     twoFactorEmailDisplay.textContent = emailInput.value;
-                    
-                    // Store location data for later use
-                    window.adminLocationData = locData;
                     
                     // Reset button state
                     loginBtn.disabled = false;
@@ -899,11 +693,6 @@
         
         function submitTwoFactorForm() {
             const formData = new FormData(twoFactorForm);
-            
-            // Add location data if available
-            if (window.adminLocationData) {
-                formData.append('location_data', JSON.stringify(window.adminLocationData));
-            }
             
             // Show loading state
             verifyCodeBtn.disabled = true;
