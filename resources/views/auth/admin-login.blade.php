@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://www.google.com/recaptcha/api.js?render=<?php echo env('NOCAPTCHA_SITEKEY'); ?>"></script>
     <style>
@@ -223,6 +224,33 @@
             font-weight: 600;
         }
         
+        /* Location confirmation styles */
+        #locationMap {
+            height: 250px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+        
+        .location-info {
+            background-color: var(--light);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .location-info p {
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .location-info .location-title {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
         /* Spark Forgot Password Modal Styles */
         .forgot-password-modal .modal-dialog {
             max-width: 600px;
@@ -415,6 +443,55 @@
             
         </form>
 
+        <!-- Location Confirmation Modal -->
+        <div class="modal fade" id="locationModal" tabindex="-1" aria-labelledby="locationModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content shadow-lg border-0 rounded-4">
+                    <div class="modal-header bg-primary text-white rounded-top-4">
+                        <h5 class="modal-title" id="locationModalLabel">
+                            <i class="fas fa-map-marker-alt me-2"></i>Confirm Your Location
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-map-marked-alt fa-3x text-primary mb-3"></i>
+                            <p class="mb-2">We've detected your location based on your IP address</p>
+                            <p class="text-muted small" id="detectedLocation"></p>
+                        </div>
+                        
+                        <div class="location-info">
+                            <p class="location-title">Location Details:</p>
+                            <p><strong>IP Address:</strong> <span id="locationIp"></span></p>
+                            <p><strong>City:</strong> <span id="locationCity"></span></p>
+                            <p><strong>Region:</strong> <span id="locationRegion"></span></p>
+                            <p><strong>Country:</strong> <span id="locationCountry"></span></p>
+                        </div>
+                        
+                        <div id="locationMap"></div>
+                        
+                        <form id="locationForm">
+                            @csrf
+                            <input type="hidden" id="locationEmailInput" name="email">
+                            <input type="hidden" id="locationPasswordInput" name="password">
+                            <input type="hidden" id="locationLatitudeInput" name="latitude">
+                            <input type="hidden" id="locationLongitudeInput" name="longitude">
+                            <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response-location">
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary" id="confirmLocationBtn">
+                                    <i class="fas fa-check-circle me-2"></i>Confirm Location
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" id="cancelLocationBtn" data-bs-dismiss="modal">
+                                    <i class="fas fa-times-circle me-2"></i>Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Two-Factor Authentication Modal -->
         <div class="modal fade" id="twoFactorModal" tabindex="-1" aria-labelledby="twoFactorModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -492,6 +569,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById('loginForm');
@@ -500,6 +578,15 @@
         const loginBtn = document.getElementById('loginBtn');
         const togglePassword = document.getElementById('togglePassword');
         const recaptchaResponse = document.getElementById('g-recaptcha-response');
+        const locationModal = new bootstrap.Modal(document.getElementById('locationModal'));
+        const locationForm = document.getElementById('locationForm');
+        const locationEmailInput = document.getElementById('locationEmailInput');
+        const locationPasswordInput = document.getElementById('locationPasswordInput');
+        const locationLatitudeInput = document.getElementById('locationLatitudeInput');
+        const locationLongitudeInput = document.getElementById('locationLongitudeInput');
+        const confirmLocationBtn = document.getElementById('confirmLocationBtn');
+        const cancelLocationBtn = document.getElementById('cancelLocationBtn');
+        const recaptchaResponseLocation = document.getElementById('g-recaptcha-response-location');
         const twoFactorModal = new bootstrap.Modal(document.getElementById('twoFactorModal'));
         const twoFactorForm = document.getElementById('twoFactorForm');
         const twoFactorEmailInput = document.getElementById('twoFactorEmailInput');
@@ -510,6 +597,11 @@
         const countdownElement = document.getElementById('countdown');
         const countdownTimeElement = document.getElementById('countdownTime');
         const recaptchaResponse2FA = document.getElementById('g-recaptcha-response-2fa');
+        
+        // Map variables
+        let locationMap;
+        let locationMarker;
+        let currentLocation = null;
         
         // Track login attempts
         let loginAttempts = 0;
@@ -602,23 +694,8 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Credentials are correct, show 2FA modal
-                    twoFactorEmailInput.value = emailInput.value;
-                    twoFactorPasswordInput.value = passwordInput.value;
-                    twoFactorEmailDisplay.textContent = emailInput.value;
-                    
-                    // Reset button state
-                    loginBtn.disabled = false;
-                    loginBtn.innerHTML = '<span>Log In</span>';
-                    
-                    // Show 2FA modal
-                    twoFactorModal.show();
-                    
-                    // Focus on first digit input
-                    document.getElementById('digit1').focus();
-                    
-                    // Start resend countdown
-                    startResendCountdown();
+                    // Credentials are correct, get location
+                    getLocation(emailInput.value, passwordInput.value);
                 } else {
                     // Login failed
                     loginAttempts++;
@@ -674,6 +751,240 @@
                 });
             });
         }
+        
+        // Function to get user location
+        function getLocation(email, password) {
+            // Show loading state
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Getting location...';
+            
+            // First try to get geolocation from browser
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    // Success callback
+                    function(position) {
+                        const latitude = position.coords.latitude;
+                        const longitude = position.coords.longitude;
+                        
+                        // Reverse geocode to get location name
+                        reverseGeocode(latitude, longitude, email, password);
+                    },
+                    // Error callback
+                    function(error) {
+                        console.error('Geolocation error:', error);
+                        // Fall back to IP-based location
+                        getIPLocation(email, password);
+                    },
+                    // Options
+                    {
+                        timeout: 5000,
+                        maximumAge: 0
+                    }
+                );
+            } else {
+                // Browser doesn't support geolocation, use IP-based location
+                getIPLocation(email, password);
+            }
+        }
+        
+        // Function to get IP-based location
+        function getIPLocation(email, password) {
+            fetch('https://ipapi.co/json/')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.latitude && data.longitude) {
+                        showLocationModal(
+                            email, 
+                            password, 
+                            data.latitude, 
+                            data.longitude, 
+                            data.ip,
+                            data.city,
+                            data.region,
+                            data.country_name
+                        );
+                    } else {
+                        // Fallback to default location (Philippines)
+                        showLocationModal(
+                            email, 
+                            password, 
+                            14.5995, 
+                            120.9842, 
+                            'Unknown',
+                            'Unknown',
+                            'Unknown',
+                            'Philippines (estimated)'
+                        );
+                    }
+                })
+                .catch(error => {
+                    console.error('IP location error:', error);
+                    // Fallback to default location (Philippines)
+                    showLocationModal(
+                        email, 
+                        password, 
+                        14.5995, 
+                        120.9842, 
+                        'Unknown',
+                        'Unknown',
+                        'Unknown',
+                        'Philippines (estimated)'
+                    );
+                });
+        }
+        
+        // Function to reverse geocode coordinates
+        function reverseGeocode(latitude, longitude, email, password) {
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.display_name) {
+                        // Extract city, region, country from display_name
+                        const addressParts = data.display_name.split(', ');
+                        const city = addressParts[0] || 'Unknown';
+                        const region = addressParts[1] || 'Unknown';
+                        const country = addressParts[addressParts.length - 1] || 'Unknown';
+                        
+                        showLocationModal(email, password, latitude, longitude, 'Current Location', city, region, country);
+                    } else {
+                        showLocationModal(email, password, latitude, longitude, 'Current Location', 'Unknown', 'Unknown', 'Unknown');
+                    }
+                })
+                .catch(error => {
+                    console.error('Reverse geocoding error:', error);
+                    showLocationModal(email, password, latitude, longitude, 'Current Location', 'Unknown', 'Unknown', 'Unknown');
+                });
+        }
+        
+        // Function to show location confirmation modal
+        function showLocationModal(email, password, latitude, longitude, ip, city, region, country) {
+            // Reset button state
+            loginBtn.disabled = false;
+            loginBtn.innerHTML = '<span>Log In</span>';
+            
+            // Set form values
+            locationEmailInput.value = email;
+            locationPasswordInput.value = password;
+            locationLatitudeInput.value = latitude;
+            locationLongitudeInput.value = longitude;
+            
+            // Set location text
+            document.getElementById('detectedLocation').textContent = `${city}, ${region}, ${country}`;
+            document.getElementById('locationIp').textContent = ip;
+            document.getElementById('locationCity').textContent = city;
+            document.getElementById('locationRegion').textContent = region;
+            document.getElementById('locationCountry').textContent = country;
+            
+            // Initialize map if not already done
+            if (!locationMap) {
+                locationMap = L.map('locationMap').setView([latitude, longitude], 13);
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(locationMap);
+            } else {
+                // Update map view
+                locationMap.setView([latitude, longitude], 13);
+            }
+            
+            // Remove existing marker if any
+            if (locationMarker) {
+                locationMap.removeLayer(locationMarker);
+            }
+            
+            // Add marker for current location
+            locationMarker = L.marker([latitude, longitude]).addTo(locationMap);
+            
+            // Show modal
+            locationModal.show();
+        }
+        
+        // Location form submission
+        locationForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Execute reCAPTCHA
+            grecaptcha.ready(function() {
+                grecaptcha.execute('<?php echo env('NOCAPTCHA_SITEKEY'); ?>', {action: 'location'}).then(function(token) {
+                    // Set the token in the hidden input
+                    recaptchaResponseLocation.value = token;
+                    
+                    // Submit the form via AJAX
+                    submitLocationForm();
+                });
+            });
+        });
+        
+        function submitLocationForm() {
+            const formData = new FormData(locationForm);
+            
+            // Show loading state
+            confirmLocationBtn.disabled = true;
+            confirmLocationBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Confirming...';
+            
+            fetch('/admin-confirm-location', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Location confirmed, show 2FA modal
+                    locationModal.hide();
+                    
+                    // Set 2FA form values
+                    twoFactorEmailInput.value = locationEmailInput.value;
+                    twoFactorPasswordInput.value = locationPasswordInput.value;
+                    twoFactorEmailDisplay.textContent = locationEmailInput.value;
+                    
+                    // Show 2FA modal
+                    twoFactorModal.show();
+                    
+                    // Focus on first digit input
+                    document.getElementById('digit1').focus();
+                    
+                    // Start resend countdown
+                    startResendCountdown();
+                } else {
+                    // Location confirmation failed
+                    confirmLocationBtn.disabled = false;
+                    confirmLocationBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Confirm Location';
+                    
+                    // Show error message
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Location Confirmation Failed',
+                        text: data.message || 'Failed to confirm location. Please try again.',
+                        confirmButtonColor: '#1a73e8'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                confirmLocationBtn.disabled = false;
+                confirmLocationBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i>Confirm Location';
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred. Please try again.',
+                    confirmButtonColor: '#1a73e8'
+                });
+            });
+        }
+        
+        // Cancel location confirmation
+        cancelLocationBtn.addEventListener('click', function() {
+            // Reset form
+            locationForm.reset();
+            
+            // Reset button state
+            loginBtn.disabled = false;
+            loginBtn.innerHTML = '<span>Log In</span>';
+        });
         
         // Two-factor form submission
         twoFactorForm.addEventListener('submit', function(e) {

@@ -8,10 +8,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <!-- Font Awesome for additional icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Leaflet CSS for maps -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <!-- Custom CSS for minor adjustments -->
     <style>
         :root {
@@ -23,11 +19,6 @@
             --sidebar-hover: rgba(0,0,255,0.1);
             --overlay-color: rgba(7, 7, 7, 0.1);
             --header-height: 70px;
-            --white: #ffffff;
-            --border: #e0e0e0;
-            --text-light: #6c757d;
-            --warning: #ffc107;
-            --error: #dc3545;
         }
         
         body {
@@ -263,6 +254,26 @@
             color: #0d5bba;
         }
         
+        .map-popup {
+            font-family: Arial, sans-serif;
+        }
+        
+        .map-popup h6 {
+            margin-bottom: 5px;
+            color: #1a73e8;
+        }
+        
+        .map-popup p {
+            margin: 2px 0;
+            font-size: 12px;
+        }
+        
+        #map {
+            height: 300px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        
         /* Header icon styles */
         .header-icon {
             font-size: 1.25rem;
@@ -312,47 +323,6 @@
         .session-timer.danger {
             border-color: var(--error);
             color: var(--error);
-        }
-        
-        /* Map modal styles */
-        #mapModal .modal-dialog {
-            max-width: 90%;
-        }
-        
-        #mapModal .modal-content {
-            height: 80vh;
-        }
-        
-        #mapModal .modal-body {
-            height: calc(80vh - 140px);
-            padding: 0;
-        }
-        
-        #locationMap {
-            height: 100%;
-            width: 100%;
-        }
-        
-        .map-info {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: white;
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            z-index: 1000;
-            max-width: 250px;
-        }
-        
-        /* Loading spinner for map */
-        .map-loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 1000;
-            text-align: center;
         }
         
         @media (min-width: 992px) {
@@ -445,33 +415,33 @@
 <body>
 
 <!-- Mobile Overlay -->
-<div id="mobileOverlay" class="mobile-overlay"></div>
+<div class="mobile-overlay"></div>
 
 <!-- Sidebar -->
-<div id="sidebar" class="sidebar">
-    <div id="sidebarHeader" class="sidebar-header text-center">
+<div class="sidebar">
+    <div class="sidebar-header text-center">
         <img src="{{ asset('image/santafe.png') }}" class="login-logo img-fluid mb-3">
-        <h1 id="sidebarTitle" class="h5">Santa Fe Water Billing</h1>
+        <h1 class="h5">Santa Fe Water Billing</h1>
     </div>
-    <nav id="sidebarMenu" class="sidebar-menu">
+    <nav class="sidebar-menu">
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a id="dashboardLink" class="nav-link active" href="admin-dashboard">
+                <a class="nav-link active" href="admin-dashboard">
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
             </li>
             <li class="nav-item">
-                <a id="consumersLink" class="nav-link" href="admin-consumer">
+                <a class="nav-link" href="admin-consumer">
                     <i class="bi bi-people"></i> Manage Consumers
                 </a>
             </li>
             <li class="nav-item">
-                <a id="plumberLink" class="nav-link" href="admin-plumber">
+                <a class="nav-link" href="admin-plumber">
                     <i class="bi bi-wrench"></i> Manage Plumber
                 </a>
             </li>
             <li class="nav-item">
-                <a id="accountantLink" class="nav-link" href="admin-accountant">
+                <a class="nav-link" href="admin-accountant">
                     <i class="bi bi-cash-stack"></i> Manage Accountant
                 </a>
             </li>
@@ -480,38 +450,38 @@
 </div>
 
 <!-- Main Content -->
-<div id="mainContent" class="main-content">
+<div class="main-content">
     <!-- Header -->
-    <header id="header" class="header">
-        <div id="headerLeft" class="header-left">
+    <header class="header">
+        <div class="header-left">
             <button id="sidebarToggle" class="btn d-lg-none me-3 mobile-menu-toggle">
                 <i class="bi bi-list"></i>
             </button>
             <div>
-                <h2 id="headerTitle" class="header-title">Dashboard Overview</h2>
-                <p id="headerSubtitle" class="header-subtitle">Santa Fe Water Billing System</p>
+                <h2 class="header-title">Dashboard Overview</h2>
+                <p class="header-subtitle">Santa Fe Water Billing System</p>
             </div>
         </div>
         
-        <div id="headerRight" class="header-right">
+        <div class="header-right">
             <div class="position-relative me-3 d-none d-sm-block">
                 <i class="bi bi-cloud-download header-icon" id="backupDatabaseIcon" title="Backup Database"></i>
             </div>
             <div class="position-relative me-3 d-none d-sm-block">
                 <i class="bi bi-clock-history header-icon" id="adminLogsIcon" data-bs-toggle="modal" data-bs-target="#adminLogsModal" title="Admin Logs"></i>
             </div>
-            <div id="userDropdown" class="dropdown">
+            <div class="dropdown">
                 <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
                     <span class="d-none d-md-inline">Admin</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUser">
-                    <li><a id="profileLink" class="dropdown-item" href="#">Profile</a></li>
-                    <li><a id="settingsLink" class="dropdown-item" href="#">Settings</a></li>
-                    <li><a id="adminLogsBtn" class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#adminLogsModal">Admin Logs</a></li>
+                    <li><a class="dropdown-item" href="#">Profile</a></li>
+                    <li><a class="dropdown-item" href="#">Settings</a></li>
+                    <li><a class="dropdown-item" href="#" id="adminLogsBtn" data-bs-toggle="modal" data-bs-target="#adminLogsModal">Admin Logs</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <!-- In the dropdown menu -->
                     <li>
-                        <a id="logoutLink" class="dropdown-item text-danger" href="#">
+                        <a class="dropdown-item text-danger" href="#" id="logout-btn">
                             <i class="bi bi-box-arrow-right me-2"></i>Sign Out
                         </a>
                         <form id="logout-form" action="/logout" method="POST" style="display: none;">
@@ -523,10 +493,10 @@
         </div>
     </header>
     
-    <div id="contentWrapper" class="content-wrapper">
-        <div id="statsCards" class="row g-4">
+    <div class="content-wrapper">
+        <div class="row g-4">
             <!-- Total Consumers Card -->
-            <div id="totalConsumersCard" class="col-md-6 col-lg-6">
+            <div class="col-md-6 col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
@@ -546,7 +516,7 @@
             </div>
 
             <!-- Active Consumers Card -->
-            <div id="activeConsumersCard" class="col-md-6 col-lg-6">
+            <div class="col-md-6 col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
@@ -567,9 +537,9 @@
         </div>
 
         <!-- Charts Section -->
-        <div id="chartsSection" class="row g-4 mt-2">
+        <div class="row g-4 mt-2">
             <!-- Consumer Status Pie Chart -->
-            <div id="consumerStatusChartContainer" class="col-lg-6">
+            <div class="col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white border-0">
                         <h5 class="mb-0">Active Consumers</h5>
@@ -583,7 +553,7 @@
             </div>
             
             <!-- Total Consumers Line Chart -->
-            <div id="totalConsumersChartContainer" class="col-lg-6">
+            <div class="col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white border-0">
                         <h5 class="mb-0">Total Consumers</h5>
@@ -600,35 +570,40 @@
 </div>
 
 <!-- Admin Logs Modal -->
-<div id="adminLogsModal" class="modal fade" tabindex="-1" aria-labelledby="adminLogsModalLabel" aria-hidden="true">
+<div class="modal fade" id="adminLogsModal" tabindex="-1" aria-labelledby="adminLogsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
-            <div id="adminLogsModalHeader" class="modal-header bg-primary text-white">
-                <h5 id="adminLogsModalLabel" class="modal-title">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="adminLogsModalLabel">
                     <i class="fas fa-history me-2"></i>Admin Login Logs
                 </h5>
-                <button id="adminLogsModalClose" type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div id="adminLogsModalBody" class="modal-body p-0">
-                <div id="adminLogsModalContainer" class="container-fluid p-3">
+            <div class="modal-body p-0">
+                <div class="container-fluid p-3">
                     <!-- Filters -->
-                    <div id="logsFilters" class="row mb-3">
-                        <div id="filtersContainer" class="col-12">
+                    <div class="row mb-3">
+                        <div class="col-12">
                             <form id="logsFilterForm" class="row g-2">
-                                
-                                <div id="activityFilterContainer" class="col-md-3">
-                                    <label id="activityFilterLabel" class="form-label">Activity</label>
+                                <div class="col-md-3">
+                                    <label class="form-label">Admin</label>
+                                    <select name="admin_id" id="adminFilter" class="form-select form-select-sm">
+                                        <option value="">All Admins</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Activity</label>
                                     <input type="text" name="activity" id="activityFilter" class="form-control form-control-sm" placeholder="Search activity...">
                                 </div>
-                                <div id="dateFromFilterContainer" class="col-md-2">
-                                    <label id="dateFromFilterLabel" class="form-label">Date From</label>
+                                <div class="col-md-2">
+                                    <label class="form-label">Date From</label>
                                     <input type="date" name="date_from" id="dateFromFilter" class="form-control form-control-sm">
                                 </div>
-                                <div id="dateToFilterContainer" class="col-md-2">
-                                    <label id="dateToFilterLabel" class="form-label">Date To</label>
+                                <div class="col-md-2">
+                                    <label class="form-label">Date To</label>
                                     <input type="date" name="date_to" id="dateToFilter" class="form-control form-control-sm">
                                 </div>
-                                <div id="filterButtonsContainer" class="col-md-2 d-flex align-items-end">
+                                <div class="col-md-2 d-flex align-items-end">
                                     <button type="button" id="filterLogsBtn" class="btn btn-primary btn-sm me-1">Filter</button>
                                     <button type="button" id="resetLogsBtn" class="btn btn-secondary btn-sm">Reset</button>
                                 </div>
@@ -636,32 +611,49 @@
                         </div>
                     </div>
 
+                    <!-- Map Toggle -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <button class="btn btn-outline-primary btn-sm" id="toggleMapBtn">
+                                <i class="fas fa-map me-1"></i> Toggle Map
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Geolocation Map -->
+                    <div id="mapContainer" class="d-none">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0">
+                                <i class="fas fa-map-marker-alt me-2"></i>Login Locations Map
+                            </h6>
+                            <small class="text-muted">Click on location pins to see details</small>
+                        </div>
+                        <div id="map"></div>
+                    </div>
+
                     <!-- Logs Table -->
-                    <div id="logsTableContainer" class="table-responsive">
-                        <table id="logsTable" class="table table-striped table-hover">
-                            <thead id="logsTableHead" class="table-light">
-                                <tr id="logsTableHeaderRow">
-                                    <th id="idColumnHeader">ID</th>
-                                    
-                                    <th id="emailColumnHeader">Email</th>
-                                    <th id="ipColumnHeader">IP Address</th>
-                                    <th id="locationColumnHeader">Location</th>
-                                    <th id="deviceColumnHeader">Device</th>
-                                    <th id="activityColumnHeader">Activity</th>
-                                    <th id="loginTimeColumnHeader">Login Time</th>
-                                    <th id="logoutTimeColumnHeader">Logout Time</th>
-                                    <th id="durationColumnHeader">Duration</th>
-                                    <th id="statusColumnHeader">Status</th>
-                                    <th id="actionsColumnHeader">Actions</th>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Admin</th>
+                                    <th>IP Address</th>
+                                    <th>Location</th>
+                                    <th>Device</th>
+                                    <th>Activity</th>
+                                    <th>Login Time</th>
+                                    <th>Logout Time</th>
+                                    <th>Duration</th>
+                                    <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody id="logsTableBody">
-                                <tr id="loadingRow">
-                                    <td id="loadingCell" colspan="11" class="text-center py-4">
-                                        <div id="loadingSpinner" class="spinner-border text-primary" role="status">
-                                            <span id="loadingSpinnerText" class="visually-hidden">Loading...</span>
+                                <tr>
+                                    <td colspan="9" class="text-center py-4">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
                                         </div>
-                                        <p id="loadingText" class="mt-2">Loading logs...</p>
+                                        <p class="mt-2">Loading logs...</p>
                                     </td>
                                 </tr>
                             </tbody>
@@ -669,52 +661,41 @@
                     </div>
 
                     <!-- Pagination -->
-                    <div id="paginationContainer" class="d-flex justify-content-between align-items-center mt-3">
-                        <div id="paginationInfo" class="text-muted me-3">
-                            Showing <span id="showingFrom">0</span> to <span id="showingTo">0</span> of <span id="totalRecords">0</span> entries
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <button id="startFirstBtn" type="button" class="btn btn-sm btn-outline-secondary me-1" title="Start">
-                                <i class="bi bi-chevron-double-left"></i>
-                            </button>
-                            <nav id="logsPagination">
-                                <!-- Pagination will be loaded here -->
-                            </nav>
-                            <button id="endLastBtn" type="button" class="btn btn-sm btn-outline-secondary ms-1" title="End">
-                                <i class="bi bi-chevron-double-right"></i>
-                            </button>
-                        </div>
+                    <div class="d-flex justify-content-center mt-3">
+                        <nav id="logsPagination">
+                            <!-- Pagination will be loaded here -->
+                        </nav>
                     </div>
 
                     <!-- Statistics -->
-                    <div id="statisticsContainer" class="row mt-3">
-                        <div id="statisticsCardContainer" class="col-12">
-                            <div id="statisticsCard" class="card">
-                                <div id="statisticsCardBody" class="card-body">
-                                    <h6 id="statisticsTitle" class="card-title">Quick Statistics</h6>
-                                    <div id="statisticsRow" class="row text-center">
-                                        <div id="totalLogsContainer" class="col-md-3">
-                                            <div id="totalLogsCard" class="border rounded p-2">
-                                                <h4 id="totalLogsCount" class="text-primary mb-0">0</h4>
-                                                <small id="totalLogsLabel" class="text-muted">Total Logs</small>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">Quick Statistics</h6>
+                                    <div class="row text-center">
+                                        <div class="col-md-3">
+                                            <div class="border rounded p-2">
+                                                <h4 class="text-primary mb-0" id="totalLogsCount">0</h4>
+                                                <small class="text-muted">Total Logs</small>
                                             </div>
                                         </div>
-                                        <div id="successfulLoginsContainer" class="col-md-3">
-                                            <div id="successfulLoginsCard" class="border rounded p-2">
-                                                <h4 id="successfulLoginsCount" class="text-success mb-0">0</h4>
-                                                <small id="successfulLoginsLabel" class="text-muted">Successful Logins</small>
+                                        <div class="col-md-3">
+                                            <div class="border rounded p-2">
+                                                <h4 class="text-success mb-0" id="successfulLoginsCount">0</h4>
+                                                <small class="text-muted">Successful Logins</small>
                                             </div>
                                         </div>
-                                        <div id="failedAttemptsContainer" class="col-md-3">
-                                            <div id="failedAttemptsCard" class="border rounded p-2">
-                                                <h4 id="failedAttemptsCount" class="text-danger mb-0">0</h4>
-                                                <small id="failedAttemptsLabel" class="text-muted">Failed Attempts</small>
+                                        <div class="col-md-3">
+                                            <div class="border rounded p-2">
+                                                <h4 class="text-danger mb-0" id="failedAttemptsCount">0</h4>
+                                                <small class="text-muted">Failed Attempts</small>
                                             </div>
                                         </div>
-                                        <div id="activeSessionsContainer" class="col-md-3">
-                                            <div id="activeSessionsCard" class="border rounded p-2">
-                                                <h4 id="activeSessionsCount" class="text-warning mb-0">0</h4>
-                                                <small id="activeSessionsLabel" class="text-muted">Active Sessions</small>
+                                        <div class="col-md-3">
+                                            <div class="border rounded p-2">
+                                                <h4 class="text-warning mb-0" id="activeSessionsCount">0</h4>
+                                                <small class="text-muted">Active Sessions</small>
                                             </div>
                                         </div>
                                     </div>
@@ -728,41 +709,8 @@
     </div>
 </div>
 
-<!-- Map Modal -->
-<div id="mapModal" class="modal fade" tabindex="-1" aria-labelledby="mapModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div id="mapModalHeader" class="modal-header bg-primary text-white">
-                <h5 id="mapModalLabel" class="modal-title">
-                    <i class="fas fa-map-marked-alt me-2"></i>Location Details
-                </h5>
-                <button id="mapModalClose" type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div id="mapModalBody" class="modal-body p-0">
-                <div id="locationMap"></div>
-                <div id="mapLoading" class="map-loading d-none">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading location...</span>
-                    </div>
-                    <p class="mt-2">Getting location details...</p>
-                </div>
-                <div id="mapInfo" class="map-info">
-                    <h6 id="locationInfoTitle" class="mb-2">Login Location</h6>
-                    <div id="locationDetails" class="small">
-                        <p id="ipAddressInfo" class="mb-1"><strong>IP Address:</strong> <span id="ipAddressValue">-</span></p>
-                        <p id="locationInfo" class="mb-1"><strong>Location:</strong> <span id="locationValue">-</span></p>
-                        <p id="coordinatesInfo" class="mb-1"><strong>Coordinates:</strong> <span id="coordinatesValue">-</span></p>
-                        <p id="loginTimeInfo" class="mb-1"><strong>Login Time:</strong> <span id="loginTimeValue">-</span></p>
-                        <p id="deviceInfo" class="mb-0"><strong>Device:</strong> <span id="deviceValue">-</span></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Session Timer Display -->
-<div id="sessionTimer" class="session-timer">
+<div class="session-timer" id="sessionTimer">
     <i class="fas fa-clock me-2"></i>
     Session expires in: <span id="sessionTimeDisplay">03:00</span>
 </div>
@@ -775,7 +723,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <!-- SweetAlert2 for notifications -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<!-- Leaflet JS for maps -->
+<!-- Leaflet for maps -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
@@ -783,16 +732,14 @@
     // Session management variables
     const sessionTimer = document.getElementById('sessionTimer');
     const sessionTimeDisplay = document.getElementById('sessionTimeDisplay');
-    let sessionTimeout; // Will store timeout ID
-    let warningTimeout; // Will store warning timeout ID
+    let sessionTimeout; // Will store the timeout ID
+    let warningTimeout; // Will store the warning timeout ID
     let sessionInterval; // Will store the interval ID for updating the display
     const sessionDuration = 3 * 60 * 1000; // 3 minutes in milliseconds
     const warningTime = 30 * 1000; // 30 seconds before expiry to show warning
     let sessionStartTime;
     let sessionExpiryTime;
     let isSessionActive = false;
-    let map; // Will store the map instance
-    let currentMarker; // Will store the current marker
     
     // Initialize session management
     function initSessionManagement() {
@@ -1105,7 +1052,7 @@
     }); 
 
     // SweetAlert2 Logout Confirmation - With reversed buttons
-    $('#logoutLink').on('click', function(e) {
+    $('#logout-btn').on('click', function(e) {
         e.preventDefault();
         
         Swal.fire({
@@ -1144,12 +1091,12 @@
     });
     
     // Database Backup functionality
-    $('#backupDatabaseIcon').on('click', function(e) {
+    $('#backupDatabaseIcon, #backupDatabaseBtn').on('click', function(e) {
         e.preventDefault();
         
         Swal.fire({
             title: 'Backup Database',
-            text: 'Are you sure you want to backup database? This may take a few moments.',
+            text: 'Are you sure you want to backup the database? This may take a few moments.',
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#d32f2f',
@@ -1222,470 +1169,195 @@
     });
     
     // Admin Logs Modal functionality
+    let map;
+    let markers = [];
+    let mapVisible = false;
     let currentPage = 1;
     
-    // Initialize when modal is shown
+    // Initialize map when modal is shown
     $('#adminLogsModal').on('shown.bs.modal', function() {
+        if (!map) {
+            initMap();
+        }
         loadAdminLogs();
         loadAdmins();
     });
     
-    // Initialize map when modal is shown
-    $('#mapModal').on('shown.bs.modal', function() {
-        // Initialize map if it doesn't exist
-        if (!map) {
-            map = L.map('locationMap').setView([0, 0], 2);
-            
-            // Add tile layer
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
-        } else {
-            // Refresh the map to fix display issues
-            setTimeout(function() {
-                map.invalidateSize();
-            }, 100);
-        }
-    });
+    // Initialize map
+    function initMap() {
+        // Default center (Philippines)
+        map = L.map('map').setView([12.8797, 121.7740], 5);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+    }
     
     // Load admin logs
-function loadAdminLogs(page = 1) {
-    currentPage = page;
-    
-    // Show loading state
-    $('#logsTableBody').html(`
-        <tr id="loadingRow">
-            <td id="loadingCell" colspan="11" class="text-center py-4">
-                <div id="loadingSpinner" class="spinner-border text-primary" role="status">
-                    <span id="loadingSpinnerText" class="visually-hidden">Loading...</span>
-                </div>
-                <p id="loadingText" class="mt-2">Loading logs...</p>
-            </td>
-        </tr>
-    `);
-    
-    // Get filter values
-    const activity = $('#activityFilter').val();
-    const dateFrom = $('#dateFromFilter').val();
-    const dateTo = $('#dateToFilter').val();
-    
-    // Build query string
-    let queryString = `?page=${page}`;
-    if (activity) queryString += `&activity=${activity}`;
-    if (dateFrom) queryString += `&date_from=${dateFrom}`;
-    if (dateTo) queryString += `&date_to=${dateTo}`;
-    
-    // Fetch logs via AJAX
-    $.get(`/admin/logs/api${queryString}`, function(data) {
-        renderLogsTable(data.logs.data);
-        renderPagination(data.logs);
-        updateStatistics(data.statistics);
-    }).fail(function() {
+    function loadAdminLogs(page = 1) {
+        currentPage = page;
+        
+        // Show loading state
         $('#logsTableBody').html(`
-            <tr id="errorRow">
-                <td id="errorCell" colspan="11" class="text-center py-4">
-                    <i id="errorIcon" class="fas fa-exclamation-triangle fa-2x text-warning mb-3"></i>
-                    <p id="errorMessage" class="text-muted">Error loading logs. Please try again.</p>
+            <tr>
+                <td colspan="9" class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading logs...</p>
                 </td>
             </tr>
         `);
-    });
-}
+        
+        // Get filter values
+        const adminId = $('#adminFilter').val();
+        const activity = $('#activityFilter').val();
+        const dateFrom = $('#dateFromFilter').val();
+        const dateTo = $('#dateToFilter').val();
+        
+        // Build query string
+        let queryString = `?page=${page}`;
+        if (adminId) queryString += `&admin_id=${adminId}`;
+        if (activity) queryString += `&activity=${activity}`;
+        if (dateFrom) queryString += `&date_from=${dateFrom}`;
+        if (dateTo) queryString += `&date_to=${dateTo}`;
+        
+        // Fetch logs via AJAX
+        $.get(`/admin/logs/api${queryString}`, function(data) {
+            renderLogsTable(data.logs.data);
+            renderPagination(data.logs);
+            updateStatistics(data.statistics);
+            
+            // Load map data if map is visible
+            if (mapVisible) {
+                loadAllLocations(data.logs.data);
+            }
+        }).fail(function() {
+            $('#logsTableBody').html(`
+                <tr>
+                    <td colspan="9" class="text-center py-4">
+                        <i class="fas fa-exclamation-triangle fa-2x text-warning mb-3"></i>
+                        <p class="text-muted">Error loading logs. Please try again.</p>
+                    </td>
+                </tr>
+            `);
+        });
+    }
+    
+    // Load admins for filter dropdown
+    function loadAdmins() {
+        $.get('/admin/admins/api', function(data) {
+            let options = '<option value="">All Admins</option>';
+            data.forEach(function(admin) {
+                options += `<option value="${admin.id}">${admin.email}</option>`;
+            });
+            $('#adminFilter').html(options);
+        });
+    }
     
     // Render logs table
-function renderLogsTable(logs) {
-    if (logs.length === 0) {
-        $('#logsTableBody').html(`
-            <tr id="noDataRow">
-                <td id="noDataCell" colspan="11" class="text-center py-4">
-                    <i id="noDataIcon" class="fas fa-search fa-2x text-muted mb-3"></i>
-                    <p id="noDataMessage" class="text-muted">No logs found</p>
-                </td>
-            </tr>
-        `);
-        return;
-    }
-    
-    let html = '';
-    logs.forEach(function(log, index) {
-        const logId = `log-${log.id}`;
-        const rowId = `log-row-${index}`;
-        const displayId = index + 1; // This will make IDs start from 1
-        const loginTime = new Date(log.login_at).toLocaleString();
-        const logoutTime = log.logout_at ? new Date(log.logout_at).toLocaleString() : '';
-        const duration = log.session_duration ? formatDuration(log.session_duration) : '-';
-        const status = log.logout_at ? 
-            '<span class="badge bg-secondary">Completed</span>' : 
-            '<span class="badge bg-success">Active</span>';
-        
-        const activityBadge = log.activity.includes('successful') ? 
-            'bg-success' : log.activity.includes('failed') ? 'bg-danger' : 'bg-primary';
-        
-        const location = log.city && log.country ? 
-            `<div id="location-${log.id}" class="d-flex align-items-center">
-                <span id="locationText-${log.id}">${log.city}, ${log.country}</span>
-            </div>` : 
-            `<span id="unknownLocation-${log.id}" class="text-muted">Unknown</span>`;
-        
-        html += `
-            <tr id="${rowId}" data-log-id="${log.id}" 
-                data-ip="${log.ip_address}"
-                data-country="${log.country || ''}"
-                data-city="${log.city || ''}"
-                data-region="${log.region || ''}"
-                data-email="${log.email}"
-                data-activity="${log.activity}"
-                data-login-time="${loginTime}"
-                data-browser="${log.browser}"
-                data-platform="${log.platform}"
-                data-latitude="${log.latitude || ''}"
-                data-longitude="${log.longitude || ''}">
-                <td id="idCell-${log.id}">
-                    <span id="logId-${log.id}" class="badge bg-secondary">${displayId}</span>
-                </td>
-                <td id="emailCell-${log.id}">
-                    <div id="adminInfo-${log.id}" class="d-flex align-items-center">
-                        <div id="adminAvatar-${log.id}" class="avatar-sm bg-primary rounded-circle text-white d-flex align-items-center justify-content-center me-2">
-                            ${log.email.charAt(0).toUpperCase()}
-                        </div>
-                        <div id="adminDetails-${log.id}">
-                            <div id="adminEmail-${log.id}" class="fw-bold">${log.email}</div>
-                        </div>
-                    </div>
-                </td>
-                <td id="ipCell-${log.id}">
-                    <code id="ipAddress-${log.id}">${log.ip_address}</code>
-                </td>
-                <td id="locationCell-${log.id}">${location}</td>
-                <td id="deviceCell-${log.id}">
-                    <small>
-                        <i id="browserIcon-${log.id}" class="fas fa-desktop me-1 text-muted"></i> <span id="browser-${log.id}">${log.browser}</span><br>
-                        <i id="platformIcon-${log.id}" class="fas fa-laptop me-1 text-muted"></i> <span id="platform-${log.id}">${log.platform}</span>
-                    </small>
-                </td>
-                <td id="activityCell-${log.id}">
-                    <span id="activityBadge-${log.id}" class="badge ${activityBadge}">${log.activity}</span>
-                </td>
-                <td id="loginTimeCell-${log.id}">
-                    <small>
-                        <span id="loginDate-${log.id}">${loginTime.split(',')[0]}</span><br>
-                        <span id="loginTime-${log.id}">${loginTime.split(',')[1]}</span>
-                    </small>
-                </td>
-                <td id="logoutTimeCell-${log.id}">
-                    ${logoutTime ? 
-                        `<small>
-                            <span id="logoutDate-${log.id}">${logoutTime.split(',')[0]}</span><br>
-                            <span id="logoutTime-${log.id}">${logoutTime.split(',')[1]}</span>
-                        </small>` : 
-                        `<span id="activeBadge-${log.id}" class="badge bg-warning">Active</span>`
-                    }
-                </td>
-                <td id="durationCell-${log.id}">
-                    ${duration !== '-' ? 
-                        `<span id="durationBadge-${log.id}" class="badge bg-info">${duration}</span>` : 
-                        `<span id="noDuration-${log.id}" class="text-muted">-</span>`
-                    }
-                </td>
-                <td id="statusCell-${log.id}">${status}</td>
-                <td id="actionsCell-${log.id}">
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-sm btn-outline-primary view-map-btn" data-log-id="${log.id}" title="View on Map">
-                            <i class="fas fa-map-marked-alt"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `;
-    });
-    
-    $('#logsTableBody').html(html);
-    
-    // Add click event for view map buttons
-    $('.view-map-btn').on('click', function() {
-        const logId = $(this).data('log-id');
-        
-        // Find the row with matching log ID
-        const row = $(`tr[data-log-id="${logId}"]`);
-        
-        // Get data from row
-        const ip = row.data('ip');
-        const country = row.data('country');
-        const city = row.data('city');
-        const region = row.data('region');
-        const email = row.data('email');
-        const activity = row.data('activity');
-        const loginTime = row.data('login-time');
-        const browser = row.data('browser');
-        const platform = row.data('platform');
-        const latitude = row.data('latitude');
-        const longitude = row.data('longitude');
-        
-        // Update map info
-        $('#ipAddressValue').text(ip);
-        $('#locationValue').text(city && country ? `${city}, ${region ? region + ', ' : ''}${country}` : 'Unknown');
-        $('#loginTimeValue').text(loginTime);
-        $('#deviceValue').text(`${browser} on ${platform}`);
-        
-        // Show map modal
-        $('#mapModal').modal('show');
-        
-        // Show loading indicator
-        $('#mapLoading').removeClass('d-none');
-        
-        // Check if we have coordinates directly from the database
-        if (latitude && longitude) {
-            // Use the coordinates from the database
-            const lat = parseFloat(latitude);
-            const lon = parseFloat(longitude);
-            
-            // Update coordinates display
-            $('#coordinatesValue').text(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
-            
-            // Set map view to the location
-            map.setView([lat, lon], 10);
-            
-            // Remove existing marker if it exists
-            if (currentMarker) {
-                map.removeLayer(currentMarker);
-            }
-            
-            // Add new marker
-            currentMarker = L.marker([lat, lon]).addTo(map);
-            
-            // Add popup with location info
-            currentMarker.bindPopup(`
-                <div>
-                    <strong>IP Address:</strong> ${ip}<br>
-                    <strong>Location:</strong> ${city}, ${region ? region + ', ' : ''}${country}<br>
-                    <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
-                    <strong>Login Time:</strong> ${loginTime}<br>
-                    <strong>Device:</strong> ${browser} on ${platform}
-                </div>
-            `).openPopup();
-            
-            // Hide loading indicator
-            $('#mapLoading').addClass('d-none');
-        } else if (ip) {
-            // If we don't have coordinates, try to get location from IP
-            // Try multiple geolocation services for better accuracy
-            getLocationFromIP(ip, city, country, region, loginTime, browser, platform);
-        } else {
-            // If location is unknown, show a message
-            $('#mapLoading').addClass('d-none');
-            Swal.fire({
-                title: 'Unknown Location',
-                text: 'No location information available for this log entry.',
-                icon: 'info',
-                confirmButtonColor: '#d32f2f'
-            });
-        }
-    });
-}
-    
-    // Function to get location from IP using multiple services
-    function getLocationFromIP(ip, city, country, region, loginTime, browser, platform) {
-        // Try ipapi.co first
-        $.ajax({
-            url: `https://ipapi.co/${ip}/json/`,
-            method: 'GET',
-            dataType: 'json',
-            timeout: 5000,
-            success: function(data) {
-                if (data && data.latitude && data.longitude) {
-                    const lat = data.latitude;
-                    const lon = data.longitude;
-                    
-                    // Update coordinates display
-                    $('#coordinatesValue').text(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
-                    
-                    // Set map view to the location
-                    map.setView([lat, lon], 10);
-                    
-                    // Remove existing marker if it exists
-                    if (currentMarker) {
-                        map.removeLayer(currentMarker);
-                    }
-                    
-                    // Add new marker
-                    currentMarker = L.marker([lat, lon]).addTo(map);
-                    
-                    // Add popup with location info
-                    currentMarker.bindPopup(`
-                        <div>
-                            <strong>IP Address:</strong> ${ip}<br>
-                            <strong>Location:</strong> ${data.city || city}, ${data.region || region}, ${data.country_name || country}<br>
-                            <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
-                            <strong>ISP:</strong> ${data.org || 'Unknown'}<br>
-                            <strong>Login Time:</strong> ${loginTime}<br>
-                            <strong>Device:</strong> ${browser} on ${platform}
-                        </div>
-                    `).openPopup();
-                    
-                    // Update the location display with more accurate data
-                    $('#locationValue').text(`${data.city || city}, ${data.region || region}, ${data.country_name || country}`);
-                    
-                    // Hide loading indicator
-                    $('#mapLoading').addClass('d-none');
-                } else {
-                    // If ipapi.co doesn't work, try ip-api.com
-                    tryAlternativeIPService(ip, city, country, region, loginTime, browser, platform);
-                }
-            },
-            error: function() {
-                // If ipapi.co fails, try ip-api.com
-                tryAlternativeIPService(ip, city, country, region, loginTime, browser, platform);
-            }
-        });
-    }
-    
-    // Try alternative IP geolocation service
-    function tryAlternativeIPService(ip, city, country, region, loginTime, browser, platform) {
-        $.ajax({
-            url: `http://ip-api.com/json/${ip}`,
-            method: 'GET',
-            dataType: 'json',
-            timeout: 5000,
-            success: function(data) {
-                if (data && data.status === 'success' && data.lat && data.lon) {
-                    const lat = data.lat;
-                    const lon = data.lon;
-                    
-                    // Update coordinates display
-                    $('#coordinatesValue').text(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
-                    
-                    // Set map view to the location
-                    map.setView([lat, lon], 10);
-                    
-                    // Remove existing marker if it exists
-                    if (currentMarker) {
-                        map.removeLayer(currentMarker);
-                    }
-                    
-                    // Add new marker
-                    currentMarker = L.marker([lat, lon]).addTo(map);
-                    
-                    // Add popup with location info
-                    currentMarker.bindPopup(`
-                        <div>
-                            <strong>IP Address:</strong> ${ip}<br>
-                            <strong>Location:</strong> ${data.city || city}, ${data.regionName || region}, ${data.country || country}<br>
-                            <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
-                            <strong>ISP:</strong> ${data.isp || 'Unknown'}<br>
-                            <strong>Login Time:</strong> ${loginTime}<br>
-                            <strong>Device:</strong> ${browser} on ${platform}
-                        </div>
-                    `).openPopup();
-                    
-                    // Update the location display with more accurate data
-                    $('#locationValue').text(`${data.city || city}, ${data.regionName || region}, ${data.country || country}`);
-                    
-                    // Hide loading indicator
-                    $('#mapLoading').addClass('d-none');
-                } else {
-                    // If both IP services fail, try geocoding with city/country
-                    geocodeWithNominatim(city, country, region, ip, loginTime, browser, platform);
-                }
-            },
-            error: function() {
-                // If both IP services fail, try geocoding with city/country
-                geocodeWithNominatim(city, country, region, ip, loginTime, browser, platform);
-            }
-        });
-    }
-    
-    // Function to geocode using Nominatim as fallback
-    function geocodeWithNominatim(city, country, region, ip, loginTime, browser, platform) {
-        if (!city && !country) {
-            // If we don't have location data, show an error
-            $('#mapLoading').addClass('d-none');
-            Swal.fire({
-                title: 'Location Not Found',
-                text: 'Unable to determine location for this log entry.',
-                icon: 'warning',
-                confirmButtonColor: '#d32f2f',
-                timer: 3000
-            });
+    function renderLogsTable(logs) {
+        if (logs.length === 0) {
+            $('#logsTableBody').html(`
+                <tr>
+                    <td colspan="9" class="text-center py-4">
+                        <i class="fas fa-search fa-2x text-muted mb-3"></i>
+                        <p class="text-muted">No logs found</p>
+                    </td>
+                </tr>
+            `);
             return;
         }
         
-        // Use Nominatim API to geocode the location
-        const query = `${city}, ${region ? region + ', ' : ''}${country}`;
-        
-        $.ajax({
-            url: `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`,
-            method: 'GET',
-            timeout: 5000,
-            success: function(data) {
-                if (data && data.length > 0) {
-                    const lat = parseFloat(data[0].lat);
-                    const lon = parseFloat(data[0].lon);
-                    
-                    // Update coordinates display
-                    $('#coordinatesValue').text(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
-                    
-                    // Set map view to the location
-                    map.setView([lat, lon], 10);
-                    
-                    // Remove existing marker if it exists
-                    if (currentMarker) {
-                        map.removeLayer(currentMarker);
-                    }
-                    
-                    // Add new marker
-                    currentMarker = L.marker([lat, lon]).addTo(map);
-                    
-                    // Add popup with location info
-                    currentMarker.bindPopup(`
-                        <div>
-                            <strong>IP Address:</strong> ${ip}<br>
-                            <strong>Location:</strong> ${city}, ${region ? region + ', ' : ''}${country}<br>
-                            <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
-                            <strong>Login Time:</strong> ${loginTime}<br>
-                            <strong>Device:</strong> ${browser} on ${platform}
+        let html = '';
+        logs.forEach(function(log) {
+            const loginTime = new Date(log.login_at).toLocaleString();
+            const logoutTime = log.logout_at ? new Date(log.logout_at).toLocaleString() : '';
+            const duration = log.session_duration ? formatDuration(log.session_duration) : '-';
+            const status = log.logout_at ? 
+                '<span class="badge bg-secondary">Completed</span>' : 
+                '<span class="badge bg-success">Active</span>';
+            
+            const activityBadge = log.activity.includes('successful') ? 
+                'bg-success' : log.activity.includes('failed') ? 'bg-danger' : 'bg-primary';
+            
+            const location = log.city && log.country ? 
+                `<div class="d-flex align-items-center">
+                    <span>${log.city}, ${log.country}</span>
+                    <i class="fas fa-map-marker-alt location-pin ms-2" 
+                       onclick="showLocationOnMap('${log.ip_address}', '${log.city}', '${log.country}', '${log.region || ''}', '${log.email}', '${log.activity}', '${loginTime}')"
+                       title="Show on map"></i>
+                </div>` : 
+                '<span class="text-muted">Unknown</span>';
+            
+            html += `
+                <tr data-log-id="${log.id}" 
+                    data-ip="${log.ip_address}"
+                    data-country="${log.country}"
+                    data-city="${log.city}"
+                    data-region="${log.region || ''}"
+                    data-email="${log.email}"
+                    data-activity="${log.activity}"
+                    data-login-time="${loginTime}">
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-sm bg-primary rounded-circle text-white d-flex align-items-center justify-content-center me-2">
+                                ${log.email.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                                <div class="fw-bold">${log.email}</div>
+                                <small class="text-muted">
+                                    ${log.admin ? `${log.admin.first_name} ${log.admin.last_name}` : 'Admin Deleted'}
+                                </small>
+                            </div>
                         </div>
-                    `).openPopup();
-                } else {
-                    // If geocoding fails, show a message
-                    Swal.fire({
-                        title: 'Location Not Found',
-                        text: 'Unable to find coordinates for this location. Showing default view.',
-                        icon: 'warning',
-                        confirmButtonColor: '#d32f2f',
-                        timer: 3000
-                    });
-                }
-                
-                // Hide loading indicator
-                $('#mapLoading').addClass('d-none');
-            },
-            error: function() {
-                // If API call fails, show a message
-                Swal.fire({
-                    title: 'Geocoding Error',
-                    text: 'Unable to get coordinates for this location. Showing default view.',
-                    icon: 'error',
-                    confirmButtonColor: '#d32f2f',
-                    timer: 3000
-                });
-                
-                // Hide loading indicator
-                $('#mapLoading').addClass('d-none');
-            }
+                    </td>
+                    <td>
+                        <code>${log.ip_address}</code>
+                    </td>
+                    <td>${location}</td>
+                    <td>
+                        <small>
+                            <i class="fas fa-desktop me-1 text-muted"></i> ${log.browser}<br>
+                            <i class="fas fa-laptop me-1 text-muted"></i> ${log.platform}
+                        </small>
+                    </td>
+                    <td>
+                        <span class="badge ${activityBadge}">${log.activity}</span>
+                    </td>
+                    <td>
+                        <small>
+                            ${loginTime.split(',')[0]}<br>
+                            ${loginTime.split(',')[1]}
+                        </small>
+                    </td>
+                    <td>
+                        ${logoutTime ? 
+                            `<small>
+                                ${logoutTime.split(',')[0]}<br>
+                                ${logoutTime.split(',')[1]}
+                            </small>` : 
+                            '<span class="badge bg-warning">Active</span>'
+                        }
+                    </td>
+                    <td>
+                        ${duration !== '-' ? 
+                            `<span class="badge bg-info">${duration}</span>` : 
+                            '<span class="text-muted">-</span>'
+                        }
+                    </td>
+                    <td>${status}</td>
+                </tr>
+            `;
         });
+        
+        $('#logsTableBody').html(html);
     }
     
     // Render pagination
     function renderPagination(logs) {
-        // Update pagination info
-        $('#showingFrom').text(logs.from);
-        $('#showingTo').text(logs.to);
-        $('#totalRecords').text(logs.total);
-        
         if (logs.last_page <= 1) {
             $('#logsPagination').html('');
-            $('#startFirstBtn').prop('disabled', true);
-            $('#endLastBtn').prop('disabled', true);
             return;
         }
         
@@ -1693,31 +1365,27 @@ function renderLogsTable(logs) {
         
         // Previous button
         html += `<li class="page-item ${logs.current_page === 1 ? 'disabled' : ''}">
-            <a id="prevPageBtn" class="page-link" href="#" onclick="loadAdminLogs(${logs.current_page - 1}); return false;">Previous</a>
+            <a class="page-link" href="#" onclick="loadAdminLogs(${logs.current_page - 1}); return false;">Previous</a>
         </li>`;
         
         // Page numbers
         for (let i = 1; i <= logs.last_page; i++) {
             if (i === 1 || i === logs.last_page || (i >= logs.current_page - 2 && i <= logs.current_page + 2)) {
                 html += `<li class="page-item ${i === logs.current_page ? 'active' : ''}">
-                    <a id="page-${i}" class="page-link" href="#" onclick="loadAdminLogs(${i}); return false;">${i}</a>
+                    <a class="page-link" href="#" onclick="loadAdminLogs(${i}); return false;">${i}</a>
                 </li>`;
             } else if (i === logs.current_page - 3 || i === logs.current_page + 3) {
-                html += `<li class="page-item disabled"><a id="ellipsis-${i}" class="page-link" href="#">...</a></li>`;
+                html += `<li class="page-item disabled"><a class="page-link" href="#">...</a></li>`;
             }
         }
         
         // Next button
         html += `<li class="page-item ${logs.current_page === logs.last_page ? 'disabled' : ''}">
-            <a id="nextPageBtn" class="page-link" href="#" onclick="loadAdminLogs(${logs.current_page + 1}); return false;">Next</a>
+            <a class="page-link" href="#" onclick="loadAdminLogs(${logs.current_page + 1}); return false;">Next</a>
         </li>`;
         
         html += '</ul>';
         $('#logsPagination').html(html);
-        
-        // Enable/disable navigation buttons based on current page
-        $('#startFirstBtn').prop('disabled', logs.current_page === 1);
-        $('#endLastBtn').prop('disabled', logs.current_page === logs.last_page);
     }
     
     // Update statistics
@@ -1736,6 +1404,148 @@ function renderLogsTable(logs) {
         return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
     
+    // Toggle map visibility
+    $('#toggleMapBtn').on('click', function() {
+        const mapContainer = $('#mapContainer');
+        mapVisible = !mapVisible;
+        
+        if (mapVisible) {
+            mapContainer.removeClass('d-none');
+            // Refresh map bounds to show all markers
+            setTimeout(() => {
+                map.invalidateSize();
+                if (markers.length > 0) {
+                    const group = new L.featureGroup(markers);
+                    map.fitBounds(group.getBounds().pad(0.1));
+                } else {
+                    // Load all locations if not already loaded
+                    loadAllLocations();
+                }
+            }, 100);
+        } else {
+            mapContainer.addClass('d-none');
+        }
+    });
+    
+    // Load all locations for the map
+    function loadAllLocations(logs) {
+        // Clear existing markers
+        markers.forEach(marker => map.removeLayer(marker));
+        markers = [];
+        
+        // If logs not provided, get them from the table
+        if (!logs) {
+            logs = [];
+            $('#logsTableBody tr[data-country]').each(function() {
+                logs.push({
+                    country: $(this).data('country'),
+                    city: $(this).data('city'),
+                    region: $(this).data('region'),
+                    ip: $(this).data('ip'),
+                    email: $(this).data('email'),
+                    activity: $(this).data('activity'),
+                    loginTime: $(this).data('login-time')
+                });
+            });
+        }
+        
+        // Process each log
+        logs.forEach(function(log) {
+            if (log.country && log.country !== 'Local') {
+                geocodeLocation(log.city, log.country, log.region, log.ip, log.email, log.activity, log.loginTime);
+            }
+        });
+    }
+    
+    // Geocode location and add marker
+    function geocodeLocation(city, country, region, ip, email, activity, loginTime) {
+        const query = `${city}, ${region}, ${country}`;
+        
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.length > 0) {
+                    const lat = parseFloat(data[0].lat);
+                    const lon = parseFloat(data[0].lon);
+                    
+                    addMarker(lat, lon, city, country, region, ip, email, activity, loginTime);
+                }
+            })
+            .catch(error => {
+                console.error('Geocoding error:', error);
+            });
+    }
+    
+    // Add marker to map
+    function addMarker(lat, lon, city, country, region, ip, email, activity, loginTime) {
+        // Determine marker color based on activity
+        let markerColor = 'blue';
+        if (activity.includes('failed')) {
+            markerColor = 'red';
+        } else if (activity.includes('successful')) {
+            markerColor = 'green';
+        }
+
+        // Create custom icon
+        const customIcon = L.divIcon({
+            html: `<div style="background-color: ${markerColor}; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>`,
+            className: 'custom-marker',
+            iconSize: [20, 20],
+            iconAnchor: [10, 10]
+        });
+
+        const marker = L.marker([lat, lon], { icon: customIcon }).addTo(map);
+        
+        // Create popup content
+        const popupContent = `
+            <div class="map-popup">
+                <h6><i class="fas fa-user"></i> ${email}</h6>
+                <p><strong>Location:</strong> ${city}, ${country}</p>
+                <p><strong>IP Address:</strong> ${ip}</p>
+                <p><strong>Activity:</strong> <span class="badge ${activity.includes('successful') ? 'bg-success' : activity.includes('failed') ? 'bg-danger' : 'bg-primary'}">${activity}</span></p>
+                <p><strong>Login Time:</strong> ${loginTime}</p>
+                <p><strong>Region:</strong> ${region || 'N/A'}</p>
+            </div>
+        `;
+        
+        marker.bindPopup(popupContent);
+        markers.push(marker);
+    }
+    
+    // Show specific location on map
+    window.showLocationOnMap = function(ip, city, country, region, email, activity, loginTime) {
+        // Show map if hidden
+        if (!mapVisible) {
+            $('#toggleMapBtn').click();
+        }
+
+        // Clear existing markers and focus on this one
+        markers.forEach(marker => map.removeLayer(marker));
+        markers = [];
+
+        if (city && country && country !== 'Local') {
+            geocodeLocation(city, country, region, ip, email, activity, loginTime);
+            
+            // Wait a bit for geocoding to complete, then fit bounds
+            setTimeout(() => {
+                if (markers.length > 0) {
+                    const group = new L.featureGroup(markers);
+                    map.fitBounds(group.getBounds().pad(0.1));
+                    
+                    // Open the popup
+                    markers[0].openPopup();
+                }
+            }, 500);
+        } else {
+            Swal.fire({
+                icon: 'info',
+                title: 'Location Not Available',
+                text: 'No geographic location data available for this IP address.',
+                confirmButtonColor: '#d32f2f'
+            });
+        }
+    };
+    
     // Filter logs
     $('#filterLogsBtn').on('click', function() {
         loadAdminLogs(1);
@@ -1750,16 +1560,6 @@ function renderLogsTable(logs) {
         loadAdminLogs(1);
     });
     
-    // Start from first button
-    $('#startFirstBtn').on('click', function() {
-        loadAdminLogs(1);
-    });
-    
-    // Go to last button
-    $('#endLastBtn').on('click', function() {
-        loadAdminLogs($('#totalRecords').text());
-    });
-    
     // Notification icon click handler
     $('#notificationIcon').on('click', function() {
         Swal.fire({
@@ -1769,24 +1569,6 @@ function renderLogsTable(logs) {
             confirmButtonColor: '#d32f2f'
         });
     });
-    
-    // Add ID to admin logs modal display
-    $('#adminLogsModal').on('shown.bs.modal', function() {
-        // Store the modal display state
-        localStorage.setItem('adminLogsModalVisible', 'true');
-    });
-    
-    // Hide admin logs modal display
-    $('#adminLogsModal').on('hidden.bs.modal', function() {
-        // Store the modal display state
-        localStorage.setItem('adminLogsModalVisible', 'false');
-    });
-    
-    // Check if modal should be shown on page load (based on stored state)
-    if (localStorage.getItem('adminLogsModalVisible') === 'true') {
-        // Show the modal
-        $('#adminLogsModal').modal('show');
-    }
 });
 
 
