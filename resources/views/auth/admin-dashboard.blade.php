@@ -254,6 +254,26 @@
             color: #0d5bba;
         }
         
+        .map-popup {
+            font-family: Arial, sans-serif;
+        }
+        
+        .map-popup h6 {
+            margin-bottom: 5px;
+            color: #1a73e8;
+        }
+        
+        .map-popup p {
+            margin: 2px 0;
+            font-size: 12px;
+        }
+        
+        #map {
+            height: 300px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        
         /* Header icon styles */
         .header-icon {
             font-size: 1.25rem;
@@ -395,33 +415,33 @@
 <body>
 
 <!-- Mobile Overlay -->
-<div id="mobileOverlay" class="mobile-overlay"></div>
+<div class="mobile-overlay"></div>
 
 <!-- Sidebar -->
-<div id="sidebar" class="sidebar">
-    <div id="sidebarHeader" class="sidebar-header text-center">
+<div class="sidebar">
+    <div class="sidebar-header text-center">
         <img src="{{ asset('image/santafe.png') }}" class="login-logo img-fluid mb-3">
-        <h1 id="sidebarTitle" class="h5">Santa Fe Water Billing</h1>
+        <h1 class="h5">Santa Fe Water Billing</h1>
     </div>
-    <nav id="sidebarMenu" class="sidebar-menu">
+    <nav class="sidebar-menu">
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a id="dashboardLink" class="nav-link active" href="admin-dashboard">
+                <a class="nav-link active" href="admin-dashboard">
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
             </li>
             <li class="nav-item">
-                <a id="consumersLink" class="nav-link" href="admin-consumer">
+                <a class="nav-link" href="admin-consumer">
                     <i class="bi bi-people"></i> Manage Consumers
                 </a>
             </li>
             <li class="nav-item">
-                <a id="plumberLink" class="nav-link" href="admin-plumber">
+                <a class="nav-link" href="admin-plumber">
                     <i class="bi bi-wrench"></i> Manage Plumber
                 </a>
             </li>
             <li class="nav-item">
-                <a id="accountantLink" class="nav-link" href="admin-accountant">
+                <a class="nav-link" href="admin-accountant">
                     <i class="bi bi-cash-stack"></i> Manage Accountant
                 </a>
             </li>
@@ -430,38 +450,38 @@
 </div>
 
 <!-- Main Content -->
-<div id="mainContent" class="main-content">
+<div class="main-content">
     <!-- Header -->
-    <header id="header" class="header">
-        <div id="headerLeft" class="header-left">
+    <header class="header">
+        <div class="header-left">
             <button id="sidebarToggle" class="btn d-lg-none me-3 mobile-menu-toggle">
                 <i class="bi bi-list"></i>
             </button>
             <div>
-                <h2 id="headerTitle" class="header-title">Dashboard Overview</h2>
-                <p id="headerSubtitle" class="header-subtitle">Santa Fe Water Billing System</p>
+                <h2 class="header-title">Dashboard Overview</h2>
+                <p class="header-subtitle">Santa Fe Water Billing System</p>
             </div>
         </div>
         
-        <div id="headerRight" class="header-right">
+        <div class="header-right">
             <div class="position-relative me-3 d-none d-sm-block">
                 <i class="bi bi-cloud-download header-icon" id="backupDatabaseIcon" title="Backup Database"></i>
             </div>
             <div class="position-relative me-3 d-none d-sm-block">
                 <i class="bi bi-clock-history header-icon" id="adminLogsIcon" data-bs-toggle="modal" data-bs-target="#adminLogsModal" title="Admin Logs"></i>
             </div>
-            <div id="userDropdown" class="dropdown">
+            <div class="dropdown">
                 <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
                     <span class="d-none d-md-inline">Admin</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUser">
-                    <li><a id="profileLink" class="dropdown-item" href="#">Profile</a></li>
-                    <li><a id="settingsLink" class="dropdown-item" href="#">Settings</a></li>
-                    <li><a id="adminLogsBtn" class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#adminLogsModal">Admin Logs</a></li>
+                    <li><a class="dropdown-item" href="#">Profile</a></li>
+                    <li><a class="dropdown-item" href="#">Settings</a></li>
+                    <li><a class="dropdown-item" href="#" id="adminLogsBtn" data-bs-toggle="modal" data-bs-target="#adminLogsModal">Admin Logs</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <!-- In the dropdown menu -->
                     <li>
-                        <a id="logoutLink" class="dropdown-item text-danger" href="#">
+                        <a class="dropdown-item text-danger" href="#" id="logout-btn">
                             <i class="bi bi-box-arrow-right me-2"></i>Sign Out
                         </a>
                         <form id="logout-form" action="/logout" method="POST" style="display: none;">
@@ -473,10 +493,10 @@
         </div>
     </header>
     
-    <div id="contentWrapper" class="content-wrapper">
-        <div id="statsCards" class="row g-4">
+    <div class="content-wrapper">
+        <div class="row g-4">
             <!-- Total Consumers Card -->
-            <div id="totalConsumersCard" class="col-md-6 col-lg-6">
+            <div class="col-md-6 col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
@@ -496,7 +516,7 @@
             </div>
 
             <!-- Active Consumers Card -->
-            <div id="activeConsumersCard" class="col-md-6 col-lg-6">
+            <div class="col-md-6 col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
@@ -517,9 +537,9 @@
         </div>
 
         <!-- Charts Section -->
-        <div id="chartsSection" class="row g-4 mt-2">
+        <div class="row g-4 mt-2">
             <!-- Consumer Status Pie Chart -->
-            <div id="consumerStatusChartContainer" class="col-lg-6">
+            <div class="col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white border-0">
                         <h5 class="mb-0">Active Consumers</h5>
@@ -533,7 +553,7 @@
             </div>
             
             <!-- Total Consumers Line Chart -->
-            <div id="totalConsumersChartContainer" class="col-lg-6">
+            <div class="col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white border-0">
                         <h5 class="mb-0">Total Consumers</h5>
@@ -550,19 +570,19 @@
 </div>
 
 <!-- Admin Logs Modal -->
-<div id="adminLogsModal" class="modal fade" tabindex="-1" aria-labelledby="adminLogsModalLabel" aria-hidden="true">
+<div class="modal fade" id="adminLogsModal" tabindex="-1" aria-labelledby="adminLogsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
-            <div id="adminLogsModalHeader" class="modal-header bg-primary text-white">
-                <h5 id="adminLogsModalLabel" class="modal-title">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="adminLogsModalLabel">
                     <i class="fas fa-history me-2"></i>Admin Login Logs
                 </h5>
-                <button id="adminLogsModalClose" type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div id="adminLogsModalBody" class="modal-body p-0">
+            <div class="modal-body p-0">
                 <div class="container-fluid p-3">
                     <!-- Filters -->
-                    <div id="logsFilters" class="row mb-3">
+                    <div class="row mb-3">
                         <div class="col-12">
                             <form id="logsFilterForm" class="row g-2">
                                 <div class="col-md-3">
@@ -591,8 +611,28 @@
                         </div>
                     </div>
 
+                    <!-- Map Toggle -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <button class="btn btn-outline-primary btn-sm" id="toggleMapBtn">
+                                <i class="fas fa-map me-1"></i> Toggle Map
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Geolocation Map -->
+                    <div id="mapContainer" class="d-none">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0">
+                                <i class="fas fa-map-marker-alt me-2"></i>Login Locations Map
+                            </h6>
+                            <small class="text-muted">Click on location pins to see details</small>
+                        </div>
+                        <div id="map"></div>
+                    </div>
+
                     <!-- Logs Table -->
-                    <div id="logsTableContainer" class="table-responsive">
+                    <div class="table-responsive">
                         <table class="table table-striped table-hover">
                             <thead class="table-light">
                                 <tr>
@@ -621,14 +661,14 @@
                     </div>
 
                     <!-- Pagination -->
-                    <div id="paginationContainer" class="d-flex justify-content-center mt-3">
+                    <div class="d-flex justify-content-center mt-3">
                         <nav id="logsPagination">
                             <!-- Pagination will be loaded here -->
                         </nav>
                     </div>
 
                     <!-- Statistics -->
-                    <div id="statisticsContainer" class="row mt-3">
+                    <div class="row mt-3">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-body">
@@ -670,7 +710,7 @@
 </div>
 
 <!-- Session Timer Display -->
-<div id="sessionTimer" class="session-timer">
+<div class="session-timer" id="sessionTimer">
     <i class="fas fa-clock me-2"></i>
     Session expires in: <span id="sessionTimeDisplay">03:00</span>
 </div>
@@ -683,14 +723,17 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <!-- SweetAlert2 for notifications -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Leaflet for maps -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
  $(document).ready(function() {
     // Session management variables
     const sessionTimer = document.getElementById('sessionTimer');
     const sessionTimeDisplay = document.getElementById('sessionTimeDisplay');
-    let sessionTimeout; // Will store timeout ID
-    let warningTimeout; // Will store warning timeout ID
+    let sessionTimeout; // Will store the timeout ID
+    let warningTimeout; // Will store the warning timeout ID
     let sessionInterval; // Will store the interval ID for updating the display
     const sessionDuration = 3 * 60 * 1000; // 3 minutes in milliseconds
     const warningTime = 30 * 1000; // 30 seconds before expiry to show warning
@@ -1126,13 +1169,29 @@
     });
     
     // Admin Logs Modal functionality
+    let map;
+    let markers = [];
+    let mapVisible = false;
     let currentPage = 1;
     
-    // Initialize when modal is shown
+    // Initialize map when modal is shown
     $('#adminLogsModal').on('shown.bs.modal', function() {
+        if (!map) {
+            initMap();
+        }
         loadAdminLogs();
         loadAdmins();
     });
+    
+    // Initialize map
+    function initMap() {
+        // Default center (Philippines)
+        map = L.map('map').setView([12.8797, 121.7740], 5);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+    }
     
     // Load admin logs
     function loadAdminLogs(page = 1) {
@@ -1168,6 +1227,11 @@
             renderLogsTable(data.logs.data);
             renderPagination(data.logs);
             updateStatistics(data.statistics);
+            
+            // Load map data if map is visible
+            if (mapVisible) {
+                loadAllLocations(data.logs.data);
+            }
         }).fail(function() {
             $('#logsTableBody').html(`
                 <tr>
@@ -1220,6 +1284,9 @@
             const location = log.city && log.country ? 
                 `<div class="d-flex align-items-center">
                     <span>${log.city}, ${log.country}</span>
+                    <i class="fas fa-map-marker-alt location-pin ms-2" 
+                       onclick="showLocationOnMap('${log.ip_address}', '${log.city}', '${log.country}', '${log.region || ''}', '${log.email}', '${log.activity}', '${loginTime}')"
+                       title="Show on map"></i>
                 </div>` : 
                 '<span class="text-muted">Unknown</span>';
             
@@ -1336,6 +1403,148 @@
         const secs = seconds % 60;
         return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
+    
+    // Toggle map visibility
+    $('#toggleMapBtn').on('click', function() {
+        const mapContainer = $('#mapContainer');
+        mapVisible = !mapVisible;
+        
+        if (mapVisible) {
+            mapContainer.removeClass('d-none');
+            // Refresh map bounds to show all markers
+            setTimeout(() => {
+                map.invalidateSize();
+                if (markers.length > 0) {
+                    const group = new L.featureGroup(markers);
+                    map.fitBounds(group.getBounds().pad(0.1));
+                } else {
+                    // Load all locations if not already loaded
+                    loadAllLocations();
+                }
+            }, 100);
+        } else {
+            mapContainer.addClass('d-none');
+        }
+    });
+    
+    // Load all locations for the map
+    function loadAllLocations(logs) {
+        // Clear existing markers
+        markers.forEach(marker => map.removeLayer(marker));
+        markers = [];
+        
+        // If logs not provided, get them from the table
+        if (!logs) {
+            logs = [];
+            $('#logsTableBody tr[data-country]').each(function() {
+                logs.push({
+                    country: $(this).data('country'),
+                    city: $(this).data('city'),
+                    region: $(this).data('region'),
+                    ip: $(this).data('ip'),
+                    email: $(this).data('email'),
+                    activity: $(this).data('activity'),
+                    loginTime: $(this).data('login-time')
+                });
+            });
+        }
+        
+        // Process each log
+        logs.forEach(function(log) {
+            if (log.country && log.country !== 'Local') {
+                geocodeLocation(log.city, log.country, log.region, log.ip, log.email, log.activity, log.loginTime);
+            }
+        });
+    }
+    
+    // Geocode location and add marker
+    function geocodeLocation(city, country, region, ip, email, activity, loginTime) {
+        const query = `${city}, ${region}, ${country}`;
+        
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.length > 0) {
+                    const lat = parseFloat(data[0].lat);
+                    const lon = parseFloat(data[0].lon);
+                    
+                    addMarker(lat, lon, city, country, region, ip, email, activity, loginTime);
+                }
+            })
+            .catch(error => {
+                console.error('Geocoding error:', error);
+            });
+    }
+    
+    // Add marker to map
+    function addMarker(lat, lon, city, country, region, ip, email, activity, loginTime) {
+        // Determine marker color based on activity
+        let markerColor = 'blue';
+        if (activity.includes('failed')) {
+            markerColor = 'red';
+        } else if (activity.includes('successful')) {
+            markerColor = 'green';
+        }
+
+        // Create custom icon
+        const customIcon = L.divIcon({
+            html: `<div style="background-color: ${markerColor}; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>`,
+            className: 'custom-marker',
+            iconSize: [20, 20],
+            iconAnchor: [10, 10]
+        });
+
+        const marker = L.marker([lat, lon], { icon: customIcon }).addTo(map);
+        
+        // Create popup content
+        const popupContent = `
+            <div class="map-popup">
+                <h6><i class="fas fa-user"></i> ${email}</h6>
+                <p><strong>Location:</strong> ${city}, ${country}</p>
+                <p><strong>IP Address:</strong> ${ip}</p>
+                <p><strong>Activity:</strong> <span class="badge ${activity.includes('successful') ? 'bg-success' : activity.includes('failed') ? 'bg-danger' : 'bg-primary'}">${activity}</span></p>
+                <p><strong>Login Time:</strong> ${loginTime}</p>
+                <p><strong>Region:</strong> ${region || 'N/A'}</p>
+            </div>
+        `;
+        
+        marker.bindPopup(popupContent);
+        markers.push(marker);
+    }
+    
+    // Show specific location on map
+    window.showLocationOnMap = function(ip, city, country, region, email, activity, loginTime) {
+        // Show map if hidden
+        if (!mapVisible) {
+            $('#toggleMapBtn').click();
+        }
+
+        // Clear existing markers and focus on this one
+        markers.forEach(marker => map.removeLayer(marker));
+        markers = [];
+
+        if (city && country && country !== 'Local') {
+            geocodeLocation(city, country, region, ip, email, activity, loginTime);
+            
+            // Wait a bit for geocoding to complete, then fit bounds
+            setTimeout(() => {
+                if (markers.length > 0) {
+                    const group = new L.featureGroup(markers);
+                    map.fitBounds(group.getBounds().pad(0.1));
+                    
+                    // Open the popup
+                    markers[0].openPopup();
+                }
+            }, 500);
+        } else {
+            Swal.fire({
+                icon: 'info',
+                title: 'Location Not Available',
+                text: 'No geographic location data available for this IP address.',
+                confirmButtonColor: '#d32f2f'
+            });
+        }
+    };
     
     // Filter logs
     $('#filterLogsBtn').on('click', function() {
