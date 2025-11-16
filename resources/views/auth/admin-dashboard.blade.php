@@ -325,6 +325,57 @@
             color: var(--error);
         }
         
+        /* Map controls */
+        .map-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .map-control-btn {
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 5px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .map-control-btn:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .map-legend {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 5px 10px;
+            font-size: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 3px;
+        }
+        
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
         @media (min-width: 992px) {
             .sidebar {
                 transform: translateX(0);
@@ -415,33 +466,33 @@
 <body>
 
 <!-- Mobile Overlay -->
-<div class="mobile-overlay"></div>
+<div id="mobileOverlay" class="mobile-overlay"></div>
 
 <!-- Sidebar -->
-<div class="sidebar">
-    <div class="sidebar-header text-center">
+<div id="sidebar" class="sidebar">
+    <div id="sidebarHeader" class="sidebar-header text-center">
         <img src="{{ asset('image/santafe.png') }}" class="login-logo img-fluid mb-3">
         <h1 class="h5">Santa Fe Water Billing</h1>
     </div>
-    <nav class="sidebar-menu">
+    <nav id="sidebarMenu" class="sidebar-menu">
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a class="nav-link active" href="admin-dashboard">
+                <a id="dashboardLink" class="nav-link active" href="admin-dashboard">
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="admin-consumer">
+                <a id="consumersLink" class="nav-link" href="admin-consumer">
                     <i class="bi bi-people"></i> Manage Consumers
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="admin-plumber">
+                <a id="plumberLink" class="nav-link" href="admin-plumber">
                     <i class="bi bi-wrench"></i> Manage Plumber
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="admin-accountant">
+                <a id="accountantLink" class="nav-link" href="admin-accountant">
                     <i class="bi bi-cash-stack"></i> Manage Accountant
                 </a>
             </li>
@@ -450,38 +501,38 @@
 </div>
 
 <!-- Main Content -->
-<div class="main-content">
+<div id="mainContent" class="main-content">
     <!-- Header -->
-    <header class="header">
-        <div class="header-left">
+    <header id="header" class="header">
+        <div id="headerLeft" class="header-left">
             <button id="sidebarToggle" class="btn d-lg-none me-3 mobile-menu-toggle">
                 <i class="bi bi-list"></i>
             </button>
             <div>
-                <h2 class="header-title">Dashboard Overview</h2>
-                <p class="header-subtitle">Santa Fe Water Billing System</p>
+                <h2 id="headerTitle" class="header-title">Dashboard Overview</h2>
+                <p id="headerSubtitle" class="header-subtitle">Santa Fe Water Billing System</p>
             </div>
         </div>
         
-        <div class="header-right">
+        <div id="headerRight" class="header-right">
             <div class="position-relative me-3 d-none d-sm-block">
                 <i class="bi bi-cloud-download header-icon" id="backupDatabaseIcon" title="Backup Database"></i>
             </div>
             <div class="position-relative me-3 d-none d-sm-block">
                 <i class="bi bi-clock-history header-icon" id="adminLogsIcon" data-bs-toggle="modal" data-bs-target="#adminLogsModal" title="Admin Logs"></i>
             </div>
-            <div class="dropdown">
+            <div id="userDropdown" class="dropdown">
                 <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
                     <span class="d-none d-md-inline">Admin</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUser">
-                    <li><a class="dropdown-item" href="#">Profile</a></li>
-                    <li><a class="dropdown-item" href="#">Settings</a></li>
-                    <li><a class="dropdown-item" href="#" id="adminLogsBtn" data-bs-toggle="modal" data-bs-target="#adminLogsModal">Admin Logs</a></li>
+                    <li><a id="profileLink" class="dropdown-item" href="#">Profile</a></li>
+                    <li><a id="settingsLink" class="dropdown-item" href="#">Settings</a></li>
+                    <li><a id="adminLogsBtn" class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#adminLogsModal">Admin Logs</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <!-- In the dropdown menu -->
                     <li>
-                        <a class="dropdown-item text-danger" href="#" id="logout-btn">
+                        <a id="logoutLink" class="dropdown-item text-danger" href="#">
                             <i class="bi bi-box-arrow-right me-2"></i>Sign Out
                         </a>
                         <form id="logout-form" action="/logout" method="POST" style="display: none;">
@@ -493,10 +544,10 @@
         </div>
     </header>
     
-    <div class="content-wrapper">
-        <div class="row g-4">
+    <div id="contentWrapper" class="content-wrapper">
+        <div id="statsCards" class="row g-4">
             <!-- Total Consumers Card -->
-            <div class="col-md-6 col-lg-6">
+            <div id="totalConsumersCard" class="col-md-6 col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
@@ -516,7 +567,7 @@
             </div>
 
             <!-- Active Consumers Card -->
-            <div class="col-md-6 col-lg-6">
+            <div id="activeConsumersCard" class="col-md-6 col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
@@ -537,9 +588,9 @@
         </div>
 
         <!-- Charts Section -->
-        <div class="row g-4 mt-2">
+        <div id="chartsSection" class="row g-4 mt-2">
             <!-- Consumer Status Pie Chart -->
-            <div class="col-lg-6">
+            <div id="consumerStatusChartContainer" class="col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white border-0">
                         <h5 class="mb-0">Active Consumers</h5>
@@ -553,7 +604,7 @@
             </div>
             
             <!-- Total Consumers Line Chart -->
-            <div class="col-lg-6">
+            <div id="totalConsumersChartContainer" class="col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white border-0">
                         <h5 class="mb-0">Total Consumers</h5>
@@ -570,7 +621,7 @@
 </div>
 
 <!-- Admin Logs Modal -->
-<div class="modal fade" id="adminLogsModal" tabindex="-1" aria-labelledby="adminLogsModalLabel" aria-hidden="true">
+<div id="adminLogsModal" class="modal fade" tabindex="-1" aria-labelledby="adminLogsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
@@ -582,7 +633,7 @@
             <div class="modal-body p-0">
                 <div class="container-fluid p-3">
                     <!-- Filters -->
-                    <div class="row mb-3">
+                    <div id="logsFilters" class="row mb-3">
                         <div class="col-12">
                             <form id="logsFilterForm" class="row g-2">
                                 <div class="col-md-3">
@@ -612,7 +663,7 @@
                     </div>
 
                     <!-- Map Toggle -->
-                    <div class="row mb-3">
+                    <div id="mapToggleContainer" class="row mb-3">
                         <div class="col-12">
                             <button class="btn btn-outline-primary btn-sm" id="toggleMapBtn">
                                 <i class="fas fa-map me-1"></i> Toggle Map
@@ -628,11 +679,33 @@
                             </h6>
                             <small class="text-muted">Click on location pins to see details</small>
                         </div>
-                        <div id="map"></div>
+                        <div id="map" class="position-relative">
+                            <!-- Map controls will be added here dynamically -->
+                            <div id="mapControls" class="map-controls">
+                                <button id="zoomInBtn" class="map-control-btn">Zoom In</button>
+                                <button id="zoomOutBtn" class="map-control-btn">Zoom Out</button>
+                                <button id="resetViewBtn" class="map-control-btn">Reset View</button>
+                                <button id="toggleClustersBtn" class="map-control-btn">Toggle Clusters</button>
+                            </div>
+                            <div id="mapLegend" class="map-legend">
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background-color: green;"></div>
+                                    <span>Successful Login</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background-color: red;"></div>
+                                    <span>Failed Login</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background-color: blue;"></div>
+                                    <span>Other Activity</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Logs Table -->
-                    <div class="table-responsive">
+                    <div id="logsTableContainer" class="table-responsive">
                         <table class="table table-striped table-hover">
                             <thead class="table-light">
                                 <tr>
@@ -661,14 +734,14 @@
                     </div>
 
                     <!-- Pagination -->
-                    <div class="d-flex justify-content-center mt-3">
+                    <div id="paginationContainer" class="d-flex justify-content-center mt-3">
                         <nav id="logsPagination">
                             <!-- Pagination will be loaded here -->
                         </nav>
                     </div>
 
                     <!-- Statistics -->
-                    <div class="row mt-3">
+                    <div id="statisticsContainer" class="row mt-3">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-body">
@@ -710,7 +783,7 @@
 </div>
 
 <!-- Session Timer Display -->
-<div class="session-timer" id="sessionTimer">
+<div id="sessionTimer" class="session-timer">
     <i class="fas fa-clock me-2"></i>
     Session expires in: <span id="sessionTimeDisplay">03:00</span>
 </div>
@@ -726,6 +799,10 @@
 <!-- Leaflet for maps -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Leaflet MarkerCluster -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+<script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
 
 <script>
  $(document).ready(function() {
@@ -914,11 +991,11 @@
     initSessionManagement();
     
     // Mobile sidebar toggle functionality
-    const sidebar = $('.sidebar');
-    const mainContent = $('.main-content');
-    const header = $('.header');
+    const sidebar = $('#sidebar');
+    const mainContent = $('#mainContent');
+    const header = $('#header');
     const sidebarToggle = $('#sidebarToggle');
-    const mobileOverlay = $('.mobile-overlay');
+    const mobileOverlay = $('#mobileOverlay');
     
     sidebarToggle.on('click', function() {
         sidebar.toggleClass('active');
@@ -1052,7 +1129,7 @@
     }); 
 
     // SweetAlert2 Logout Confirmation - With reversed buttons
-    $('#logout-btn').on('click', function(e) {
+    $('#logoutLink').on('click', function(e) {
         e.preventDefault();
         
         Swal.fire({
@@ -1171,8 +1248,10 @@
     // Admin Logs Modal functionality
     let map;
     let markers = [];
+    let markerClusterGroup;
     let mapVisible = false;
     let currentPage = 1;
+    let useClusters = true;
     
     // Initialize map when modal is shown
     $('#adminLogsModal').on('shown.bs.modal', function() {
@@ -1191,6 +1270,41 @@
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
+        
+        // Initialize marker cluster group
+        markerClusterGroup = L.markerClusterGroup({
+            iconCreateFunction: function(cluster) {
+                const count = cluster.getChildCount();
+                let size = 'small';
+                if (count > 10) size = 'medium';
+                if (count > 50) size = 'large';
+                
+                return L.divIcon({
+                    html: `<div class="cluster-marker cluster-${size}">${count}</div>`,
+                    className: 'custom-cluster-icon',
+                    iconSize: L.point(40, 40)
+                });
+            }
+        });
+        
+        // Add map control event listeners
+        $('#zoomInBtn').on('click', function() {
+            map.zoomIn();
+        });
+        
+        $('#zoomOutBtn').on('click', function() {
+            map.zoomOut();
+        });
+        
+        $('#resetViewBtn').on('click', function() {
+            map.setView([12.8797, 121.7740], 5);
+        });
+        
+        $('#toggleClustersBtn').on('click', function() {
+            useClusters = !useClusters;
+            $(this).text(useClusters ? 'Disable Clusters' : 'Enable Clusters');
+            refreshMapMarkers();
+        });
     }
     
     // Load admin logs
@@ -1415,6 +1529,9 @@
             setTimeout(() => {
                 map.invalidateSize();
                 if (markers.length > 0) {
+                    if (useClusters) {
+                        map.addLayer(markerClusterGroup);
+                    }
                     const group = new L.featureGroup(markers);
                     map.fitBounds(group.getBounds().pad(0.1));
                 } else {
@@ -1424,13 +1541,50 @@
             }, 100);
         } else {
             mapContainer.addClass('d-none');
+            if (useClusters) {
+                map.removeLayer(markerClusterGroup);
+            }
         }
     });
+    
+    // Refresh map markers based on current cluster setting
+    function refreshMapMarkers() {
+        if (!map) return;
+        
+        if (useClusters) {
+            // Remove individual markers and add to cluster
+            markers.forEach(marker => {
+                if (map.hasLayer(marker)) {
+                    map.removeLayer(marker);
+                }
+                markerClusterGroup.addLayer(marker);
+            });
+            if (mapVisible && !map.hasLayer(markerClusterGroup)) {
+                map.addLayer(markerClusterGroup);
+            }
+        } else {
+            // Remove cluster and add individual markers
+            if (map.hasLayer(markerClusterGroup)) {
+                map.removeLayer(markerClusterGroup);
+            }
+            markers.forEach(marker => {
+                if (!map.hasLayer(marker)) {
+                    map.addLayer(marker);
+                }
+            });
+        }
+    }
     
     // Load all locations for the map
     function loadAllLocations(logs) {
         // Clear existing markers
-        markers.forEach(marker => map.removeLayer(marker));
+        markers.forEach(marker => {
+            if (useClusters) {
+                markerClusterGroup.removeLayer(marker);
+            } else {
+                map.removeLayer(marker);
+            }
+        });
         markers = [];
         
         // If logs not provided, get them from the table
@@ -1494,7 +1648,7 @@
             iconAnchor: [10, 10]
         });
 
-        const marker = L.marker([lat, lon], { icon: customIcon }).addTo(map);
+        const marker = L.marker([lat, lon], { icon: customIcon });
         
         // Create popup content
         const popupContent = `
@@ -1509,6 +1663,14 @@
         `;
         
         marker.bindPopup(popupContent);
+        
+        // Add marker to map or cluster
+        if (useClusters) {
+            markerClusterGroup.addLayer(marker);
+        } else {
+            marker.addTo(map);
+        }
+        
         markers.push(marker);
     }
     
@@ -1520,7 +1682,13 @@
         }
 
         // Clear existing markers and focus on this one
-        markers.forEach(marker => map.removeLayer(marker));
+        markers.forEach(marker => {
+            if (useClusters) {
+                markerClusterGroup.removeLayer(marker);
+            } else {
+                map.removeLayer(marker);
+            }
+        });
         markers = [];
 
         if (city && country && country !== 'Local') {
@@ -1529,8 +1697,13 @@
             // Wait a bit for geocoding to complete, then fit bounds
             setTimeout(() => {
                 if (markers.length > 0) {
-                    const group = new L.featureGroup(markers);
-                    map.fitBounds(group.getBounds().pad(0.1));
+                    if (useClusters) {
+                        markerClusterGroup.addLayer(markers[0]);
+                    } else {
+                        markers[0].addTo(map);
+                    }
+                    
+                    map.setView([markers[0].getLatLng().lat, markers[0].getLatLng().lng], 10);
                     
                     // Open the popup
                     markers[0].openPopup();
@@ -1569,6 +1742,30 @@
             confirmButtonColor: '#d32f2f'
         });
     });
+    
+    // Add custom styles for marker clusters
+    $('<style>')
+        .prop('type', 'text/css')
+        .html(`
+            .custom-cluster-icon {
+                background: rgba(211, 47, 47, 0.6);
+                border-radius: 50%;
+                color: white;
+                text-align: center;
+                font-weight: bold;
+                line-height: 40px;
+            }
+            .cluster-small {
+                font-size: 14px;
+            }
+            .cluster-medium {
+                font-size: 16px;
+            }
+            .cluster-large {
+                font-size: 18px;
+            }
+        `)
+        .appendTo('head');
 });
 
 
