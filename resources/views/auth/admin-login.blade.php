@@ -215,10 +215,35 @@
             color: var(--warning);
         }
         
+        .location-required {
+            color: var(--error);
+            font-weight: 600;
+        }
+        
         .btn-location {
             padding: 0.4rem 0.8rem;
             font-size: 0.8rem;
             border-radius: 4px;
+        }
+        
+        /* Location denied warning */
+        .location-denied-warning {
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+        
+        .location-denied-warning .warning-icon {
+            color: var(--error);
+            margin-right: 0.5rem;
+        }
+        
+        .location-denied-warning .warning-text {
+            font-size: 0.9rem;
+            color: var(--text);
         }
         
         /* Two-factor authentication styles */
@@ -450,6 +475,17 @@
             <button type="button" class="btn btn-primary btn-location" id="requestLocationBtn">Enable</button>
         </div>
         
+        <!-- Location Denied Warning -->
+        <div class="location-denied-warning" id="locationDeniedWarning">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-exclamation-triangle warning-icon"></i>
+                <div class="warning-text">
+                    <strong>Location Access Required</strong><br>
+                    You must enable location access to log in for security purposes. Please click "Enable" and allow location access when prompted.
+                </div>
+            </div>
+        </div>
+        
         <form id="loginForm" method="POST" action="{{ route('admin-login') }}">
             @csrf
             <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
@@ -589,12 +625,14 @@
         const locationPermission = document.getElementById('locationPermission');
         const locationStatus = document.getElementById('locationStatus');
         const requestLocationBtn = document.getElementById('requestLocationBtn');
+        const locationDeniedWarning = document.getElementById('locationDeniedWarning');
         const latitudeInput = document.getElementById('latitude');
         const longitudeInput = document.getElementById('longitude');
         const locationAccuracyInput = document.getElementById('location_accuracy');
         
         let userLocation = null;
         let locationPermissionGranted = false;
+        let locationPermissionDenied = false;
         
         // Track login attempts
         let loginAttempts = 0;
@@ -608,6 +646,8 @@
         function requestLocationPermission() {
             if (!navigator.geolocation) {
                 updateLocationStatus('denied', 'Geolocation is not supported by this browser');
+                locationPermissionDenied = true;
+                showLocationDeniedWarning();
                 return;
             }
             
@@ -631,7 +671,11 @@
                     
                     updateLocationStatus('granted', `Location access granted (Accuracy: ${Math.round(userLocation.accuracy)}m)`);
                     locationPermissionGranted = true;
+                    locationPermissionDenied = false;
                     requestLocationBtn.innerHTML = '<i class="fas fa-check"></i> Enabled';
+                    
+                    // Hide warning if shown
+                    locationDeniedWarning.style.display = 'none';
                     
                     // Enable login button if form is valid
                     checkFormValidity();
@@ -653,25 +697,12 @@
                     }
                     
                     updateLocationStatus('denied', errorMessage);
+                    locationPermissionDenied = true;
                     requestLocationBtn.disabled = false;
                     requestLocationBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Retry';
                     
-                    // Show warning but allow login to proceed
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Location Access Required',
-                        text: 'For security purposes, we need to access your location. You can still login, but location data will not be recorded.',
-                        confirmButtonColor: '#1a73e8',
-                        showCancelButton: true,
-                        cancelButtonText: 'Cancel',
-                        confirmButtonText: 'Continue Without Location'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            // Allow login without location
-                            locationPermissionGranted = true;
-                            checkFormValidity();
-                        }
-                    });
+                    // Show warning message
+                    showLocationDeniedWarning();
                 },
                 // Options
                 {
@@ -680,6 +711,12 @@
                     maximumAge: 0
                 }
             );
+        }
+        
+        // Show location denied warning
+        function showLocationDeniedWarning() {
+            locationDeniedWarning.style.display = 'block';
+            updateLocationStatus('required', 'Location access is required to login');
         }
         
         // Update location status display
@@ -723,10 +760,15 @@
             // Check if location permission is granted
             if (!locationPermissionGranted) {
                 Swal.fire({
-                    icon: 'warning',
+                    icon: 'error',
                     title: 'Location Access Required',
-                    text: 'Please enable location access for security purposes before logging in.',
-                    confirmButtonColor: '#1a73e8'
+                    text: 'You must enable location access to log in for security purposes. Please click the "Enable" button and allow location access when prompted.',
+                    confirmButtonColor: '#1a73e8',
+                    confirmButtonText: 'Enable Location'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        requestLocationPermission();
+                    }
                 });
                 return;
             }
