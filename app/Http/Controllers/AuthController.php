@@ -411,7 +411,7 @@ return response()->json([
 // Log failed login attempt (wrong password)
 $this->adminLogService->logActivity(
 $admin,
-'Login Failed',
+'failed_login_attempt - wrong_password',
 $request
 );
 
