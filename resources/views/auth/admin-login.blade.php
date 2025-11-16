@@ -171,6 +171,74 @@
             margin-top: 0.4rem;
         }
         
+        /* Location permission styles */
+        .location-permission {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border);
+        }
+        
+        .location-permission h5 {
+            color: var(--text);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        
+        .location-permission p {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        
+        .btn-location {
+            background-color: var(--success);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 30px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-location:hover {
+            background-color: #05b884;
+            transform: translateY(-2px);
+        }
+        
+        .btn-location:disabled {
+            background-color: var(--text-light);
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .location-status {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+        
+        .location-status.success {
+            color: var(--success);
+        }
+        
+        .location-status.error {
+            color: var(--error);
+        }
+        
+        .location-status i {
+            margin-right: 0.5rem;
+        }
+        
+        .login-form {
+            display: none;
+        }
+        
         /* Two-factor authentication styles */
         .verification-code-inputs {
             display: flex;
@@ -379,41 +447,59 @@
             </div>
         @endif
         
-        <form id="loginForm" method="POST" action="{{ route('admin-login') }}">
-            @csrf
-            <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
-            
-            <div class="form-group">
-                <input type="email" id="email" name="email" value="{{ old('email') }}" required autofocus placeholder="Email address">
-                @error('email')
-                    <div class="error-message">{{ $message }}</div>
-                @enderror
-            </div>
-            
-            <div class="form-group">
-                <input type="password" id="password" name="password" required placeholder="Password">
-                <i class="fas fa-eye-slash input-icon" id="togglePassword"></i>
-                @error('password')
-                    <div class="error-message">{{ $message }}</div>
-                @enderror
-            </div>
-            
-            <div class="forgot-password">
-                <a href="#" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal">
-                    Forgot password? <i class="fas fa-question-circle"></i>
-                </a>
-            </div>
-            
-            <button type="submit" class="btn-login" id="loginBtn">
-                <span>Log In</span>
+        <!-- Location Permission Request -->
+        <div id="locationPermission" class="location-permission">
+            <h5><i class="fas fa-map-marker-alt me-2"></i>Location Access Required</h5>
+            <p>For security purposes, this system requires access to your location before you can log in. This helps us track login locations and enhance account security.</p>
+            <button id="requestLocationBtn" class="btn-location">
+                <i class="fas fa-location-arrow me-2"></i>Allow Location Access
             </button>
-            <div class="back-link">
-                <a href="{{ url('/consumer-portal') }}">
-                    <i class="fas fa-arrow-left"></i> Back to Main Login
-                </a>
+            <div id="locationStatus" class="location-status">
+                <i class="fas fa-spinner fa-spin"></i> Getting your location...
             </div>
-            
-        </form>
+        </div>
+        
+        <!-- Login Form (Initially Hidden) -->
+        <div id="loginFormContainer" class="login-form">
+            <form id="loginForm" method="POST" action="{{ route('admin-login') }}">
+                @csrf
+                <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
+                <input type="hidden" name="latitude" id="latitude">
+                <input type="hidden" name="longitude" id="longitude">
+                <input type="hidden" name="accuracy" id="accuracy">
+                
+                <div class="form-group">
+                    <input type="email" id="email" name="email" value="{{ old('email') }}" required autofocus placeholder="Email address">
+                    @error('email')
+                        <div class="error-message">{{ $message }}</div>
+                    @enderror
+                </div>
+                
+                <div class="form-group">
+                    <input type="password" id="password" name="password" required placeholder="Password">
+                    <i class="fas fa-eye-slash input-icon" id="togglePassword"></i>
+                    @error('password')
+                        <div class="error-message">{{ $message }}</div>
+                    @enderror
+                </div>
+                
+                <div class="forgot-password">
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal">
+                        Forgot password? <i class="fas fa-question-circle"></i>
+                    </a>
+                </div>
+                
+                <button type="submit" class="btn-login" id="loginBtn">
+                    <span>Log In</span>
+                </button>
+                <div class="back-link">
+                    <a href="{{ url('/consumer-portal') }}">
+                        <i class="fas fa-arrow-left"></i> Back to Main Login
+                    </a>
+                </div>
+                
+            </form>
+        </div>
 
         <!-- Two-Factor Authentication Modal -->
         <div class="modal fade" id="twoFactorModal" tabindex="-1" aria-labelledby="twoFactorModalLabel" aria-hidden="true">
@@ -494,6 +580,19 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Location tracking variables
+        let locationData = {
+            latitude: null,
+            longitude: null,
+            accuracy: null,
+            timestamp: null
+        };
+        
+        // DOM elements
+        const locationPermission = document.getElementById('locationPermission');
+        const requestLocationBtn = document.getElementById('requestLocationBtn');
+        const locationStatus = document.getElementById('locationStatus');
+        const loginFormContainer = document.getElementById('loginFormContainer');
         const form = document.getElementById('loginForm');
         const emailInput = document.getElementById('email');
         const passwordInput = document.getElementById('password');
@@ -519,6 +618,78 @@
         let countdownInterval;
         let resendCountdownInterval;
         
+        // Request location permission
+        requestLocationBtn.addEventListener('click', function() {
+            requestLocationBtn.disabled = true;
+            locationStatus.style.display = 'block';
+            locationStatus.className = 'location-status';
+            locationStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Getting your location...';
+            
+            // Check if geolocation is supported
+            if (!navigator.geolocation) {
+                locationStatus.className = 'location-status error';
+                locationStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Geolocation is not supported by your browser';
+                requestLocationBtn.disabled = false;
+                return;
+            }
+            
+            // Request high accuracy location
+            navigator.geolocation.getCurrentPosition(
+                // Success callback
+                function(position) {
+                    // Store location data
+                    locationData.latitude = position.coords.latitude;
+                    locationData.longitude = position.coords.longitude;
+                    locationData.accuracy = position.coords.accuracy;
+                    locationData.timestamp = position.timestamp;
+                    
+                    // Update location status
+                    locationStatus.className = 'location-status success';
+                    locationStatus.innerHTML = '<i class="fas fa-check-circle"></i> Location access granted. You can now log in.';
+                    
+                    // Hide location permission and show login form
+                    setTimeout(() => {
+                        locationPermission.style.display = 'none';
+                        loginFormContainer.style.display = 'block';
+                        
+                        // Update hidden fields with location data
+                        document.getElementById('latitude').value = locationData.latitude;
+                        document.getElementById('longitude').value = locationData.longitude;
+                        document.getElementById('accuracy').value = locationData.accuracy;
+                    }, 1500);
+                },
+                // Error callback
+                function(error) {
+                    let errorMessage = '';
+                    
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage = 'Location access denied. Please enable location access in your browser settings.';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage = 'Location information is unavailable.';
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage = 'Location request timed out. Please try again.';
+                            break;
+                        case error.UNKNOWN_ERROR:
+                            errorMessage = 'An unknown error occurred while getting your location.';
+                            break;
+                    }
+                    
+                    locationStatus.className = 'location-status error';
+                    locationStatus.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${errorMessage}`;
+                    requestLocationBtn.disabled = false;
+                },
+                // Options
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        });
+        
         // Toggle password visibility
         togglePassword.addEventListener('click', function() {
             const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
@@ -533,6 +704,17 @@
             
             // Check if account is locked
             if (isLocked) {
+                return;
+            }
+            
+            // Ensure we have location data
+            if (!locationData.latitude || !locationData.longitude) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Location Required',
+                    text: 'Location data is required for login. Please refresh the page and allow location access.',
+                    confirmButtonColor: '#1a73e8'
+                });
                 return;
             }
             
