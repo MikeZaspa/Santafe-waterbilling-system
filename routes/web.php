@@ -467,8 +467,8 @@ Route::middleware(['auth'])->group(function () {
     
     // Add other protected routes here...
 });
-Route::get('/admin-login', [App\Http\Controllers\AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/admin-login', [App\Http\Controllers\AuthController::class, 'login']);
+Route::get('/login', [App\Http\Controllers\AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [App\Http\Controllers\AuthController::class, 'login']);
 // Public routes (authentication routes)
 Route::get('/plumber-login', function () {
     return redirect('/admin-plumber-dashboard');
