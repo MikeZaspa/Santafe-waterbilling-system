@@ -355,31 +355,6 @@
             text-align: center;
         }
         
-        /* Location accuracy indicator */
-        .location-accuracy {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            background: white;
-            padding: 8px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            z-index: 1000;
-            font-size: 0.8rem;
-        }
-        
-        .accuracy-high {
-            color: #28a745;
-        }
-        
-        .accuracy-medium {
-            color: #ffc107;
-        }
-        
-        .accuracy-low {
-            color: #dc3545;
-        }
-        
         @media (min-width: 992px) {
             .sidebar {
                 transform: translateX(0);
@@ -777,14 +752,9 @@
                         <p id="ipAddressInfo" class="mb-1"><strong>IP Address:</strong> <span id="ipAddressValue">-</span></p>
                         <p id="locationInfo" class="mb-1"><strong>Location:</strong> <span id="locationValue">-</span></p>
                         <p id="coordinatesInfo" class="mb-1"><strong>Coordinates:</strong> <span id="coordinatesValue">-</span></p>
-                        <p id="accuracyInfo" class="mb-1"><strong>Accuracy:</strong> <span id="accuracyValue">-</span></p>
                         <p id="loginTimeInfo" class="mb-1"><strong>Login Time:</strong> <span id="loginTimeValue">-</span></p>
                         <p id="deviceInfo" class="mb-0"><strong>Device:</strong> <span id="deviceValue">-</span></p>
                     </div>
-                </div>
-                <div id="locationAccuracy" class="location-accuracy">
-                    <i class="fas fa-map-marker-alt me-1"></i> 
-                    Location accuracy: <span id="accuracyIndicator">-</span>
                 </div>
             </div>
         </div>
@@ -815,7 +785,7 @@
     const sessionTimeDisplay = document.getElementById('sessionTimeDisplay');
     let sessionTimeout; // Will store timeout ID
     let warningTimeout; // Will store warning timeout ID
-    let sessionInterval; // Will store interval ID for updating the display
+    let sessionInterval; // Will store the interval ID for updating the display
     const sessionDuration = 3 * 60 * 1000; // 3 minutes in milliseconds
     const warningTime = 30 * 1000; // 30 seconds before expiry to show warning
     let sessionStartTime;
@@ -823,7 +793,6 @@
     let isSessionActive = false;
     let map; // Will store the map instance
     let currentMarker; // Will store the current marker
-    let accuracyCircle; // Will store the accuracy circle
     
     // Initialize session management
     function initSessionManagement() {
@@ -1370,8 +1339,7 @@ function renderLogsTable(logs) {
                 data-browser="${log.browser}"
                 data-platform="${log.platform}"
                 data-latitude="${log.latitude || ''}"
-                data-longitude="${log.longitude || ''}"
-                data-accuracy="${log.accuracy || ''}">
+                data-longitude="${log.longitude || ''}">
                 <td id="idCell-${log.id}">
                     <span id="logId-${log.id}" class="badge bg-secondary">${displayId}</span>
                 </td>
@@ -1433,292 +1401,200 @@ function renderLogsTable(logs) {
     
     $('#logsTableBody').html(html);
     
-    // Add click event for view map buttons
-    $('.view-map-btn').on('click', function() {
-        const logId = $(this).data('log-id');
-        const row = $(`#log-row-${logId - 1}`); // Adjust index to match row ID
+    // Replace the entire $('.view-map-btn').on('click', function() { ... }) block with this improved version:
+
+ $('.view-map-btn').on('click', function() {
+    const logId = $(this).data('log-id');
+    const row = $(`tr[data-log-id="${logId}"]`); // More reliable selector
+    
+    // Get data from row
+    const ip = row.data('ip');
+    const country = row.data('country');
+    const city = row.data('city');
+    const region = row.data('region');
+    const email = row.data('email');
+    const activity = row.data('activity');
+    const loginTime = row.data('login-time');
+    const browser = row.data('browser');
+    const platform = row.data('platform');
+    const latitude = row.data('latitude');
+    const longitude = row.data('longitude');
+    
+    // Update map info immediately
+    $('#ipAddressValue').text(ip);
+    $('#locationValue').text(city && country ? `${city}, ${region ? region + ', ' : ''}${country}` : 'Unknown');
+    $('#loginTimeValue').text(loginTime);
+    $('#deviceValue').text(`${browser} on ${platform}`);
+    
+    // Show map modal
+    $('#mapModal').modal('show');
+    
+    // Show loading indicator
+    $('#mapLoading').removeClass('d-none');
+    
+    // Function to update map with coordinates
+    function updateMapWithCoordinates(lat, lon, locationText) {
+        // Update coordinates display
+        $('#coordinatesValue').text(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
         
-        // Get data from row
-        const ip = row.data('ip');
-        const country = row.data('country');
-        const city = row.data('city');
-        const region = row.data('region');
-        const email = row.data('email');
-        const activity = row.data('activity');
-        const loginTime = row.data('login-time');
-        const browser = row.data('browser');
-        const platform = row.data('platform');
-        const latitude = row.data('latitude');
-        const longitude = row.data('longitude');
-        const accuracy = row.data('accuracy');
+        // Set map view to the location
+        map.setView([lat, lon], 12); // Increased zoom level for better visibility
         
-        // Update map info
-        $('#ipAddressValue').text(ip);
-        $('#locationValue').text(city && country ? `${city}, ${region ? region + ', ' : ''}${country}` : 'Unknown');
-        $('#loginTimeValue').text(loginTime);
-        $('#deviceValue').text(`${browser} on ${platform}`);
+        // Remove existing marker if it exists
+        if (currentMarker) {
+            map.removeLayer(currentMarker);
+        }
         
-        // Show map modal
-        $('#mapModal').modal('show');
+        // Add new marker with custom icon
+        currentMarker = L.marker([lat, lon], {
+            icon: L.icon({
+                iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+                shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            })
+        }).addTo(map);
         
-        // Show loading indicator
-        $('#mapLoading').removeClass('d-none');
+        // Add popup with location info
+        currentMarker.bindPopup(`
+            <div style="min-width: 200px;">
+                <h6>Login Location Details</h6>
+                <hr>
+                <p><strong>IP Address:</strong> ${ip}</p>
+                <p><strong>Location:</strong> ${locationText}</p>
+                <p><strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}</p>
+                <p><strong>Login Time:</strong> ${loginTime}</p>
+                <p><strong>Device:</strong> ${browser} on ${platform}</p>
+            </div>
+        `).openPopup();
         
-        // Check if we have coordinates directly from the database
-        if (latitude && longitude) {
-            // Use the coordinates from the database
-            const lat = parseFloat(latitude);
-            const lon = parseFloat(longitude);
-            
-            // Update coordinates display
-            $('#coordinatesValue').text(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
-            
-            // Determine accuracy level
-            let accuracyLevel = 'high';
-            let accuracyRadius = 100; // Default radius in meters
-            
-            if (accuracy) {
-                const acc = parseFloat(accuracy);
-                if (acc < 100) {
-                    accuracyLevel = 'high';
-                    accuracyRadius = 100;
-                } else if (acc < 1000) {
-                    accuracyLevel = 'medium';
-                    accuracyRadius = 500;
+        // Hide loading indicator
+        $('#mapLoading').addClass('d-none');
+    }
+    
+    // Process location in order of preference
+    if (latitude && longitude) {
+        // 1. Use coordinates from the database if available
+        const lat = parseFloat(latitude);
+        const lon = parseFloat(longitude);
+        updateMapWithCoordinates(lat, lon, `${city}, ${region ? region + ', ' : ''}${country}`);
+    } else if (ip) {
+        // 2. Try to get location from IP address
+        $.ajax({
+            url: `https://ipapi.co/${ip}/json/`,
+            method: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                if (data && data.latitude && data.longitude) {
+                    const locationText = data.city && data.country ? 
+                        `${data.city}, ${data.region ? data.region + ', ' : ''}${data.country}` : 
+                        'Unknown Location';
+                    
+                    updateMapWithCoordinates(data.latitude, data.longitude, locationText);
+                    
+                    // Update the location display with more accurate data
+                    $('#locationValue').text(locationText);
                 } else {
-                    accuracyLevel = 'low';
-                    accuracyRadius = 2000;
+                    // If IP lookup fails, try geocoding the city/country
+                    if (city && country) {
+                        geocodeLocation(city, country, region, ip, loginTime, browser, platform);
+                    } else {
+                        $('#mapLoading').addClass('d-none');
+                        showLocationError("No location information available for this log entry.");
+                    }
+                }
+            },
+            error: function() {
+                // If IP lookup fails, try geocoding the city/country
+                if (city && country) {
+                    geocodeLocation(city, country, region, ip, loginTime, browser, platform);
+                } else {
+                    $('#mapLoading').addClass('d-none');
+                    showLocationError("Unable to determine location from IP address.");
+                }
+            }
+        });
+    } else if (city && country) {
+        // 3. Try to geocode the city/country if no IP is available
+        geocodeLocation(city, country, region, ip, loginTime, browser, platform);
+    } else {
+        // 4. No location information available
+        $('#mapLoading').addClass('d-none');
+        showLocationError("No location information available for this log entry.");
+    }
+});
+
+// Helper function to geocode location using Nominatim
+function geocodeLocation(city, country, region, ip, loginTime, browser, platform) {
+    const query = `${city}, ${region ? region + ', ' : ''}${country}`;
+    
+    $.ajax({
+        url: `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&addressdetails=1`,
+        method: 'GET',
+        success: function(data) {
+            if (data && data.length > 0) {
+                const lat = parseFloat(data[0].lat);
+                const lon = parseFloat(data[0].lon);
+                
+                // Get more detailed location info if available
+                const displayCity = data[0].address.city || data[0].address.town || city;
+                const displayRegion = data[0].address.state || region;
+                const locationText = `${displayCity}, ${displayRegion ? displayRegion + ', ' : ''}${country}`;
+                
+                // Update map with coordinates
+                $('#coordinatesValue').text(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
+                
+                // Set map view to the location
+                map.setView([lat, lon], 12);
+                
+                // Remove existing marker if it exists
+                if (currentMarker) {
+                    map.removeLayer(currentMarker);
                 }
                 
-                $('#accuracyValue').text(`${acc} meters`);
+                // Add new marker
+                currentMarker = L.marker([lat, lon]).addTo(map);
+                
+                // Add popup with location info
+                currentMarker.bindPopup(`
+                    <div style="min-width: 200px;">
+                        <h6>Login Location Details</h6>
+                        <hr>
+                        <p><strong>IP Address:</strong> ${ip}</p>
+                        <p><strong>Location:</strong> ${locationText}</p>
+                        <p><strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}</p>
+                        <p><strong>Login Time:</strong> ${loginTime}</p>
+                        <p><strong>Device:</strong> ${browser} on ${platform}</p>
+                    </div>
+                `).openPopup();
+                
+                // Update the location display with more accurate data
+                $('#locationValue').text(locationText);
             } else {
-                // Default accuracy based on data source
-                $('#accuracyValue').text('Estimated (database coordinates)');
+                showLocationError("Unable to find coordinates for this location.");
             }
-            
-            // Update accuracy indicator
-            updateAccuracyIndicator(accuracyLevel);
-            
-            // Set map view to the location
-            map.setView([lat, lon], 12);
-            
-            // Remove existing marker and accuracy circle if they exist
-            if (currentMarker) {
-                map.removeLayer(currentMarker);
-            }
-            if (accuracyCircle) {
-                map.removeLayer(accuracyCircle);
-            }
-            
-            // Add accuracy circle
-            accuracyCircle = L.circle([lat, lon], {
-                color: accuracyLevel === 'high' ? '#28a745' : accuracyLevel === 'medium' ? '#ffc107' : '#dc3545',
-                fillColor: accuracyLevel === 'high' ? '#28a745' : accuracyLevel === 'medium' ? '#ffc107' : '#dc3545',
-                fillOpacity: 0.2,
-                radius: accuracyRadius
-            }).addTo(map);
-            
-            // Add new marker
-            currentMarker = L.marker([lat, lon]).addTo(map);
-            
-            // Add popup with location info
-            currentMarker.bindPopup(`
-                <div>
-                    <strong>IP Address:</strong> ${ip}<br>
-                    <strong>Location:</strong> ${city}, ${region ? region + ', ' : ''}${country}<br>
-                    <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
-                    <strong>Accuracy:</strong> ${accuracyLevel} (${accuracyRadius}m radius)<br>
-                    <strong>Login Time:</strong> ${loginTime}<br>
-                    <strong>Device:</strong> ${browser} on ${platform}
-                </div>
-            `).openPopup();
             
             // Hide loading indicator
             $('#mapLoading').addClass('d-none');
-        } else if (city && country) {
-            // If we don't have coordinates, try to geocode the location
-            const query = `${city}, ${region ? region + ', ' : ''}${country}`;
-            
-            // First try ip-api.com for more accurate location based on IP
-            $.ajax({
-                url: `https://ip-api.com/json/${ip}`,
-                method: 'GET',
-                dataType: 'json',
-                success: function(data) {
-                    if (data && data.status === 'success') {
-                        const lat = data.lat;
-                        const lon = data.lon;
-                        
-                        // Update coordinates display
-                        $('#coordinatesValue').text(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
-                        
-                        // Update accuracy based on data source
-                        $('#accuracyValue').text('Estimated (IP-based)');
-                        updateAccuracyIndicator('medium'); // IP-based is typically medium accuracy
-                        
-                        // Set map view to the location
-                        map.setView([lat, lon], 12);
-                        
-                        // Remove existing marker and accuracy circle if they exist
-                        if (currentMarker) {
-                            map.removeLayer(currentMarker);
-                        }
-                        if (accuracyCircle) {
-                            map.removeLayer(accuracyCircle);
-                        }
-                        
-                        // Add accuracy circle for IP-based location (typically city-level accuracy)
-                        accuracyCircle = L.circle([lat, lon], {
-                            color: '#ffc107',
-                            fillColor: '#ffc107',
-                            fillOpacity: 0.2,
-                            radius: 5000 // 5km radius for IP-based location
-                        }).addTo(map);
-                        
-                        // Add new marker
-                        currentMarker = L.marker([lat, lon]).addTo(map);
-                        
-                        // Add popup with location info
-                        currentMarker.bindPopup(`
-                            <div>
-                                <strong>IP Address:</strong> ${ip}<br>
-                                <strong>Location:</strong> ${data.city}, ${data.regionName}, ${data.country}<br>
-                                <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
-                                <strong>ISP:</strong> ${data.isp || 'Unknown'}<br>
-                                <strong>Accuracy:</strong> Medium (IP-based, ~5km radius)<br>
-                                <strong>Login Time:</strong> ${loginTime}<br>
-                                <strong>Device:</strong> ${browser} on ${platform}
-                            </div>
-                        `).openPopup();
-                        
-                        // Update location display with more accurate data
-                        $('#locationValue').text(`${data.city}, ${data.regionName}, ${data.country}`);
-                    } else {
-                        // If IP-based lookup fails, try Nominatim
-                        geocodeWithNominatim(query, ip, city, region, country, loginTime, browser, platform);
-                    }
-                    
-                    // Hide loading indicator
-                    $('#mapLoading').addClass('d-none');
-                },
-                error: function() {
-                    // If IP-based lookup fails, try Nominatim
-                    geocodeWithNominatim(query, ip, city, region, country, loginTime, browser, platform);
-                }
-            });
-        } else {
-            // If location is unknown, show a message
+        },
+        error: function() {
+            showLocationError("Unable to get coordinates for this location.");
             $('#mapLoading').addClass('d-none');
-            Swal.fire({
-                title: 'Unknown Location',
-                text: 'No location information available for this log entry.',
-                icon: 'info',
-                confirmButtonColor: '#d32f2f'
-            });
         }
     });
 }
-    
-    // Function to geocode using Nominatim as fallback
-    function geocodeWithNominatim(query, ip, city, region, country, loginTime, browser, platform) {
-        // Use Nominatim API to geocode the location
-        $.ajax({
-            url: `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`,
-            method: 'GET',
-            success: function(data) {
-                if (data && data.length > 0) {
-                    const lat = parseFloat(data[0].lat);
-                    const lon = parseFloat(data[0].lon);
-                    
-                    // Update coordinates display
-                    $('#coordinatesValue').text(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
-                    
-                    // Update accuracy based on data source
-                    $('#accuracyValue').text('Estimated (city name)');
-                    updateAccuracyIndicator('low'); // City name-based is typically low accuracy
-                    
-                    // Set map view to the location
-                    map.setView([lat, lon], 12);
-                    
-                    // Remove existing marker and accuracy circle if they exist
-                    if (currentMarker) {
-                        map.removeLayer(currentMarker);
-                    }
-                    if (accuracyCircle) {
-                        map.removeLayer(accuracyCircle);
-                    }
-                    
-                    // Add accuracy circle for city-based location (typically lower accuracy)
-                    accuracyCircle = L.circle([lat, lon], {
-                        color: '#dc3545',
-                        fillColor: '#dc3545',
-                        fillOpacity: 0.2,
-                        radius: 10000 // 10km radius for city-based location
-                    }).addTo(map);
-                    
-                    // Add new marker
-                    currentMarker = L.marker([lat, lon]).addTo(map);
-                    
-                    // Add popup with location info
-                    currentMarker.bindPopup(`
-                        <div>
-                            <strong>IP Address:</strong> ${ip}<br>
-                            <strong>Location:</strong> ${city}, ${region ? region + ', ' : ''}${country}<br>
-                            <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
-                            <strong>Accuracy:</strong> Low (city name-based, ~10km radius)<br>
-                            <strong>Login Time:</strong> ${loginTime}<br>
-                            <strong>Device:</strong> ${browser} on ${platform}
-                        </div>
-                    `).openPopup();
-                } else {
-                    // If geocoding fails, show a message
-                    Swal.fire({
-                        title: 'Location Not Found',
-                        text: 'Unable to find coordinates for this location. Showing default view.',
-                        icon: 'warning',
-                        confirmButtonColor: '#d32f2f',
-                        timer: 3000
-                    });
-                }
-                
-                // Hide loading indicator
-                $('#mapLoading').addClass('d-none');
-            },
-            error: function() {
-                // If API call fails, show a message
-                Swal.fire({
-                    title: 'Geocoding Error',
-                    text: 'Unable to get coordinates for this location. Showing default view.',
-                    icon: 'error',
-                    confirmButtonColor: '#d32f2f',
-                    timer: 3000
-                });
-                
-                // Hide loading indicator
-                $('#mapLoading').addClass('d-none');
-            }
-        });
-    }
-    
-    // Function to update accuracy indicator
-    function updateAccuracyIndicator(level) {
-        const indicator = $('#accuracyIndicator');
-        const accuracyDiv = $('#locationAccuracy');
-        
-        // Remove all accuracy classes
-        accuracyDiv.removeClass('accuracy-high accuracy-medium accuracy-low');
-        
-        if (level === 'high') {
-            indicator.text('High (±100m)');
-            accuracyDiv.addClass('accuracy-high');
-        } else if (level === 'medium') {
-            indicator.text('Medium (±5km)');
-            accuracyDiv.addClass('accuracy-medium');
-        } else {
-            indicator.text('Low (±10km)');
-            accuracyDiv.addClass('accuracy-low');
-        }
-    }
+
+// Helper function to show location error
+function showLocationError(message) {
+    Swal.fire({
+        title: 'Location Issue',
+        text: message,
+        icon: 'warning',
+        confirmButtonColor: '#d32f2f'
+    });
+}
     
     // Render pagination
     function renderPagination(logs) {
