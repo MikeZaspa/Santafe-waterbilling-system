@@ -1321,11 +1321,12 @@ function renderLogsTable(logs) {
         const activityBadge = log.activity.includes('successful') ? 
             'bg-success' : log.activity.includes('failed') ? 'bg-danger' : 'bg-primary';
         
-        const location = log.city && log.country ? 
-            `<div id="location-${log.id}" class="d-flex align-items-center">
-                <span id="locationText-${log.id}">${log.city}, ${log.country}</span>
-            </div>` : 
-            `<span id="unknownLocation-${log.id}" class="text-muted">Unknown</span>`;
+       // With this improved version:
+const location = log.city || log.country ? 
+    `<div id="location-${log.id}" class="d-flex align-items-center">
+        <span id="locationText-${log.id}">${log.city ? log.city : ''}${log.city && log.country ? ', ' : ''}${log.country ? log.country : ''}</span>
+    </div>` : 
+    `<span id="unknownLocation-${log.id}" class="text-muted">Unknown</span>`;
         
         html += `
             <tr id="${rowId}" data-log-id="${log.id}" 
