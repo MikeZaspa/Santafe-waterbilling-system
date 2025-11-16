@@ -1290,7 +1290,7 @@ function loadAdminLogs(page = 1) {
     });
 }
     
-    // Render logs table
+ // Render logs table
 function renderLogsTable(logs) {
     if (logs.length === 0) {
         $('#logsTableBody').html(`
@@ -1308,7 +1308,7 @@ function renderLogsTable(logs) {
     logs.forEach(function(log, index) {
         const logId = `log-${log.id}`;
         const rowId = `log-row-${index}`;
-        const displayId = index + 1; // This will make IDs start from 1
+        const displayId = index + 1;
         const loginTime = new Date(log.login_at).toLocaleString();
         const logoutTime = log.logout_at ? new Date(log.logout_at).toLocaleString() : '';
         const duration = log.session_duration ? formatDuration(log.session_duration) : '-';
@@ -1316,15 +1316,38 @@ function renderLogsTable(logs) {
             '<span class="badge bg-secondary">Completed</span>' : 
             '<span class="badge bg-success">Active</span>';
         
-        const activityBadge = log.activity.includes('successful') ? 
-            'bg-success' : log.activity.includes('failed') ? 'bg-danger' : 'bg-primary';
+        // Improved activity badge with better error detection
+        let activityBadge = 'bg-primary';
+        if (log.activity.includes('successful') || log.activity.includes('Successfully')) {
+            activityBadge = 'bg-success';
+        } else if (log.activity.includes('failed') || log.activity.includes('Failed') || 
+                   log.activity.includes('error') || log.activity.includes('Error') ||
+                   log.activity.includes('wrong_password') || log.activity.includes('inactive') ||
+                   log.activity.includes('not_found') || log.activity.includes('not_verified')) {
+            activityBadge = 'bg-danger';
+        } else if (log.activity.includes('warning') || log.activity.includes('Warning')) {
+            activityBadge = 'bg-warning';
+        }
         
-       // With this improved version:
-const location = log.city || log.country ? 
-    `<div id="location-${log.id}" class="d-flex align-items-center">
-        <span id="locationText-${log.id}">${log.city ? log.city : ''}${log.city && log.country ? ', ' : ''}${log.country ? log.country : ''}</span>
-    </div>` : 
-    `<span id="unknownLocation-${log.id}" class="text-muted">Unknown</span>`;
+        // Improved location display with better fallbacks
+        let locationDisplay = '<span class="text-muted">Unknown</span>';
+        if (log.city && log.country && log.city !== 'Unknown' && log.country !== 'Unknown') {
+            locationDisplay = `
+                <div class="d-flex align-items-center">
+                    <span>${log.city}, ${log.country}</span>
+                </div>
+            `;
+        } else if (log.country && log.country !== 'Unknown') {
+            locationDisplay = `
+                <div class="d-flex align-items-center">
+                    <span>${log.country}</span>
+                </div>
+            `;
+        } else if (log.ip_address === '127.0.0.1' || log.ip_address.startsWith('192.168.') || log.ip_address.startsWith('10.')) {
+            locationDisplay = '<span class="text-info">Local Network</span>';
+        } else if (log.ip_address) {
+            locationDisplay = `<span class="text-warning">IP: ${log.ip_address}</span>`;
+        }
         
         html += `
             <tr id="${rowId}" data-log-id="${log.id}" 
@@ -1338,58 +1361,61 @@ const location = log.city || log.country ?
                 data-browser="${log.browser}"
                 data-platform="${log.platform}"
                 data-latitude="${log.latitude || ''}"
-                data-longitude="${log.longitude || ''}">
-                <td id="idCell-${log.id}">
-                    <span id="logId-${log.id}" class="badge bg-secondary">${displayId}</span>
+                data-longitude="${log.longitude || ''}"
+                data-status="${log.status}">
+                <td>
+                    <span class="badge bg-secondary">${displayId}</span>
                 </td>
-                <td id="emailCell-${log.id}">
-                    <div id="adminInfo-${log.id}" class="d-flex align-items-center">
-                        <div id="adminAvatar-${log.id}" class="avatar-sm bg-primary rounded-circle text-white d-flex align-items-center justify-content-center me-2">
+                <td>
+                    <div class="d-flex align-items-center">
+                        <div class="avatar-sm bg-primary rounded-circle text-white d-flex align-items-center justify-content-center me-2">
                             ${log.email.charAt(0).toUpperCase()}
                         </div>
-                        <div id="adminDetails-${log.id}">
-                            <div id="adminEmail-${log.id}" class="fw-bold">${log.email}</div>
+                        <div>
+                            <div class="fw-bold">${log.email}</div>
+                            ${log.status === 'failed' ? '<small class="text-danger">Failed Attempt</small>' : ''}
                         </div>
                     </div>
                 </td>
-                <td id="ipCell-${log.id}">
-                    <code id="ipAddress-${log.id}">${log.ip_address}</code>
+                <td>
+                    <code>${log.ip_address}</code>
                 </td>
-                <td id="locationCell-${log.id}">${location}</td>
-                <td id="deviceCell-${log.id}">
+                <td>${locationDisplay}</td>
+                <td>
                     <small>
-                        <i id="browserIcon-${log.id}" class="fas fa-desktop me-1 text-muted"></i> <span id="browser-${log.id}">${log.browser}</span><br>
-                        <i id="platformIcon-${log.id}" class="fas fa-laptop me-1 text-muted"></i> <span id="platform-${log.id}">${log.platform}</span>
+                        <i class="fas fa-desktop me-1 text-muted"></i> ${log.browser || 'Unknown'}<br>
+                        <i class="fas fa-laptop me-1 text-muted"></i> ${log.platform || 'Unknown'}
                     </small>
                 </td>
-                <td id="activityCell-${log.id}">
-                    <span id="activityBadge-${log.id}" class="badge ${activityBadge}">${log.activity}</span>
+                <td>
+                    <span class="badge ${activityBadge}">${log.activity}</span>
                 </td>
-                <td id="loginTimeCell-${log.id}">
+                <td>
                     <small>
-                        <span id="loginDate-${log.id}">${loginTime.split(',')[0]}</span><br>
-                        <span id="loginTime-${log.id}">${loginTime.split(',')[1]}</span>
+                        <span>${loginTime.split(',')[0]}</span><br>
+                        <span>${loginTime.split(',')[1]}</span>
                     </small>
                 </td>
-                <td id="logoutTimeCell-${log.id}">
+                <td>
                     ${logoutTime ? 
                         `<small>
-                            <span id="logoutDate-${log.id}">${logoutTime.split(',')[0]}</span><br>
-                            <span id="logoutTime-${log.id}">${logoutTime.split(',')[1]}</span>
+                            <span>${logoutTime.split(',')[0]}</span><br>
+                            <span>${logoutTime.split(',')[1]}</span>
                         </small>` : 
-                        `<span id="activeBadge-${log.id}" class="badge bg-warning">Active</span>`
+                        `<span class="badge bg-warning">Active</span>`
                     }
                 </td>
-                <td id="durationCell-${log.id}">
+                <td>
                     ${duration !== '-' ? 
-                        `<span id="durationBadge-${log.id}" class="badge bg-info">${duration}</span>` : 
-                        `<span id="noDuration-${log.id}" class="text-muted">-</span>`
+                        `<span class="badge bg-info">${duration}</span>` : 
+                        `<span class="text-muted">-</span>`
                     }
                 </td>
-                <td id="statusCell-${log.id}">${status}</td>
-                <td id="actionsCell-${log.id}">
+                <td>${status}</td>
+                <td>
                     <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-sm btn-outline-primary view-map-btn" data-log-id="${log.id}" title="View on Map">
+                        <button type="button" class="btn btn-sm btn-outline-primary view-map-btn" data-log-id="${log.id}" title="View on Map" 
+                            ${(!log.latitude || !log.longitude) && log.ip_address === '127.0.0.1' ? 'disabled' : ''}>
                             <i class="fas fa-map-marked-alt"></i>
                         </button>
                     </div>
@@ -1401,13 +1427,10 @@ const location = log.city || log.country ?
     $('#logsTableBody').html(html);
     
     // Add click event for view map buttons
-    $('.view-map-btn').on('click', function() {
+    $('.view-map-btn:not(:disabled)').on('click', function() {
         const logId = $(this).data('log-id');
-        
-        // Find the row with matching log ID
         const row = $(`tr[data-log-id="${logId}"]`);
         
-        // Get data from row
         const ip = row.data('ip');
         const country = row.data('country');
         const city = row.data('city');
@@ -1419,67 +1442,67 @@ const location = log.city || log.country ?
         const platform = row.data('platform');
         const latitude = row.data('latitude');
         const longitude = row.data('longitude');
+        const status = row.data('status');
         
         // Update map info
         $('#ipAddressValue').text(ip);
-        $('#locationValue').text(city && country ? `${city}, ${region ? region + ', ' : ''}${country}` : 'Unknown');
+        $('#locationValue').text(city && country ? `${city}, ${region ? region + ', ' : ''}${country}` : 'Unknown Location');
         $('#loginTimeValue').text(loginTime);
         $('#deviceValue').text(`${browser} on ${platform}`);
         
         // Show map modal
         $('#mapModal').modal('show');
-        
-        // Show loading indicator
         $('#mapLoading').removeClass('d-none');
         
-        // Check if we have coordinates directly from the database
+        // Check if we have coordinates
         if (latitude && longitude) {
-            // Use the coordinates from the database
             const lat = parseFloat(latitude);
             const lon = parseFloat(longitude);
             
-            // Update coordinates display
             $('#coordinatesValue').text(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
-            
-            // Set map view to the location
             map.setView([lat, lon], 10);
             
-            // Remove existing marker if it exists
             if (currentMarker) {
                 map.removeLayer(currentMarker);
             }
             
-            // Add new marker
             currentMarker = L.marker([lat, lon]).addTo(map);
-            
-            // Add popup with location info
             currentMarker.bindPopup(`
                 <div>
                     <strong>IP Address:</strong> ${ip}<br>
                     <strong>Location:</strong> ${city}, ${region ? region + ', ' : ''}${country}<br>
                     <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
                     <strong>Login Time:</strong> ${loginTime}<br>
-                    <strong>Device:</strong> ${browser} on ${platform}
+                    <strong>Device:</strong> ${browser} on ${platform}<br>
+                    <strong>Status:</strong> ${status}
                 </div>
             `).openPopup();
             
-            // Hide loading indicator
             $('#mapLoading').addClass('d-none');
-        } else if (ip) {
-            // If we don't have coordinates, try to get location from IP
-            // Try multiple geolocation services for better accuracy
-            getLocationFromIP(ip, city, country, region, loginTime, browser, platform);
+        } else if (ip && ip !== '127.0.0.1') {
+            getLocationFromIP(ip, city, country, region, loginTime, browser, platform, status);
         } else {
-            // If location is unknown, show a message
             $('#mapLoading').addClass('d-none');
+            $('#coordinatesValue').text('Not available');
             Swal.fire({
-                title: 'Unknown Location',
-                text: 'No location information available for this log entry.',
+                title: 'Location Not Available',
+                text: 'Location data is not available for this log entry. This could be due to local network access or geolocation service limitations.',
                 icon: 'info',
                 confirmButtonColor: '#d32f2f'
             });
         }
     });
+
+    // Show tooltip for disabled buttons
+    $('.view-map-btn:disabled').on('click', function() {
+        Swal.fire({
+            title: 'Local Network',
+            text: 'Location mapping is not available for local network IP addresses.',
+            icon: 'info',
+            confirmButtonColor: '#d32f2f'
+        });
+    });
+
 }
     
     // Function to get location from IP using multiple services

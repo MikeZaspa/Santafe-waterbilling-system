@@ -332,11 +332,12 @@ public function checkCredentials(Request $request)
     ]);
 
     if ($validator->fails()) {
-        // Log failed validation attempt
+        // Log validation errors with location data
         $this->adminLogService->logActivity(
             null,
-            'failed_login_attempt - validation_failed',
-            $request
+            'failed_login_attempt - validation_errors: ' . implode(', ', $validator->errors()->all()),
+            $request,
+            'failed'
         );
         
         return response()->json([
