@@ -459,21 +459,7 @@ Route::put('/admin/plumbers/{id}', [PlumberController::class, 'update'])->name('
 Route::delete('/admin/plumbers/{id}', [PlumberController::class, 'destroy'])->name('admin.plumbers.destroy');
 
 // Admin plumber dashboard route
-Route::middleware(['auth'])->group(function () {
-    Route::get('/admin-plumber-dashboard', [ReadingController::class, 'index'])->name('admin.plumber.dashboard');
-    Route::post('/reconnect/{id}', [ReadingController::class, 'reconnect'])->name('reconnect');
-    Route::get('/dashboard-data', [ReadingController::class, 'getDashboardData'])->name('dashboard.data');
-    Route::get('/reconnected-consumers', [ReadingController::class, 'getReconnectedConsumers'])->name('reconnected.consumers');
-    
-    // Add other protected routes here...
-});
-Route::get('/login', [App\Http\Controllers\AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [App\Http\Controllers\AuthController::class, 'login']);
-// Public routes (authentication routes)
-Route::get('/plumber-login', function () {
-    return redirect('/admin-plumber-dashboard');
-});
-
+Route::get('/admin-plumber-dashboard', [ReadingController::class, 'index'])->name('admin.plumber.dashboard');
 
 // Accountant Login Routes
 Route::get('/accountant-login', function() {
