@@ -505,8 +505,6 @@
                     <span class="d-none d-md-inline">Admin</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUser">
-                    <li><a id="profileLink" class="dropdown-item" href="#">Profile</a></li>
-                    <li><a id="settingsLink" class="dropdown-item" href="#">Settings</a></li>
                     <li><a id="adminLogsBtn" class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#adminLogsModal">Admin Logs</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <!-- In the dropdown menu -->
