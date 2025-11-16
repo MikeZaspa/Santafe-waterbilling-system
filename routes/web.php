@@ -473,8 +473,7 @@ Route::get('/', function () {
     return redirect('/admin-plumber-dashboard');
 });
 
-// Auth routes (if using Laravel UI)
-Auth::routes();
+
 // Accountant Login Routes
 Route::get('/accountant-login', function() {
     return view('auth.accountant-login');
