@@ -611,17 +611,8 @@
                         </div>
                     </div>
 
-                    <!-- Map Toggle -->
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <button class="btn btn-outline-primary btn-sm" id="toggleMapBtn">
-                                <i class="fas fa-map me-1"></i> Toggle Map
-                            </button>
-                        </div>
-                    </div>
-
                     <!-- Geolocation Map -->
-                    <div id="mapContainer" class="d-none">
+                    <div id="mapContainer">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h6 class="mb-0">
                                 <i class="fas fa-map-marker-alt me-2"></i>Login Locations Map
@@ -1082,7 +1073,7 @@
                     }
                 });
                 
-                // Submit the logout form
+                // Submit logout form
                 setTimeout(() => {
                     document.getElementById('logout-form').submit();
                 }, 1000);
@@ -1171,7 +1162,6 @@
     // Admin Logs Modal functionality
     let map;
     let markers = [];
-    let mapVisible = false;
     let currentPage = 1;
     
     // Initialize map when modal is shown
@@ -1228,10 +1218,8 @@
             renderPagination(data.logs);
             updateStatistics(data.statistics);
             
-            // Load map data if map is visible
-            if (mapVisible) {
-                loadAllLocations(data.logs.data);
-            }
+            // Load map data
+            loadAllLocations(data.logs.data);
         }).fail(function() {
             $('#logsTableBody').html(`
                 <tr>
@@ -1404,29 +1392,6 @@
         return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
     
-    // Toggle map visibility
-    $('#toggleMapBtn').on('click', function() {
-        const mapContainer = $('#mapContainer');
-        mapVisible = !mapVisible;
-        
-        if (mapVisible) {
-            mapContainer.removeClass('d-none');
-            // Refresh map bounds to show all markers
-            setTimeout(() => {
-                map.invalidateSize();
-                if (markers.length > 0) {
-                    const group = new L.featureGroup(markers);
-                    map.fitBounds(group.getBounds().pad(0.1));
-                } else {
-                    // Load all locations if not already loaded
-                    loadAllLocations();
-                }
-            }, 100);
-        } else {
-            mapContainer.addClass('d-none');
-        }
-    });
-    
     // Load all locations for the map
     function loadAllLocations(logs) {
         // Clear existing markers
@@ -1510,15 +1475,18 @@
         
         marker.bindPopup(popupContent);
         markers.push(marker);
+        
+        // Fit map to show all markers after the first one is added
+        if (markers.length === 1) {
+            setTimeout(() => {
+                const group = new L.featureGroup(markers);
+                map.fitBounds(group.getBounds().pad(0.1));
+            }, 500);
+        }
     }
     
     // Show specific location on map
     window.showLocationOnMap = function(ip, city, country, region, email, activity, loginTime) {
-        // Show map if hidden
-        if (!mapVisible) {
-            $('#toggleMapBtn').click();
-        }
-
         // Clear existing markers and focus on this one
         markers.forEach(marker => map.removeLayer(marker));
         markers = [];
