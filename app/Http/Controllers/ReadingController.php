@@ -12,10 +12,18 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 class ReadingController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth'); // Apply auth middleware to all methods
+    }
     
     public function index()
     {
-      
+      // Check if user is authenticated
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+
         // Count readings with both current and previous readings (completed)
         $completedCount = Billing::whereNotNull('current_reading')
                                ->whereNotNull('previous_reading')
