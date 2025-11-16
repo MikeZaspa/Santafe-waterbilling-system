@@ -254,26 +254,6 @@
             color: #0d5bba;
         }
         
-        .map-popup {
-            font-family: Arial, sans-serif;
-        }
-        
-        .map-popup h6 {
-            margin-bottom: 5px;
-            color: #1a73e8;
-        }
-        
-        .map-popup p {
-            margin: 2px 0;
-            font-size: 12px;
-        }
-        
-        #map {
-            height: 300px;
-            border-radius: 8px;
-            margin-top: 10px;
-        }
-        
         /* Header icon styles */
         .header-icon {
             font-size: 1.25rem;
@@ -611,30 +591,10 @@
                         </div>
                     </div>
 
-                    <!-- Map Toggle -->
-                    <div id="mapToggleContainer" class="row mb-3">
-                        <div class="col-12">
-                            <button class="btn btn-outline-primary btn-sm" id="toggleMapBtn">
-                                <i class="fas fa-map me-1"></i> Toggle Map
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Geolocation Map -->
-                    <div id="mapContainer" class="d-none">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 id="mapTitle" class="mb-0">
-                                <i class="fas fa-map-marker-alt me-2"></i>Login Locations Map
-                            </h6>
-                            <small id="mapSubtitle" class="text-muted">Click on location pins to see details</small>
-                        </div>
-                        <div id="map"></div>
-                    </div>
-
                     <!-- Logs Table -->
                     <div id="logsTableContainer" class="table-responsive">
-                        <table id="logsTable" class="table table-striped table-hover">
-                            <thead id="logsTableHead" class="table-light">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-light">
                                 <tr>
                                     <th>Admin</th>
                                     <th>IP Address</th>
@@ -672,27 +632,27 @@
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-body">
-                                    <h6 id="statisticsTitle" class="card-title">Quick Statistics</h6>
-                                    <div id="statisticsRow" class="row text-center">
-                                        <div id="totalLogsContainer" class="col-md-3">
+                                    <h6 class="card-title">Quick Statistics</h6>
+                                    <div class="row text-center">
+                                        <div class="col-md-3">
                                             <div class="border rounded p-2">
                                                 <h4 class="text-primary mb-0" id="totalLogsCount">0</h4>
                                                 <small class="text-muted">Total Logs</small>
                                             </div>
                                         </div>
-                                        <div id="successfulLoginsContainer" class="col-md-3">
+                                        <div class="col-md-3">
                                             <div class="border rounded p-2">
                                                 <h4 class="text-success mb-0" id="successfulLoginsCount">0</h4>
                                                 <small class="text-muted">Successful Logins</small>
                                             </div>
                                         </div>
-                                        <div id="failedAttemptsContainer" class="col-md-3">
+                                        <div class="col-md-3">
                                             <div class="border rounded p-2">
                                                 <h4 class="text-danger mb-0" id="failedAttemptsCount">0</h4>
                                                 <small class="text-muted">Failed Attempts</small>
                                             </div>
                                         </div>
-                                        <div id="activeSessionsContainer" class="col-md-3">
+                                        <div class="col-md-3">
                                             <div class="border rounded p-2">
                                                 <h4 class="text-warning mb-0" id="activeSessionsCount">0</h4>
                                                 <small class="text-muted">Active Sessions</small>
@@ -723,9 +683,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <!-- SweetAlert2 for notifications -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<!-- Leaflet for maps -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
  $(document).ready(function() {
@@ -1169,29 +1126,13 @@
     });
     
     // Admin Logs Modal functionality
-    let map;
-    let markers = [];
-    let mapVisible = false;
     let currentPage = 1;
     
-    // Initialize map when modal is shown
+    // Initialize when modal is shown
     $('#adminLogsModal').on('shown.bs.modal', function() {
-        if (!map) {
-            initMap();
-        }
         loadAdminLogs();
         loadAdmins();
     });
-    
-    // Initialize map
-    function initMap() {
-        // Default center (Philippines)
-        map = L.map('map').setView([12.8797, 121.7740], 5);
-        
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-    }
     
     // Load admin logs
     function loadAdminLogs(page = 1) {
@@ -1227,11 +1168,6 @@
             renderLogsTable(data.logs.data);
             renderPagination(data.logs);
             updateStatistics(data.statistics);
-            
-            // Load map data if map is visible
-            if (mapVisible) {
-                loadAllLocations(data.logs.data);
-            }
         }).fail(function() {
             $('#logsTableBody').html(`
                 <tr>
@@ -1284,9 +1220,6 @@
             const location = log.city && log.country ? 
                 `<div class="d-flex align-items-center">
                     <span>${log.city}, ${log.country}</span>
-                    <i class="fas fa-map-marker-alt location-pin ms-2" 
-                       onclick="showLocationOnMap('${log.ip_address}', '${log.city}', '${log.country}', '${log.region || ''}', '${log.email}', '${log.activity}', '${loginTime}')"
-                       title="Show on map"></i>
                 </div>` : 
                 '<span class="text-muted">Unknown</span>';
             
@@ -1403,148 +1336,6 @@
         const secs = seconds % 60;
         return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
-    
-    // Toggle map visibility
-    $('#toggleMapBtn').on('click', function() {
-        const mapContainer = $('#mapContainer');
-        mapVisible = !mapVisible;
-        
-        if (mapVisible) {
-            mapContainer.removeClass('d-none');
-            // Refresh map bounds to show all markers
-            setTimeout(() => {
-                map.invalidateSize();
-                if (markers.length > 0) {
-                    const group = new L.featureGroup(markers);
-                    map.fitBounds(group.getBounds().pad(0.1));
-                } else {
-                    // Load all locations if not already loaded
-                    loadAllLocations();
-                }
-            }, 100);
-        } else {
-            mapContainer.addClass('d-none');
-        }
-    });
-    
-    // Load all locations for the map
-    function loadAllLocations(logs) {
-        // Clear existing markers
-        markers.forEach(marker => map.removeLayer(marker));
-        markers = [];
-        
-        // If logs not provided, get them from the table
-        if (!logs) {
-            logs = [];
-            $('#logsTableBody tr[data-country]').each(function() {
-                logs.push({
-                    country: $(this).data('country'),
-                    city: $(this).data('city'),
-                    region: $(this).data('region'),
-                    ip: $(this).data('ip'),
-                    email: $(this).data('email'),
-                    activity: $(this).data('activity'),
-                    loginTime: $(this).data('login-time')
-                });
-            });
-        }
-        
-        // Process each log
-        logs.forEach(function(log) {
-            if (log.country && log.country !== 'Local') {
-                geocodeLocation(log.city, log.country, log.region, log.ip, log.email, log.activity, log.loginTime);
-            }
-        });
-    }
-    
-    // Geocode location and add marker
-    function geocodeLocation(city, country, region, ip, email, activity, loginTime) {
-        const query = `${city}, ${region}, ${country}`;
-        
-        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
-            .then(response => response.json())
-            .then(data => {
-                if (data && data.length > 0) {
-                    const lat = parseFloat(data[0].lat);
-                    const lon = parseFloat(data[0].lon);
-                    
-                    addMarker(lat, lon, city, country, region, ip, email, activity, loginTime);
-                }
-            })
-            .catch(error => {
-                console.error('Geocoding error:', error);
-            });
-    }
-    
-    // Add marker to map
-    function addMarker(lat, lon, city, country, region, ip, email, activity, loginTime) {
-        // Determine marker color based on activity
-        let markerColor = 'blue';
-        if (activity.includes('failed')) {
-            markerColor = 'red';
-        } else if (activity.includes('successful')) {
-            markerColor = 'green';
-        }
-
-        // Create custom icon
-        const customIcon = L.divIcon({
-            html: `<div style="background-color: ${markerColor}; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>`,
-            className: 'custom-marker',
-            iconSize: [20, 20],
-            iconAnchor: [10, 10]
-        });
-
-        const marker = L.marker([lat, lon], { icon: customIcon }).addTo(map);
-        
-        // Create popup content
-        const popupContent = `
-            <div class="map-popup">
-                <h6><i class="fas fa-user"></i> ${email}</h6>
-                <p><strong>Location:</strong> ${city}, ${country}</p>
-                <p><strong>IP Address:</strong> ${ip}</p>
-                <p><strong>Activity:</strong> <span class="badge ${activity.includes('successful') ? 'bg-success' : activity.includes('failed') ? 'bg-danger' : 'bg-primary'}">${activity}</span></p>
-                <p><strong>Login Time:</strong> ${loginTime}</p>
-                <p><strong>Region:</strong> ${region || 'N/A'}</p>
-            </div>
-        `;
-        
-        marker.bindPopup(popupContent);
-        markers.push(marker);
-    }
-    
-    // Show specific location on map
-    window.showLocationOnMap = function(ip, city, country, region, email, activity, loginTime) {
-        // Show map if hidden
-        if (!mapVisible) {
-            $('#toggleMapBtn').click();
-        }
-
-        // Clear existing markers and focus on this one
-        markers.forEach(marker => map.removeLayer(marker));
-        markers = [];
-
-        if (city && country && country !== 'Local') {
-            geocodeLocation(city, country, region, ip, email, activity, loginTime);
-            
-            // Wait a bit for geocoding to complete, then fit bounds
-            setTimeout(() => {
-                if (markers.length > 0) {
-                    const group = new L.featureGroup(markers);
-                    map.fitBounds(group.getBounds().pad(0.1));
-                    
-                    // Open the popup
-                    markers[0].openPopup();
-                }
-            }, 500);
-        } else {
-            Swal.fire({
-                icon: 'info',
-                title: 'Location Not Available',
-                text: 'No geographic location data available for this IP address.',
-                confirmButtonColor: '#d32f2f'
-            });
-        }
-    };
     
     // Filter logs
     $('#filterLogsBtn').on('click', function() {
