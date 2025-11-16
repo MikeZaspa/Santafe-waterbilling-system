@@ -1268,10 +1268,7 @@ function renderLogsTable(logs) {
                         <div id="adminAvatar-${log.id}" class="avatar-sm bg-primary rounded-circle text-white d-flex align-items-center justify-content-center me-2">
                             ${log.email.charAt(0).toUpperCase()}
                         </div>
-                        <div id="adminDetails-${log.id}">
-                            <div id="adminName-${log.id}" class="fw-bold">${adminName}</div>
-                            <small id="adminEmail-${log.id}" class="text-muted">${log.email}</small>
-                        </div>
+                        
                     </div>
                 </td>
                 <td id="emailCell-${log.id}">
