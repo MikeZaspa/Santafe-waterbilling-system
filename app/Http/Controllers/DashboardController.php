@@ -86,4 +86,46 @@ class DashboardController extends Controller
         $admins = Admin::select('id', 'email', 'first_name', 'last_name')->get();
         return response()->json($admins);
     }
+
+
+    public function getLogsApi(Request $request)
+{
+    $query = AdminLog::with('admin');
+    
+    // Apply filters
+    if ($request->has('admin_id') && $request->admin_id) {
+        $query->where('admin_id', $request->admin_id);
+    }
+    
+    if ($request->has('activity') && $request->activity) {
+        $query->where('activity', 'like', '%' . $request->activity . '%');
+    }
+    
+    if ($request->has('date_from') && $request->date_from) {
+        $query->whereDate('login_at', '>=', $request->date_from);
+    }
+    
+    if ($request->has('date_to') && $request->date_to) {
+        $query->whereDate('login_at', '<=', $request->date_to);
+    }
+    
+    // Order by latest first
+    $query->orderBy('login_at', 'desc');
+    
+    // Paginate results
+    $logs = $query->paginate(20);
+    
+    // Calculate statistics
+    $statistics = [
+        'total' => AdminLog::count(),
+        'successful' => AdminLog::where('activity', 'like', '%successful%')->count(),
+        'failed' => AdminLog::where('activity', 'like', '%failed%')->count(),
+        'active' => AdminLog::whereNull('logout_at')->count(),
+    ];
+    
+    return response()->json([
+        'logs' => $logs,
+        'statistics' => $statistics
+    ]);
+}
 }

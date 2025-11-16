@@ -329,17 +329,7 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required',
-            'location_method' => 'required|in:browser,ip',
         ]);
-
-        // Only validate location coordinates if browser method is used
-        if ($request->input('location_method') === 'browser') {
-            $validator->addRules([
-                'latitude' => 'required|numeric',
-                'longitude' => 'required|numeric',
-                'location_accuracy' => 'required|numeric',
-            ]);
-        }
 
         if ($validator->fails()) {
             return response()->json([
@@ -546,17 +536,7 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required',
-            'location_method' => 'required|in:browser,ip',
         ]);
-
-        // Only validate location coordinates if browser method is used
-        if ($request->input('location_method') === 'browser') {
-            $validator->addRules([
-                'latitude' => 'required|numeric',
-                'longitude' => 'required|numeric',
-                'location_accuracy' => 'required|numeric',
-            ]);
-        }
 
         if ($validator->fails()) {
             if ($request->expectsJson()) {
@@ -715,6 +695,47 @@ class AuthController extends Controller
         ]);
     }
     
+    // In AuthController.php
+
+public function confirmLocation(Request $request)
+{
+    $request->validate([
+        'email' => 'required|email',
+        'password' => 'required',
+        'latitude' => 'required|numeric',
+        'longitude' => 'required|numeric',
+    ]);
+
+    $admin = Admin::where('email', $request->email)->first();
+    
+    if (!$admin) {
+        return response()->json([
+            'success' => false,
+            'message' => 'User not found.'
+        ], 404);
+    }
+
+    // Store location in session
+    $request->session()->put('admin_location', [
+        'latitude' => $request->latitude,
+        'longitude' => $request->longitude,
+        'confirmed' => true
+    ]);
+
+    // Now proceed with 2FA verification
+    $twoFactorCode = rand(100000, 999999);
+    $admin->two_factor_code = $twoFactorCode;
+    $admin->two_factor_expires_at = now()->addMinutes(10);
+    $admin->save();
+    
+    // Send 2FA code via email
+    Mail::to($admin->email)->send(new TwoFactorCodeMail($twoFactorCode));
+    
+    return response()->json([
+        'success' => true,
+        'message' => 'Location confirmed. Please check your email for the verification code.'
+    ]);
+}
     /**
      * Refresh session to prevent timeout
      */
