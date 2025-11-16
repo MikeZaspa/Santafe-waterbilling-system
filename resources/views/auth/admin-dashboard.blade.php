@@ -602,7 +602,7 @@
                     <div id="logsTableContainer" class="table-responsive">
                         <table id="logsTable" class="table table-striped table-hover">
                             <thead id="logsTableHead" class="table-light">
-                                <tr id="logsTableHeaderRow">
+                                <tr>
                                     <th id="adminColumnHeader">Admin</th>
                                     <th id="ipColumnHeader">IP Address</th>
                                     <th id="locationColumnHeader">Location</th>
@@ -615,10 +615,10 @@
                                 </tr>
                             </thead>
                             <tbody id="logsTableBody">
-                                <tr id="loadingRow">
-                                    <td id="loadingCell" colspan="9" class="text-center py-4">
+                                <tr>
+                                    <td colspan="9" class="text-center py-4">
                                         <div id="loadingSpinner" class="spinner-border text-primary" role="status">
-                                            <span id="loadingSpinnerText" class="visually-hidden">Loading...</span>
+                                            <span class="visually-hidden">Loading...</span>
                                         </div>
                                         <p id="loadingText" class="mt-2">Loading logs...</p>
                                     </td>
@@ -1046,7 +1046,7 @@
                     }
                 });
                 
-                // Submit logout form
+                // Submit the logout form
                 setTimeout(() => {
                     document.getElementById('logout-form').submit();
                 }, 1000);
@@ -1147,12 +1147,12 @@
         
         // Show loading state
         $('#logsTableBody').html(`
-            <tr id="loadingRow">
-                <td id="loadingCell" colspan="9" class="text-center py-4">
-                    <div id="loadingSpinner" class="spinner-border text-primary" role="status">
-                        <span id="loadingSpinnerText" class="visually-hidden">Loading...</span>
+            <tr>
+                <td colspan="9" class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
                     </div>
-                    <p id="loadingText" class="mt-2">Loading logs...</p>
+                    <p class="mt-2">Loading logs...</p>
                 </td>
             </tr>
         `);
@@ -1177,10 +1177,10 @@
             updateStatistics(data.statistics);
         }).fail(function() {
             $('#logsTableBody').html(`
-                <tr id="errorRow">
-                    <td id="errorCell" colspan="9" class="text-center py-4">
-                        <i id="errorIcon" class="fas fa-exclamation-triangle fa-2x text-warning mb-3"></i>
-                        <p id="errorMessage" class="text-muted">Error loading logs. Please try again.</p>
+                <tr>
+                    <td colspan="9" class="text-center py-4">
+                        <i class="fas fa-exclamation-triangle fa-2x text-warning mb-3"></i>
+                        <p class="text-muted">Error loading logs. Please try again.</p>
                     </td>
                 </tr>
             `);
@@ -1202,10 +1202,10 @@
     function renderLogsTable(logs) {
         if (logs.length === 0) {
             $('#logsTableBody').html(`
-                <tr id="noDataRow">
-                    <td id="noDataCell" colspan="9" class="text-center py-4">
-                        <i id="noDataIcon" class="fas fa-search fa-2x text-muted mb-3"></i>
-                        <p id="noDataMessage" class="text-muted">No logs found</p>
+                <tr>
+                    <td colspan="9" class="text-center py-4">
+                        <i class="fas fa-search fa-2x text-muted mb-3"></i>
+                        <p class="text-muted">No logs found</p>
                     </td>
                 </tr>
             `);
@@ -1213,9 +1213,7 @@
         }
         
         let html = '';
-        logs.forEach(function(log, index) {
-            const logId = `log-${log.id}`;
-            const rowId = `log-row-${index}`;
+        logs.forEach(function(log) {
             const loginTime = new Date(log.login_at).toLocaleString();
             const logoutTime = log.logout_at ? new Date(log.logout_at).toLocaleString() : '';
             const duration = log.session_duration ? formatDuration(log.session_duration) : '-';
@@ -1227,13 +1225,13 @@
                 'bg-success' : log.activity.includes('failed') ? 'bg-danger' : 'bg-primary';
             
             const location = log.city && log.country ? 
-                `<div id="location-${log.id}" class="d-flex align-items-center">
-                    <span id="locationText-${log.id}">${log.city}, ${log.country}</span>
+                `<div class="d-flex align-items-center">
+                    <span>${log.city}, ${log.country}</span>
                 </div>` : 
-                `<span id="unknownLocation-${log.id}" class="text-muted">Unknown</span>`;
+                '<span class="text-muted">Unknown</span>';
             
             html += `
-                <tr id="${rowId}" data-log-id="${log.id}" 
+                <tr data-log-id="${log.id}" 
                     data-ip="${log.ip_address}"
                     data-country="${log.country}"
                     data-city="${log.city}"
@@ -1241,54 +1239,54 @@
                     data-email="${log.email}"
                     data-activity="${log.activity}"
                     data-login-time="${loginTime}">
-                    <td id="adminCell-${log.id}">
-                        <div id="adminInfo-${log.id}" class="d-flex align-items-center">
-                            <div id="adminAvatar-${log.id}" class="avatar-sm bg-primary rounded-circle text-white d-flex align-items-center justify-content-center me-2">
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-sm bg-primary rounded-circle text-white d-flex align-items-center justify-content-center me-2">
                                 ${log.email.charAt(0).toUpperCase()}
                             </div>
-                            <div id="adminDetails-${log.id}">
-                                <div id="adminEmail-${log.id}" class="fw-bold">${log.email}</div>
-                                <small id="adminName-${log.id}" class="text-muted">
+                            <div>
+                                <div class="fw-bold">${log.email}</div>
+                                <small class="text-muted">
                                     ${log.admin ? `${log.admin.first_name} ${log.admin.last_name}` : 'Admin Deleted'}
                                 </small>
                             </div>
                         </div>
                     </td>
-                    <td id="ipCell-${log.id}">
-                        <code id="ipAddress-${log.id}">${log.ip_address}</code>
+                    <td>
+                        <code>${log.ip_address}</code>
                     </td>
-                    <td id="locationCell-${log.id}">${location}</td>
-                    <td id="deviceCell-${log.id}">
+                    <td>${location}</td>
+                    <td>
                         <small>
-                            <i id="browserIcon-${log.id}" class="fas fa-desktop me-1 text-muted"></i> <span id="browser-${log.id}">${log.browser}</span><br>
-                            <i id="platformIcon-${log.id}" class="fas fa-laptop me-1 text-muted"></i> <span id="platform-${log.id}">${log.platform}</span>
+                            <i class="fas fa-desktop me-1 text-muted"></i> ${log.browser}<br>
+                            <i class="fas fa-laptop me-1 text-muted"></i> ${log.platform}
                         </small>
                     </td>
-                    <td id="activityCell-${log.id}">
-                        <span id="activityBadge-${log.id}" class="badge ${activityBadge}">${log.activity}</span>
+                    <td>
+                        <span class="badge ${activityBadge}">${log.activity}</span>
                     </td>
-                    <td id="loginTimeCell-${log.id}">
+                    <td>
                         <small>
-                            <span id="loginDate-${log.id}">${loginTime.split(',')[0]}</span><br>
-                            <span id="loginTime-${log.id}">${loginTime.split(',')[1]}</span>
+                            ${loginTime.split(',')[0]}<br>
+                            ${loginTime.split(',')[1]}
                         </small>
                     </td>
-                    <td id="logoutTimeCell-${log.id}">
+                    <td>
                         ${logoutTime ? 
                             `<small>
-                                <span id="logoutDate-${log.id}">${logoutTime.split(',')[0]}</span><br>
-                                <span id="logoutTime-${log.id}">${logoutTime.split(',')[1]}</span>
+                                ${logoutTime.split(',')[0]}<br>
+                                ${logoutTime.split(',')[1]}
                             </small>` : 
-                            `<span id="activeBadge-${log.id}" class="badge bg-warning">Active</span>`
+                            '<span class="badge bg-warning">Active</span>'
                         }
                     </td>
-                    <td id="durationCell-${log.id}">
+                    <td>
                         ${duration !== '-' ? 
-                            `<span id="durationBadge-${log.id}" class="badge bg-info">${duration}</span>` : 
-                            `<span id="noDuration-${log.id}" class="text-muted">-</span>`
+                            `<span class="badge bg-info">${duration}</span>` : 
+                            '<span class="text-muted">-</span>'
                         }
                     </td>
-                    <td id="statusCell-${log.id}">${status}</td>
+                    <td>${status}</td>
                 </tr>
             `;
         });
@@ -1307,23 +1305,23 @@
         
         // Previous button
         html += `<li class="page-item ${logs.current_page === 1 ? 'disabled' : ''}">
-            <a id="prevPageBtn" class="page-link" href="#" onclick="loadAdminLogs(${logs.current_page - 1}); return false;">Previous</a>
+            <a class="page-link" href="#" onclick="loadAdminLogs(${logs.current_page - 1}); return false;">Previous</a>
         </li>`;
         
         // Page numbers
         for (let i = 1; i <= logs.last_page; i++) {
             if (i === 1 || i === logs.last_page || (i >= logs.current_page - 2 && i <= logs.current_page + 2)) {
                 html += `<li class="page-item ${i === logs.current_page ? 'active' : ''}">
-                    <a id="page-${i}" class="page-link" href="#" onclick="loadAdminLogs(${i}); return false;">${i}</a>
+                    <a class="page-link" href="#" onclick="loadAdminLogs(${i}); return false;">${i}</a>
                 </li>`;
             } else if (i === logs.current_page - 3 || i === logs.current_page + 3) {
-                html += `<li class="page-item disabled"><a id="ellipsis-${i}" class="page-link" href="#">...</a></li>`;
+                html += `<li class="page-item disabled"><a class="page-link" href="#">...</a></li>`;
             }
         }
         
         // Next button
         html += `<li class="page-item ${logs.current_page === logs.last_page ? 'disabled' : ''}">
-            <a id="nextPageBtn" class="page-link" href="#" onclick="loadAdminLogs(${logs.current_page + 1}); return false;">Next</a>
+            <a class="page-link" href="#" onclick="loadAdminLogs(${logs.current_page + 1}); return false;">Next</a>
         </li>`;
         
         html += '</ul>';
