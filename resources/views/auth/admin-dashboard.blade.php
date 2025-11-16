@@ -603,7 +603,9 @@
                         <table id="logsTable" class="table table-striped table-hover">
                             <thead id="logsTableHead" class="table-light">
                                 <tr id="logsTableHeaderRow">
+                                    <th id="idColumnHeader">ID</th>
                                     <th id="adminColumnHeader">Admin</th>
+                                    <th id="emailColumnHeader">Email</th>
                                     <th id="ipColumnHeader">IP Address</th>
                                     <th id="locationColumnHeader">Location</th>
                                     <th id="deviceColumnHeader">Device</th>
@@ -616,7 +618,7 @@
                             </thead>
                             <tbody id="logsTableBody">
                                 <tr id="loadingRow">
-                                    <td id="loadingCell" colspan="9" class="text-center py-4">
+                                    <td id="loadingCell" colspan="10" class="text-center py-4">
                                         <div id="loadingSpinner" class="spinner-border text-primary" role="status">
                                             <span id="loadingSpinnerText" class="visually-hidden">Loading...</span>
                                         </div>
@@ -1148,7 +1150,7 @@
         // Show loading state
         $('#logsTableBody').html(`
             <tr id="loadingRow">
-                <td id="loadingCell" colspan="9" class="text-center py-4">
+                <td id="loadingCell" colspan="10" class="text-center py-4">
                     <div id="loadingSpinner" class="spinner-border text-primary" role="status">
                         <span id="loadingSpinnerText" class="visually-hidden">Loading...</span>
                     </div>
@@ -1178,7 +1180,7 @@
         }).fail(function() {
             $('#logsTableBody').html(`
                 <tr id="errorRow">
-                    <td id="errorCell" colspan="9" class="text-center py-4">
+                    <td id="errorCell" colspan="10" class="text-center py-4">
                         <i id="errorIcon" class="fas fa-exclamation-triangle fa-2x text-warning mb-3"></i>
                         <p id="errorMessage" class="text-muted">Error loading logs. Please try again.</p>
                     </td>
@@ -1203,7 +1205,7 @@
         if (logs.length === 0) {
             $('#logsTableBody').html(`
                 <tr id="noDataRow">
-                    <td id="noDataCell" colspan="9" class="text-center py-4">
+                    <td id="noDataCell" colspan="10" class="text-center py-4">
                         <i id="noDataIcon" class="fas fa-search fa-2x text-muted mb-3"></i>
                         <p id="noDataMessage" class="text-muted">No logs found</p>
                     </td>
@@ -1241,18 +1243,22 @@
                     data-email="${log.email}"
                     data-activity="${log.activity}"
                     data-login-time="${loginTime}">
+                    <td id="idCell-${log.id}">
+                        <span id="logId-${log.id}" class="badge bg-secondary">${log.id}</span>
+                    </td>
                     <td id="adminCell-${log.id}">
                         <div id="adminInfo-${log.id}" class="d-flex align-items-center">
                             <div id="adminAvatar-${log.id}" class="avatar-sm bg-primary rounded-circle text-white d-flex align-items-center justify-content-center me-2">
                                 ${log.email.charAt(0).toUpperCase()}
                             </div>
                             <div id="adminDetails-${log.id}">
-                                <div id="adminEmail-${log.id}" class="fw-bold">${log.email}</div>
-                                <small id="adminName-${log.id}" class="text-muted">
-                                    ${log.admin ? `${log.admin.first_name} ${log.admin.last_name}` : 'Admin Deleted'}
-                                </small>
+                                <div id="adminName-${log.id}" class="fw-bold">${log.admin ? `${log.admin.first_name} ${log.admin.last_name}` : 'Admin Deleted'}</div>
+                                <small id="adminEmail-${log.id}" class="text-muted">${log.email}</small>
                             </div>
                         </div>
+                    </td>
+                    <td id="emailCell-${log.id}">
+                        <span id="emailDisplay-${log.id}">${log.email}</span>
                     </td>
                     <td id="ipCell-${log.id}">
                         <code id="ipAddress-${log.id}">${log.ip_address}</code>
