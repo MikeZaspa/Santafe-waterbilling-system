@@ -1321,21 +1321,9 @@ function renderLogsTable(logs) {
         const activityBadge = log.activity.includes('successful') ? 
             'bg-success' : log.activity.includes('failed') ? 'bg-danger' : 'bg-primary';
         
-        // Build location string with city, region, and country
-        let locationString = '';
-        if (log.city) {
-            locationString = log.city;
-            if (log.region) {
-                locationString += ', ' + log.region;
-            }
-            if (log.country) {
-                locationString += ', ' + log.country;
-            }
-        }
-        
-        const location = locationString ? 
+        const location = log.city && log.country ? 
             `<div id="location-${log.id}" class="d-flex align-items-center">
-                <span id="locationText-${log.id}">${locationString}</span>
+                <span id="locationText-${log.id}">${log.city}, ${log.country}</span>
             </div>` : 
             `<span id="unknownLocation-${log.id}" class="text-muted">Unknown</span>`;
         
@@ -1435,20 +1423,7 @@ function renderLogsTable(logs) {
         
         // Update map info
         $('#ipAddressValue').text(ip);
-        
-        // Build location string with city, region, and country
-        let locationString = '';
-        if (city) {
-            locationString = city;
-            if (region) {
-                locationString += ', ' + region;
-            }
-            if (country) {
-                locationString += ', ' + country;
-            }
-        }
-        
-        $('#locationValue').text(locationString || 'Unknown');
+        $('#locationValue').text(city && country ? `${city}, ${region ? region + ', ' : ''}${country}` : 'Unknown');
         $('#loginTimeValue').text(loginTime);
         $('#deviceValue').text(`${browser} on ${platform}`);
         
@@ -1482,7 +1457,7 @@ function renderLogsTable(logs) {
             currentMarker.bindPopup(`
                 <div>
                     <strong>IP Address:</strong> ${ip}<br>
-                    <strong>Location:</strong> ${locationString}<br>
+                    <strong>Location:</strong> ${city}, ${region ? region + ', ' : ''}${country}<br>
                     <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
                     <strong>Login Time:</strong> ${loginTime}<br>
                     <strong>Device:</strong> ${browser} on ${platform}
@@ -1535,23 +1510,11 @@ function renderLogsTable(logs) {
                     // Add new marker
                     currentMarker = L.marker([lat, lon]).addTo(map);
                     
-                    // Build location string with city, region, and country
-                    let locationString = '';
-                    if (data.city) {
-                        locationString = data.city;
-                        if (data.region) {
-                            locationString += ', ' + data.region;
-                        }
-                        if (data.country_name) {
-                            locationString += ', ' + data.country_name;
-                        }
-                    }
-                    
                     // Add popup with location info
                     currentMarker.bindPopup(`
                         <div>
                             <strong>IP Address:</strong> ${ip}<br>
-                            <strong>Location:</strong> ${locationString}<br>
+                            <strong>Location:</strong> ${data.city || city}, ${data.region || region}, ${data.country_name || country}<br>
                             <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
                             <strong>ISP:</strong> ${data.org || 'Unknown'}<br>
                             <strong>Login Time:</strong> ${loginTime}<br>
@@ -1560,7 +1523,7 @@ function renderLogsTable(logs) {
                     `).openPopup();
                     
                     // Update the location display with more accurate data
-                    $('#locationValue').text(locationString);
+                    $('#locationValue').text(`${data.city || city}, ${data.region || region}, ${data.country_name || country}`);
                     
                     // Hide loading indicator
                     $('#mapLoading').addClass('d-none');
@@ -1602,23 +1565,11 @@ function renderLogsTable(logs) {
                     // Add new marker
                     currentMarker = L.marker([lat, lon]).addTo(map);
                     
-                    // Build location string with city, region, and country
-                    let locationString = '';
-                    if (data.city) {
-                        locationString = data.city;
-                        if (data.regionName) {
-                            locationString += ', ' + data.regionName;
-                        }
-                        if (data.country) {
-                            locationString += ', ' + data.country;
-                        }
-                    }
-                    
                     // Add popup with location info
                     currentMarker.bindPopup(`
                         <div>
                             <strong>IP Address:</strong> ${ip}<br>
-                            <strong>Location:</strong> ${locationString}<br>
+                            <strong>Location:</strong> ${data.city || city}, ${data.regionName || region}, ${data.country || country}<br>
                             <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
                             <strong>ISP:</strong> ${data.isp || 'Unknown'}<br>
                             <strong>Login Time:</strong> ${loginTime}<br>
@@ -1627,7 +1578,7 @@ function renderLogsTable(logs) {
                     `).openPopup();
                     
                     // Update the location display with more accurate data
-                    $('#locationValue').text(locationString);
+                    $('#locationValue').text(`${data.city || city}, ${data.regionName || region}, ${data.country || country}`);
                     
                     // Hide loading indicator
                     $('#mapLoading').addClass('d-none');
