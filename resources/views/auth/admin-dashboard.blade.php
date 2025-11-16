@@ -556,6 +556,7 @@
     </div>
 </div>
 
+
 <!-- Admin Logs Modal -->
 <div id="adminLogsModal" class="modal fade" tabindex="-1" aria-labelledby="adminLogsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl">
@@ -567,30 +568,30 @@
                 <button id="adminLogsModalClose" type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div id="adminLogsModalBody" class="modal-body p-0">
-                <div id="adminLogsModalContainer" class="container-fluid p-3">
+                <div class="container-fluid p-3">
                     <!-- Filters -->
                     <div id="logsFilters" class="row mb-3">
-                        <div id="filtersContainer" class="col-12">
+                        <div class="col-12">
                             <form id="logsFilterForm" class="row g-2">
-                                <div id="adminFilterContainer" class="col-md-3">
-                                    <label id="adminFilterLabel" class="form-label">Admin</label>
+                                <div class="col-md-3">
+                                    <label class="form-label">Admin</label>
                                     <select name="admin_id" id="adminFilter" class="form-select form-select-sm">
                                         <option value="">All Admins</option>
                                     </select>
                                 </div>
-                                <div id="activityFilterContainer" class="col-md-3">
-                                    <label id="activityFilterLabel" class="form-label">Activity</label>
+                                <div class="col-md-3">
+                                    <label class="form-label">Activity</label>
                                     <input type="text" name="activity" id="activityFilter" class="form-control form-control-sm" placeholder="Search activity...">
                                 </div>
-                                <div id="dateFromFilterContainer" class="col-md-2">
-                                    <label id="dateFromFilterLabel" class="form-label">Date From</label>
+                                <div class="col-md-2">
+                                    <label class="form-label">Date From</label>
                                     <input type="date" name="date_from" id="dateFromFilter" class="form-control form-control-sm">
                                 </div>
-                                <div id="dateToFilterContainer" class="col-md-2">
-                                    <label id="dateToFilterLabel" class="form-label">Date To</label>
+                                <div class="col-md-2">
+                                    <label class="form-label">Date To</label>
                                     <input type="date" name="date_to" id="dateToFilter" class="form-control form-control-sm">
                                 </div>
-                                <div id="filterButtonsContainer" class="col-md-2 d-flex align-items-end">
+                                <div class="col-md-2 d-flex align-items-end">
                                     <button type="button" id="filterLogsBtn" class="btn btn-primary btn-sm me-1">Filter</button>
                                     <button type="button" id="resetLogsBtn" class="btn btn-secondary btn-sm">Reset</button>
                                 </div>
@@ -600,29 +601,29 @@
 
                     <!-- Logs Table -->
                     <div id="logsTableContainer" class="table-responsive">
-                        <table id="logsTable" class="table table-striped table-hover">
-                            <thead id="logsTableHead" class="table-light">
-                                <tr id="logsTableHeaderRow">
-                                    <th id="idColumnHeader">ID</th>
-                                    <th id="adminColumnHeader">Admin</th>
-                                    <th id="emailColumnHeader">Email</th>
-                                    <th id="ipColumnHeader">IP Address</th>
-                                    <th id="locationColumnHeader">Location</th>
-                                    <th id="deviceColumnHeader">Device</th>
-                                    <th id="activityColumnHeader">Activity</th>
-                                    <th id="loginTimeColumnHeader">Login Time</th>
-                                    <th id="logoutTimeColumnHeader">Logout Time</th>
-                                    <th id="durationColumnHeader">Duration</th>
-                                    <th id="statusColumnHeader">Status</th>
+                        <table id="logsTable1" class="table table-striped table-hover">
+                            <thead id="logsTableHead1" class="table-light">
+                                <tr id="logsTableHeaderRow1">
+                                    <th id="idColumnHeader1">1. ID</th>
+                                    <th id="adminColumnHeader2">2. Admin</th>
+                                    <th id="emailColumnHeader3">3. Email</th>
+                                    <th id="ipColumnHeader4">4. IP Address</th>
+                                    <th id="locationColumnHeader5">5. Location</th>
+                                    <th id="deviceColumnHeader6">6. Device</th>
+                                    <th id="activityColumnHeader7">7. Activity</th>
+                                    <th id="loginTimeColumnHeader8">8. Login Time</th>
+                                    <th id="logoutTimeColumnHeader9">9. Logout Time</th>
+                                    <th id="durationColumnHeader10">10. Duration</th>
+                                    <th id="statusColumnHeader11">11. Status</th>
                                 </tr>
                             </thead>
-                            <tbody id="logsTableBody">
-                                <tr id="loadingRow">
-                                    <td id="loadingCell" colspan="10" class="text-center py-4">
-                                        <div id="loadingSpinner" class="spinner-border text-primary" role="status">
-                                            <span id="loadingSpinnerText" class="visually-hidden">Loading...</span>
+                            <tbody id="logsTableBody1">
+                                <tr id="loadingRow1">
+                                    <td id="loadingCell1" colspan="11" class="text-center py-4">
+                                        <div id="loadingSpinner1" class="spinner-border text-primary" role="status">
+                                            <span id="loadingSpinnerText1" class="visually-hidden">Loading...</span>
                                         </div>
-                                        <p id="loadingText" class="mt-2">Loading logs...</p>
+                                        <p id="loadingText1" class="mt-2">Loading logs...</p>
                                     </td>
                                 </tr>
                             </tbody>
@@ -630,52 +631,52 @@
                     </div>
 
                     <!-- Pagination -->
-                    <div id="paginationContainer" class="d-flex justify-content-between align-items-center mt-3">
-                        <div id="paginationInfo" class="text-muted me-3">
-                            Showing <span id="showingFrom">0</span> to <span id="showingTo">0</span> of <span id="totalRecords">0</span> entries
+                    <div id="paginationContainer1" class="d-flex justify-content-between align-items-center mt-3">
+                        <div id="paginationInfo1" class="text-muted me-3">
+                            Showing <span id="showingFrom1">0</span> to <span id="showingTo1">0</span> of <span id="totalRecords1">0</span> entries
                         </div>
                         <div class="d-flex align-items-center">
-                            <button id="startFirstBtn" type="button" class="btn btn-sm btn-outline-secondary me-1" title="Start">
+                            <button id="startFirstBtn1" type="button" class="btn btn-sm btn-outline-secondary me-1" title="Start">
                                 <i class="bi bi-chevron-double-left"></i>
                             </button>
-                            <nav id="logsPagination">
+                            <nav id="logsPagination1">
                                 <!-- Pagination will be loaded here -->
                             </nav>
-                            <button id="endLastBtn" type="button" class="btn btn-sm btn-outline-secondary ms-1" title="End">
+                            <button id="endLastBtn1" type="button" class="btn btn-sm btn-outline-secondary ms-1" title="End">
                                 <i class="bi bi-chevron-double-right"></i>
                             </button>
                         </div>
                     </div>
 
                     <!-- Statistics -->
-                    <div id="statisticsContainer" class="row mt-3">
-                        <div id="statisticsCardContainer" class="col-12">
-                            <div id="statisticsCard" class="card">
-                                <div id="statisticsCardBody" class="card-body">
-                                    <h6 id="statisticsTitle" class="card-title">Quick Statistics</h6>
-                                    <div id="statisticsRow" class="row text-center">
-                                        <div id="totalLogsContainer" class="col-md-3">
-                                            <div id="totalLogsCard" class="border rounded p-2">
-                                                <h4 id="totalLogsCount" class="text-primary mb-0">0</h4>
-                                                <small id="totalLogsLabel" class="text-muted">Total Logs</small>
+                    <div id="statisticsContainer1" class="row mt-3">
+                        <div id="statisticsCardContainer1" class="col-12">
+                            <div id="statisticsCard1" class="card">
+                                <div id="statisticsCardBody1" class="card-body">
+                                    <h6 id="statisticsTitle1" class="card-title">Quick Statistics</h6>
+                                    <div id="statisticsRow1" class="row text-center">
+                                        <div id="totalLogsContainer1" class="col-md-3">
+                                            <div id="totalLogsCard1" class="border rounded p-2">
+                                                <h4 id="totalLogsCount1" class="text-primary mb-0">0</h4>
+                                                <small id="totalLogsLabel1" class="text-muted">Total Logs</small>
                                             </div>
                                         </div>
-                                        <div id="successfulLoginsContainer" class="col-md-3">
-                                            <div id="successfulLoginsCard" class="border rounded p-2">
-                                                <h4 id="successfulLoginsCount" class="text-success mb-0">0</h4>
-                                                <small id="successfulLoginsLabel" class="text-muted">Successful Logins</small>
+                                        <div id="successfulLoginsContainer1" class="col-md-3">
+                                            <div id="successfulLoginsCard1" class="border rounded p-2">
+                                                <h4 id="successfulLoginsCount1" class="text-success mb-0">0</h4>
+                                                <small id="successfulLoginsLabel1" class="text-muted">Successful Logins</small>
                                             </div>
                                         </div>
-                                        <div id="failedAttemptsContainer" class="col-md-3">
-                                            <div id="failedAttemptsCard" class="border rounded p-2">
-                                                <h4 id="failedAttemptsCount" class="text-danger mb-0">0</h4>
-                                                <small id="failedAttemptsLabel" class="text-muted">Failed Attempts</small>
+                                        <div id="failedAttemptsContainer1" class="col-md-3">
+                                            <div id="failedAttemptsCard1" class="border rounded p-2">
+                                                <h4 id="failedAttemptsCount1" class="text-danger mb-0">0</h4>
+                                                <small id="failedAttemptsLabel1" class="text-muted">Failed Attempts</small>
                                             </div>
                                         </div>
-                                        <div id="activeSessionsContainer" class="col-md-3">
-                                            <div id="activeSessionsCard" class="border rounded p-2">
-                                                <h4 id="activeSessionsCount" class="text-warning mb-0">0</h4>
-                                                <small id="activeSessionsLabel" class="text-muted">Active Sessions</small>
+                                        <div id="activeSessionsContainer1" class="col-md-3">
+                                            <div id="activeSessionsCard1" class="border rounded p-2">
+                                                <h4 id="activeSessionsCount1" class="text-warning mb-0">0</h4>
+                                                <small id="activeSessionsLabel1" class="text-muted">Active Sessions</small>
                                             </div>
                                         </div>
                                     </div>
@@ -1146,257 +1147,285 @@
     });
     
     // Admin Logs Modal functionality
-    let currentPage = 1;
+let currentPage = 1;
+
+// Initialize when modal is shown
+$('#adminLogsModal').on('shown.bs.modal', function() {
+    loadAdminLogs();
+    loadAdmins();
+});
+
+// Load admin logs
+function loadAdminLogs(page = 1) {
+    currentPage = page;
     
-    // Initialize when modal is shown
-    $('#adminLogsModal').on('shown.bs.modal', function() {
-        loadAdminLogs();
-        loadAdmins();
-    });
+    // Show loading state with numbered IDs
+    $('#logsTableBody1').html(`
+        <tr id="loadingRow1">
+            <td id="loadingCell1" colspan="11" class="text-center py-4">
+                <div id="loadingSpinner1" class="spinner-border text-primary" role="status">
+                    <span id="loadingSpinnerText1" class="visually-hidden">Loading...</span>
+                </div>
+                <p id="loadingText1" class="mt-2">Loading logs...</p>
+            </td>
+        </tr>
+    `);
     
-    // Load admin logs
-    function loadAdminLogs(page = 1) {
-        currentPage = page;
-        
-        // Show loading state
-        $('#logsTableBody').html(`
-            <tr id="loadingRow">
-                <td id="loadingCell" colspan="10" class="text-center py-4">
-                    <div id="loadingSpinner" class="spinner-border text-primary" role="status">
-                        <span id="loadingSpinnerText" class="visually-hidden">Loading...</span>
-                    </div>
-                    <p id="loadingText" class="mt-2">Loading logs...</p>
+    // Get filter values
+    const adminId = $('#adminFilter').val();
+    const activity = $('#activityFilter').val();
+    const dateFrom = $('#dateFromFilter').val();
+    const dateTo = $('#dateToFilter').val();
+    
+    // Build query string
+    let queryString = `?page=${page}`;
+    if (adminId) queryString += `&admin_id=${adminId}`;
+    if (activity) queryString += `&activity=${activity}`;
+    if (dateFrom) queryString += `&date_from=${dateFrom}`;
+    if (dateTo) queryString += `&date_to=${dateTo}`;
+    
+    // Fetch logs via AJAX
+    $.get(`/admin/logs/api${queryString}`, function(data) {
+        renderLogsTable(data.logs.data);
+        renderPagination(data.logs);
+        updateStatistics(data.statistics);
+    }).fail(function() {
+        $('#logsTableBody1').html(`
+            <tr id="errorRow1">
+                <td id="errorCell1" colspan="11" class="text-center py-4">
+                    <i id="errorIcon1" class="fas fa-exclamation-triangle fa-2x text-warning mb-3"></i>
+                    <p id="errorMessage1" class="text-muted">Error loading logs. Please try again.</p>
                 </td>
             </tr>
         `);
-        
-        // Get filter values
-        const adminId = $('#adminFilter').val();
-        const activity = $('#activityFilter').val();
-        const dateFrom = $('#dateFromFilter').val();
-        const dateTo = $('#dateToFilter').val();
-        
-        // Build query string
-        let queryString = `?page=${page}`;
-        if (adminId) queryString += `&admin_id=${adminId}`;
-        if (activity) queryString += `&activity=${activity}`;
-        if (dateFrom) queryString += `&date_from=${dateFrom}`;
-        if (dateTo) queryString += `&date_to=${dateTo}`;
-        
-        // Fetch logs via AJAX
-        $.get(`/admin/logs/api${queryString}`, function(data) {
-            renderLogsTable(data.logs.data);
-            renderPagination(data.logs);
-            updateStatistics(data.statistics);
-        }).fail(function() {
-            $('#logsTableBody').html(`
-                <tr id="errorRow">
-                    <td id="errorCell" colspan="10" class="text-center py-4">
-                        <i id="errorIcon" class="fas fa-exclamation-triangle fa-2x text-warning mb-3"></i>
-                        <p id="errorMessage" class="text-muted">Error loading logs. Please try again.</p>
-                    </td>
-                </tr>
-            `);
+    });
+}
+
+// Load admins for filter dropdown
+function loadAdmins() {
+    $.get('/admin/admins/api', function(data) {
+        let options = '<option value="">All Admins</option>';
+        data.forEach(function(admin, index) {
+            options += `<option value="${admin.id}" id="adminOption${index + 1}">${admin.email}</option>`;
         });
+        $('#adminFilter').html(options);
+    });
+}
+
+// Render logs table with numbered IDs
+function renderLogsTable(logs) {
+    if (logs.length === 0) {
+        $('#logsTableBody1').html(`
+            <tr id="noDataRow1">
+                <td id="noDataCell1" colspan="11" class="text-center py-4">
+                    <i id="noDataIcon1" class="fas fa-search fa-2x text-muted mb-3"></i>
+                    <p id="noDataMessage1" class="text-muted">No logs found</p>
+                </td>
+            </tr>
+        `);
+        return;
     }
     
-    // Load admins for filter dropdown
-    function loadAdmins() {
-        $.get('/admin/admins/api', function(data) {
-            let options = '<option value="">All Admins</option>';
-            data.forEach(function(admin) {
-                options += `<option value="${admin.id}">${admin.email}</option>`;
-            });
-            $('#adminFilter').html(options);
-        });
-    }
-    
-    // Render logs table
-    function renderLogsTable(logs) {
-        if (logs.length === 0) {
-            $('#logsTableBody').html(`
-                <tr id="noDataRow">
-                    <td id="noDataCell" colspan="10" class="text-center py-4">
-                        <i id="noDataIcon" class="fas fa-search fa-2x text-muted mb-3"></i>
-                        <p id="noDataMessage" class="text-muted">No logs found</p>
-                    </td>
-                </tr>
-            `);
-            return;
-        }
+    let html = '';
+    logs.forEach(function(log, index) {
+        const rowNumber = index + 1;
+        const loginTime = new Date(log.login_at).toLocaleString();
+        const logoutTime = log.logout_at ? new Date(log.logout_at).toLocaleString() : '';
+        const duration = log.session_duration ? formatDuration(log.session_duration) : '-';
+        const status = log.logout_at ? 
+            '<span class="badge bg-secondary">Completed</span>' : 
+            '<span class="badge bg-success">Active</span>';
         
-        let html = '';
-        logs.forEach(function(log, index) {
-            const logId = `log-${log.id}`;
-            const rowId = `log-row-${index}`;
-            const loginTime = new Date(log.login_at).toLocaleString();
-            const logoutTime = log.logout_at ? new Date(log.logout_at).toLocaleString() : '';
-            const duration = log.session_duration ? formatDuration(log.session_duration) : '-';
-            const status = log.logout_at ? 
-                '<span class="badge bg-secondary">Completed</span>' : 
-                '<span class="badge bg-success">Active</span>';
-            
-            const activityBadge = log.activity.includes('successful') ? 
-                'bg-success' : log.activity.includes('failed') ? 'bg-danger' : 'bg-primary';
-            
-            const location = log.city && log.country ? 
-                `<div id="location-${log.id}" class="d-flex align-items-center">
-                    <span id="locationText-${log.id}">${log.city}, ${log.country}</span>
-                </div>` : 
-                `<span id="unknownLocation-${log.id}" class="text-muted">Unknown</span>`;
-            
-            html += `
-                <tr id="${rowId}" data-log-id="${log.id}" 
-                    data-ip="${log.ip_address}"
-                    data-country="${log.country}"
-                    data-city="${log.city}"
-                    data-region="${log.region || ''}"
-                    data-email="${log.email}"
-                    data-activity="${log.activity}"
-                    data-login-time="${loginTime}">
-                    <td id="idCell-${log.id}">
-                        <span id="logId-${log.id}" class="badge bg-secondary">${log.id}</span>
-                    </td>
-                    <td id="adminCell-${log.id}">
-                        <div id="adminInfo-${log.id}" class="d-flex align-items-center">
-                            <div id="adminAvatar-${log.id}" class="avatar-sm bg-primary rounded-circle text-white d-flex align-items-center justify-content-center me-2">
-                                ${log.email.charAt(0).toUpperCase()}
-                            </div>
-                            <div id="adminDetails-${log.id}">
-                                <div id="adminName-${log.id}" class="fw-bold">${log.admin ? `${log.admin.first_name} ${log.admin.last_name}` : 'Admin Deleted'}</div>
-                                <small id="adminEmail-${log.id}" class="text-muted">${log.email}</small>
-                            </div>
+        const activityBadge = log.activity.includes('successful') ? 
+            'bg-success' : log.activity.includes('failed') ? 'bg-danger' : 'bg-primary';
+        
+        const location = log.city && log.country ? 
+            `<div id="locationInfo${rowNumber}" class="d-flex align-items-center">
+                <span id="locationText${rowNumber}">${log.city}, ${log.country}</span>
+            </div>` : 
+            `<span id="unknownLocation${rowNumber}" class="text-muted">Unknown</span>`;
+        
+        html += `
+            <tr id="logRow${rowNumber}" 
+                data-log-id="${log.id}" 
+                data-ip="${log.ip_address}"
+                data-country="${log.country}"
+                data-city="${log.city}"
+                data-region="${log.region || ''}"
+                data-email="${log.email}"
+                data-activity="${log.activity}"
+                data-login-time="${loginTime}">
+                
+                <!-- Column 1: ID -->
+                <td id="idCell${rowNumber}">
+                    <span id="logId${rowNumber}" class="badge bg-secondary">${log.id}</span>
+                </td>
+                
+                <!-- Column 2: Admin -->
+                <td id="adminCell${rowNumber}">
+                    <div id="adminInfo${rowNumber}" class="d-flex align-items-center">
+                        <div id="adminAvatar${rowNumber}" class="avatar-sm bg-primary rounded-circle text-white d-flex align-items-center justify-content-center me-2">
+                            ${log.email.charAt(0).toUpperCase()}
                         </div>
-                    </td>
-                    <td id="emailCell-${log.id}">
-                        <span id="emailDisplay-${log.id}">${log.email}</span>
-                    </td>
-                    <td id="ipCell-${log.id}">
-                        <code id="ipAddress-${log.id}">${log.ip_address}</code>
-                    </td>
-                    <td id="locationCell-${log.id}">${location}</td>
-                    <td id="deviceCell-${log.id}">
-                        <small>
-                            <i id="browserIcon-${log.id}" class="fas fa-desktop me-1 text-muted"></i> <span id="browser-${log.id}">${log.browser}</span><br>
-                            <i id="platformIcon-${log.id}" class="fas fa-laptop me-1 text-muted"></i> <span id="platform-${log.id}">${log.platform}</span>
-                        </small>
-                    </td>
-                    <td id="activityCell-${log.id}">
-                        <span id="activityBadge-${log.id}" class="badge ${activityBadge}">${log.activity}</span>
-                    </td>
-                    <td id="loginTimeCell-${log.id}">
-                        <small>
-                            <span id="loginDate-${log.id}">${loginTime.split(',')[0]}</span><br>
-                            <span id="loginTime-${log.id}">${loginTime.split(',')[1]}</span>
-                        </small>
-                    </td>
-                    <td id="logoutTimeCell-${log.id}">
-                        ${logoutTime ? 
-                            `<small>
-                                <span id="logoutDate-${log.id}">${logoutTime.split(',')[0]}</span><br>
-                                <span id="logoutTime-${log.id}">${logoutTime.split(',')[1]}</span>
-                            </small>` : 
-                            `<span id="activeBadge-${log.id}" class="badge bg-warning">Active</span>`
-                        }
-                    </td>
-                    <td id="durationCell-${log.id}">
-                        ${duration !== '-' ? 
-                            `<span id="durationBadge-${log.id}" class="badge bg-info">${duration}</span>` : 
-                            `<span id="noDuration-${log.id}" class="text-muted">-</span>`
-                        }
-                    </td>
-                    <td id="statusCell-${log.id}">${status}</td>
-                </tr>
-            `;
-        });
-        
-        $('#logsTableBody').html(html);
+                        <div id="adminDetails${rowNumber}">
+                            <div id="adminName${rowNumber}" class="fw-bold">${log.admin ? `${log.admin.first_name} ${log.admin.last_name}` : 'Admin Deleted'}</div>
+                            <small id="adminEmail${rowNumber}" class="text-muted">${log.email}</small>
+                        </div>
+                    </div>
+                </td>
+                
+                <!-- Column 3: Email -->
+                <td id="emailCell${rowNumber}">
+                    <span id="emailDisplay${rowNumber}">${log.email}</span>
+                </td>
+                
+                <!-- Column 4: IP Address -->
+                <td id="ipCell${rowNumber}">
+                    <code id="ipAddress${rowNumber}">${log.ip_address}</code>
+                </td>
+                
+                <!-- Column 5: Location -->
+                <td id="locationCell${rowNumber}">${location}</td>
+                
+                <!-- Column 6: Device -->
+                <td id="deviceCell${rowNumber}">
+                    <small>
+                        <i id="browserIcon${rowNumber}" class="fas fa-desktop me-1 text-muted"></i> 
+                        <span id="browser${rowNumber}">${log.browser}</span><br>
+                        <i id="platformIcon${rowNumber}" class="fas fa-laptop me-1 text-muted"></i> 
+                        <span id="platform${rowNumber}">${log.platform}</span>
+                    </small>
+                </td>
+                
+                <!-- Column 7: Activity -->
+                <td id="activityCell${rowNumber}">
+                    <span id="activityBadge${rowNumber}" class="badge ${activityBadge}">${log.activity}</span>
+                </td>
+                
+                <!-- Column 8: Login Time -->
+                <td id="loginTimeCell${rowNumber}">
+                    <small>
+                        <span id="loginDate${rowNumber}">${loginTime.split(',')[0]}</span><br>
+                        <span id="loginTime${rowNumber}">${loginTime.split(',')[1]}</span>
+                    </small>
+                </td>
+                
+                <!-- Column 9: Logout Time -->
+                <td id="logoutTimeCell${rowNumber}">
+                    ${logoutTime ? 
+                        `<small>
+                            <span id="logoutDate${rowNumber}">${logoutTime.split(',')[0]}</span><br>
+                            <span id="logoutTime${rowNumber}">${logoutTime.split(',')[1]}</span>
+                        </small>` : 
+                        `<span id="activeBadge${rowNumber}" class="badge bg-warning">Active</span>`
+                    }
+                </td>
+                
+                <!-- Column 10: Duration -->
+                <td id="durationCell${rowNumber}">
+                    ${duration !== '-' ? 
+                        `<span id="durationBadge${rowNumber}" class="badge bg-info">${duration}</span>` : 
+                        `<span id="noDuration${rowNumber}" class="text-muted">-</span>`
+                    }
+                </td>
+                
+                <!-- Column 11: Status -->
+                <td id="statusCell${rowNumber}">${status}</td>
+            </tr>
+        `;
+    });
+    
+    $('#logsTableBody1').html(html);
+}
+
+// Render pagination with numbered IDs
+function renderPagination(logs) {
+    // Update pagination info with numbered IDs
+    $('#showingFrom1').text(logs.from || 0);
+    $('#showingTo1').text(logs.to || 0);
+    $('#totalRecords1').text(logs.total || 0);
+    
+    if (logs.last_page <= 1) {
+        $('#logsPagination1').html('');
+        $('#startFirstBtn1').prop('disabled', true);
+        $('#endLastBtn1').prop('disabled', true);
+        return;
     }
     
-    // Render pagination
-    function renderPagination(logs) {
-        // Update pagination info
-        $('#showingFrom').text(logs.from);
-        $('#showingTo').text(logs.to);
-        $('#totalRecords').text(logs.total);
-        
-        if (logs.last_page <= 1) {
-            $('#logsPagination').html('');
-            $('#startFirstBtn').prop('disabled', true);
-            $('#endLastBtn').prop('disabled', true);
-            return;
+    let html = '<ul class="pagination">';
+    
+    // Previous button
+    html += `<li class="page-item ${logs.current_page === 1 ? 'disabled' : ''}">
+        <a id="prevPageBtn1" class="page-link" href="#" onclick="loadAdminLogs(${logs.current_page - 1}); return false;">Previous</a>
+    </li>`;
+    
+    // Page numbers
+    for (let i = 1; i <= logs.last_page; i++) {
+        if (i === 1 || i === logs.last_page || (i >= logs.current_page - 2 && i <= logs.current_page + 2)) {
+            html += `<li class="page-item ${i === logs.current_page ? 'active' : ''}">
+                <a id="pageLink${i}" class="page-link" href="#" onclick="loadAdminLogs(${i}); return false;">${i}</a>
+            </li>`;
+        } else if (i === logs.current_page - 3 || i === logs.current_page + 3) {
+            html += `<li class="page-item disabled"><a id="ellipsis${i}" class="page-link" href="#">...</a></li>`;
         }
-        
-        let html = '<ul class="pagination">';
-        
-        // Previous button
-        html += `<li class="page-item ${logs.current_page === 1 ? 'disabled' : ''}">
-            <a id="prevPageBtn" class="page-link" href="#" onclick="loadAdminLogs(${logs.current_page - 1}); return false;">Previous</a>
-        </li>`;
-        
-        // Page numbers
-        for (let i = 1; i <= logs.last_page; i++) {
-            if (i === 1 || i === logs.last_page || (i >= logs.current_page - 2 && i <= logs.current_page + 2)) {
-                html += `<li class="page-item ${i === logs.current_page ? 'active' : ''}">
-                    <a id="page-${i}" class="page-link" href="#" onclick="loadAdminLogs(${i}); return false;">${i}</a>
-                </li>`;
-            } else if (i === logs.current_page - 3 || i === logs.current_page + 3) {
-                html += `<li class="page-item disabled"><a id="ellipsis-${i}" class="page-link" href="#">...</a></li>`;
-            }
-        }
-        
-        // Next button
-        html += `<li class="page-item ${logs.current_page === logs.last_page ? 'disabled' : ''}">
-            <a id="nextPageBtn" class="page-link" href="#" onclick="loadAdminLogs(${logs.current_page + 1}); return false;">Next</a>
-        </li>`;
-        
-        html += '</ul>';
-        $('#logsPagination').html(html);
-        
-        // Enable/disable navigation buttons based on current page
-        $('#startFirstBtn').prop('disabled', logs.current_page === 1);
-        $('#endLastBtn').prop('disabled', logs.current_page === logs.last_page);
     }
     
-    // Update statistics
-    function updateStatistics(stats) {
-        $('#totalLogsCount').text(stats.total);
-        $('#successfulLoginsCount').text(stats.successful);
-        $('#failedAttemptsCount').text(stats.failed);
-        $('#activeSessionsCount').text(stats.active);
-    }
+    // Next button
+    html += `<li class="page-item ${logs.current_page === logs.last_page ? 'disabled' : ''}">
+        <a id="nextPageBtn1" class="page-link" href="#" onclick="loadAdminLogs(${logs.current_page + 1}); return false;">Next</a>
+    </li>`;
     
-    // Format duration from seconds to HH:MM:SS
-    function formatDuration(seconds) {
-        const hours = Math.floor(seconds / 3600);
-        const minutes = Math.floor((seconds % 3600) / 60);
-        const secs = seconds % 60;
-        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    }
+    html += '</ul>';
+    $('#logsPagination1').html(html);
     
-    // Filter logs
-    $('#filterLogsBtn').on('click', function() {
-        loadAdminLogs(1);
-    });
-    
-    // Reset filters
-    $('#resetLogsBtn').on('click', function() {
-        $('#adminFilter').val('');
-        $('#activityFilter').val('');
-        $('#dateFromFilter').val('');
-        $('#dateToFilter').val('');
-        loadAdminLogs(1);
-    });
-    
-    // Start from first button
-    $('#startFirstBtn').on('click', function() {
-        loadAdminLogs(1);
-    });
-    
-    // Go to last button
-    $('#endLastBtn').on('click', function() {
-        loadAdminLogs($('#totalRecords').text());
-    });
+    // Enable/disable navigation buttons based on current page
+    $('#startFirstBtn1').prop('disabled', logs.current_page === 1);
+    $('#endLastBtn1').prop('disabled', logs.current_page === logs.last_page);
+}
+
+// Update statistics with numbered IDs
+function updateStatistics(stats) {
+    $('#totalLogsCount1').text(stats.total);
+    $('#successfulLoginsCount1').text(stats.successful);
+    $('#failedAttemptsCount1').text(stats.failed);
+    $('#activeSessionsCount1').text(stats.active);
+}
+
+// Format duration from seconds to HH:MM:SS
+function formatDuration(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+// Filter logs
+$('#filterLogsBtn').on('click', function() {
+    loadAdminLogs(1);
+});
+
+// Reset filters
+$('#resetLogsBtn').on('click', function() {
+    $('#adminFilter').val('');
+    $('#activityFilter').val('');
+    $('#dateFromFilter').val('');
+    $('#dateToFilter').val('');
+    loadAdminLogs(1);
+});
+
+// Start from first button
+$('#startFirstBtn1').on('click', function() {
+    loadAdminLogs(1);
+});
+
+// Go to last button
+$('#endLastBtn1').on('click', function() {
+    // Get total pages from the pagination info
+    const totalRecords = $('#totalRecords1').text();
+    const perPage = 20; // Adjust based on your pagination setup
+    const totalPages = Math.ceil(totalRecords / perPage);
+    loadAdminLogs(totalPages);
+});
     
     // Notification icon click handler
     $('#notificationIcon').on('click', function() {
