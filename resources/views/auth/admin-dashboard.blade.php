@@ -1246,6 +1246,11 @@ function renderLogsTable(logs) {
             </div>` : 
             `<span id="unknownLocation-${log.id}" class="text-muted">Unknown</span>`;
         
+        // Get admin name - if not available, show email or leave empty
+        const adminName = log.admin ? 
+            `${log.admin.first_name} ${log.admin.last_name}` : 
+            log.email; // Fallback to email if admin data is not available
+        
         html += `
             <tr id="${rowId}" data-log-id="${log.id}" 
                 data-ip="${log.ip_address}"
@@ -1264,7 +1269,7 @@ function renderLogsTable(logs) {
                             ${log.email.charAt(0).toUpperCase()}
                         </div>
                         <div id="adminDetails-${log.id}">
-                            <div id="adminName-${log.id}" class="fw-bold">${log.admin ? `${log.admin.first_name} ${log.admin.last_name}` : 'Admin Deleted'}</div>
+                            <div id="adminName-${log.id}" class="fw-bold">${adminName}</div>
                             <small id="adminEmail-${log.id}" class="text-muted">${log.email}</small>
                         </div>
                     </div>
