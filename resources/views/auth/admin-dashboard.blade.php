@@ -415,33 +415,33 @@
 <body>
 
 <!-- Mobile Overlay -->
-<div class="mobile-overlay"></div>
+<div id="mobileOverlay" class="mobile-overlay"></div>
 
 <!-- Sidebar -->
-<div class="sidebar">
-    <div class="sidebar-header text-center">
+<div id="sidebar" class="sidebar">
+    <div id="sidebarHeader" class="sidebar-header text-center">
         <img src="{{ asset('image/santafe.png') }}" class="login-logo img-fluid mb-3">
-        <h1 class="h5">Santa Fe Water Billing</h1>
+        <h1 id="sidebarTitle" class="h5">Santa Fe Water Billing</h1>
     </div>
-    <nav class="sidebar-menu">
+    <nav id="sidebarMenu" class="sidebar-menu">
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a class="nav-link active" href="admin-dashboard">
+                <a id="dashboardLink" class="nav-link active" href="admin-dashboard">
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="admin-consumer">
+                <a id="consumersLink" class="nav-link" href="admin-consumer">
                     <i class="bi bi-people"></i> Manage Consumers
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="admin-plumber">
+                <a id="plumberLink" class="nav-link" href="admin-plumber">
                     <i class="bi bi-wrench"></i> Manage Plumber
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="admin-accountant">
+                <a id="accountantLink" class="nav-link" href="admin-accountant">
                     <i class="bi bi-cash-stack"></i> Manage Accountant
                 </a>
             </li>
@@ -450,38 +450,38 @@
 </div>
 
 <!-- Main Content -->
-<div class="main-content">
+<div id="mainContent" class="main-content">
     <!-- Header -->
-    <header class="header">
-        <div class="header-left">
+    <header id="header" class="header">
+        <div id="headerLeft" class="header-left">
             <button id="sidebarToggle" class="btn d-lg-none me-3 mobile-menu-toggle">
                 <i class="bi bi-list"></i>
             </button>
             <div>
-                <h2 class="header-title">Dashboard Overview</h2>
-                <p class="header-subtitle">Santa Fe Water Billing System</p>
+                <h2 id="headerTitle" class="header-title">Dashboard Overview</h2>
+                <p id="headerSubtitle" class="header-subtitle">Santa Fe Water Billing System</p>
             </div>
         </div>
         
-        <div class="header-right">
+        <div id="headerRight" class="header-right">
             <div class="position-relative me-3 d-none d-sm-block">
                 <i class="bi bi-cloud-download header-icon" id="backupDatabaseIcon" title="Backup Database"></i>
             </div>
             <div class="position-relative me-3 d-none d-sm-block">
                 <i class="bi bi-clock-history header-icon" id="adminLogsIcon" data-bs-toggle="modal" data-bs-target="#adminLogsModal" title="Admin Logs"></i>
             </div>
-            <div class="dropdown">
+            <div id="userDropdown" class="dropdown">
                 <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
                     <span class="d-none d-md-inline">Admin</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUser">
-                    <li><a class="dropdown-item" href="#">Profile</a></li>
-                    <li><a class="dropdown-item" href="#">Settings</a></li>
-                    <li><a class="dropdown-item" href="#" id="adminLogsBtn" data-bs-toggle="modal" data-bs-target="#adminLogsModal">Admin Logs</a></li>
+                    <li><a id="profileLink" class="dropdown-item" href="#">Profile</a></li>
+                    <li><a id="settingsLink" class="dropdown-item" href="#">Settings</a></li>
+                    <li><a id="adminLogsBtn" class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#adminLogsModal">Admin Logs</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <!-- In the dropdown menu -->
                     <li>
-                        <a class="dropdown-item text-danger" href="#" id="logout-btn">
+                        <a id="logoutLink" class="dropdown-item text-danger" href="#">
                             <i class="bi bi-box-arrow-right me-2"></i>Sign Out
                         </a>
                         <form id="logout-form" action="/logout" method="POST" style="display: none;">
@@ -493,10 +493,10 @@
         </div>
     </header>
     
-    <div class="content-wrapper">
-        <div class="row g-4">
+    <div id="contentWrapper" class="content-wrapper">
+        <div id="statsCards" class="row g-4">
             <!-- Total Consumers Card -->
-            <div class="col-md-6 col-lg-6">
+            <div id="totalConsumersCard" class="col-md-6 col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
@@ -516,7 +516,7 @@
             </div>
 
             <!-- Active Consumers Card -->
-            <div class="col-md-6 col-lg-6">
+            <div id="activeConsumersCard" class="col-md-6 col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
@@ -537,9 +537,9 @@
         </div>
 
         <!-- Charts Section -->
-        <div class="row g-4 mt-2">
+        <div id="chartsSection" class="row g-4 mt-2">
             <!-- Consumer Status Pie Chart -->
-            <div class="col-lg-6">
+            <div id="consumerStatusChartContainer" class="col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white border-0">
                         <h5 class="mb-0">Active Consumers</h5>
@@ -553,7 +553,7 @@
             </div>
             
             <!-- Total Consumers Line Chart -->
-            <div class="col-lg-6">
+            <div id="totalConsumersChartContainer" class="col-lg-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white border-0">
                         <h5 class="mb-0">Total Consumers</h5>
@@ -570,19 +570,19 @@
 </div>
 
 <!-- Admin Logs Modal -->
-<div class="modal fade" id="adminLogsModal" tabindex="-1" aria-labelledby="adminLogsModalLabel" aria-hidden="true">
+<div id="adminLogsModal" class="modal fade" tabindex="-1" aria-labelledby="adminLogsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="adminLogsModalLabel">
+            <div id="adminLogsModalHeader" class="modal-header bg-primary text-white">
+                <h5 id="adminLogsModalLabel" class="modal-title">
                     <i class="fas fa-history me-2"></i>Admin Login Logs
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button id="adminLogsModalClose" type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body p-0">
+            <div id="adminLogsModalBody" class="modal-body p-0">
                 <div class="container-fluid p-3">
                     <!-- Filters -->
-                    <div class="row mb-3">
+                    <div id="logsFilters" class="row mb-3">
                         <div class="col-12">
                             <form id="logsFilterForm" class="row g-2">
                                 <div class="col-md-3">
@@ -612,7 +612,7 @@
                     </div>
 
                     <!-- Map Toggle -->
-                    <div class="row mb-3">
+                    <div id="mapToggleContainer" class="row mb-3">
                         <div class="col-12">
                             <button class="btn btn-outline-primary btn-sm" id="toggleMapBtn">
                                 <i class="fas fa-map me-1"></i> Toggle Map
@@ -623,18 +623,18 @@
                     <!-- Geolocation Map -->
                     <div id="mapContainer" class="d-none">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="mb-0">
+                            <h6 id="mapTitle" class="mb-0">
                                 <i class="fas fa-map-marker-alt me-2"></i>Login Locations Map
                             </h6>
-                            <small class="text-muted">Click on location pins to see details</small>
+                            <small id="mapSubtitle" class="text-muted">Click on location pins to see details</small>
                         </div>
                         <div id="map"></div>
                     </div>
 
                     <!-- Logs Table -->
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover">
-                            <thead class="table-light">
+                    <div id="logsTableContainer" class="table-responsive">
+                        <table id="logsTable" class="table table-striped table-hover">
+                            <thead id="logsTableHead" class="table-light">
                                 <tr>
                                     <th>Admin</th>
                                     <th>IP Address</th>
@@ -661,38 +661,38 @@
                     </div>
 
                     <!-- Pagination -->
-                    <div class="d-flex justify-content-center mt-3">
+                    <div id="paginationContainer" class="d-flex justify-content-center mt-3">
                         <nav id="logsPagination">
                             <!-- Pagination will be loaded here -->
                         </nav>
                     </div>
 
                     <!-- Statistics -->
-                    <div class="row mt-3">
+                    <div id="statisticsContainer" class="row mt-3">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-body">
-                                    <h6 class="card-title">Quick Statistics</h6>
-                                    <div class="row text-center">
-                                        <div class="col-md-3">
+                                    <h6 id="statisticsTitle" class="card-title">Quick Statistics</h6>
+                                    <div id="statisticsRow" class="row text-center">
+                                        <div id="totalLogsContainer" class="col-md-3">
                                             <div class="border rounded p-2">
                                                 <h4 class="text-primary mb-0" id="totalLogsCount">0</h4>
                                                 <small class="text-muted">Total Logs</small>
                                             </div>
                                         </div>
-                                        <div class="col-md-3">
+                                        <div id="successfulLoginsContainer" class="col-md-3">
                                             <div class="border rounded p-2">
                                                 <h4 class="text-success mb-0" id="successfulLoginsCount">0</h4>
                                                 <small class="text-muted">Successful Logins</small>
                                             </div>
                                         </div>
-                                        <div class="col-md-3">
+                                        <div id="failedAttemptsContainer" class="col-md-3">
                                             <div class="border rounded p-2">
                                                 <h4 class="text-danger mb-0" id="failedAttemptsCount">0</h4>
                                                 <small class="text-muted">Failed Attempts</small>
                                             </div>
                                         </div>
-                                        <div class="col-md-3">
+                                        <div id="activeSessionsContainer" class="col-md-3">
                                             <div class="border rounded p-2">
                                                 <h4 class="text-warning mb-0" id="activeSessionsCount">0</h4>
                                                 <small class="text-muted">Active Sessions</small>
@@ -710,7 +710,7 @@
 </div>
 
 <!-- Session Timer Display -->
-<div class="session-timer" id="sessionTimer">
+<div id="sessionTimer" class="session-timer">
     <i class="fas fa-clock me-2"></i>
     Session expires in: <span id="sessionTimeDisplay">03:00</span>
 </div>
@@ -732,8 +732,8 @@
     // Session management variables
     const sessionTimer = document.getElementById('sessionTimer');
     const sessionTimeDisplay = document.getElementById('sessionTimeDisplay');
-    let sessionTimeout; // Will store the timeout ID
-    let warningTimeout; // Will store the warning timeout ID
+    let sessionTimeout; // Will store timeout ID
+    let warningTimeout; // Will store warning timeout ID
     let sessionInterval; // Will store the interval ID for updating the display
     const sessionDuration = 3 * 60 * 1000; // 3 minutes in milliseconds
     const warningTime = 30 * 1000; // 30 seconds before expiry to show warning
