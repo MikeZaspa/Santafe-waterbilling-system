@@ -469,7 +469,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // Public routes (authentication routes)
-Route::get('/', function () {
+Route::get('/plumber-login', function () {
     return redirect('/admin-plumber-dashboard');
 });
 
