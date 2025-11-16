@@ -1789,6 +1789,7 @@ function renderLogsTable(logs) {
     }
 });
 
+
 </script>
 
 </body>
