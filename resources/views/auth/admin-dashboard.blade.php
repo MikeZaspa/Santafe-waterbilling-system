@@ -1221,44 +1221,34 @@
         });
     });
     
-   // Admin Logs Modal functionality
-let currentPage = 1;
-let map; // Will store the map instance
-let currentMarker; // Will store the current marker
-let geocodingCache = {}; // Cache for geocoding results
-
-// Initialize when modal is shown
-$('#adminLogsModal').on('shown.bs.modal', function() {
-    loadAdminLogs();
-});
-
-// Initialize map when modal is shown
-$('#mapModal').on('shown.bs.modal', function() {
-    initializeMap();
-});
-
-// Initialize map
-function initializeMap() {
-    if (!map) {
-        map = L.map('locationMap').setView([0, 0], 2);
-        
-        // Add tile layer
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            maxZoom: 18
-        }).addTo(map);
-        
-        // Add scale control
-        L.control.scale().addTo(map);
-    } else {
-        // Refresh the map to fix display issues
-        setTimeout(function() {
-            map.invalidateSize();
-        }, 100);
-    }
-}
-
-// Load admin logs
+    // Admin Logs Modal functionality
+    let currentPage = 1;
+    
+    // Initialize when modal is shown
+    $('#adminLogsModal').on('shown.bs.modal', function() {
+        loadAdminLogs();
+        loadAdmins();
+    });
+    
+    // Initialize map when modal is shown
+    $('#mapModal').on('shown.bs.modal', function() {
+        // Initialize map if it doesn't exist
+        if (!map) {
+            map = L.map('locationMap').setView([0, 0], 2);
+            
+            // Add tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+        } else {
+            // Refresh the map to fix display issues
+            setTimeout(function() {
+                map.invalidateSize();
+            }, 100);
+        }
+    });
+    
+    // Load admin logs
 function loadAdminLogs(page = 1) {
     currentPage = page;
     
@@ -1301,8 +1291,8 @@ function loadAdminLogs(page = 1) {
         `);
     });
 }
-
-// Render logs table with comprehensive location handling
+    
+    // Render logs table
 function renderLogsTable(logs) {
     if (logs.length === 0) {
         $('#logsTableBody').html(`
@@ -1318,7 +1308,9 @@ function renderLogsTable(logs) {
     
     let html = '';
     logs.forEach(function(log, index) {
-        const displayId = (currentPage - 1) * 20 + index + 1; // Calculate display ID based on pagination
+        const logId = `log-${log.id}`;
+        const rowId = `log-row-${index}`;
+        const displayId = index + 1; // This will make IDs start from 1
         const loginTime = new Date(log.login_at).toLocaleString();
         const logoutTime = log.logout_at ? new Date(log.logout_at).toLocaleString() : '';
         const duration = log.session_duration ? formatDuration(log.session_duration) : '-';
@@ -1326,104 +1318,79 @@ function renderLogsTable(logs) {
             '<span class="badge bg-secondary">Completed</span>' : 
             '<span class="badge bg-success">Active</span>';
         
-        const activityBadge = getActivityBadgeClass(log.activity);
-        const locationInfo = formatLocationInfo(log);
-        const hasLocationData = hasValidLocationData(log);
+        const activityBadge = log.activity.includes('successful') ? 
+            'bg-success' : log.activity.includes('failed') ? 'bg-danger' : 'bg-primary';
+        
+        const location = log.city && log.country ? 
+            `<div id="location-${log.id}" class="d-flex align-items-center">
+                <span id="locationText-${log.id}">${log.city}, ${log.country}</span>
+            </div>` : 
+            `<span id="unknownLocation-${log.id}" class="text-muted">Unknown</span>`;
         
         html += `
-            <tr id="log-row-${log.id}" 
-                class="log-row ${hasLocationData ? 'has-location' : 'no-location'}"
-                data-log-id="${log.id}" 
+            <tr id="${rowId}" data-log-id="${log.id}" 
                 data-ip="${log.ip_address}"
-                data-country="${log.country || ''}"
-                data-city="${log.city || ''}"
+                data-country="${log.country}"
+                data-city="${log.city}"
                 data-region="${log.region || ''}"
-                data-latitude="${log.latitude || ''}"
-                data-longitude="${log.longitude || ''}"
                 data-email="${log.email}"
                 data-activity="${log.activity}"
                 data-login-time="${loginTime}"
                 data-browser="${log.browser}"
-                data-platform="${log.platform}">
-                
-                <!-- Column 1: ID -->
-                <td id="id-cell-${log.id}">
-                    <span class="badge bg-secondary">${displayId}</span>
+                data-platform="${log.platform}"
+                data-latitude="${log.latitude || ''}"
+                data-longitude="${log.longitude || ''}">
+                <td id="idCell-${log.id}">
+                    <span id="logId-${log.id}" class="badge bg-secondary">${displayId}</span>
                 </td>
-                
-                <!-- Column 2: Email -->
-                <td id="email-cell-${log.id}">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar-sm bg-primary rounded-circle text-white d-flex align-items-center justify-content-center me-2">
+                <td id="emailCell-${log.id}">
+                    <div id="adminInfo-${log.id}" class="d-flex align-items-center">
+                        <div id="adminAvatar-${log.id}" class="avatar-sm bg-primary rounded-circle text-white d-flex align-items-center justify-content-center me-2">
                             ${log.email.charAt(0).toUpperCase()}
                         </div>
-                        <div>
-                            <div class="fw-bold">${log.email}</div>
+                        <div id="adminDetails-${log.id}">
+                            <div id="adminEmail-${log.id}" class="fw-bold">${log.email}</div>
                         </div>
                     </div>
                 </td>
-                
-                <!-- Column 3: IP Address -->
-                <td id="ip-cell-${log.id}">
-                    <code>${log.ip_address}</code>
+                <td id="ipCell-${log.id}">
+                    <code id="ipAddress-${log.id}">${log.ip_address}</code>
                 </td>
-                
-                <!-- Column 4: Location -->
-                <td id="location-cell-${log.id}">
-                    ${locationInfo}
-                </td>
-                
-                <!-- Column 5: Device -->
-                <td id="device-cell-${log.id}">
+                <td id="locationCell-${log.id}">${location}</td>
+                <td id="deviceCell-${log.id}">
                     <small>
-                        <i class="fas fa-desktop me-1 text-muted"></i> ${log.browser}<br>
-                        <i class="fas fa-laptop me-1 text-muted"></i> ${log.platform}
+                        <i id="browserIcon-${log.id}" class="fas fa-desktop me-1 text-muted"></i> <span id="browser-${log.id}">${log.browser}</span><br>
+                        <i id="platformIcon-${log.id}" class="fas fa-laptop me-1 text-muted"></i> <span id="platform-${log.id}">${log.platform}</span>
                     </small>
                 </td>
-                
-                <!-- Column 6: Activity -->
-                <td id="activity-cell-${log.id}">
-                    <span class="badge ${activityBadge}">${log.activity}</span>
+                <td id="activityCell-${log.id}">
+                    <span id="activityBadge-${log.id}" class="badge ${activityBadge}">${log.activity}</span>
                 </td>
-                
-                <!-- Column 7: Login Time -->
-                <td id="login-time-cell-${log.id}">
+                <td id="loginTimeCell-${log.id}">
                     <small>
-                        ${loginTime.split(',')[0]}<br>
-                        <span class="text-muted">${loginTime.split(',')[1]}</span>
+                        <span id="loginDate-${log.id}">${loginTime.split(',')[0]}</span><br>
+                        <span id="loginTime-${log.id}">${loginTime.split(',')[1]}</span>
                     </small>
                 </td>
-                
-                <!-- Column 8: Logout Time -->
-                <td id="logout-time-cell-${log.id}">
+                <td id="logoutTimeCell-${log.id}">
                     ${logoutTime ? 
                         `<small>
-                            ${logoutTime.split(',')[0]}<br>
-                            <span class="text-muted">${logoutTime.split(',')[1]}</span>
+                            <span id="logoutDate-${log.id}">${logoutTime.split(',')[0]}</span><br>
+                            <span id="logoutTime-${log.id}">${logoutTime.split(',')[1]}</span>
                         </small>` : 
-                        '<span class="badge bg-warning">Active</span>'
+                        `<span id="activeBadge-${log.id}" class="badge bg-warning">Active</span>`
                     }
                 </td>
-                
-                <!-- Column 9: Duration -->
-                <td id="duration-cell-${log.id}">
+                <td id="durationCell-${log.id}">
                     ${duration !== '-' ? 
-                        `<span class="badge bg-info">${duration}</span>` : 
-                        '<span class="text-muted">-</span>'
+                        `<span id="durationBadge-${log.id}" class="badge bg-info">${duration}</span>` : 
+                        `<span id="noDuration-${log.id}" class="text-muted">-</span>`
                     }
                 </td>
-                
-                <!-- Column 10: Status -->
-                <td id="status-cell-${log.id}">${status}</td>
-                
-                <!-- Column 11: Actions -->
-                <td id="actions-cell-${log.id}">
+                <td id="statusCell-${log.id}">${status}</td>
+                <td id="actionsCell-${log.id}">
                     <div class="btn-group" role="group">
-                        <button type="button" 
-                                class="btn btn-sm ${hasLocationData ? 'btn-outline-primary' : 'btn-outline-secondary'} view-map-btn" 
-                                data-log-id="${log.id}" 
-                                ${!hasLocationData ? 'disabled' : ''}
-                                title="${hasLocationData ? 'View on Map' : 'No location data'}">
+                        <button type="button" class="btn btn-sm btn-outline-primary view-map-btn" data-log-id="${log.id}" title="View on Map">
                             <i class="fas fa-map-marked-alt"></i>
                         </button>
                     </div>
@@ -1435,414 +1402,285 @@ function renderLogsTable(logs) {
     $('#logsTableBody').html(html);
     
     // Add click event for view map buttons
-    $('.view-map-btn:not(:disabled)').on('click', function() {
+    $('.view-map-btn').on('click', function() {
         const logId = $(this).data('log-id');
-        const row = $(`#log-row-${logId}`);
+        const row = $(`#log-row-${logId - 1}`); // Adjust index to match row ID
         
-        if (row.length) {
-            showLocationOnMap(row);
-        }
-    });
-}
-
-// Check if log has valid location data
-function hasValidLocationData(log) {
-    return (log.latitude && log.longitude) || 
-           (log.city && log.country) || 
-           (log.ip_address && log.ip_address !== '127.0.0.1' && !log.ip_address.startsWith('192.168.') && !log.ip_address.startsWith('10.'));
-}
-
-// Format location information
-function formatLocationInfo(log) {
-    if (log.latitude && log.longitude) {
-        return `
-            <div class="d-flex align-items-center">
-                <i class="fas fa-map-marker-alt text-success me-1"></i>
-                <div>
-                    <div>${log.city || 'Unknown City'}, ${log.country || 'Unknown Country'}</div>
-                    <small class="text-muted">Coordinates available</small>
-                </div>
-            </div>
-        `;
-    } else if (log.city && log.country) {
-        return `
-            <div class="d-flex align-items-center">
-                <i class="fas fa-map-marker-alt text-primary me-1"></i>
-                <div>
-                    <div>${log.city}, ${log.country}</div>
-                    <small class="text-muted">City-level location</small>
-                </div>
-            </div>
-        `;
-    } else if (log.country) {
-        return `
-            <div class="d-flex align-items-center">
-                <i class="fas fa-globe text-warning me-1"></i>
-                <span>${log.country}</span>
-            </div>
-        `;
-    } else if (log.ip_address === '127.0.0.1' || log.ip_address.startsWith('192.168.') || log.ip_address.startsWith('10.')) {
-        return `
-            <div class="d-flex align-items-center">
-                <i class="fas fa-network-wired text-secondary me-1"></i>
-                <span>Local Network</span>
-            </div>
-        `;
-    } else {
-        return `
-            <div class="d-flex align-items-center">
-                <i class="fas fa-question-circle text-muted me-1"></i>
-                <span class="text-muted">Unknown</span>
-            </div>
-        `;
-    }
-}
-
-// Get activity badge class
-function getActivityBadgeClass(activity) {
-    const activityLower = activity.toLowerCase();
-    if (activityLower.includes('successful') || activityLower.includes('login')) {
-        return 'bg-success';
-    } else if (activityLower.includes('failed') || activityLower.includes('error')) {
-        return 'bg-danger';
-    } else if (activityLower.includes('logout')) {
-        return 'bg-secondary';
-    } else if (activityLower.includes('attempt')) {
-        return 'bg-warning';
-    } else {
-        return 'bg-primary';
-    }
-}
-
-// Show location on map
-function showLocationOnMap(row) {
-    const logId = row.data('log-id');
-    const ip = row.data('ip');
-    const country = row.data('country');
-    const city = row.data('city');
-    const region = row.data('region');
-    const latitude = row.data('latitude');
-    const longitude = row.data('longitude');
-    const email = row.data('email');
-    const activity = row.data('activity');
-    const loginTime = row.data('login-time');
-    const browser = row.data('browser');
-    const platform = row.data('platform');
-    
-    // Update map info panel
-    $('#ipAddressValue').text(ip);
-    $('#locationValue').text(formatLocationText(city, region, country));
-    $('#loginTimeValue').text(loginTime);
-    $('#deviceValue').text(`${browser} on ${platform}`);
-    
-    // Show map modal
-    $('#mapModal').modal('show');
-    
-    // Show loading indicator
-    $('#mapLoading').removeClass('d-none');
-    
-    // Initialize map if not already done
-    initializeMap();
-    
-    // Determine the best method to get coordinates
-    if (latitude && longitude) {
-        // Use coordinates from database
-        showCoordinatesOnMap(parseFloat(latitude), parseFloat(longitude), ip, city, region, country, loginTime, browser, platform, 'Database coordinates');
-    } else if (city && country) {
-        // Try to geocode city/country
-        geocodeLocation(city, region, country, ip, loginTime, browser, platform);
-    } else if (ip && !isPrivateIP(ip)) {
-        // Try IP-based geolocation
-        geocodeByIP(ip, loginTime, browser, platform);
-    } else {
-        // No location data available
-        showNoLocationAvailable();
-    }
-}
-
-// Format location text
-function formatLocationText(city, region, country) {
-    const parts = [];
-    if (city) parts.push(city);
-    if (region) parts.push(region);
-    if (country) parts.push(country);
-    return parts.length > 0 ? parts.join(', ') : 'Unknown location';
-}
-
-// Check if IP is private
-function isPrivateIP(ip) {
-    return ip === '127.0.0.1' || 
-           ip.startsWith('192.168.') || 
-           ip.startsWith('10.') || 
-           ip.startsWith('172.') && parseInt(ip.split('.')[1]) >= 16 && parseInt(ip.split('.')[1]) <= 31;
-}
-
-// Show coordinates on map
-function showCoordinatesOnMap(lat, lon, ip, city, region, country, loginTime, browser, platform, source) {
-    // Update coordinates display
-    $('#coordinatesValue').text(`${lat.toFixed(6)}, ${lon.toFixed(6)} (${source})`);
-    
-    // Set map view to the location with appropriate zoom
-    map.setView([lat, lon], city ? 10 : 5);
-    
-    // Remove existing marker if it exists
-    if (currentMarker) {
-        map.removeLayer(currentMarker);
-    }
-    
-    // Create custom icon
-    const customIcon = L.divIcon({
-        html: '<i class="fas fa-map-marker-alt fa-2x text-danger"></i>',
-        iconSize: [30, 30],
-        iconAnchor: [15, 30],
-        className: 'custom-marker'
-    });
-    
-    // Add new marker
-    currentMarker = L.marker([lat, lon], {icon: customIcon}).addTo(map);
-    
-    // Create popup content
-    const popupContent = `
-        <div class="map-popup">
-            <h6 class="mb-2"><i class="fas fa-info-circle me-1"></i>Login Location</h6>
-            <p class="mb-1"><strong>IP:</strong> ${ip}</p>
-            <p class="mb-1"><strong>Location:</strong> ${formatLocationText(city, region, country)}</p>
-            <p class="mb-1"><strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}</p>
-            <p class="mb-1"><strong>Source:</strong> ${source}</p>
-            <p class="mb-1"><strong>Time:</strong> ${loginTime}</p>
-            <p class="mb-0"><strong>Device:</strong> ${browser} on ${platform}</p>
-        </div>
-    `;
-    
-    // Add popup
-    currentMarker.bindPopup(popupContent).openPopup();
-    
-    // Hide loading indicator
-    $('#mapLoading').addClass('d-none');
-}
-
-// Geocode location using city/country
-function geocodeLocation(city, region, country, ip, loginTime, browser, platform) {
-    const query = formatLocationText(city, region, country);
-    const cacheKey = `geocode_${query}`;
-    
-    // Check cache first
-    if (geocodingCache[cacheKey]) {
-        const { lat, lon } = geocodingCache[cacheKey];
-        showCoordinatesOnMap(lat, lon, ip, city, region, country, loginTime, browser, platform, 'Geocoded location');
-        return;
-    }
-    
-    // Use Nominatim API for geocoding
-    $.ajax({
-        url: `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&addressdetails=1`,
-        method: 'GET',
-        headers: {
-            'Accept-Language': 'en'
-        },
-        success: function(data) {
-            if (data && data.length > 0) {
-                const lat = parseFloat(data[0].lat);
-                const lon = parseFloat(data[0].lon);
-                
-                // Cache the result
-                geocodingCache[cacheKey] = { lat, lon };
-                
-                showCoordinatesOnMap(lat, lon, ip, city, region, country, loginTime, browser, platform, 'Geocoded location');
-            } else {
-                // If geocoding fails, try IP-based lookup
-                geocodeByIP(ip, loginTime, browser, platform);
+        // Get data from row
+        const ip = row.data('ip');
+        const country = row.data('country');
+        const city = row.data('city');
+        const region = row.data('region');
+        const email = row.data('email');
+        const activity = row.data('activity');
+        const loginTime = row.data('login-time');
+        const browser = row.data('browser');
+        const platform = row.data('platform');
+        const latitude = row.data('latitude');
+        const longitude = row.data('longitude');
+        
+        // Update map info
+        $('#ipAddressValue').text(ip);
+        $('#locationValue').text(city && country ? `${city}, ${region ? region + ', ' : ''}${country}` : 'Unknown');
+        $('#loginTimeValue').text(loginTime);
+        $('#deviceValue').text(`${browser} on ${platform}`);
+        
+        // Show map modal
+        $('#mapModal').modal('show');
+        
+        // Show loading indicator
+        $('#mapLoading').removeClass('d-none');
+        
+        // Check if we have coordinates directly from the database
+        if (latitude && longitude) {
+            // Use the coordinates from the database
+            const lat = parseFloat(latitude);
+            const lon = parseFloat(longitude);
+            
+            // Update coordinates display
+            $('#coordinatesValue').text(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
+            
+            // Set map view to the location
+            map.setView([lat, lon], 10);
+            
+            // Remove existing marker if it exists
+            if (currentMarker) {
+                map.removeLayer(currentMarker);
             }
-        },
-        error: function() {
-            // If geocoding fails, try IP-based lookup
-            geocodeByIP(ip, loginTime, browser, platform);
+            
+            // Add new marker
+            currentMarker = L.marker([lat, lon]).addTo(map);
+            
+            // Add popup with location info
+            currentMarker.bindPopup(`
+                <div>
+                    <strong>IP Address:</strong> ${ip}<br>
+                    <strong>Location:</strong> ${city}, ${region ? region + ', ' : ''}${country}<br>
+                    <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
+                    <strong>Login Time:</strong> ${loginTime}<br>
+                    <strong>Device:</strong> ${browser} on ${platform}
+                </div>
+            `).openPopup();
+            
+            // Hide loading indicator
+            $('#mapLoading').addClass('d-none');
+        } else if (city && country) {
+            // If we don't have coordinates, try to geocode the location
+            const query = `${city}, ${region ? region + ', ' : ''}${country}`;
+            
+            // First try ip-api.com for more accurate location based on IP
+            $.ajax({
+                url: `http://ip-api.com/json/${ip}`,
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    if (data && data.status === 'success') {
+                        const lat = data.lat;
+                        const lon = data.lon;
+                        
+                        // Update coordinates display
+                        $('#coordinatesValue').text(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
+                        
+                        // Set map view to the location
+                        map.setView([lat, lon], 10);
+                        
+                        // Remove existing marker if it exists
+                        if (currentMarker) {
+                            map.removeLayer(currentMarker);
+                        }
+                        
+                        // Add new marker
+                        currentMarker = L.marker([lat, lon]).addTo(map);
+                        
+                        // Add popup with location info
+                        currentMarker.bindPopup(`
+                            <div>
+                                <strong>IP Address:</strong> ${ip}<br>
+                                <strong>Location:</strong> ${data.city}, ${data.regionName}, ${data.country}<br>
+                                <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
+                                <strong>ISP:</strong> ${data.isp || 'Unknown'}<br>
+                                <strong>Login Time:</strong> ${loginTime}<br>
+                                <strong>Device:</strong> ${browser} on ${platform}
+                            </div>
+                        `).openPopup();
+                        
+                        // Hide loading indicator
+                        $('#mapLoading').addClass('d-none');
+                        
+                        // Update the location display with more accurate data
+                        $('#locationValue').text(`${data.city}, ${data.regionName}, ${data.country}`);
+                    } else {
+                        // If IP-based lookup fails, try Nominatim
+                        geocodeWithNominatim(query, ip, city, region, country, loginTime, browser, platform);
+                    }
+                },
+                error: function() {
+                    // If IP-based lookup fails, try Nominatim
+                    geocodeWithNominatim(query, ip, city, region, country, loginTime, browser, platform);
+                }
+            });
+        } else {
+            // If location is unknown, show a message
+            $('#mapLoading').addClass('d-none');
+            Swal.fire({
+                title: 'Unknown Location',
+                text: 'No location information available for this log entry.',
+                icon: 'info',
+                confirmButtonColor: '#d32f2f'
+            });
         }
     });
 }
-
-// Geocode by IP address
-function geocodeByIP(ip, loginTime, browser, platform) {
-    const cacheKey = `ip_${ip}`;
     
-    // Check cache first
-    if (geocodingCache[cacheKey]) {
-        const { lat, lon, city, region, country } = geocodingCache[cacheKey];
-        showCoordinatesOnMap(lat, lon, ip, city, region, country, loginTime, browser, platform, 'IP geolocation');
-        return;
-    }
-    
-    // Use ip-api.com for IP geolocation
-    $.ajax({
-        url: `http://ip-api.com/json/${ip}?fields=status,message,country,regionName,city,lat,lon,isp,query`,
-        method: 'GET',
-        success: function(data) {
-            if (data && data.status === 'success') {
-                const lat = data.lat;
-                const lon = data.lon;
-                const city = data.city;
-                const region = data.regionName;
-                const country = data.country;
+    // Function to geocode using Nominatim as fallback
+    function geocodeWithNominatim(query, ip, city, region, country, loginTime, browser, platform) {
+        // Use Nominatim API to geocode the location
+        $.ajax({
+            url: `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`,
+            method: 'GET',
+            success: function(data) {
+                if (data && data.length > 0) {
+                    const lat = parseFloat(data[0].lat);
+                    const lon = parseFloat(data[0].lon);
+                    
+                    // Update coordinates display
+                    $('#coordinatesValue').text(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
+                    
+                    // Set map view to the location
+                    map.setView([lat, lon], 10);
+                    
+                    // Remove existing marker if it exists
+                    if (currentMarker) {
+                        map.removeLayer(currentMarker);
+                    }
+                    
+                    // Add new marker
+                    currentMarker = L.marker([lat, lon]).addTo(map);
+                    
+                    // Add popup with location info
+                    currentMarker.bindPopup(`
+                        <div>
+                            <strong>IP Address:</strong> ${ip}<br>
+                            <strong>Location:</strong> ${city}, ${region ? region + ', ' : ''}${country}<br>
+                            <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
+                            <strong>Login Time:</strong> ${loginTime}<br>
+                            <strong>Device:</strong> ${browser} on ${platform}
+                        </div>
+                    `).openPopup();
+                } else {
+                    // If geocoding fails, show a message
+                    Swal.fire({
+                        title: 'Location Not Found',
+                        text: 'Unable to find coordinates for this location. Showing default view.',
+                        icon: 'warning',
+                        confirmButtonColor: '#d32f2f',
+                        timer: 3000
+                    });
+                }
                 
-                // Cache the result
-                geocodingCache[cacheKey] = { lat, lon, city, region, country };
+                // Hide loading indicator
+                $('#mapLoading').addClass('d-none');
+            },
+            error: function() {
+                // If API call fails, show a message
+                Swal.fire({
+                    title: 'Geocoding Error',
+                    text: 'Unable to get coordinates for this location. Showing default view.',
+                    icon: 'error',
+                    confirmButtonColor: '#d32f2f',
+                    timer: 3000
+                });
                 
-                showCoordinatesOnMap(lat, lon, ip, city, region, country, loginTime, browser, platform, 'IP geolocation');
-            } else {
-                showNoLocationAvailable();
+                // Hide loading indicator
+                $('#mapLoading').addClass('d-none');
             }
-        },
-        error: function() {
-            showNoLocationAvailable();
+        });
+    }
+    
+    // Render pagination
+    function renderPagination(logs) {
+        // Update pagination info
+        $('#showingFrom').text(logs.from);
+        $('#showingTo').text(logs.to);
+        $('#totalRecords').text(logs.total);
+        
+        if (logs.last_page <= 1) {
+            $('#logsPagination').html('');
+            $('#startFirstBtn').prop('disabled', true);
+            $('#endLastBtn').prop('disabled', true);
+            return;
         }
-    });
-}
-
-// Show no location available
-function showNoLocationAvailable() {
-    // Set map to world view
-    map.setView([20, 0], 2);
-    
-    // Remove existing marker
-    if (currentMarker) {
-        map.removeLayer(currentMarker);
-    }
-    
-    // Update coordinates display
-    $('#coordinatesValue').text('Not available');
-    
-    // Show message
-    Swal.fire({
-        title: 'Location Not Available',
-        text: 'Unable to determine location for this log entry. This could be due to local network access or insufficient location data.',
-        icon: 'info',
-        confirmButtonColor: '#d32f2f',
-        timer: 4000
-    });
-    
-    // Hide loading indicator
-    $('#mapLoading').addClass('d-none');
-}
-
-// Render pagination
-function renderPagination(logs) {
-    // Update pagination info
-    $('#showingFrom').text(logs.from || 0);
-    $('#showingTo').text(logs.to || 0);
-    $('#totalRecords').text(logs.total || 0);
-    
-    if (logs.last_page <= 1) {
-        $('#logsPagination').html('');
-        $('#startFirstBtn').prop('disabled', true);
-        $('#endLastBtn').prop('disabled', true);
-        return;
-    }
-    
-    let html = '<ul class="pagination">';
-    
-    // Previous button
-    html += `<li class="page-item ${logs.current_page === 1 ? 'disabled' : ''}">
-        <a class="page-link" href="#" onclick="loadAdminLogs(${logs.current_page - 1}); return false;">Previous</a>
-    </li>`;
-    
-    // Page numbers
-    for (let i = 1; i <= logs.last_page; i++) {
-        if (i === 1 || i === logs.last_page || (i >= logs.current_page - 2 && i <= logs.current_page + 2)) {
-            html += `<li class="page-item ${i === logs.current_page ? 'active' : ''}">
-                <a class="page-link" href="#" onclick="loadAdminLogs(${i}); return false;">${i}</a>
-            </li>`;
-        } else if (i === logs.current_page - 3 || i === logs.current_page + 3) {
-            html += `<li class="page-item disabled"><a class="page-link" href="#">...</a></li>`;
+        
+        let html = '<ul class="pagination">';
+        
+        // Previous button
+        html += `<li class="page-item ${logs.current_page === 1 ? 'disabled' : ''}">
+            <a id="prevPageBtn" class="page-link" href="#" onclick="loadAdminLogs(${logs.current_page - 1}); return false;">Previous</a>
+        </li>`;
+        
+        // Page numbers
+        for (let i = 1; i <= logs.last_page; i++) {
+            if (i === 1 || i === logs.last_page || (i >= logs.current_page - 2 && i <= logs.current_page + 2)) {
+                html += `<li class="page-item ${i === logs.current_page ? 'active' : ''}">
+                    <a id="page-${i}" class="page-link" href="#" onclick="loadAdminLogs(${i}); return false;">${i}</a>
+                </li>`;
+            } else if (i === logs.current_page - 3 || i === logs.current_page + 3) {
+                html += `<li class="page-item disabled"><a id="ellipsis-${i}" class="page-link" href="#">...</a></li>`;
+            }
         }
+        
+        // Next button
+        html += `<li class="page-item ${logs.current_page === logs.last_page ? 'disabled' : ''}">
+            <a id="nextPageBtn" class="page-link" href="#" onclick="loadAdminLogs(${logs.current_page + 1}); return false;">Next</a>
+        </li>`;
+        
+        html += '</ul>';
+        $('#logsPagination').html(html);
+        
+        // Enable/disable navigation buttons based on current page
+        $('#startFirstBtn').prop('disabled', logs.current_page === 1);
+        $('#endLastBtn').prop('disabled', logs.current_page === logs.last_page);
     }
     
-    // Next button
-    html += `<li class="page-item ${logs.current_page === logs.last_page ? 'disabled' : ''}">
-        <a class="page-link" href="#" onclick="loadAdminLogs(${logs.current_page + 1}); return false;">Next</a>
-    </li>`;
+    // Update statistics
+    function updateStatistics(stats) {
+        $('#totalLogsCount').text(stats.total);
+        $('#successfulLoginsCount').text(stats.successful);
+        $('#failedAttemptsCount').text(stats.failed);
+        $('#activeSessionsCount').text(stats.active);
+    }
     
-    html += '</ul>';
-    $('#logsPagination').html(html);
+    // Format duration from seconds to HH:MM:SS
+    function formatDuration(seconds) {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
     
-    // Enable/disable navigation buttons based on current page
-    $('#startFirstBtn').prop('disabled', logs.current_page === 1);
-    $('#endLastBtn').prop('disabled', logs.current_page === logs.last_page);
-}
-
-// Update statistics
-function updateStatistics(stats) {
-    $('#totalLogsCount').text(stats.total);
-    $('#successfulLoginsCount').text(stats.successful);
-    $('#failedAttemptsCount').text(stats.failed);
-    $('#activeSessionsCount').text(stats.active);
-}
-
-// Format duration from seconds to readable format
-function formatDuration(seconds) {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
+    // Filter logs
+    $('#filterLogsBtn').on('click', function() {
+        loadAdminLogs(1);
+    });
     
-    if (hours > 0) {
-        return `${hours}h ${minutes}m ${secs}s`;
-    } else if (minutes > 0) {
-        return `${minutes}m ${secs}s`;
-    } else {
-        return `${secs}s`;
-    }
-}
-
-// Filter logs
-$('#filterLogsBtn').on('click', function() {
-    loadAdminLogs(1);
-});
-
-// Reset filters
-$('#resetLogsBtn').on('click', function() {
-    $('#activityFilter').val('');
-    $('#dateFromFilter').val('');
-    $('#dateToFilter').val('');
-    loadAdminLogs(1);
-});
-
-// Start from first button
-$('#startFirstBtn').on('click', function() {
-    loadAdminLogs(1);
-});
-
-// Go to last button
-$('#endLastBtn').on('click', function() {
-    const totalRecords = parseInt($('#totalRecords').text());
-    const perPage = 20;
-    const totalPages = Math.ceil(totalRecords / perPage);
-    loadAdminLogs(totalPages);
-});
-
-// Add custom CSS for map markers
-const style = document.createElement('style');
-style.textContent = `
-    .custom-marker {
-        background: transparent;
-        border: none;
-    }
-    .map-popup {
-        min-width: 250px;
-    }
-    .map-popup h6 {
-        color: #d32f2f;
-    }
-    .leaflet-popup-content-wrapper {
-        border-radius: 8px;
-    }
-    .has-location .view-map-btn {
-        cursor: pointer;
-    }
-    .no-location .view-map-btn {
-        cursor: not-allowed;
-        opacity: 0.5;
-    }
-`;
-document.head.appendChild(style);
+    // Reset filters
+    $('#resetLogsBtn').on('click', function() {
+        $('#adminFilter').val('');
+        $('#activityFilter').val('');
+        $('#dateFromFilter').val('');
+        $('#dateToFilter').val('');
+        loadAdminLogs(1);
+    });
+    
+    // Start from first button
+    $('#startFirstBtn').on('click', function() {
+        loadAdminLogs(1);
+    });
+    
+    // Go to last button
+    $('#endLastBtn').on('click', function() {
+        loadAdminLogs($('#totalRecords').text());
+    });
     
     // Notification icon click handler
     $('#notificationIcon').on('click', function() {
