@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <!-- Font Awesome for additional icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Leaflet CSS for maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <!-- Custom CSS for minor adjustments -->
     <style>
         :root {
@@ -312,6 +314,47 @@
             color: var(--error);
         }
         
+        /* Map modal styles */
+        #mapModal .modal-dialog {
+            max-width: 90%;
+        }
+        
+        #mapModal .modal-content {
+            height: 80vh;
+        }
+        
+        #mapModal .modal-body {
+            height: calc(80vh - 140px);
+            padding: 0;
+        }
+        
+        #locationMap {
+            height: 100%;
+            width: 100%;
+        }
+        
+        .map-info {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 1000;
+            max-width: 250px;
+        }
+        
+        /* Loading spinner for map */
+        .map-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            text-align: center;
+        }
+        
         @media (min-width: 992px) {
             .sidebar {
                 transform: translateX(0);
@@ -609,11 +652,12 @@
                                     <th id="logoutTimeColumnHeader">Logout Time</th>
                                     <th id="durationColumnHeader">Duration</th>
                                     <th id="statusColumnHeader">Status</th>
+                                    <th id="actionsColumnHeader">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="logsTableBody">
                                 <tr id="loadingRow">
-                                    <td id="loadingCell" colspan="10" class="text-center py-4">
+                                    <td id="loadingCell" colspan="11" class="text-center py-4">
                                         <div id="loadingSpinner" class="spinner-border text-primary" role="status">
                                             <span id="loadingSpinnerText" class="visually-hidden">Loading...</span>
                                         </div>
@@ -684,6 +728,39 @@
     </div>
 </div>
 
+<!-- Map Modal -->
+<div id="mapModal" class="modal fade" tabindex="-1" aria-labelledby="mapModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div id="mapModalHeader" class="modal-header bg-primary text-white">
+                <h5 id="mapModalLabel" class="modal-title">
+                    <i class="fas fa-map-marked-alt me-2"></i>Location Details
+                </h5>
+                <button id="mapModalClose" type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div id="mapModalBody" class="modal-body p-0">
+                <div id="locationMap"></div>
+                <div id="mapLoading" class="map-loading d-none">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading location...</span>
+                    </div>
+                    <p class="mt-2">Getting location details...</p>
+                </div>
+                <div id="mapInfo" class="map-info">
+                    <h6 id="locationInfoTitle" class="mb-2">Login Location</h6>
+                    <div id="locationDetails" class="small">
+                        <p id="ipAddressInfo" class="mb-1"><strong>IP Address:</strong> <span id="ipAddressValue">-</span></p>
+                        <p id="locationInfo" class="mb-1"><strong>Location:</strong> <span id="locationValue">-</span></p>
+                        <p id="coordinatesInfo" class="mb-1"><strong>Coordinates:</strong> <span id="coordinatesValue">-</span></p>
+                        <p id="loginTimeInfo" class="mb-1"><strong>Login Time:</strong> <span id="loginTimeValue">-</span></p>
+                        <p id="deviceInfo" class="mb-0"><strong>Device:</strong> <span id="deviceValue">-</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Session Timer Display -->
 <div id="sessionTimer" class="session-timer">
     <i class="fas fa-clock me-2"></i>
@@ -698,6 +775,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <!-- SweetAlert2 for notifications -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Leaflet JS for maps -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
  $(document).ready(function() {
@@ -712,6 +791,8 @@
     let sessionStartTime;
     let sessionExpiryTime;
     let isSessionActive = false;
+    let map; // Will store the map instance
+    let currentMarker; // Will store the current marker
     
     // Initialize session management
     function initSessionManagement() {
@@ -1149,60 +1230,74 @@
         loadAdmins();
     });
     
+    // Initialize map when modal is shown
+    $('#mapModal').on('shown.bs.modal', function() {
+        // Initialize map if it doesn't exist
+        if (!map) {
+            map = L.map('locationMap').setView([0, 0], 2);
+            
+            // Add tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+        } else {
+            // Refresh the map to fix display issues
+            setTimeout(function() {
+                map.invalidateSize();
+            }, 100);
+        }
+    });
+    
     // Load admin logs
-    function loadAdminLogs(page = 1) {
-        currentPage = page;
-        
-        // Show loading state
+function loadAdminLogs(page = 1) {
+    currentPage = page;
+    
+    // Show loading state
+    $('#logsTableBody').html(`
+        <tr id="loadingRow">
+            <td id="loadingCell" colspan="11" class="text-center py-4">
+                <div id="loadingSpinner" class="spinner-border text-primary" role="status">
+                    <span id="loadingSpinnerText" class="visually-hidden">Loading...</span>
+                </div>
+                <p id="loadingText" class="mt-2">Loading logs...</p>
+            </td>
+        </tr>
+    `);
+    
+    // Get filter values
+    const activity = $('#activityFilter').val();
+    const dateFrom = $('#dateFromFilter').val();
+    const dateTo = $('#dateToFilter').val();
+    
+    // Build query string
+    let queryString = `?page=${page}`;
+    if (activity) queryString += `&activity=${activity}`;
+    if (dateFrom) queryString += `&date_from=${dateFrom}`;
+    if (dateTo) queryString += `&date_to=${dateTo}`;
+    
+    // Fetch logs via AJAX
+    $.get(`/admin/logs/api${queryString}`, function(data) {
+        renderLogsTable(data.logs.data);
+        renderPagination(data.logs);
+        updateStatistics(data.statistics);
+    }).fail(function() {
         $('#logsTableBody').html(`
-            <tr id="loadingRow">
-                <td id="loadingCell" colspan="10" class="text-center py-4">
-                    <div id="loadingSpinner" class="spinner-border text-primary" role="status">
-                        <span id="loadingSpinnerText" class="visually-hidden">Loading...</span>
-                    </div>
-                    <p id="loadingText" class="mt-2">Loading logs...</p>
+            <tr id="errorRow">
+                <td id="errorCell" colspan="11" class="text-center py-4">
+                    <i id="errorIcon" class="fas fa-exclamation-triangle fa-2x text-warning mb-3"></i>
+                    <p id="errorMessage" class="text-muted">Error loading logs. Please try again.</p>
                 </td>
             </tr>
         `);
-        
-        // Get filter values
-        const adminId = $('#adminFilter').val();
-        const activity = $('#activityFilter').val();
-        const dateFrom = $('#dateFromFilter').val();
-        const dateTo = $('#dateToFilter').val();
-        
-        // Build query string
-        let queryString = `?page=${page}`;
-        if (adminId) queryString += `&admin_id=${adminId}`;
-        if (activity) queryString += `&activity=${activity}`;
-        if (dateFrom) queryString += `&date_from=${dateFrom}`;
-        if (dateTo) queryString += `&date_to=${dateTo}`;
-        
-        // Fetch logs via AJAX
-        $.get(`/admin/logs/api${queryString}`, function(data) {
-            renderLogsTable(data.logs.data);
-            renderPagination(data.logs);
-            updateStatistics(data.statistics);
-        }).fail(function() {
-            $('#logsTableBody').html(`
-                <tr id="errorRow">
-                    <td id="errorCell" colspan="10" class="text-center py-4">
-                        <i id="errorIcon" class="fas fa-exclamation-triangle fa-2x text-warning mb-3"></i>
-                        <p id="errorMessage" class="text-muted">Error loading logs. Please try again.</p>
-                    </td>
-                </tr>
-            `);
-        });
-    }
-    
-   
+    });
+}
     
     // Render logs table
 function renderLogsTable(logs) {
     if (logs.length === 0) {
         $('#logsTableBody').html(`
             <tr id="noDataRow">
-                <td id="noDataCell" colspan="9" class="text-center py-4"> <!-- Changed colspan from 10 to 9 -->
+                <td id="noDataCell" colspan="11" class="text-center py-4">
                     <i id="noDataIcon" class="fas fa-search fa-2x text-muted mb-3"></i>
                     <p id="noDataMessage" class="text-muted">No logs found</p>
                 </td>
@@ -1240,7 +1335,11 @@ function renderLogsTable(logs) {
                 data-region="${log.region || ''}"
                 data-email="${log.email}"
                 data-activity="${log.activity}"
-                data-login-time="${loginTime}">
+                data-login-time="${loginTime}"
+                data-browser="${log.browser}"
+                data-platform="${log.platform}"
+                data-latitude="${log.latitude || ''}"
+                data-longitude="${log.longitude || ''}">
                 <td id="idCell-${log.id}">
                     <span id="logId-${log.id}" class="badge bg-secondary">${displayId}</span>
                 </td>
@@ -1289,12 +1388,214 @@ function renderLogsTable(logs) {
                     }
                 </td>
                 <td id="statusCell-${log.id}">${status}</td>
+                <td id="actionsCell-${log.id}">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-sm btn-outline-primary view-map-btn" data-log-id="${log.id}" title="View on Map">
+                            <i class="fas fa-map-marked-alt"></i>
+                        </button>
+                    </div>
+                </td>
             </tr>
         `;
     });
     
     $('#logsTableBody').html(html);
+    
+    // Add click event for view map buttons
+    $('.view-map-btn').on('click', function() {
+        const logId = $(this).data('log-id');
+        const row = $(`#log-row-${logId - 1}`); // Adjust index to match row ID
+        
+        // Get data from row
+        const ip = row.data('ip');
+        const country = row.data('country');
+        const city = row.data('city');
+        const region = row.data('region');
+        const email = row.data('email');
+        const activity = row.data('activity');
+        const loginTime = row.data('login-time');
+        const browser = row.data('browser');
+        const platform = row.data('platform');
+        const latitude = row.data('latitude');
+        const longitude = row.data('longitude');
+        
+        // Update map info
+        $('#ipAddressValue').text(ip);
+        $('#locationValue').text(city && country ? `${city}, ${region ? region + ', ' : ''}${country}` : 'Unknown');
+        $('#loginTimeValue').text(loginTime);
+        $('#deviceValue').text(`${browser} on ${platform}`);
+        
+        // Show map modal
+        $('#mapModal').modal('show');
+        
+        // Show loading indicator
+        $('#mapLoading').removeClass('d-none');
+        
+        // Check if we have coordinates directly from the database
+        if (latitude && longitude) {
+            // Use the coordinates from the database
+            const lat = parseFloat(latitude);
+            const lon = parseFloat(longitude);
+            
+            // Update coordinates display
+            $('#coordinatesValue').text(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
+            
+            // Set map view to the location
+            map.setView([lat, lon], 10);
+            
+            // Remove existing marker if it exists
+            if (currentMarker) {
+                map.removeLayer(currentMarker);
+            }
+            
+            // Add new marker
+            currentMarker = L.marker([lat, lon]).addTo(map);
+            
+            // Add popup with location info
+            currentMarker.bindPopup(`
+                <div>
+                    <strong>IP Address:</strong> ${ip}<br>
+                    <strong>Location:</strong> ${city}, ${region ? region + ', ' : ''}${country}<br>
+                    <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
+                    <strong>Login Time:</strong> ${loginTime}<br>
+                    <strong>Device:</strong> ${browser} on ${platform}
+                </div>
+            `).openPopup();
+            
+            // Hide loading indicator
+            $('#mapLoading').addClass('d-none');
+        } else if (city && country) {
+            // If we don't have coordinates, try to geocode the location
+            const query = `${city}, ${region ? region + ', ' : ''}${country}`;
+            
+            // First try ip-api.com for more accurate location based on IP
+            $.ajax({
+                url: `http://ip-api.com/json/${ip}`,
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    if (data && data.status === 'success') {
+                        const lat = data.lat;
+                        const lon = data.lon;
+                        
+                        // Update coordinates display
+                        $('#coordinatesValue').text(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
+                        
+                        // Set map view to the location
+                        map.setView([lat, lon], 10);
+                        
+                        // Remove existing marker if it exists
+                        if (currentMarker) {
+                            map.removeLayer(currentMarker);
+                        }
+                        
+                        // Add new marker
+                        currentMarker = L.marker([lat, lon]).addTo(map);
+                        
+                        // Add popup with location info
+                        currentMarker.bindPopup(`
+                            <div>
+                                <strong>IP Address:</strong> ${ip}<br>
+                                <strong>Location:</strong> ${data.city}, ${data.regionName}, ${data.country}<br>
+                                <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
+                                <strong>ISP:</strong> ${data.isp || 'Unknown'}<br>
+                                <strong>Login Time:</strong> ${loginTime}<br>
+                                <strong>Device:</strong> ${browser} on ${platform}
+                            </div>
+                        `).openPopup();
+                        
+                        // Hide loading indicator
+                        $('#mapLoading').addClass('d-none');
+                        
+                        // Update the location display with more accurate data
+                        $('#locationValue').text(`${data.city}, ${data.regionName}, ${data.country}`);
+                    } else {
+                        // If IP-based lookup fails, try Nominatim
+                        geocodeWithNominatim(query, ip, city, region, country, loginTime, browser, platform);
+                    }
+                },
+                error: function() {
+                    // If IP-based lookup fails, try Nominatim
+                    geocodeWithNominatim(query, ip, city, region, country, loginTime, browser, platform);
+                }
+            });
+        } else {
+            // If location is unknown, show a message
+            $('#mapLoading').addClass('d-none');
+            Swal.fire({
+                title: 'Unknown Location',
+                text: 'No location information available for this log entry.',
+                icon: 'info',
+                confirmButtonColor: '#d32f2f'
+            });
+        }
+    });
 }
+    
+    // Function to geocode using Nominatim as fallback
+    function geocodeWithNominatim(query, ip, city, region, country, loginTime, browser, platform) {
+        // Use Nominatim API to geocode the location
+        $.ajax({
+            url: `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`,
+            method: 'GET',
+            success: function(data) {
+                if (data && data.length > 0) {
+                    const lat = parseFloat(data[0].lat);
+                    const lon = parseFloat(data[0].lon);
+                    
+                    // Update coordinates display
+                    $('#coordinatesValue').text(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
+                    
+                    // Set map view to the location
+                    map.setView([lat, lon], 10);
+                    
+                    // Remove existing marker if it exists
+                    if (currentMarker) {
+                        map.removeLayer(currentMarker);
+                    }
+                    
+                    // Add new marker
+                    currentMarker = L.marker([lat, lon]).addTo(map);
+                    
+                    // Add popup with location info
+                    currentMarker.bindPopup(`
+                        <div>
+                            <strong>IP Address:</strong> ${ip}<br>
+                            <strong>Location:</strong> ${city}, ${region ? region + ', ' : ''}${country}<br>
+                            <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
+                            <strong>Login Time:</strong> ${loginTime}<br>
+                            <strong>Device:</strong> ${browser} on ${platform}
+                        </div>
+                    `).openPopup();
+                } else {
+                    // If geocoding fails, show a message
+                    Swal.fire({
+                        title: 'Location Not Found',
+                        text: 'Unable to find coordinates for this location. Showing default view.',
+                        icon: 'warning',
+                        confirmButtonColor: '#d32f2f',
+                        timer: 3000
+                    });
+                }
+                
+                // Hide loading indicator
+                $('#mapLoading').addClass('d-none');
+            },
+            error: function() {
+                // If API call fails, show a message
+                Swal.fire({
+                    title: 'Geocoding Error',
+                    text: 'Unable to get coordinates for this location. Showing default view.',
+                    icon: 'error',
+                    confirmButtonColor: '#d32f2f',
+                    timer: 3000
+                });
+                
+                // Hide loading indicator
+                $('#mapLoading').addClass('d-none');
+            }
+        });
+    }
     
     // Render pagination
     function renderPagination(logs) {
