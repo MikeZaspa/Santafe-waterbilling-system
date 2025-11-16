@@ -1470,13 +1470,13 @@ function renderLogsTable(logs) {
             
             // First try ip-api.com for more accurate location based on IP
             $.ajax({
-                url: `http://ip-api.com/json/${ip}`,
+                url: `https://ipapi.co/${ip}/json/`,
                 method: 'GET',
                 dataType: 'json',
                 success: function(data) {
-                    if (data && data.status === 'success') {
-                        const lat = data.lat;
-                        const lon = data.lon;
+                    if (data && data.latitude && data.longitude) {
+                        const lat = data.latitude;
+                        const lon = data.longitude;
                         
                         // Update coordinates display
                         $('#coordinatesValue').text(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
@@ -1496,9 +1496,9 @@ function renderLogsTable(logs) {
                         currentMarker.bindPopup(`
                             <div>
                                 <strong>IP Address:</strong> ${ip}<br>
-                                <strong>Location:</strong> ${data.city}, ${data.regionName}, ${data.country}<br>
+                                <strong>Location:</strong> ${data.city}, ${data.region}, ${data.country_name}<br>
                                 <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
-                                <strong>ISP:</strong> ${data.isp || 'Unknown'}<br>
+                                <strong>ISP:</strong> ${data.org || 'Unknown'}<br>
                                 <strong>Login Time:</strong> ${loginTime}<br>
                                 <strong>Device:</strong> ${browser} on ${platform}
                             </div>
@@ -1508,7 +1508,7 @@ function renderLogsTable(logs) {
                         $('#mapLoading').addClass('d-none');
                         
                         // Update the location display with more accurate data
-                        $('#locationValue').text(`${data.city}, ${data.regionName}, ${data.country}`);
+                        $('#locationValue').text(`${data.city}, ${data.region}, ${data.country_name}`);
                     } else {
                         // If IP-based lookup fails, try Nominatim
                         geocodeWithNominatim(query, ip, city, region, country, loginTime, browser, platform);
