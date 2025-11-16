@@ -636,7 +636,6 @@
                         <table class="table table-striped table-hover">
                             <thead class="table-light">
                                 <tr>
-                                    <th>ID</th>
                                     <th>Admin</th>
                                     <th>IP Address</th>
                                     <th>Location</th>
@@ -660,7 +659,6 @@
                             </tbody>
                         </table>
                     </div>
-
                     <!-- Pagination -->
                     <div class="d-flex justify-content-center mt-3">
                         <nav id="logsPagination">
@@ -1257,104 +1255,103 @@
     }
     
     // Render logs table
-   function renderLogsTable(logs) {
-    if (logs.length === 0) {
-        $('#logsTableBody').html(`
-            <tr>
-                <td colspan="10" class="text-center py-4">
-                    <i class="fas fa-search fa-2x text-muted mb-3"></i>
-                    <p class="text-muted">No logs found</p>
-                </td>
-            </tr>
-        `);
-        return;
+    function renderLogsTable(logs) {
+        if (logs.length === 0) {
+            $('#logsTableBody').html(`
+                <tr>
+                    <td colspan="9" class="text-center py-4">
+                        <i class="fas fa-search fa-2x text-muted mb-3"></i>
+                        <p class="text-muted">No logs found</p>
+                    </td>
+                </tr>
+            `);
+            return;
+        }
+        
+        let html = '';
+        logs.forEach(function(log) {
+            const loginTime = new Date(log.login_at).toLocaleString();
+            const logoutTime = log.logout_at ? new Date(log.logout_at).toLocaleString() : '';
+            const duration = log.session_duration ? formatDuration(log.session_duration) : '-';
+            const status = log.logout_at ? 
+                '<span class="badge bg-secondary">Completed</span>' : 
+                '<span class="badge bg-success">Active</span>';
+            
+            const activityBadge = log.activity.includes('successful') ? 
+                'bg-success' : log.activity.includes('failed') ? 'bg-danger' : 'bg-primary';
+            
+            const location = log.city && log.country ? 
+                `<div class="d-flex align-items-center">
+                    <span>${log.city}, ${log.country}</span>
+                    <i class="fas fa-map-marker-alt location-pin ms-2" 
+                       onclick="showLocationOnMap('${log.ip_address}', '${log.city}', '${log.country}', '${log.region || ''}', '${log.email}', '${log.activity}', '${loginTime}')"
+                       title="Show on map"></i>
+                </div>` : 
+                '<span class="text-muted">Unknown</span>';
+            
+            html += `
+                <tr data-log-id="${log.id}" 
+                    data-ip="${log.ip_address}"
+                    data-country="${log.country}"
+                    data-city="${log.city}"
+                    data-region="${log.region || ''}"
+                    data-email="${log.email}"
+                    data-activity="${log.activity}"
+                    data-login-time="${loginTime}">
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-sm bg-primary rounded-circle text-white d-flex align-items-center justify-content-center me-2">
+                                ${log.email.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                                <div class="fw-bold">${log.email}</div>
+                                <small class="text-muted">
+                                    ${log.admin ? `${log.admin.first_name} ${log.admin.last_name}` : 'Admin Deleted'}
+                                </small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <code>${log.ip_address}</code>
+                    </td>
+                    <td>${location}</td>
+                    <td>
+                        <small>
+                            <i class="fas fa-desktop me-1 text-muted"></i> ${log.browser}<br>
+                            <i class="fas fa-laptop me-1 text-muted"></i> ${log.platform}
+                        </small>
+                    </td>
+                    <td>
+                        <span class="badge ${activityBadge}">${log.activity}</span>
+                    </td>
+                    <td>
+                        <small>
+                            ${loginTime.split(',')[0]}<br>
+                            ${loginTime.split(',')[1]}
+                        </small>
+                    </td>
+                    <td>
+                        ${logoutTime ? 
+                            `<small>
+                                ${logoutTime.split(',')[0]}<br>
+                                ${logoutTime.split(',')[1]}
+                            </small>` : 
+                            '<span class="badge bg-warning">Active</span>'
+                        }
+                    </td>
+                    <td>
+                        ${duration !== '-' ? 
+                            `<span class="badge bg-info">${duration}</span>` : 
+                            '<span class="text-muted">-</span>'
+                        }
+                    </td>
+                    <td>${status}</td>
+                </tr>
+            `;
+        });
+        
+        $('#logsTableBody').html(html);
     }
-    
-    let html = '';
-    logs.forEach(function(log) {
-        const loginTime = new Date(log.login_at).toLocaleString();
-        const logoutTime = log.logout_at ? new Date(log.logout_at).toLocaleString() : '';
-        const duration = log.session_duration ? formatDuration(log.session_duration) : '-';
-        const status = log.logout_at ? 
-            '<span class="badge bg-secondary">Completed</span>' : 
-            '<span class="badge bg-success">Active</span>';
-        
-        const activityBadge = log.activity.includes('successful') ? 
-            'bg-success' : log.activity.includes('failed') ? 'bg-danger' : 'bg-primary';
-        
-        const location = log.city && log.country ? 
-            `<div class="d-flex align-items-center">
-                <span>${log.city}, ${log.country}</span>
-                <i class="fas fa-map-marker-alt location-pin ms-2" 
-                   onclick="showLocationOnMap('${log.ip_address}', '${log.city}', '${log.country}', '${log.region || ''}', '${log.email}', '${log.activity}', '${loginTime}')"
-                   title="Show on map"></i>
-            </div>` : 
-            '<span class="text-muted">Unknown</span>';
-        
-        html += `
-            <tr data-log-id="${log.id}" 
-                data-ip="${log.ip_address}"
-                data-country="${log.country}"
-                data-city="${log.city}"
-                data-region="${log.region || ''}"
-                data-email="${log.email}"
-                data-activity="${log.activity}"
-                data-login-time="${loginTime}">
-                <td><span class="badge bg-light text-dark">#${log.id}</span></td>
-                <td>
-                    <div class="d-flex align-items-center">
-                        <div class="avatar-sm bg-primary rounded-circle text-white d-flex align-items-center justify-content-center me-2">
-                            ${log.email.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                            <div class="fw-bold">${log.email}</div>
-                            <small class="text-muted">
-                                ${log.admin ? `${log.admin.first_name} ${log.admin.last_name}` : 'Admin Deleted'}
-                            </small>
-                        </div>
-                    </div>
-                </td>
-                <td>
-                    <code>${log.ip_address}</code>
-                </td>
-                <td>${location}</td>
-                <td>
-                    <small>
-                        <i class="fas fa-desktop me-1 text-muted"></i> ${log.browser}<br>
-                        <i class="fas fa-laptop me-1 text-muted"></i> ${log.platform}
-                    </small>
-                </td>
-                <td>
-                    <span class="badge ${activityBadge}">${log.activity}</span>
-                </td>
-                <td>
-                    <small>
-                        ${loginTime.split(',')[0]}<br>
-                        ${loginTime.split(',')[1]}
-                    </small>
-                </td>
-                <td>
-                    ${logoutTime ? 
-                        `<small>
-                            ${logoutTime.split(',')[0]}<br>
-                            ${logoutTime.split(',')[1]}
-                        </small>` : 
-                        '<span class="badge bg-warning">Active</span>'
-                    }
-                </td>
-                <td>
-                    ${duration !== '-' ? 
-                        `<span class="badge bg-info">${duration}</span>` : 
-                        '<span class="text-muted">-</span>'
-                    }
-                </td>
-                <td>${status}</td>
-            </tr>
-        `;
-    });
-    
-    $('#logsTableBody').html(html);
-}
     
     // Render pagination
     function renderPagination(logs) {
