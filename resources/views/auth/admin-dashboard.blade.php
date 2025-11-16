@@ -1211,113 +1211,107 @@
         });
     }
     
-   // Render logs table
-function renderLogsTable(logs) {
-    if (logs.length === 0) {
-        $('#logsTableBody').html(`
-            <tr id="noDataRow">
-                <td id="noDataCell" colspan="10" class="text-center py-4">
-                    <i id="noDataIcon" class="fas fa-search fa-2x text-muted mb-3"></i>
-                    <p id="noDataMessage" class="text-muted">No logs found</p>
-                </td>
-            </tr>
-        `);
-        return;
+    // Render logs table
+    function renderLogsTable(logs) {
+        if (logs.length === 0) {
+            $('#logsTableBody').html(`
+                <tr id="noDataRow">
+                    <td id="noDataCell" colspan="10" class="text-center py-4">
+                        <i id="noDataIcon" class="fas fa-search fa-2x text-muted mb-3"></i>
+                        <p id="noDataMessage" class="text-muted">No logs found</p>
+                    </td>
+                </tr>
+            `);
+            return;
+        }
+        
+        let html = '';
+        logs.forEach(function(log, index) {
+            const logId = `log-${log.id}`;
+            const rowId = `log-row-${index}`;
+            const loginTime = new Date(log.login_at).toLocaleString();
+            const logoutTime = log.logout_at ? new Date(log.logout_at).toLocaleString() : '';
+            const duration = log.session_duration ? formatDuration(log.session_duration) : '-';
+            const status = log.logout_at ? 
+                '<span class="badge bg-secondary">Completed</span>' : 
+                '<span class="badge bg-success">Active</span>';
+            
+            const activityBadge = log.activity.includes('successful') ? 
+                'bg-success' : log.activity.includes('failed') ? 'bg-danger' : 'bg-primary';
+            
+            const location = log.city && log.country ? 
+                `<div id="location-${log.id}" class="d-flex align-items-center">
+                    <span id="locationText-${log.id}">${log.city}, ${log.country}</span>
+                </div>` : 
+                `<span id="unknownLocation-${log.id}" class="text-muted">Unknown</span>`;
+            
+            html += `
+                <tr id="${rowId}" data-log-id="${log.id}" 
+                    data-ip="${log.ip_address}"
+                    data-country="${log.country}"
+                    data-city="${log.city}"
+                    data-region="${log.region || ''}"
+                    data-email="${log.email}"
+                    data-activity="${log.activity}"
+                    data-login-time="${loginTime}">
+                    <td id="idCell-${log.id}">
+                        <span id="logId-${log.id}" class="badge bg-secondary">${log.id}</span>
+                    </td>
+                    <td id="adminCell-${log.id}">
+                        <div id="adminInfo-${log.id}" class="d-flex align-items-center">
+                            <div id="adminAvatar-${log.id}" class="avatar-sm bg-primary rounded-circle text-white d-flex align-items-center justify-content-center me-2">
+                                ${log.email.charAt(0).toUpperCase()}
+                            </div>
+                            <div id="adminDetails-${log.id}">
+                                <div id="adminName-${log.id}" class="fw-bold">${log.admin ? `${log.admin.first_name} ${log.admin.last_name}` : 'Admin Deleted'}</div>
+                                <small id="adminEmail-${log.id}" class="text-muted">${log.email}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td id="emailCell-${log.id}">
+                        <span id="emailDisplay-${log.id}">${log.email}</span>
+                    </td>
+                    <td id="ipCell-${log.id}">
+                        <code id="ipAddress-${log.id}">${log.ip_address}</code>
+                    </td>
+                    <td id="locationCell-${log.id}">${location}</td>
+                    <td id="deviceCell-${log.id}">
+                        <small>
+                            <i id="browserIcon-${log.id}" class="fas fa-desktop me-1 text-muted"></i> <span id="browser-${log.id}">${log.browser}</span><br>
+                            <i id="platformIcon-${log.id}" class="fas fa-laptop me-1 text-muted"></i> <span id="platform-${log.id}">${log.platform}</span>
+                        </small>
+                    </td>
+                    <td id="activityCell-${log.id}">
+                        <span id="activityBadge-${log.id}" class="badge ${activityBadge}">${log.activity}</span>
+                    </td>
+                    <td id="loginTimeCell-${log.id}">
+                        <small>
+                            <span id="loginDate-${log.id}">${loginTime.split(',')[0]}</span><br>
+                            <span id="loginTime-${log.id}">${loginTime.split(',')[1]}</span>
+                        </small>
+                    </td>
+                    <td id="logoutTimeCell-${log.id}">
+                        ${logoutTime ? 
+                            `<small>
+                                <span id="logoutDate-${log.id}">${logoutTime.split(',')[0]}</span><br>
+                                <span id="logoutTime-${log.id}">${logoutTime.split(',')[1]}</span>
+                            </small>` : 
+                            `<span id="activeBadge-${log.id}" class="badge bg-warning">Active</span>`
+                        }
+                    </td>
+                    <td id="durationCell-${log.id}">
+                        ${duration !== '-' ? 
+                            `<span id="durationBadge-${log.id}" class="badge bg-info">${duration}</span>` : 
+                            `<span id="noDuration-${log.id}" class="text-muted">-</span>`
+                        }
+                    </td>
+                    <td id="statusCell-${log.id}">${status}</td>
+                </tr>
+            `;
+        });
+        
+        $('#logsTableBody').html(html);
     }
-    
-    let html = '';
-    logs.forEach(function(log, index) {
-        const logId = `log-${log.id}`;
-        const rowId = `log-row-${index}`;
-        const displayId = index + 1; // This will make IDs start from 1
-        const loginTime = new Date(log.login_at).toLocaleString();
-        const logoutTime = log.logout_at ? new Date(log.logout_at).toLocaleString() : '';
-        const duration = log.session_duration ? formatDuration(log.session_duration) : '-';
-        const status = log.logout_at ? 
-            '<span class="badge bg-secondary">Completed</span>' : 
-            '<span class="badge bg-success">Active</span>';
-        
-        const activityBadge = log.activity.includes('successful') ? 
-            'bg-success' : log.activity.includes('failed') ? 'bg-danger' : 'bg-primary';
-        
-        const location = log.city && log.country ? 
-            `<div id="location-${log.id}" class="d-flex align-items-center">
-                <span id="locationText-${log.id}">${log.city}, ${log.country}</span>
-            </div>` : 
-            `<span id="unknownLocation-${log.id}" class="text-muted">Unknown</span>`;
-        
-        // Get admin name - if not available, show email or leave empty
-        const adminName = log.admin ? 
-            `${log.admin.first_name} ${log.admin.last_name}` : 
-            log.email; // Fallback to email if admin data is not available
-        
-        html += `
-            <tr id="${rowId}" data-log-id="${log.id}" 
-                data-ip="${log.ip_address}"
-                data-country="${log.country}"
-                data-city="${log.city}"
-                data-region="${log.region || ''}"
-                data-email="${log.email}"
-                data-activity="${log.activity}"
-                data-login-time="${loginTime}">
-                <td id="idCell-${log.id}">
-                    <span id="logId-${log.id}" class="badge bg-secondary">${displayId}</span>
-                </td>
-                <td id="adminCell-${log.id}">
-                    <div id="adminInfo-${log.id}" class="d-flex align-items-center">
-                        <div id="adminAvatar-${log.id}" class="avatar-sm bg-primary rounded-circle text-white d-flex align-items-center justify-content-center me-2">
-                            ${log.email.charAt(0).toUpperCase()}
-                        </div>
-                        <div id="adminDetails-${log.id}">
-                            <div id="adminName-${log.id}" class="fw-bold">${adminName}</div>
-                            <small id="adminEmail-${log.id}" class="text-muted">${log.email}</small>
-                        </div>
-                    </div>
-                </td>
-                <td id="emailCell-${log.id}">
-                    <span id="emailDisplay-${log.id}">${log.email}</span>
-                </td>
-                <td id="ipCell-${log.id}">
-                    <code id="ipAddress-${log.id}">${log.ip_address}</code>
-                </td>
-                <td id="locationCell-${log.id}">${location}</td>
-                <td id="deviceCell-${log.id}">
-                    <small>
-                        <i id="browserIcon-${log.id}" class="fas fa-desktop me-1 text-muted"></i> <span id="browser-${log.id}">${log.browser}</span><br>
-                        <i id="platformIcon-${log.id}" class="fas fa-laptop me-1 text-muted"></i> <span id="platform-${log.id}">${log.platform}</span>
-                    </small>
-                </td>
-                <td id="activityCell-${log.id}">
-                    <span id="activityBadge-${log.id}" class="badge ${activityBadge}">${log.activity}</span>
-                </td>
-                <td id="loginTimeCell-${log.id}">
-                    <small>
-                        <span id="loginDate-${log.id}">${loginTime.split(',')[0]}</span><br>
-                        <span id="loginTime-${log.id}">${loginTime.split(',')[1]}</span>
-                    </small>
-                </td>
-                <td id="logoutTimeCell-${log.id}">
-                    ${logoutTime ? 
-                        `<small>
-                            <span id="logoutDate-${log.id}">${logoutTime.split(',')[0]}</span><br>
-                            <span id="logoutTime-${log.id}">${logoutTime.split(',')[1]}</span>
-                        </small>` : 
-                        `<span id="activeBadge-${log.id}" class="badge bg-warning">Active</span>`
-                    }
-                </td>
-                <td id="durationCell-${log.id}">
-                    ${duration !== '-' ? 
-                        `<span id="durationBadge-${log.id}" class="badge bg-info">${duration}</span>` : 
-                        `<span id="noDuration-${log.id}" class="text-muted">-</span>`
-                    }
-                </td>
-                <td id="statusCell-${log.id}">${status}</td>
-            </tr>
-        `;
-    });
-    
-    $('#logsTableBody').html(html);
-}
     
     // Render pagination
     function renderPagination(logs) {
