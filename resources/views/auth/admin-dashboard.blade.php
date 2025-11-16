@@ -1150,48 +1150,50 @@
     });
     
     // Load admin logs
-function loadAdminLogs(page = 1) {
-    currentPage = page;
-    
-    // Show loading state
-    $('#logsTableBody').html(`
-        <tr id="loadingRow">
-            <td id="loadingCell" colspan="9" class="text-center py-4"> <!-- Changed colspan from 10 to 9 -->
-                <div id="loadingSpinner" class="spinner-border text-primary" role="status">
-                    <span id="loadingSpinnerText" class="visually-hidden">Loading...</span>
-                </div>
-                <p id="loadingText" class="mt-2">Loading logs...</p>
-            </td>
-        </tr>
-    `);
-    
-    // Get filter values (remove adminId)
-    const activity = $('#activityFilter').val();
-    const dateFrom = $('#dateFromFilter').val();
-    const dateTo = $('#dateToFilter').val();
-    
-    // Build query string (remove admin_id)
-    let queryString = `?page=${page}`;
-    if (activity) queryString += `&activity=${activity}`;
-    if (dateFrom) queryString += `&date_from=${dateFrom}`;
-    if (dateTo) queryString += `&date_to=${dateTo}`;
-    
-    // Fetch logs via AJAX
-    $.get(`/admin/logs/api${queryString}`, function(data) {
-        renderLogsTable(data.logs.data);
-        renderPagination(data.logs);
-        updateStatistics(data.statistics);
-    }).fail(function() {
+    function loadAdminLogs(page = 1) {
+        currentPage = page;
+        
+        // Show loading state
         $('#logsTableBody').html(`
-            <tr id="errorRow">
-                <td id="errorCell" colspan="9" class="text-center py-4"> <!-- Changed colspan from 10 to 9 -->
-                    <i id="errorIcon" class="fas fa-exclamation-triangle fa-2x text-warning mb-3"></i>
-                    <p id="errorMessage" class="text-muted">Error loading logs. Please try again.</p>
+            <tr id="loadingRow">
+                <td id="loadingCell" colspan="10" class="text-center py-4">
+                    <div id="loadingSpinner" class="spinner-border text-primary" role="status">
+                        <span id="loadingSpinnerText" class="visually-hidden">Loading...</span>
+                    </div>
+                    <p id="loadingText" class="mt-2">Loading logs...</p>
                 </td>
             </tr>
         `);
-    });
-}
+        
+        // Get filter values
+        const adminId = $('#adminFilter').val();
+        const activity = $('#activityFilter').val();
+        const dateFrom = $('#dateFromFilter').val();
+        const dateTo = $('#dateToFilter').val();
+        
+        // Build query string
+        let queryString = `?page=${page}`;
+        if (adminId) queryString += `&admin_id=${adminId}`;
+        if (activity) queryString += `&activity=${activity}`;
+        if (dateFrom) queryString += `&date_from=${dateFrom}`;
+        if (dateTo) queryString += `&date_to=${dateTo}`;
+        
+        // Fetch logs via AJAX
+        $.get(`/admin/logs/api${queryString}`, function(data) {
+            renderLogsTable(data.logs.data);
+            renderPagination(data.logs);
+            updateStatistics(data.statistics);
+        }).fail(function() {
+            $('#logsTableBody').html(`
+                <tr id="errorRow">
+                    <td id="errorCell" colspan="10" class="text-center py-4">
+                        <i id="errorIcon" class="fas fa-exclamation-triangle fa-2x text-warning mb-3"></i>
+                        <p id="errorMessage" class="text-muted">Error loading logs. Please try again.</p>
+                    </td>
+                </tr>
+            `);
+        });
+    }
     
    
     
