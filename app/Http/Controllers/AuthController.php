@@ -484,7 +484,7 @@ if (Auth::guard('admin')->attempt($credentials)) {
 $request->session()->regenerate();
 
 // Log successful login
-$this->adminLogService->logLogin($admin, $request, '2fa_login_successful');
+$this->adminLogService->logLogin($admin, $request, 'Login Successfully');
 
 return response()->json([
 'success' => true,
@@ -641,7 +641,7 @@ return redirect()->intended('/admin-dashboard');
 // Log failed login attempt (wrong password)
 $this->adminLogService->logActivity(
 $admin,
-'failed_login_attempt - wrong_password',
+'Login Failed',
 $request
 );
 
