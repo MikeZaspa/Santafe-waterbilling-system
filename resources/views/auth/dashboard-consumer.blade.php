@@ -409,12 +409,6 @@
             <button id="sidebarToggle" class="btn d-lg-none me-3 mobile-menu-toggle">
                 <i class="bi bi-list"></i>
             </button>
-            <div>
-                <h2 class="header-title">Dashboard Overview</h2>
-                <p class="header-subtitle">
-                    Welcome back, {{ $consumer->first_name ?? 'Consumer' }}!
-                </p>
-            </div>
         </div>
        
         <div class="header-right">
