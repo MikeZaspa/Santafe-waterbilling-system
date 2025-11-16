@@ -1330,8 +1330,8 @@ function renderLogsTable(logs) {
         html += `
             <tr id="${rowId}" data-log-id="${log.id}" 
                 data-ip="${log.ip_address}"
-                data-country="${log.country}"
-                data-city="${log.city}"
+                data-country="${log.country || ''}"
+                data-city="${log.city || ''}"
                 data-region="${log.region || ''}"
                 data-email="${log.email}"
                 data-activity="${log.activity}"
@@ -1464,61 +1464,10 @@ function renderLogsTable(logs) {
             
             // Hide loading indicator
             $('#mapLoading').addClass('d-none');
-        } else if (city && country) {
-            // If we don't have coordinates, try to geocode the location
-            const query = `${city}, ${region ? region + ', ' : ''}${country}`;
-            
-            // First try ip-api.com for more accurate location based on IP
-            $.ajax({
-                url: `https://ipapi.co/${ip}/json/`,
-                method: 'GET',
-                dataType: 'json',
-                success: function(data) {
-                    if (data && data.latitude && data.longitude) {
-                        const lat = data.latitude;
-                        const lon = data.longitude;
-                        
-                        // Update coordinates display
-                        $('#coordinatesValue').text(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
-                        
-                        // Set map view to the location
-                        map.setView([lat, lon], 10);
-                        
-                        // Remove existing marker if it exists
-                        if (currentMarker) {
-                            map.removeLayer(currentMarker);
-                        }
-                        
-                        // Add new marker
-                        currentMarker = L.marker([lat, lon]).addTo(map);
-                        
-                        // Add popup with location info
-                        currentMarker.bindPopup(`
-                            <div>
-                                <strong>IP Address:</strong> ${ip}<br>
-                                <strong>Location:</strong> ${data.city}, ${data.region}, ${data.country_name}<br>
-                                <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
-                                <strong>ISP:</strong> ${data.org || 'Unknown'}<br>
-                                <strong>Login Time:</strong> ${loginTime}<br>
-                                <strong>Device:</strong> ${browser} on ${platform}
-                            </div>
-                        `).openPopup();
-                        
-                        // Hide loading indicator
-                        $('#mapLoading').addClass('d-none');
-                        
-                        // Update the location display with more accurate data
-                        $('#locationValue').text(`${data.city}, ${data.region}, ${data.country_name}`);
-                    } else {
-                        // If IP-based lookup fails, try Nominatim
-                        geocodeWithNominatim(query, ip, city, region, country, loginTime, browser, platform);
-                    }
-                },
-                error: function() {
-                    // If IP-based lookup fails, try Nominatim
-                    geocodeWithNominatim(query, ip, city, region, country, loginTime, browser, platform);
-                }
-            });
+        } else if (ip) {
+            // If we don't have coordinates, try to get location from IP
+            // Try multiple geolocation services for better accuracy
+            getLocationFromIP(ip, city, country, region, loginTime, browser, platform);
         } else {
             // If location is unknown, show a message
             $('#mapLoading').addClass('d-none');
@@ -1532,12 +1481,139 @@ function renderLogsTable(logs) {
     });
 }
     
+    // Function to get location from IP using multiple services
+    function getLocationFromIP(ip, city, country, region, loginTime, browser, platform) {
+        // Try ipapi.co first
+        $.ajax({
+            url: `https://ipapi.co/${ip}/json/`,
+            method: 'GET',
+            dataType: 'json',
+            timeout: 5000,
+            success: function(data) {
+                if (data && data.latitude && data.longitude) {
+                    const lat = data.latitude;
+                    const lon = data.longitude;
+                    
+                    // Update coordinates display
+                    $('#coordinatesValue').text(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
+                    
+                    // Set map view to the location
+                    map.setView([lat, lon], 10);
+                    
+                    // Remove existing marker if it exists
+                    if (currentMarker) {
+                        map.removeLayer(currentMarker);
+                    }
+                    
+                    // Add new marker
+                    currentMarker = L.marker([lat, lon]).addTo(map);
+                    
+                    // Add popup with location info
+                    currentMarker.bindPopup(`
+                        <div>
+                            <strong>IP Address:</strong> ${ip}<br>
+                            <strong>Location:</strong> ${data.city || city}, ${data.region || region}, ${data.country_name || country}<br>
+                            <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
+                            <strong>ISP:</strong> ${data.org || 'Unknown'}<br>
+                            <strong>Login Time:</strong> ${loginTime}<br>
+                            <strong>Device:</strong> ${browser} on ${platform}
+                        </div>
+                    `).openPopup();
+                    
+                    // Update the location display with more accurate data
+                    $('#locationValue').text(`${data.city || city}, ${data.region || region}, ${data.country_name || country}`);
+                    
+                    // Hide loading indicator
+                    $('#mapLoading').addClass('d-none');
+                } else {
+                    // If ipapi.co doesn't work, try ip-api.com
+                    tryAlternativeIPService(ip, city, country, region, loginTime, browser, platform);
+                }
+            },
+            error: function() {
+                // If ipapi.co fails, try ip-api.com
+                tryAlternativeIPService(ip, city, country, region, loginTime, browser, platform);
+            }
+        });
+    }
+    
+    // Try alternative IP geolocation service
+    function tryAlternativeIPService(ip, city, country, region, loginTime, browser, platform) {
+        $.ajax({
+            url: `http://ip-api.com/json/${ip}`,
+            method: 'GET',
+            dataType: 'json',
+            timeout: 5000,
+            success: function(data) {
+                if (data && data.status === 'success' && data.lat && data.lon) {
+                    const lat = data.lat;
+                    const lon = data.lon;
+                    
+                    // Update coordinates display
+                    $('#coordinatesValue').text(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
+                    
+                    // Set map view to the location
+                    map.setView([lat, lon], 10);
+                    
+                    // Remove existing marker if it exists
+                    if (currentMarker) {
+                        map.removeLayer(currentMarker);
+                    }
+                    
+                    // Add new marker
+                    currentMarker = L.marker([lat, lon]).addTo(map);
+                    
+                    // Add popup with location info
+                    currentMarker.bindPopup(`
+                        <div>
+                            <strong>IP Address:</strong> ${ip}<br>
+                            <strong>Location:</strong> ${data.city || city}, ${data.regionName || region}, ${data.country || country}<br>
+                            <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
+                            <strong>ISP:</strong> ${data.isp || 'Unknown'}<br>
+                            <strong>Login Time:</strong> ${loginTime}<br>
+                            <strong>Device:</strong> ${browser} on ${platform}
+                        </div>
+                    `).openPopup();
+                    
+                    // Update the location display with more accurate data
+                    $('#locationValue').text(`${data.city || city}, ${data.regionName || region}, ${data.country || country}`);
+                    
+                    // Hide loading indicator
+                    $('#mapLoading').addClass('d-none');
+                } else {
+                    // If both IP services fail, try geocoding with city/country
+                    geocodeWithNominatim(city, country, region, ip, loginTime, browser, platform);
+                }
+            },
+            error: function() {
+                // If both IP services fail, try geocoding with city/country
+                geocodeWithNominatim(city, country, region, ip, loginTime, browser, platform);
+            }
+        });
+    }
+    
     // Function to geocode using Nominatim as fallback
-    function geocodeWithNominatim(query, ip, city, region, country, loginTime, browser, platform) {
+    function geocodeWithNominatim(city, country, region, ip, loginTime, browser, platform) {
+        if (!city && !country) {
+            // If we don't have location data, show an error
+            $('#mapLoading').addClass('d-none');
+            Swal.fire({
+                title: 'Location Not Found',
+                text: 'Unable to determine location for this log entry.',
+                icon: 'warning',
+                confirmButtonColor: '#d32f2f',
+                timer: 3000
+            });
+            return;
+        }
+        
         // Use Nominatim API to geocode the location
+        const query = `${city}, ${region ? region + ', ' : ''}${country}`;
+        
         $.ajax({
             url: `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`,
             method: 'GET',
+            timeout: 5000,
             success: function(data) {
                 if (data && data.length > 0) {
                     const lat = parseFloat(data[0].lat);
