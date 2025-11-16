@@ -345,16 +345,6 @@
             max-width: 250px;
         }
         
-        /* Loading spinner for map */
-        .map-loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 1000;
-            text-align: center;
-        }
-        
         @media (min-width: 992px) {
             .sidebar {
                 transform: translateX(0);
@@ -740,18 +730,11 @@
             </div>
             <div id="mapModalBody" class="modal-body p-0">
                 <div id="locationMap"></div>
-                <div id="mapLoading" class="map-loading d-none">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading location...</span>
-                    </div>
-                    <p class="mt-2">Getting location details...</p>
-                </div>
                 <div id="mapInfo" class="map-info">
                     <h6 id="locationInfoTitle" class="mb-2">Login Location</h6>
                     <div id="locationDetails" class="small">
                         <p id="ipAddressInfo" class="mb-1"><strong>IP Address:</strong> <span id="ipAddressValue">-</span></p>
                         <p id="locationInfo" class="mb-1"><strong>Location:</strong> <span id="locationValue">-</span></p>
-                        <p id="coordinatesInfo" class="mb-1"><strong>Coordinates:</strong> <span id="coordinatesValue">-</span></p>
                         <p id="loginTimeInfo" class="mb-1"><strong>Login Time:</strong> <span id="loginTimeValue">-</span></p>
                         <p id="deviceInfo" class="mb-0"><strong>Device:</strong> <span id="deviceValue">-</span></p>
                     </div>
@@ -792,7 +775,6 @@
     let sessionExpiryTime;
     let isSessionActive = false;
     let map; // Will store the map instance
-    let currentMarker; // Will store the current marker
     
     // Initialize session management
     function initSessionManagement() {
@@ -1337,9 +1319,7 @@ function renderLogsTable(logs) {
                 data-activity="${log.activity}"
                 data-login-time="${loginTime}"
                 data-browser="${log.browser}"
-                data-platform="${log.platform}"
-                data-latitude="${log.latitude || ''}"
-                data-longitude="${log.longitude || ''}">
+                data-platform="${log.platform}">
                 <td id="idCell-${log.id}">
                     <span id="logId-${log.id}" class="badge bg-secondary">${displayId}</span>
                 </td>
@@ -1416,8 +1396,6 @@ function renderLogsTable(logs) {
         const loginTime = row.data('login-time');
         const browser = row.data('browser');
         const platform = row.data('platform');
-        const latitude = row.data('latitude');
-        const longitude = row.data('longitude');
         
         // Update map info
         $('#ipAddressValue').text(ip);
@@ -1428,100 +1406,62 @@ function renderLogsTable(logs) {
         // Show map modal
         $('#mapModal').modal('show');
         
-        // Show loading indicator
-        $('#mapLoading').removeClass('d-none');
-        
-        // Check if we have coordinates directly from the database
-        if (latitude && longitude) {
-            // Use the coordinates from the database
-            const lat = parseFloat(latitude);
-            const lon = parseFloat(longitude);
+        // Geocode the location to get coordinates
+        if (city && country) {
+            const query = `${city}, ${country}`;
             
-            // Update coordinates display
-            $('#coordinatesValue').text(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
-            
-            // Set map view to the location
-            map.setView([lat, lon], 10);
-            
-            // Remove existing marker if it exists
-            if (currentMarker) {
-                map.removeLayer(currentMarker);
-            }
-            
-            // Add new marker
-            currentMarker = L.marker([lat, lon]).addTo(map);
-            
-            // Add popup with location info
-            currentMarker.bindPopup(`
-                <div>
-                    <strong>IP Address:</strong> ${ip}<br>
-                    <strong>Location:</strong> ${city}, ${region ? region + ', ' : ''}${country}<br>
-                    <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
-                    <strong>Login Time:</strong> ${loginTime}<br>
-                    <strong>Device:</strong> ${browser} on ${platform}
-                </div>
-            `).openPopup();
-            
-            // Hide loading indicator
-            $('#mapLoading').addClass('d-none');
-        } else if (city && country) {
-            // If we don't have coordinates, try to geocode the location
-            const query = `${city}, ${region ? region + ', ' : ''}${country}`;
-            
-            // First try ip-api.com for more accurate location based on IP
+            // Use Nominatim API to geocode the location
             $.ajax({
-                url: `http://ip-api.com/json/${ip}`,
+                url: `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`,
                 method: 'GET',
-                dataType: 'json',
                 success: function(data) {
-                    if (data && data.status === 'success') {
-                        const lat = data.lat;
-                        const lon = data.lon;
-                        
-                        // Update coordinates display
-                        $('#coordinatesValue').text(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
+                    if (data && data.length > 0) {
+                        const lat = parseFloat(data[0].lat);
+                        const lon = parseFloat(data[0].lon);
                         
                         // Set map view to the location
                         map.setView([lat, lon], 10);
                         
-                        // Remove existing marker if it exists
-                        if (currentMarker) {
-                            map.removeLayer(currentMarker);
+                        // Add or update marker
+                        if (window.currentMarker) {
+                            window.currentMarker.setLatLng([lat, lon]);
+                        } else {
+                            window.currentMarker = L.marker([lat, lon]).addTo(map);
                         }
                         
-                        // Add new marker
-                        currentMarker = L.marker([lat, lon]).addTo(map);
-                        
                         // Add popup with location info
-                        currentMarker.bindPopup(`
+                        window.currentMarker.bindPopup(`
                             <div>
                                 <strong>IP Address:</strong> ${ip}<br>
-                                <strong>Location:</strong> ${data.city}, ${data.regionName}, ${data.country}<br>
-                                <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
-                                <strong>ISP:</strong> ${data.isp || 'Unknown'}<br>
+                                <strong>Location:</strong> ${city}, ${region ? region + ', ' : ''}${country}<br>
                                 <strong>Login Time:</strong> ${loginTime}<br>
                                 <strong>Device:</strong> ${browser} on ${platform}
                             </div>
                         `).openPopup();
-                        
-                        // Hide loading indicator
-                        $('#mapLoading').addClass('d-none');
-                        
-                        // Update the location display with more accurate data
-                        $('#locationValue').text(`${data.city}, ${data.regionName}, ${data.country}`);
                     } else {
-                        // If IP-based lookup fails, try Nominatim
-                        geocodeWithNominatim(query, ip, city, region, country, loginTime, browser, platform);
+                        // If geocoding fails, show a message
+                        Swal.fire({
+                            title: 'Location Not Found',
+                            text: 'Unable to find coordinates for this location. Showing default view.',
+                            icon: 'warning',
+                            confirmButtonColor: '#d32f2f',
+                            timer: 3000
+                        });
                     }
                 },
                 error: function() {
-                    // If IP-based lookup fails, try Nominatim
-                    geocodeWithNominatim(query, ip, city, region, country, loginTime, browser, platform);
+                    // If API call fails, show a message
+                    Swal.fire({
+                        title: 'Geocoding Error',
+                        text: 'Unable to get coordinates for this location. Showing default view.',
+                        icon: 'error',
+                        confirmButtonColor: '#d32f2f',
+                        timer: 3000
+                    });
                 }
             });
         } else {
             // If location is unknown, show a message
-            $('#mapLoading').addClass('d-none');
             Swal.fire({
                 title: 'Unknown Location',
                 text: 'No location information available for this log entry.',
@@ -1531,71 +1471,6 @@ function renderLogsTable(logs) {
         }
     });
 }
-    
-    // Function to geocode using Nominatim as fallback
-    function geocodeWithNominatim(query, ip, city, region, country, loginTime, browser, platform) {
-        // Use Nominatim API to geocode the location
-        $.ajax({
-            url: `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`,
-            method: 'GET',
-            success: function(data) {
-                if (data && data.length > 0) {
-                    const lat = parseFloat(data[0].lat);
-                    const lon = parseFloat(data[0].lon);
-                    
-                    // Update coordinates display
-                    $('#coordinatesValue').text(`${lat.toFixed(6)}, ${lon.toFixed(6)}`);
-                    
-                    // Set map view to the location
-                    map.setView([lat, lon], 10);
-                    
-                    // Remove existing marker if it exists
-                    if (currentMarker) {
-                        map.removeLayer(currentMarker);
-                    }
-                    
-                    // Add new marker
-                    currentMarker = L.marker([lat, lon]).addTo(map);
-                    
-                    // Add popup with location info
-                    currentMarker.bindPopup(`
-                        <div>
-                            <strong>IP Address:</strong> ${ip}<br>
-                            <strong>Location:</strong> ${city}, ${region ? region + ', ' : ''}${country}<br>
-                            <strong>Coordinates:</strong> ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
-                            <strong>Login Time:</strong> ${loginTime}<br>
-                            <strong>Device:</strong> ${browser} on ${platform}
-                        </div>
-                    `).openPopup();
-                } else {
-                    // If geocoding fails, show a message
-                    Swal.fire({
-                        title: 'Location Not Found',
-                        text: 'Unable to find coordinates for this location. Showing default view.',
-                        icon: 'warning',
-                        confirmButtonColor: '#d32f2f',
-                        timer: 3000
-                    });
-                }
-                
-                // Hide loading indicator
-                $('#mapLoading').addClass('d-none');
-            },
-            error: function() {
-                // If API call fails, show a message
-                Swal.fire({
-                    title: 'Geocoding Error',
-                    text: 'Unable to get coordinates for this location. Showing default view.',
-                    icon: 'error',
-                    confirmButtonColor: '#d32f2f',
-                    timer: 3000
-                });
-                
-                // Hide loading indicator
-                $('#mapLoading').addClass('d-none');
-            }
-        });
-    }
     
     // Render pagination
     function renderPagination(logs) {
