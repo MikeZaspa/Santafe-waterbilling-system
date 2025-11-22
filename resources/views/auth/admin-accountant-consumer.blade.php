@@ -602,10 +602,6 @@
             <div class="d-flex justify-content-between align-items-center w-100">
                 <h3 class="mb-0">Billing Management</h3>
                 <div>
-                    <button class="btn btn-outline-secondary me-2" id="viewArchiveBtn">
-                        <i class="bi bi-archive me-2"></i>
-                        View Archive
-                    </button>
                     <button class="btn btn-primary" id="addBillingBtn" data-bs-toggle="modal" data-bs-target="#billingModal">
                         <i class="bi bi-plus-circle-fill me-2"></i>
                         Create New Billing
