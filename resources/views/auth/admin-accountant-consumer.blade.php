@@ -980,6 +980,9 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <!-- Moment.js for date handling -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+
+
+
 <script>
  $(document).ready(function() {
     // Initialize Active Billings DataTable
@@ -1084,29 +1087,40 @@
                 searchable: false,
                 render: function(data, type, row) {
                     let paymentButton = '';
-                    
+                    let receiptButton = '';
+                    let isPaid = (row.status === 'paid');
+
                     // Only show payment button if status is unpaid or overdue
-                    if (row.status === 'unpaid' || row.status === 'overdue') {
+                    if (!isPaid) {
                         paymentButton = `<button class="btn btn-sm btn-success payment-btn" data-id="${data}">
                             <i class="bi bi-cash-coin"></i> Pay
+                        </button>`;
+                    }
+
+                    // Only enable receipt button if the bill is paid
+                    if (isPaid) {
+                        receiptButton = `<button class="btn btn-sm btn-info receipt-btn" data-id="${data}">
+                            <i class="bi bi-receipt"></i> Receipt
+                        </button>`;
+                    } else {
+                        receiptButton = `<button class="btn btn-sm btn-secondary receipt-btn" data-id="${data}" disabled title="Bill must be paid first">
+                            <i class="bi bi-receipt"></i> Receipt
                         </button>`;
                     }
                     
                     return `
                     <div class="btn-group" role="group">
-                        <button class="btn btn-sm btn-primary edit-btn" data-id="${data}">
+                        <button class="btn btn-sm btn-primary edit-btn" data-id="${data}" ${isPaid ? 'disabled' : ''}>
                             <i class="bi bi-pencil"></i> Edit
                         </button>
                         <button class="btn btn-sm btn-warning archive-btn" data-id="${data}" data-consumer="${row.consumer ? row.consumer.first_name + ' ' + row.consumer.last_name : 'N/A'}">
                             <i class="bi bi-archive"></i> Archive
                         </button>
-                        <button class="btn btn-sm btn-danger delete-btn" data-id="${data}">
+                        <button class="btn btn-sm btn-danger delete-btn" data-id="${data}" ${isPaid ? 'disabled' : ''}>
                             <i class="bi bi-trash"></i> Delete
                         </button>
                         ${paymentButton}
-                        <button class="btn btn-sm btn-info receipt-btn" data-id="${data}">
-                            <i class="bi bi-receipt"></i> Receipt
-                        </button>
+                        ${receiptButton}
                     </div>
                     `;
                 }
@@ -1722,7 +1736,7 @@
         });
     }
 
-$('#saveBilling').click(function() {
+ $('#saveBilling').click(function() {
     const formData = {
         consumer_id: $('#consumer_id').val(),
         current_reading: $('#currentReading').val(),
@@ -1970,7 +1984,7 @@ function showPaidBillingDetails(billing) {
     });
 
     // Delete billing - with validation for paid billings
-$(document).on('click', '.delete-btn', function() {
+ $(document).on('click', '.delete-btn', function() {
     const billingId = $(this).data('id');
     const $row = $(this).closest('tr');
     
@@ -2055,7 +2069,7 @@ $(document).on('click', '.delete-btn', function() {
 });
 
     // Handle payment button click
-$(document).on('click', '.payment-btn', function(e) {
+ $(document).on('click', '.payment-btn', function(e) {
     e.preventDefault();
     const billingId = $(this).data('id');
     
@@ -2167,6 +2181,7 @@ $(document).on('click', '.payment-btn', function(e) {
                     paidBillings.add(billingId);
 
                     $('#paymentModal').modal('hide');
+                    // Reload the table to update the status and buttons
                     $('#billingTable').DataTable().ajax.reload(null, false);
                     Swal.fire('Success', response.message, 'success');
                 } else {
@@ -2197,9 +2212,20 @@ $(document).on('click', '.payment-btn', function(e) {
         $('#paymentAmount').val('');
     });
 
+    // Handle receipt button click
     $(document).on('click', '.receipt-btn', function(e) {
         e.preventDefault();
         const billingId = $(this).data('id');
+        
+        // First, check if the button is disabled
+        if ($(this).prop('disabled')) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Cannot Generate Receipt',
+                text: 'This bill has not been paid yet. Please process the payment first.'
+            });
+            return;
+        }
         
         // Show loading state
         $('#receiptModal').modal('show');
@@ -2222,12 +2248,22 @@ $(document).on('click', '.payment-btn', function(e) {
                     const billing = response.data;
                     generateReceipt(billing);
                 } else {
-                    $('#receiptContent').html(`
-                        <div class="text-center py-4 text-danger">
-                            <i class="bi bi-exclamation-circle"></i>
-                            <p class="mt-2">Failed to generate receipt: ${response.message}</p>
-                    </div>
-                    `);
+                    // If the server says it's not paid, show an error
+                    if (response.error && response.error === 'not_paid') {
+                        $('#receiptModal').modal('hide');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Cannot Generate Receipt',
+                            text: 'This bill has not been paid yet.'
+                        });
+                    } else {
+                        $('#receiptContent').html(`
+                            <div class="text-center py-4 text-danger">
+                                <i class="bi bi-exclamation-circle"></i>
+                                <p class="mt-2">Failed to generate receipt: ${response.message}</p>
+                            </div>
+                        `);
+                    }
                 }
             },
             error: function(xhr) {
