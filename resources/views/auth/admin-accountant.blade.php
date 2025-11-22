@@ -523,30 +523,35 @@
 <div class="mobile-overlay"></div>
 
 <!-- Sidebar -->
-<div class="sidebar">
-    <div class="sidebar-header text-center">
+<div id="sidebar" class="sidebar">
+    <div id="sidebarHeader" class="sidebar-header text-center">
         <img src="{{ asset('image/santafe.png') }}" class="login-logo img-fluid mb-3">
-        <h1 class="h5">Santa Fe Water Billing</h1>
+        <h1 id="sidebarTitle" class="h5">Santa Fe Water Billing</h1>
     </div>
-    <nav class="sidebar-menu">
+    <nav id="sidebarMenu" class="sidebar-menu">
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a class="nav-link" href="admin-dashboard">
+                <a id="dashboardLink" class="nav-link" href="admin-dashboard">
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="admin-consumer">
+                <a id="consumersLink" class="nav-link" href="admin-consumer">
                     <i class="bi bi-people"></i> Manage Consumers
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="admin-plumber">
+                <a id="accountsLink" class="nav-link " href="admin-consumer-form">
+                    <i class="bi bi-person-badge"></i> Manage Accounts
+                </a>
+            </li>
+            <li class="nav-item">
+                <a id="plumberLink" class="nav-link" href="admin-plumber">
                     <i class="bi bi-wrench"></i> Manage Plumber
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link active" href="admin-accountant">
+                <a id="accountantLink" class="nav-link active" href="admin-accountant">
                     <i class="bi bi-cash-stack"></i> Manage Accountant
                 </a>
             </li>

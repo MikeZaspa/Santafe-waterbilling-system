@@ -466,6 +466,11 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a id="accountsLink" class="nav-link" href="admin-consumer-form">
+                    <i class="bi bi-person-badge"></i> Manage Accounts
+                </a>
+            </li>
+            <li class="nav-item">
                 <a id="plumberLink" class="nav-link" href="admin-plumber">
                     <i class="bi bi-wrench"></i> Manage Plumber
                 </a>

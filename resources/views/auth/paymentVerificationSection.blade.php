@@ -338,11 +338,6 @@
       </li>
 
       <li class="nav-item">
-        <a class="nav-link" href="admin-consumer-form">
-          <i class="bi bi-person-gear"></i> Manage Accounts
-        </a>
-      </li>
-      <li class="nav-item">
         <a class="nav-link" href="water-rates">
           <i class="bi bi-cash-coin"></i> Water Rates
         </a>

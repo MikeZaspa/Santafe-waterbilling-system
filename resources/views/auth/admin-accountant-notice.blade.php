@@ -311,13 +311,6 @@
                     <i class="bi bi-people"></i> Billing
                 </a>
             </li>
-            
-            <!-- Manage Accounts -->
-            <li class="nav-item">
-                <a class="nav-link" href="admin-consumer-form">
-                    <i class="bi bi-person-gear"></i> Manage Accounts
-                </a>
-            </li>
 
             <!-- Water Rates -->
             <li class="nav-item">
