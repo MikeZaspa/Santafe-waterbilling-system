@@ -8,17 +8,57 @@ use App\Models\ConsumerAccount;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Database\Query\Builder;
 
 class AccountManagementController extends Controller
 {
     // Get list of accounts for DataTable (excluding soft deleted)
-    public function index()
+    public function index(Request $request)
     {
-        $accounts = ConsumerAccount::with('consumer')
-            ->select('consumer_accounts.*')
-            ->latest();
-            
-        return datatables()->eloquent($accounts)->toJson();
+        $query = ConsumerAccount::with('consumer')
+            ->select('consumer_accounts.*');
+
+        return datatables()->eloquent($query)
+            ->filter(function ($query) use ($request) {
+                // This part handles searching
+                if (!empty($request->get('search')['value'])) {
+                    $searchTerm = $request->get('search')['value'];
+                    $query->whereHas('consumer', function($q) use ($searchTerm) {
+                        $q->where('first_name', 'like', "%{$searchTerm}%")
+                          ->orWhere('last_name', 'like', "%{$searchTerm}%")
+                          ->orWhere('middle_name', 'like', "%{$searchTerm}%");
+                    })->orWhere('consumer_accounts.username', 'like', "%{$searchTerm}%")
+                      ->orWhere('consumer_accounts.email', 'like', "%{$searchTerm}%");
+                }
+            })
+            ->order(function ($query) use ($request) {
+                // This part handles ordering
+                $order = $request->get('order');
+                if ($order && isset($order[0]['column'])) {
+                    $columnIndex = $order[0]['column'];
+                    $direction = $order[0]['dir'];
+                    
+                    // Map column index to actual database column for sorting
+                    $columns = [
+                        0 => 'consumer_accounts.id', // ID column
+                        1 => 'consumers.last_name',  // Consumer name column
+                        2 => 'consumer_accounts.username', // Meter no. column
+                        3 => 'consumer_accounts.email',   // Email column
+                    ];
+
+                    if (isset($columns[$columnIndex])) {
+                        // Join the consumers table if we're sorting by it
+                        if ($columns[$columnIndex] === 'consumers.last_name') {
+                            $query->join('admin_consumers as consumers', 'consumer_accounts.consumer_id', '=', 'consumers.id')
+                                  ->orderBy($columns[$columnIndex], $direction)
+                                  ->select('consumer_accounts.*'); // Re-select to avoid ambiguity
+                        } else {
+                            $query->orderBy($columns[$columnIndex], $direction);
+                        }
+                    }
+                }
+            })
+            ->toJson();
     }
 
     // Get consumers without accounts (excluding soft deleted accounts)

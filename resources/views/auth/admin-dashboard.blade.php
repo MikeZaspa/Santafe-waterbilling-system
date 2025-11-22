@@ -146,9 +146,9 @@
         
         .header-title {
             margin: 0;
-            font-size: 1.25rem;
+            font-size: 1.5rem;
             font-weight: 600;
-            color: #333;
+            color: gray;
         }
         
         .header-subtitle {
@@ -494,7 +494,6 @@
             </button>
             <div>
                 <h2 id="headerTitle" class="header-title">Dashboard Overview</h2>
-                <p id="headerSubtitle" class="header-subtitle">Santa Fe Water Billing System</p>
             </div>
         </div>
         

@@ -9,15 +9,19 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
     <!-- Custom CSS -->
     <style>
         :root {
-           --primary-color: #0d6efd;
+            --primary-color: #0d6efd;
             --primary-light: #6a59ffff;
             --primary-dark: #9a0007;
-            --sidebar-bg: linear-gradient(180deg, #d32f2f 0%, #9a0007 100%);
-            --sidebar-text: rgba(255,255,255,0.9);
-            --sidebar-hover: rgba(255,255,255,0.1);
+            --sidebar-bg: #f8f9fa;
+            --sidebar-text: rgba(0,0,0,0.8);
+            --sidebar-hover: rgba(0,0,255,0.1);
+            --overlay-color: rgba(7, 7, 7, 0.1);
+            --header-height: 70px;
         }
         
         body {
@@ -26,15 +30,21 @@
             overflow-x: hidden;
         }
         
-       .sidebar {
+        /* Sidebar Styles */
+        .sidebar {
             width: 280px;
-            background:  #f8f9fa;
+            background: var(--sidebar-bg);
             position: fixed;
             height: 100vh;
             overflow-y: auto;
             transition: all 0.3s;
-            z-index: 1000;
+            z-index: 1050;
             box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
+            transform: translateX(-100%);
+        }
+        
+        .sidebar.active {
+            transform: translateX(0);
         }
         
         .sidebar-header {
@@ -43,8 +53,7 @@
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
         
-        
-       .sidebar-header .logo {
+        .sidebar-header .logo {
             width: 60px;
             height: 60px;
             background-color: white;
@@ -71,10 +80,10 @@
             background: blue;
             transform: translateX(5px);
         }
-        
+         
         .sidebar-menu .nav-link.active {
-            font-weight: 500;
-            position: relative;
+            color: white;
+            background: blue;
         }
         
         .sidebar-menu .nav-link.active::after {
@@ -96,6 +105,56 @@
             font-size: 1.1rem;
         }
 
+        .main-content {
+            min-height: 100vh;
+            transition: all 0.3s ease;
+            padding: 0;
+            width: 100%;
+            margin-left: 0;
+        }
+        
+        /* Header Styles */
+        .header {
+            height: var(--header-height);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 1040;
+            background: white;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+        
+        .header-title {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .header-subtitle {
+            margin: 0;
+            font-size: .875rem;
+            color: #6c757d;
+        }
+
+        .content-wrapper {
+            padding: 20px;
+        }
+        
         /* Add Plumber Button Styles */
         #addPlumberBtn {
             background-color: var(--primary-color);
@@ -150,6 +209,7 @@
 
         .table-title h3 {
             font-weight: 600;
+            color: gray;
             margin: 0;
         }
 
@@ -316,24 +376,73 @@
             content: " *";
             color: var(--primary-color);
         }
-        .main-content {
-            margin-left: 280px;
-            min-height: 100vh;
-            transition: all 0.3s;
-            padding: 20px;
-        }
-        
-        .header {
-            height: 70px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            position: sticky;
+
+        /* Mobile overlay styles */
+        .mobile-overlay {
+            position: fixed;
             top: 0;
-            z-index: 100;
-            background: white;
-            padding: 0 20px;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--overlay-color);
+            z-index: 1040;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Mobile menu toggle button */
+        .mobile-menu-toggle {
+            font-size: 1.5rem;
+            padding: 0.25rem 0.5rem;
+            border: none;
+            background: transparent;
+            color: var(--primary-color);
         }
         
-        @media (max-width: 992px) {
+        /* Session management styles */
+        .session-timer {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 10px 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            font-size: 0.8rem;
+            color: #6c757d;
+            z-index: 1000;
+            display: none;
+        }
+
+        .session-timer.warning {
+            border-color: var(--warning);
+            color: var(--warning);
+        }
+
+        .session-timer.danger {
+            border-color: var(--error);
+            color: var(--error);
+        }
+    
+        @media (min-width: 992px) {
+            .sidebar {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 280px;
+                width: calc(100% - 280px);
+            }
+        }
+        
+        @media (max-width: 991px) {
             .sidebar {
                 transform: translateX(-100%);
             }
@@ -342,13 +451,10 @@
                 transform: translateX(0);
             }
             
+            /* Don't move the main content when sidebar is active on mobile */
             .main-content {
                 margin-left: 0;
-                padding: 15px;
-            }
-            
-            .main-content.active {
-                margin-left: 280px;
+                width: 100%;
             }
         }
         
@@ -397,35 +503,26 @@
             margin-top: 10px;
         }
         
-        /* Session management styles */
-        .session-timer {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 10px 15px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            font-size: 0.8rem;
-            color: var(--text-light);
-            z-index: 1000;
-            display: none;
-        }
-
-        .session-timer.warning {
-            border-color: var(--warning);
-            color: var(--warning);
-        }
-
-        .session-timer.danger {
-            border-color: var(--error);
-            color: var(--error);
+        @media (max-width: 576px) {
+            .header-title {
+                font-size: 1rem;
+            }
+            
+            .header-subtitle {
+                display: none;
+            }
+            
+            .dropdown-toggle span {
+                display: none;
+            }
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+
+<!-- Mobile Overlay -->
+<div class="mobile-overlay"></div>
 
 <!-- Sidebar -->
 <div id="sidebar" class="sidebar">
@@ -467,17 +564,20 @@
 <!-- Main Content -->
 <div class="main-content">
     <!-- Header -->
-    <header class="header d-flex align-items-center">
-        <button id="sidebarToggle" class="btn d-lg-none me-3">
-            <i class="bi bi-list"></i>
-        </button> 
-        <div class="ms-auto d-flex align-items-center">
-            <div class="position-relative me-3">
+    <header class="header">
+        <div class="header-left">
+            <button id="sidebarToggle" class="btn d-lg-none me-3 mobile-menu-toggle">
+                <i class="bi bi-list"></i>
+            </button>
+        </div>
+       
+        <div class="header-right">
+            <div class="position-relative me-3 d-none d-sm-block">
                 <i class="bi bi-bell fs-5"></i>
             </div>
             <div class="dropdown">
                 <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
-                    <span>Admin</span>
+                    <span class="d-none d-md-inline">Admin</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUser">
                     <li><hr class="dropdown-divider"></li>
@@ -491,70 +591,72 @@
         </div>
     </header>
    
-    <div class="table-container animate-fadein">
-        <div class="table-title">
-            <div class="d-flex justify-content-between align-items-center w-100">
-                <h3 class="mb-0">Plumber Management</h3>
-                <button class="btn btn-primary" id="addPlumberBtn" data-bs-toggle="modal" data-bs-target="#plumberModal">
-                    <i class="bi bi-plus-circle-fill me-2"></i>
-                    Add New Plumber
-                </button>
+    <div class="content-wrapper">
+        <div class="table-container animate-fadein">
+            <div class="table-title">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <h3 class="mb-0">Plumber Management</h3>
+                    <button class="btn btn-primary" id="addPlumberBtn" data-bs-toggle="modal" data-bs-target="#plumberModal">
+                        <i class="bi bi-plus-circle-fill me-2"></i>
+                        Add New Plumber
+                    </button>
+                </div>
             </div>
-        </div>
-        
-        <div class="table-responsive">
-            <table class="table table-hover" id="plumbersTable">
-                <thead>
-                    <tr>
-                        <th width="60">ID</th>
-                        <th>Username</th>
-                        <th>First Name</th>
-                        <th>Last Name</th>
-                        <th>Middle Name</th>
-                        <th>Suffix</th>
-                        <th>Contact Number</th>
-                        <th>Email</th>
-                        <th>Address</th>
-                        <th width="120">Status</th>
-                        <th width="100">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($plumbers as $plumber)
-                    <tr id="plumberRow_{{ $plumber->id }}">
-                        <td class="fw-semibold">{{ $plumber->id }}</td>
-                        <td>{{ $plumber->username }}</td>
-                        <td>{{ $plumber->first_name }}</td>
-                        <td>{{ $plumber->last_name }}</td>
-                        <td>{{ $plumber->middle_name }}</td>
-                        <td>{{ $plumber->suffix }}</td>
-                        <td>{{ $plumber->contact_number }}</td>
-                        <td>{{ $plumber->email ?? 'N/A' }}</td>
-                        <td>{{ $plumber->address }}</td>  
-                        <td>
-                            <span class="badge 
-                                @if($plumber->status == 'active') badge-status-active
-                                @elseif($plumber->status == 'inactive') badge-status-inactive
-                                @else badge-status-busy @endif">
-                                <i class="bi 
-                                    @if($plumber->status == 'active') bi-check-circle
-                                    @elseif($plumber->status == 'inactive') bi-pause-circle
-                                    @else bi-hourglass @endif"></i>
-                                {{ ucfirst($plumber->status) }}
-                            </span>
-                        </td>
-                        <td class="text-nowrap">
-                            <button class="btn btn-action btn-warning edit-plumber" data-id="{{ $plumber->id }}" title="Edit">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-action btn-danger delete-plumber" data-id="{{ $plumber->id }}" title="Delete">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+            
+            <div class="table-responsive">
+                <table class="table table-hover" id="plumbersTable">
+                    <thead>
+                        <tr>
+                            <th width="60">ID</th>
+                            <th>Username</th>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Middle Name</th>
+                            <th>Suffix</th>
+                            <th>Contact Number</th>
+                            <th>Email</th>
+                            <th>Address</th>
+                            <th width="120">Status</th>
+                            <th width="100">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($plumbers as $plumber)
+                        <tr id="plumberRow_{{ $plumber->id }}">
+                            <td class="fw-semibold">{{ $plumber->id }}</td>
+                            <td>{{ $plumber->username }}</td>
+                            <td>{{ $plumber->first_name }}</td>
+                            <td>{{ $plumber->last_name }}</td>
+                            <td>{{ $plumber->middle_name }}</td>
+                            <td>{{ $plumber->suffix }}</td>
+                            <td>{{ $plumber->contact_number }}</td>
+                            <td>{{ $plumber->email ?? 'N/A' }}</td>
+                            <td>{{ $plumber->address }}</td>  
+                            <td>
+                                <span class="badge 
+                                    @if($plumber->status == 'active') badge-status-active
+                                    @elseif($plumber->status == 'inactive') badge-status-inactive
+                                    @else badge-status-busy @endif">
+                                    <i class="bi 
+                                        @if($plumber->status == 'active') bi-check-circle
+                                        @elseif($plumber->status == 'inactive') bi-pause-circle
+                                        @else bi-hourglass @endif"></i>
+                                    {{ ucfirst($plumber->status) }}
+                                </span>
+                            </td>
+                            <td class="text-nowrap">
+                                <button class="btn btn-action btn-warning edit-plumber" data-id="{{ $plumber->id }}" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-action btn-danger delete-plumber" data-id="{{ $plumber->id }}" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -699,127 +801,86 @@
         // Session management variables
         const sessionTimer = document.getElementById('sessionTimer');
         const sessionTimeDisplay = document.getElementById('sessionTimeDisplay');
-        let sessionTimeout; // Will store the timeout ID
-        let warningTimeout; // Will store the warning timeout ID
-        let sessionInterval; // Will store the interval ID for updating the display
-        const sessionDuration = 3 * 60 * 1000; // 3 minutes in milliseconds
-        const warningTime = 30 * 1000; // 30 seconds before expiry to show warning
+        let sessionTimeout;
+        let warningTimeout;
+        let sessionInterval;
+        const sessionDuration = 3 * 60 * 1000; // 3 minutes
+        const warningTime = 30 * 1000; // 30 seconds
         let sessionStartTime;
         let sessionExpiryTime;
         let isSessionActive = false;
         
         // Initialize session management
         function initSessionManagement() {
-            // Set up event listeners to track user activity
             document.addEventListener('mousemove', resetSessionTimer);
             document.addEventListener('mousedown', resetSessionTimer);
             document.addEventListener('keypress', resetSessionTimer);
             document.addEventListener('scroll', resetSessionTimer);
             document.addEventListener('touchstart', resetSessionTimer);
             document.addEventListener('click', resetSessionTimer);
-            
-            // Start session immediately on page load
             startSession();
         }
         
-        // Start a new session after page load
         function startSession() {
             isSessionActive = true;
             sessionStartTime = new Date();
             sessionExpiryTime = new Date(sessionStartTime.getTime() + sessionDuration);
-            
-            // Show the session timer
             sessionTimer.style.display = 'block';
             updateSessionDisplay();
             
-            // Set up the session expiry timer
             clearTimeout(sessionTimeout);
-            sessionTimeout = setTimeout(() => {
-                endSession();
-            }, sessionDuration);
+            sessionTimeout = setTimeout(() => endSession(), sessionDuration);
             
-            // Set up the warning timer
             clearTimeout(warningTimeout);
-            warningTimeout = setTimeout(() => {
-                showSessionWarning();
-            }, sessionDuration - warningTime);
+            warningTimeout = setTimeout(() => showSessionWarning(), sessionDuration - warningTime);
             
-            // Set up the interval to update the display
             clearInterval(sessionInterval);
             sessionInterval = setInterval(() => {
                 updateSessionDisplay();
-                
-                // Check if session is about to expire
                 const now = new Date();
                 const timeLeft = sessionExpiryTime - now;
-                
                 if (timeLeft <= warningTime && timeLeft > 0) {
                     sessionTimer.classList.add('warning');
-                } else if (timeLeft <= 30000) { // Last 30 seconds
-                    sessionTimer.classList.remove('warning');
-                    sessionTimer.classList.add('danger');
-                }
-            }, 1000); // Update every second
-        }
-        
-        // Reset the session timer on user activity
-        function resetSessionTimer() {
-            if (!isSessionActive) return;
-            
-            // Clear existing timers
-            clearTimeout(sessionTimeout);
-            clearTimeout(warningTimeout);
-            clearInterval(sessionInterval);
-            
-            // Reset the session
-            sessionStartTime = new Date();
-            sessionExpiryTime = new Date(sessionStartTime.getTime() + sessionDuration);
-            
-            // Reset the timer display
-            sessionTimer.classList.remove('warning', 'danger');
-            updateSessionDisplay();
-            
-            // Set up new timers
-            sessionTimeout = setTimeout(() => {
-                endSession();
-            }, sessionDuration);
-            
-            warningTimeout = setTimeout(() => {
-                showSessionWarning();
-            }, sessionDuration - warningTime);
-            
-            sessionInterval = setInterval(() => {
-                updateSessionDisplay();
-                
-                // Check if session is about to expire
-                const now = new Date();
-                const timeLeft = sessionExpiryTime - now;
-                
-                if (timeLeft <= warningTime && timeLeft > 0) {
-                    sessionTimer.classList.add('warning');
-                } else if (timeLeft <= 30000) { // Last 30 seconds
+                } else if (timeLeft <= 30000) {
                     sessionTimer.classList.remove('warning');
                     sessionTimer.classList.add('danger');
                 }
             }, 1000);
         }
         
-        // Update the session time display
+        function resetSessionTimer() {
+            if (!isSessionActive) return;
+            clearTimeout(sessionTimeout);
+            clearTimeout(warningTimeout);
+            clearInterval(sessionInterval);
+            sessionStartTime = new Date();
+            sessionExpiryTime = new Date(sessionStartTime.getTime() + sessionDuration);
+            sessionTimer.classList.remove('warning', 'danger');
+            updateSessionDisplay();
+            sessionTimeout = setTimeout(() => endSession(), sessionDuration);
+            warningTimeout = setTimeout(() => showSessionWarning(), sessionDuration - warningTime);
+            sessionInterval = setInterval(() => {
+                updateSessionDisplay();
+                const now = new Date();
+                const timeLeft = sessionExpiryTime - now;
+                if (timeLeft <= warningTime && timeLeft > 0) {
+                    sessionTimer.classList.add('warning');
+                } else if (timeLeft <= 30000) {
+                    sessionTimer.classList.remove('warning');
+                    sessionTimer.classList.add('danger');
+                }
+            }, 1000);
+        }
+        
         function updateSessionDisplay() {
             if (!isSessionActive) return;
-            
             const now = new Date();
             const timeLeft = Math.max(0, sessionExpiryTime - now);
-            
-            // Convert to minutes and seconds
             const minutes = Math.floor(timeLeft / 60000);
             const seconds = Math.floor((timeLeft % 60000) / 1000);
-            
-            // Format as MM:SS
             sessionTimeDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
         
-        // Show session warning
         function showSessionWarning() {
             Swal.fire({
                 title: 'Session Expiring Soon',
@@ -834,9 +895,7 @@
                 allowEscapeKey: false
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Extend the session
                     resetSessionTimer();
-                    
                     Swal.fire({
                         title: 'Session Extended',
                         text: 'Your session has been extended for another 3 minutes.',
@@ -845,25 +904,17 @@
                         showConfirmButton: false
                     });
                 } else {
-                    // Log out
                     endSession();
                 }
             });
         }
         
-        // End the session
         function endSession() {
             isSessionActive = false;
-            
-            // Clear all timers
             clearTimeout(sessionTimeout);
             clearTimeout(warningTimeout);
             clearInterval(sessionInterval);
-            
-            // Hide the session timer
             sessionTimer.style.display = 'none';
-            
-            // Show session expired message
             Swal.fire({
                 title: 'Session Expired',
                 text: 'Your session has expired due to inactivity. Please log in again.',
@@ -872,13 +923,56 @@
                 allowOutsideClick: false,
                 allowEscapeKey: false
             }).then(() => {
-                // Redirect to logout endpoint
                 performLogout();
             });
         }
         
-        // Initialize session management on page load
         initSessionManagement();
+
+        // Mobile sidebar toggle functionality
+        const sidebar = $('.sidebar');
+        const mainContent = $('.main-content');
+        const header = $('.header');
+        const sidebarToggle = $('#sidebarToggle');
+        const mobileOverlay = $('.mobile-overlay');
+
+        sidebarToggle.on('click', function() {
+            sidebar.toggleClass('active');
+            mobileOverlay.toggleClass('active');
+            
+            if (sidebar.hasClass('active')) {
+                header.css('background-color', 'var(--overlay-color)');
+                $('body').css('overflow', 'hidden');
+            } else {
+                header.css('background-color', 'white');
+                $('body').css('overflow', '');
+            }
+        });
+        
+        mobileOverlay.on('click', function() {
+            sidebar.removeClass('active');
+            mobileOverlay.removeClass('active');
+            header.css('background-color', 'white');
+            $('body').css('overflow', '');
+        });
+        
+        $('.sidebar-menu .nav-link').on('click', function() {
+            if ($(window).width() < 992) {
+                sidebar.removeClass('active');
+                mobileOverlay.removeClass('active');
+                header.css('background-color', 'white');
+                $('body').css('overflow', '');
+            }
+        });
+        
+        $(window).on('resize', function() {
+            if ($(window).width() >= 992) {
+                sidebar.removeClass('active');
+                mobileOverlay.removeClass('active');
+                header.css('background-color', 'white');
+                $('body').css('overflow', '');
+            }
+        });
         
         // Password toggle functionality
         $('.password-toggle').click(function() {
@@ -1275,7 +1369,7 @@
                 success: function(response) {
                     $('#deleteModal').modal('hide');
                     
-                    // Remove the row
+                    // Remove row
                     $('#plumberRow_' + deletePlumberId).remove();
                     
                     // Re-number all remaining rows sequentially starting from 1
@@ -1311,16 +1405,10 @@
         // Function to renumber table rows sequentially
         function renumberPlumberRows() {
             $('#plumbersTable tbody tr').each(function(index) {
-                // Set the first cell to sequential number starting from 1
+                // Set first cell to sequential number starting from 1
                 $(this).find('td:first').text(index + 1);
             });
         }
-
-        // Toggle sidebar on mobile
-        $('#sidebarToggle').click(function() {
-            $('.sidebar').toggleClass('active');
-            $('.main-content').toggleClass('active');
-        });
 
         // Logout functionality
         $('#logoutBtn').click(function(e) {
@@ -1337,14 +1425,12 @@
                 cancelButtonText: 'Cancel'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Perform logout - you can customize this based on your authentication system
                     performLogout();
                 }
             });
         });
 
         function performLogout() {
-            // Show loading state
             Swal.fire({
                 title: 'Signing Out...',
                 text: 'Please wait',
@@ -1354,26 +1440,19 @@
                 }
             });
 
-            // Example: Send logout request to server
-            // Replace this with your actual logout endpoint
             $.ajax({
-                url: '/logout', // Your logout route
+                url: '/logout',
                 type: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 },
                 success: function(response) {
-                    // Redirect to login page
                     window.location.href = '/admin-login';
                 },
                 error: function(xhr) {
-                    // If AJAX fails, still redirect to login
                     window.location.href = '/admin-login';
                 }
             });
-            
-            // Alternative: Simple redirect (if no server-side logout needed)
-            // window.location.href = '/login';
         }
     });
 </script>
