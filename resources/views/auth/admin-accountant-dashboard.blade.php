@@ -380,8 +380,6 @@
                     <span class="d-none d-md-inline">Accountant</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUser">
-                    <li><a class="dropdown-item" href="#">Profile</a></li>
-                    <li><a class="dropdown-item" href="#">Settings</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <!-- In the dropdown menu -->
                     <li>

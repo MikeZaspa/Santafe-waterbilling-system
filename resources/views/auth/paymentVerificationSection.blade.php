@@ -387,8 +387,6 @@
         <span>Accountant</span>
     </a>
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUser">
-        <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
-        <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
         <li><hr class="dropdown-divider"></li>
         <li>
             <a class="dropdown-item text-danger" href="#" id="logoutBtn">
@@ -670,17 +668,22 @@ $(document).ready(function() {
                                     <div class="text-center text-muted">
                                         <i class="bi bi-x-circle" style="font-size: 3rem;"></i>
                                         <p class="mt-2">Failed to load image</p>
-                                        <small>Path: ${payment.proof_image}</small>
+                                        <div class="mt-3">
+                                            <button class="btn btn-sm btn-outline-primary me-2" onclick="window.open('/payment-proof/${paymentId}', '_blank')">
+                                                <i class="bi bi-box-arrow-up-right"></i> Open in New Tab
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             `);
                         };
                         
-                        // Set the image source - ensure correct path
-                        const imagePath = `/storage/${payment.proof_image}`;
+                        // Use the dedicated endpoint
+                        const imagePath = `/payment-proof/${paymentId}`;
                         console.log("Loading image from:", imagePath);
                         img.src = imagePath;
                     } else {
+                        // Show placeholder when no image is available
                         $('#imageContainer').html(`
                             <div class="image-placeholder">
                                 <div class="text-center text-muted">

@@ -293,25 +293,6 @@ class PlumberController extends Controller
         ]);
     }
     
-    /**
-     * Show the plumber dashboard
-     */
-    public function dashboard()
-    {
-        // Check if plumber is logged in using session
-        if (!Session::get('plumber_logged_in')) {
-            return redirect()->route('plumber.login');
-        }
-
-        $plumberId = Session::get('plumber_id');
-        $plumber = Plumber::find($plumberId);
-
-        if (!$plumber) {
-            return redirect()->route('plumber.login');
-        }
-
-        return view('plumber.dashboard', compact('plumber'));
-    }
 
     /**
      * Logout the plumber

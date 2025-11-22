@@ -6,29 +6,25 @@ use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
 {
+    // ... other properties like $middleware
+
     /**
-     * The application's route middleware.
+     * The application's middleware aliases.
      *
-     * These middleware may be assigned to groups or used individually.
+     * Aliases may be used instead of class names to conveniently assign middleware to routes and groups.
      *
      * @var array<string, class-string|string>
      */
-    protected $routeMiddleware = [
-        // ... other middleware entries
+    protected $middlewareAliases = [
         'auth' => \App\Http\Middleware\Authenticate::class,
-        'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
-        'auth.session' => \Illuminate\Session\Middleware\AuthenticateSession::class,
-        'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
-        'can' => \Illuminate\Auth\Middleware\Authorize::class,
-        'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
-        'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
-        'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
-        'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+        // ... other default aliases
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        'accountant.auth' => \App\Http\Middleware\AccountantAuth::class,
-        'plumber.auth' => \App\Http\Middleware\PlumberAuth::class,
 
-        // Add your custom middleware here
+        // YOUR CUSTOM MIDDLEWARE SHOULD BE HERE
         'admin.auth' => \App\Http\Middleware\AdminAuth::class,
+        'accountant.auth' => \App\Http\Middleware\AccountantAuth::class,
+        'plumber.auth' => \App\Http\Middleware\PlumberAuth::class, // <-- ENSURE THIS LINE IS HERE
+        'auth' => \Illuminate\Auth\Middleware\Authenticate::class,
+        'auth:plumber' => \Illuminate\Auth\Middleware\Authenticate::class,
     ];
 }

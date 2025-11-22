@@ -86,4 +86,5 @@ class DashboardController extends Controller
         $admins = Admin::select('id', 'email', 'first_name', 'last_name')->get();
         return response()->json($admins);
     }
+
 }

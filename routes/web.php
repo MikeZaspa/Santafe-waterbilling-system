@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\AuthController;;
 use App\Http\Controllers\AdminConsumerController;
@@ -36,6 +35,9 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\AdminLogController;
 use App\Http\Controllers\AccountantNotificationController;
+use App\Http\Controllers\Admin\BackupController;
+
+Route::get('/admin/backup-database', [BackupController::class, 'backupDatabase'])->name('admin.backup.database');
 
 Route::get('/admin-register', [AuthController::class, 'showRegistrationForm'])->name('admin-register');
 Route::post('/admin-register', [AuthController::class, 'register']);
@@ -470,7 +472,8 @@ Route::post('/accountant-login/submit', [AccountantManageController::class, 'sen
 Route::get('/accountant-2fa', [AccountantManageController::class, 'show2FAModal'])->name('accountant.2fa.show');
 Route::post('/accountant-2fa/verify', [AccountantManageController::class, 'verify2FACode'])->name('accountant.2fa.verify');
 Route::post('/accountant-2fa/resend', [AccountantManageController::class, 'resend2FACode'])->name('accountant.2fa.resend');
-
+// Add this route for serving images
+Route::get('/payment-proof/{id}', [OnlinePaymentController::class, 'getProofImage'])->name('payment.proof.image');
 // Add these routes to your web.php file
 Route::get('/consumer-portal', [ConsumerAuthController::class, 'showLoginForm'])->name('consumer.login.form');
 Route::post('/consumer/login', [ConsumerAuthController::class, 'login'])->name('consumer.login');
@@ -479,6 +482,15 @@ Route::post('/consumer/resend-2fa', [ConsumerAuthController::class, 'resend2FA']
 Route::get('/consumer/dashboard', [ConsumerAuthController::class, 'dashboard'])->name('consumer.dashboard');
 Route::post('/consumer/logout', [ConsumerAuthController::class, 'logout'])->name('consumer.logout');
 // Logout route
+Route::post('/validate-plumber-session', function (Request $request) {
+    // Check if the plumber session exists
+    if (Session::has('plumber_id')) {
+        return response()->json(['valid' => true]);
+    } else {
+        return response()->json(['valid' => false], 401); // 401 Unauthorized
+    }
+})->name('validate.plumber.session');
+
 Route::post('/accountant/logout', [AccountantManageController::class, 'logout'])->name('accountant.logout');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/', function () {

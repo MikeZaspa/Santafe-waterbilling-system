@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login | Santa Fe Water Billing System</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -21,6 +21,9 @@
             --error: #d93025;
             --success: #06d6a0;
             --warning: #ffa726;
+            --spark-black: #111;
+            --spark-grey: #5c5f66;
+            --spark-border: #c0c5ce;
         }
         
         * {
@@ -140,57 +143,26 @@
             font-size: 0.8rem;
         }
         
-        .divider {
-            display: flex;
-            align-items: center;
-            margin: 2rem 0;
+        .back-link {
+            margin-top: 1rem;
+            text-align: center;
+        }
+        
+        .back-link a {
             color: var(--text-light);
-            font-size: 0.8rem;
-        }
-        
-        .divider::before, .divider::after {
-            content: "";
-            flex: 1;
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .divider::before {
-            margin-right: 1rem;
-        }
-        
-        .divider::after {
-            margin-left: 1rem;
-        }
-        
-        .signup-link {
-            display: flex;
-            justify-content: center;
-            margin-top: 2rem;
+            text-decoration: none;
             font-size: 0.9rem;
-            color: var(--text-light);
+            display: inline-flex;
+            align-items: center;
+            transition: color 0.2s ease;
         }
         
-        .signup-link a {
+        .back-link a:hover {
             color: var(--primary);
-            text-decoration: none;
-            font-weight: 500;
-            margin-left: 0.5rem;
         }
         
-        .language-selector {
-            margin-top: 2rem;
-            font-size: 0.8rem;
-            color: var(--text-light);
-        }
-        
-        .language-selector a {
-            color: var(--text);
-            text-decoration: none;
-            margin: 0 0.3rem;
-        }
-        
-        .language-selector a.active {
-            color: var(--primary);
+        .back-link a i {
+            margin-right: 5px;
         }
         
         .error-message {
@@ -199,80 +171,6 @@
             margin-top: 0.4rem;
         }
         
-        .attempts-warning {
-            color: var(--warning);
-            font-size: 0.8rem;
-            margin-top: 0.4rem;
-            font-weight: 500;
-        }
-        
-        @media (max-width: 480px) {
-            .login-container {
-                padding: 1.5rem;
-                border: none;
-            }
-        }
-        
-        .alert-success {
-            background-color: #e6ffed;
-            color: var(--success);
-            padding: 0.75rem 1.25rem;
-            margin-bottom: 1rem;
-            border: 1px solid #a3d9a5;
-            border-radius: 4px;
-        }
-        
-        .countdown-timer {
-            color: var(--warning);
-            font-weight: 600;
-            margin-top: 0.5rem;
-        }
-        
-        .recaptcha-info {
-            font-size: 0.7rem;
-            color: var(--text-light);
-            margin-top: 0.5rem;
-            text-align: center;
-        }
-        
-        .recaptcha-info a {
-            color: var(--primary);
-            text-decoration: none;
-        }
-
-        .portal-links {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-
-        .portal-link {
-            display: block;
-            padding: 0.8rem;
-            background-color: var(--light);
-            color: var(--primary);
-            text-decoration: none;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            border: 1px solid var(--border);
-        }
-
-        .portal-link:hover {
-            background-color: var(--primary);
-            color: var(--white);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(26, 115, 232, 0.2);
-        }
-        
-        .divider {
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
         /* Two-factor authentication styles */
         .verification-code-inputs {
             display: flex;
@@ -323,6 +221,148 @@
         .countdown {
             color: var(--warning);
             font-weight: 600;
+        }
+        
+        /* Spark Forgot Password Modal Styles */
+        .forgot-password-modal .modal-dialog {
+            max-width: 600px;
+        }
+        
+        .forgot-password-modal .modal-content {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .forgot-password-modal .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .forgot-password-modal .modal-title {
+            font-weight: 900;
+            font-size: 36px;
+            margin: 0;
+            color: var(--spark-black);
+        }
+        
+        .forgot-password-modal .modal-body {
+            padding: 30px 20px;
+        }
+        
+        .forgot-password-modal .logo {
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+            font-size: 24px;
+            color: var(--spark-black);
+        }
+        
+        .forgot-password-modal .logo svg {
+            margin-right: 8px;
+        }
+        
+        .forgot-password-modal nav a {
+            margin-left: 20px;
+            text-decoration: none;
+            color: var(--spark-black);
+            font-size: 14px;
+        }
+        
+        .forgot-password-modal label {
+            font-weight: 600;
+            font-size: 14px;
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        .forgot-password-modal .input-container {
+            position: relative;
+            margin-bottom: 6px;
+        }
+        
+        .forgot-password-modal input[type=email] {
+            width: 100%;
+            padding: 12px 50px 12px 40px;
+            border: 1px solid var(--spark-border);
+            border-radius: 12px;
+            font-size: 16px;
+            outline: none;
+            box-sizing: border-box;
+        }
+        
+        .forgot-password-modal input[type=email]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+        }
+        
+        .forgot-password-modal .input-icon {
+            position: absolute;
+            top: 50%;
+            left: 12px;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            fill: var(--spark-black);
+        }
+        
+        .forgot-password-modal .note {
+            font-size: 12px;
+            color: var(--spark-grey);
+            margin-top: 6px;
+            margin-bottom: 40px;
+        }
+        
+        .forgot-password-modal .buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .forgot-password-modal button {
+            width: 48%;
+            padding: 17px 0;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .forgot-password-modal .sign-in {
+            background-color: var(--spark-black);
+            color: white;
+        }
+        
+        .forgot-password-modal .send {
+            background-color: grey;
+            color: white;
+        }
+        
+        .forgot-password-modal .sign-in:hover {
+            background-color: #333;
+        }
+        
+        .forgot-password-modal .send:hover {
+            background-color: #666;
+        }
+        
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 1.5rem;
+                border: none;
+            }
+            
+            .forgot-password-modal .buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .forgot-password-modal button {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -412,7 +452,7 @@
                             </div>
                             
                             <div class="resend-code text-center">
-                                <p>Didn't receive the code? 
+                                <p>Didn't receive code? 
                                     <button type="button" id="resendCodeBtn">Resend</button>
                                 </p>
                                 <p class="countdown" id="countdown" style="display: none;">Resend code in <span id="countdownTime">60</span> seconds</p>
@@ -423,28 +463,26 @@
             </div>
         </div>
 
-        
-
-        <!-- Forgot Password Modal -->
-        <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
+        <!-- Forgot Password Modal with Spark Design -->
+        <div class="modal fade forgot-password-modal" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content shadow-lg border-0 rounded-4">
-                    <div class="modal-header bg-primary text-white rounded-top-4">
-                        <h5 class="modal-title" id="forgotPasswordModalLabel">Reset Your Password</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-content">
+                    <div class="modal-header">
+                        
                     </div>
                     <div class="modal-body">
+                        <h1>Forgot Password</h1>
                         <form id="forgotPasswordForm">
                             @csrf
-                            <div class="mb-3">
-                                <label for="resetEmail" class="form-label">Email Address</label>
-                                <input type="email" class="form-control" id="resetEmail" name="email" required placeholder="Enter your registered email">
-                                <div class="form-text">We'll send a password reset link to your email.</div>
+                            <label for="resetEmail">Enter your email</label>
+                            <div class="input-container">
+                                <svg class="input-icon" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM4 6l8 5 8-5v-2l-8 5-8-5v2z"/></svg>
+                                <input type="email" id="resetEmail" name="email" required placeholder="Email">
                             </div>
-                            <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-primary" id="sendResetLink">
-                                    <i class="fas fa-paper-plane me-2"></i>Send Reset Link
-                                </button>
+                            <div class="note">We will send a recovery link to this email</div>
+                            <div class="buttons">
+                                <button type="button" class="sign-in" data-bs-dismiss="modal">Sign in</button>
+                                <button type="submit" class="send">Send</button>
                             </div>
                         </form>
                     </div>
@@ -900,17 +938,37 @@
         
         // Forgot Password Form Handling
         const forgotPasswordForm = document.getElementById('forgotPasswordForm');
-        const sendResetLinkBtn = document.getElementById('sendResetLink');
+        const sendResetLinkBtn = document.querySelector('.send');
 
         if (forgotPasswordForm) {
             forgotPasswordForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
                 const email = document.getElementById('resetEmail').value;
+                
+                // Validate email
+                if (!email) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Email is required',
+                        confirmButtonColor: '#1a73e8'
+                    });
+                    return;
+                } else if (!/\S+@\S+\.\S+/.test(email)) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Please enter a valid email address',
+                        confirmButtonColor: '#1a73e8'
+                    });
+                    return;
+                }
+                
                 const originalBtnText = sendResetLinkBtn.innerHTML;
                 
                 // Show loading state
-                sendResetLinkBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+                sendResetLinkBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
                 sendResetLinkBtn.disabled = true;
                 
                 try {
