@@ -185,6 +185,7 @@
 
         .table-title h3 {
             font-weight: 600;
+            color: #4361ee;
             margin: 0;
         }
 
@@ -360,7 +361,6 @@
 <!-- Mobile Overlay -->
 <div class="mobile-overlay"></div>
 
-<!-- Sidebar -->
 <div class="sidebar">
     <div class="sidebar-header text-center">
         <img src="{{ asset('image/santafe.png') }}" class="login-logo img-fluid mb-3">
@@ -369,21 +369,16 @@
     
     <nav class="sidebar-menu">
         <ul class="nav flex-column">
-            <!-- Dashboard -->
             <li class="nav-item">
-                <a class="nav-link" href="admin-accountant-dashboard">
+                <a class="nav-link " href="admin-accountant-dashboard">
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
             </li>
-
-            <!-- Billing -->
             <li class="nav-item">
                 <a class="nav-link" href="admin-accountant-consumer">
                     <i class="bi bi-people"></i> Billing
                 </a>
             </li>
-
-            <!-- Water Rates -->
             <li class="nav-item">
                 <a class="nav-link" href="water-rates">
                     <i class="bi bi-cash-coin"></i> Water Rates
@@ -397,13 +392,12 @@
                 </a>
             </li>
 
-            <!-- Reports -->
             <li class="nav-item">
                 <a class="nav-link" href="admin-accountant-reports">
                     <i class="bi bi-file-earmark-bar-graph"></i> Reports
                 </a>
             </li>
-            <li class="nav-item">
+             <li class="nav-item">
                 <a class="nav-link" href="paymentVerificationSection">
                     <i class="bi bi-credit-card"></i> Payment Verification
                 </a>

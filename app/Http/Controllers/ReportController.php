@@ -14,39 +14,49 @@ use App\Exports\PaidBillsExport;
 class ReportController extends Controller
 {
     public function data(Request $request)
-{
-    try {
-        $query = AccountantBilling::with('consumer')
-            ->where('status', 'paid')
-            ->select('accountant_billings.*');
+    {
+        try {
+            $query = AccountantBilling::with('consumer')
+                ->where('status', 'paid')
+                ->select('accountant_billings.*');
 
-        if ($request->has('month') && $request->month != '') {
-            $month = Carbon::parse($request->month);
-            $query->whereMonth('due_date', $month->month)
-                  ->whereYear('due_date', $month->year);
+            if ($request->has('month') && $request->month != '') {
+                $month = Carbon::parse($request->month);
+                $query->whereMonth('due_date', $month->month)
+                      ->whereYear('due_date', $month->year);
+            }
+            
+            // Add name search functionality
+            if ($request->has('name') && $request->name != '') {
+                $searchTerm = $request->name;
+                $query->whereHas('consumer', function($q) use ($searchTerm) {
+                    $q->where('first_name', 'like', '%' . $searchTerm . '%')
+                      ->orWhere('last_name', 'like', '%' . $searchTerm . '%')
+                      ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%' . $searchTerm . '%']);
+                });
+            }
+
+            return DataTables::of($query)
+                ->addIndexColumn()
+                ->addColumn('consumer_name', function($row) {
+                    return $row->consumer ? $row->consumer->first_name.' '.$row->consumer->last_name : 'N/A';
+                })
+                ->addColumn('meter_no', function($row) {
+                    return $row->meter_no ?: ($row->consumer ? $row->consumer->meter_number : 'N/A');
+                })
+                ->addColumn('status', function($row) {
+                    return '<span class="badge badge-paid">PAID</span>';
+                })
+                ->rawColumns(['status'])
+                ->make(true);
+
+        } catch (\Exception $e) {
+            \Log::error('Report data error: '.$e->getMessage());
+            return response()->json([
+                'error' => 'Failed to load report data: '.$e->getMessage()
+            ], 500);
         }
-
-        return DataTables::of($query)
-            ->addIndexColumn()
-            ->addColumn('consumer_name', function($row) {
-                return $row->consumer ? $row->consumer->first_name.' '.$row->consumer->last_name : 'N/A';
-            })
-            ->addColumn('meter_no', function($row) {
-                return $row->meter_no ?: ($row->consumer ? $row->consumer->meter_number : 'N/A');
-            })
-            ->addColumn('status', function($row) {
-                return '<span class="badge badge-paid">PAID</span>';
-            })
-            ->rawColumns(['status'])
-            ->make(true);
-
-    } catch (\Exception $e) {
-        \Log::error('Report data error: '.$e->getMessage());
-        return response()->json([
-            'error' => 'Failed to load report data: '.$e->getMessage()
-        ], 500);
     }
-}
 
     public function export(Request $request)
     {
@@ -60,6 +70,16 @@ class ReportController extends Controller
         if ($month) {
             $query->whereMonth('due_date', $month->month)
                   ->whereYear('due_date', $month->year);
+        }
+        
+        // Add name search functionality for export
+        if ($request->has('name') && $request->name != '') {
+            $searchTerm = $request->name;
+            $query->whereHas('consumer', function($q) use ($searchTerm) {
+                $q->where('first_name', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('last_name', 'like', '%' . $searchTerm . '%')
+                  ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%' . $searchTerm . '%']);
+            });
         }
 
         $data = $query->get()->map(function($item) {

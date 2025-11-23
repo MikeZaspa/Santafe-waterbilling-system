@@ -184,6 +184,7 @@
 
         .table-title h3 {
             font-weight: 600;
+            color: #4361ee;
             margin: 0;
         }
 
@@ -338,6 +339,14 @@
             object-fit: cover;  
         }
         
+        /* Filter Controls */
+        .filter-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
         /* Responsive adjustments */
         @media (min-width: 992px) {
             .sidebar {
@@ -362,6 +371,16 @@
             /* Don't move the main content when sidebar is active on mobile */
             .main-content {
                 margin-left: 0;
+                width: 100%;
+            }
+            
+            .filter-controls {
+                flex-direction: column;
+                align-items: stretch;
+                width: 100%;
+            }
+            
+            .filter-controls > div {
                 width: 100%;
             }
         }
@@ -466,11 +485,17 @@
                         <i class="bi bi-file-earmark-bar-graph me-2"></i>
                         Paid Bills Report
                     </h3>
-                    <div class="d-flex gap-3">
+                    <div class="filter-controls">
                         <div class="input-group" style="width: 200px;">
                             <input type="month" class="form-control" id="monthFilter">
                             <button class="btn btn-outline-secondary" id="applyFilter">
                                 <i class="bi bi-funnel"></i>
+                            </button>
+                        </div>
+                        <div class="input-group" style="width: 200px;">
+                            <input type="text" class="form-control" id="nameSearch" placeholder="Search by name...">
+                            <button class="btn btn-outline-secondary" id="applyNameSearch">
+                                <i class="bi bi-search"></i>
                             </button>
                         </div>
                         <button class="btn btn-primary" id="exportBtn">
@@ -545,6 +570,7 @@
             type: 'GET',
             data: function(d) {
                 d.month = $('#monthFilter').val();
+                d.name = $('#nameSearch').val();
             },
             error: function(xhr) {
                 let errorMsg = "Failed to load data";
@@ -602,6 +628,18 @@
 
     $('#applyFilter').click(function() {
         reportsTable.ajax.reload();
+    });
+    
+    // Add search functionality for name
+    $('#applyNameSearch').click(function() {
+        reportsTable.ajax.reload();
+    });
+    
+    // Allow search on Enter key
+    $('#nameSearch').keypress(function(e) {
+        if (e.which == 13) { // Enter key
+            reportsTable.ajax.reload();
+        }
     });
 
     // Mobile sidebar toggle functionality

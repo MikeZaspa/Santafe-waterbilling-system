@@ -168,7 +168,7 @@
             height: 100px;
             border-radius: 50%;
             object-fit: cover;
-            border: 2px solid var(--primary-color);
+            
         }
         
         /* Mobile overlay styles */
@@ -210,7 +210,8 @@
         }
         
         .page-title {
-            color: var(--primary-color);
+            color: #4361ee;
+            font-size: 30px;
             margin-bottom: 20px;
             padding-bottom: 10px;
         }
@@ -417,7 +418,7 @@
     <nav class="sidebar-menu">
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a class="nav-link" href="admin-accountant-dashboard">
+                <a class="nav-link " href="admin-accountant-dashboard">
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
             </li>
@@ -444,7 +445,7 @@
                     <i class="bi bi-file-earmark-bar-graph"></i> Reports
                 </a>
             </li>
-            <li class="nav-item">
+             <li class="nav-item">
                 <a class="nav-link" href="paymentVerificationSection">
                     <i class="bi bi-credit-card"></i> Payment Verification
                 </a>
