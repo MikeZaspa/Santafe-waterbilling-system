@@ -148,7 +148,7 @@
             margin: 0;
             font-size: 1.5rem;
             font-weight: 600;
-            color: gray;
+           
         }
         
         .header-subtitle {
@@ -492,8 +492,9 @@
             <button id="sidebarToggle" class="btn d-lg-none me-3 mobile-menu-toggle">
                 <i class="bi bi-list"></i>
             </button>
-            <div>
-                <h2 id="headerTitle" class="header-title">Dashboard Overview</h2>
+              <div>
+                <h2 class="header-title">Billing Dashboard</h2>
+                <p class="header-subtitle">Santa Fe Water Billing System</p>
             </div>
         </div>
         

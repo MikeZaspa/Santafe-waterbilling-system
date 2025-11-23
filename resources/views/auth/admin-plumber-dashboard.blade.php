@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" type="image/png" href="image/santa.png">
     <!-- Custom CSS -->
     <style>
         :root {
@@ -113,7 +114,7 @@
             margin: 0;
             font-size: 1.25rem;
             font-weight: 600;
-            color: #333;
+            color: gray;
         }
         
         .header-subtitle {
@@ -550,7 +551,6 @@
             </button>
             <div>
                 <h2 class="header-title">Reading Dashboard Overview</h2>
-                <p class="header-subtitle">Santa Fe Water Billing System</p>
             </div>
         </div>
         

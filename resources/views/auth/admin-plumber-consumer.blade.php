@@ -12,7 +12,7 @@
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
     <!-- Custom CSS -->
-    <link rel="icon" type="image/png" href="image/santafe.png">
+    <link rel="icon" type="image/png" href="image/santa.png">
     <style>
         :root {
             --primary-color: #d32f2f;
@@ -794,10 +794,6 @@
             <button id="sidebarToggle" class="btn d-lg-none me-3 mobile-menu-toggle">
                 <i class="bi bi-list"></i>
             </button>
-            <div>
-                <h2 class="header-title">Reading Consumer</h2>
-                <p class="header-subtitle">Santa Fe Water Billing System</p>
-            </div>
         </div>
         
         <div class="header-right">

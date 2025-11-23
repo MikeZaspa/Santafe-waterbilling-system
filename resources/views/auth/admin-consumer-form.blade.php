@@ -475,6 +475,10 @@
             <button id="sidebarToggle" class="btn d-lg-none me-3 mobile-menu-toggle">
                 <i class="bi bi-list"></i>
             </button>
+              <div>
+                <h2 class="header-title">Account Management</h2>
+                <p class="header-subtitle">Santa Fe Water Billing System</p>
+            </div>
         </div>
        
         <div class="header-right">
