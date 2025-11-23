@@ -17,9 +17,11 @@
             --primary-color: #d32f2f;
             --primary-light: #ff6659;
             --primary-dark: #9a0007;
-            --sidebar-bg: linear-gradient(180deg, #d32f2f 0%, #9a0007 100%);
-            --sidebar-text: rgba(255,255,255,0.9);
-            --sidebar-hover: rgba(255,255,255,0.1);
+            --sidebar-bg: #f8f9fa;
+            --sidebar-text: rgba(0,0,0,0.8);
+            --sidebar-hover: rgba(0,0,255,0.1);
+            --overlay-color: rgba(7, 7, 7, 0.1);
+            --header-height: 70px;
         }
         
         body {
@@ -31,13 +33,18 @@
         /* Sidebar Styles */
         .sidebar {
             width: 280px;
-            background: #f8f9fa;
+            background: var(--sidebar-bg);
             position: fixed;
             height: 100vh;
             overflow-y: auto;
             transition: all 0.3s;
-            z-index: 1000;
+            z-index: 1050;
             box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
+            transform: translateX(-100%);
+        }
+        
+        .sidebar.active {
+            transform: translateX(0);
         }
         
         .sidebar-header {
@@ -73,10 +80,24 @@
             background: blue;
             transform: translateX(5px);
         }
-         
+        
         .sidebar-menu .nav-link.active {
             color: white;
             background: blue;
+            font-weight: 500;
+            position: relative;
+        }
+        
+        .sidebar-menu .nav-link.active::after {
+            content: '';
+            position: absolute;
+            right: -10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 60%;
+            background: white;
+            border-radius: 2px;
         }
         
         .sidebar-menu .nav-link i {
@@ -88,21 +109,107 @@
 
         /* Main Content */
         .main-content {
-            margin-left: 280px;
             min-height: 100vh;
-            transition: all 0.3s;
-            padding: 20px;
+            transition: all 0.3s ease;
+            padding: 0;
+            width: 100%;
+            margin-left: 0;
         }
         
         .header {
-            height: 70px;
+            height: var(--header-height);
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 1040;
             background: white;
             padding: 0 20px;
-            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+        
+        .header-title {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .header-subtitle {
+            margin: 0;
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+        
+        .content-wrapper {
+            padding: 20px;
+        }
+        
+        /* Mobile overlay styles */
+        .mobile-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--overlay-color);
+            z-index: 1040;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Mobile menu toggle button */
+        .mobile-menu-toggle {
+            font-size: 1.5rem;
+            padding: 0.25rem 0.5rem;
+            border: none;
+            background: transparent;
+            color: var(--primary-color);
+        }
+        
+        @media (min-width: 992px) {
+            .sidebar {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 280px;
+                width: calc(100% - 280px);
+            }
+        }
+        
+        @media (max-width: 991px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            /* Don't move the main content when sidebar is active on mobile */
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
         }
         
         /* Table Styles */
@@ -335,26 +442,6 @@
             color: #666;
         }
 
-        /* Responsive adjustments */
-        @media (max-width: 992px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-            
-            .sidebar.active {
-                transform: translateX(0);
-            }
-            
-            .main-content {
-                margin-left: 0;
-                padding: 15px;
-            }
-            
-            .main-content.active {
-                margin-left: 280px;
-            }
-        }
-        
         /* Animation */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
@@ -507,6 +594,9 @@
 </head>
 <body>
 
+<!-- Mobile Overlay -->
+<div class="mobile-overlay"></div>
+
 <div class="sidebar">
     <div class="sidebar-header text-center">
         <img src="{{ asset('image/santafe.png') }}" class="login-logo img-fluid mb-3">
@@ -561,17 +651,23 @@
 <!-- Main Content -->
 <div class="main-content">
     <!-- Header -->
-    <header class="header d-flex align-items-center">
-        <button id="sidebarToggle" class="btn d-lg-none me-3">
-            <i class="bi bi-list"></i>
-        </button>
+    <header class="header">
+        <div class="header-left">
+            <button id="sidebarToggle" class="btn d-lg-none me-3 mobile-menu-toggle">
+                <i class="bi bi-list"></i>
+            </button>
+            <div>
+                <h2 class="header-title">Billing Management</h2>
+                <p class="header-subtitle">Santa Fe Water Billing System</p>
+            </div>
+        </div>
        
-        <div class="ms-auto d-flex align-items-center">
-           
+        <div class="header-right">
             <!-- Notification Bell for Admin -->
             <div class="position-relative me-3">
                 <a href="#" class="text-decoration-none text-dark position-relative" id="notificationBell" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-bell fs-5"></i>
+                </a>
             </div>
             <!-- User Dropdown -->
             <div class="dropdown">
@@ -590,119 +686,121 @@
         </div>
     </header>
    
-    <div class="table-container animate-fadein">
-        <div class="table-title">
-            <div class="d-flex justify-content-between align-items-center w-100">
-                <h3 class="mb-0">Billing Management</h3>
-                <div>
-                    <button class="btn btn-primary" id="addBillingBtn" data-bs-toggle="modal" data-bs-target="#billingModal">
-                        <i class="bi bi-plus-circle-fill me-2"></i>
-                        Create New Billing
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Tab Navigation -->
-        <ul class="nav nav-tabs mb-3" id="billingTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="active-tab" data-bs-toggle="tab" data-bs-target="#active" type="button" role="tab">
-                    Active Billings
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="archived-tab" data-bs-toggle="tab" data-bs-target="#archived" type="button" role="tab">
-                    Archived Billings
-                </button>
-            </li>
-        </ul>
-        
-        <div class="tab-content" id="billingTabsContent">
-            <!-- Active Billings Tab -->
-            <div class="tab-pane fade show active" id="active" role="tabpanel">
-                <div class="row mb-3">
-                    <div class="col-md-4">
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="searchInput" placeholder="Search consumer...">
-                            <button class="btn btn-outline-secondary" type="button" id="searchBtn">
-                                <i class="bi bi-search"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <select class="form-select" id="statusFilter">
-                            <option value="">All Status</option>
-                            <option value="paid">Paid</option>
-                            <option value="unpaid">Unpaid</option>
-                            <option value="overdue">Overdue</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <input type="month" class="form-control" id="monthFilter">
-                    </div>
-                </div>
-                
-                <div class="table-responsive">
-                    <table class="table table-hover" id="billingTable">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Consumer</th>
-                                <th>Type</th>
-                                <th>Meter No.</th>
-                                <th>Due Date</th>
-                                <th>Previous Reading</th>
-                                <th>Current Reading</th>
-                                <th>Consumption</th>
-                                <th>Total Amount</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Active billing data will be loaded here via AJAX -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <!-- Archived Billings Tab -->
-            <div class="tab-pane fade" id="archived" role="tabpanel">
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="archiveSearchInput" placeholder="Search archived consumer...">
-                            <button class="btn btn-outline-secondary" type="button" id="archiveSearchBtn">
-                                <i class="bi bi-search"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="col-md-6 text-end">
-                        <button class="btn btn-danger" id="emptyArchiveBtn">
-                            <i class="bi bi-trash me-2"></i>
-                            Empty Archive
+    <div class="content-wrapper">
+        <div class="table-container animate-fadein">
+            <div class="table-title">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <h3 class="mb-0">Billing Management</h3>
+                    <div>
+                        <button class="btn btn-primary" id="addBillingBtn" data-bs-toggle="modal" data-bs-target="#billingModal">
+                            <i class="bi bi-plus-circle-fill me-2"></i>
+                            Create New Billing
                         </button>
                     </div>
                 </div>
+            </div>
+            
+            <!-- Tab Navigation -->
+            <ul class="nav nav-tabs mb-3" id="billingTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="active-tab" data-bs-toggle="tab" data-bs-target="#active" type="button" role="tab">
+                        Active Billings
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="archived-tab" data-bs-toggle="tab" data-bs-target="#archived" type="button" role="tab">
+                        Archived Billings
+                    </button>
+                </li>
+            </ul>
+            
+            <div class="tab-content" id="billingTabsContent">
+                <!-- Active Billings Tab -->
+                <div class="tab-pane fade show active" id="active" role="tabpanel">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="searchInput" placeholder="Search consumer...">
+                                <button class="btn btn-outline-secondary" type="button" id="searchBtn">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select" id="statusFilter">
+                                <option value="">All Status</option>
+                                <option value="paid">Paid</option>
+                                <option value="unpaid">Unpaid</option>
+                                <option value="overdue">Overdue</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="month" class="form-control" id="monthFilter">
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="billingTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Consumer</th>
+                                    <th>Type</th>
+                                    <th>Meter No.</th>
+                                    <th>Due Date</th>
+                                    <th>Previous Reading</th>
+                                    <th>Current Reading</th>
+                                    <th>Consumption</th>
+                                    <th>Total Amount</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Active billing data will be loaded here via AJAX -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
                 
-                <div class="table-responsive">
-                    <table class="table table-hover" id="archiveTable">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Consumer</th>
-                                <th>Type</th>
-                                <th>Meter No.</th>
-                                <th>Archived Date</th>
-                                <th>Archived By</th>
-                                <th>Reason</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Archived billing data will be loaded here via AJAX -->
-                        </tbody>
-                    </table>
+                <!-- Archived Billings Tab -->
+                <div class="tab-pane fade" id="archived" role="tabpanel">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="archiveSearchInput" placeholder="Search archived consumer...">
+                                <button class="btn btn-outline-secondary" type="button" id="archiveSearchBtn">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <button class="btn btn-danger" id="emptyArchiveBtn">
+                                <i class="bi bi-trash me-2"></i>
+                                Empty Archive
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="archiveTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Consumer</th>
+                                    <th>Type</th>
+                                    <th>Meter No.</th>
+                                    <th>Archived Date</th>
+                                    <th>Archived By</th>
+                                    <th>Reason</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Archived billing data will be loaded here via AJAX -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -970,10 +1068,58 @@
 <!-- Moment.js for date handling -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 
-
-
 <script>
  $(document).ready(function() {
+    // Mobile sidebar toggle functionality
+    const sidebar = $('.sidebar');
+    const mainContent = $('.main-content');
+    const header = $('.header');
+    const sidebarToggle = $('#sidebarToggle');
+    const mobileOverlay = $('.mobile-overlay');
+    
+    sidebarToggle.on('click', function() {
+        sidebar.toggleClass('active');
+        mobileOverlay.toggleClass('active');
+        
+        // Add overlay to header when sidebar is active
+        if (sidebar.hasClass('active')) {
+            header.css('background-color', 'var(--overlay-color)');
+            $('body').css('overflow', 'hidden');
+        } else {
+            header.css('background-color', 'white');
+            $('body').css('overflow', '');
+        }
+    });
+    
+    // Close sidebar when clicking on overlay
+    mobileOverlay.on('click', function() {
+        sidebar.removeClass('active');
+        mobileOverlay.removeClass('active');
+        header.css('background-color', 'white');
+        $('body').css('overflow', '');
+    });
+    
+    // Close sidebar when clicking on a nav link (for mobile)
+    $('.sidebar-menu .nav-link').on('click', function() {
+        if ($(window).width() < 992) {
+            sidebar.removeClass('active');
+            mobileOverlay.removeClass('active');
+            header.css('background-color', 'white');
+            $('body').css('overflow', '');
+        }
+    });
+    
+    // Handle window resize
+    $(window).on('resize', function() {
+        // Close sidebar if window is resized to desktop size
+        if ($(window).width() >= 992) {
+            sidebar.removeClass('active');
+            mobileOverlay.removeClass('active');
+            header.css('background-color', 'white');
+            $('body').css('overflow', '');
+        }
+    });
+
     // Initialize Active Billings DataTable
     const activeTable = $('#billingTable').DataTable({
         processing: true,

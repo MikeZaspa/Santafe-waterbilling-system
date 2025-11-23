@@ -3,14 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Payment Verification</title>
   <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>Payment Verification</title>
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- DataTables CSS -->
   <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
   <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+  <!-- SweetAlert2 for notifications -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
@@ -18,9 +20,11 @@
       --primary-color: #d32f2f;
       --primary-light: #ff6659;
       --primary-dark: #9a0007;
-      --sidebar-bg: linear-gradient(180deg, #d32f2f 0%, #9a0007 100%);
-      --sidebar-text: rgba(255,255,255,0.9);
-      --sidebar-hover: rgba(255,255,255,0.1);
+      --sidebar-bg: #f8f9fa;
+      --sidebar-text: rgba(0,0,0,0.8);
+      --sidebar-hover: rgba(0,0,255,0.1);
+      --overlay-color: rgba(7, 7, 7, 0.1);
+      --header-height: 70px;
       --primary: #4361ee;
       --secondary: #3f37c9;
       --success: #4cc9f0;
@@ -34,18 +38,24 @@
       background-color: var(--light-bg);
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
       color: #333;
+      overflow-x: hidden;
     }
     
     /* Sidebar Styles */
     .sidebar {
       width: 280px;
-      background: #f8f9fa;
+      background: var(--sidebar-bg);
       position: fixed;
-      height: 100%;
+      height: 100vh;
       overflow-y: auto;
       transition: all 0.3s;
-      z-index: 1000;
+      z-index: 1050;
       box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
+      transform: translateX(-100%);
+    }
+    
+    .sidebar.active {
+      transform: translateX(0);
     }
     
     .sidebar-header {
@@ -118,40 +128,67 @@
     }
     
     .main-content {
-            margin-left: 280px;
-            min-height: 100vh;
-            transition: all 0.3s;
-            padding: 20px;
-        }
-        
+      min-height: 100vh;
+      transition: all 0.3s ease;
+      padding: 0;
+      width: 100%;
+      margin-left: 0;
+    }
     
     .header {
-      height: 70px;
+      height: var(--header-height);
       box-shadow: 0 4px 20px rgba(0,0,0,0.08);
       position: sticky;
       top: 0;
-      z-index: 100;
+      z-index: 1040;
       background: white;
       padding: 0 20px;
       display: flex;
       align-items: center;
+      justify-content: space-between;
+      transition: all 0.3s ease;
     }
     
-    @media (max-width: 992px) {
+    .header-left {
+      display: flex;
+      align-items: center;
+    }
+    
+    .header-right {
+      display: flex;
+      align-items: center;
+    }
+    
+    .header-title {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    
+    .header-subtitle {
+      margin: 0;
+      font-size: 0.875rem;
+      color: #6c757d;
+    }
+    
+    .content-wrapper {
+      padding: 20px;
+    }
+    
+    @media (min-width: 992px) {
       .sidebar {
-        transform: translateX(-100%);
-      }
-      
-      .sidebar.active {
         transform: translateX(0);
       }
       
       .main-content {
-        margin-left: 0;
-      }
-      
-      .main-content.active {
         margin-left: 280px;
+        width: calc(100% - 280px);
+      }
+    }
+    
+    @media (max-width: 991px) {
+      .main-content {
+        margin-left: 0;
       }
     }
 
@@ -187,7 +224,7 @@
 
     .form-control:focus, .form-select:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.15);
+      box-shadow: 0 0 0.25rem rgba(67, 97, 238, 0.15);
     }
 
     table thead th {
@@ -294,6 +331,34 @@
       border: 1px solid var(--primary);
     }
 
+    /* Mobile overlay styles */
+    .mobile-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: var(--overlay-color);
+      z-index: 1040;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    .mobile-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    /* Mobile menu toggle button */
+    .mobile-menu-toggle {
+      font-size: 1.5rem;
+      padding: 0.25rem 0.5rem;
+      border: none;
+      background: transparent;
+      color: var(--primary-color);
+    }
+
     @media (max-width: 768px) {
       .d-flex.justify-content-between {
         flex-direction: column;
@@ -316,6 +381,9 @@
   </style>
 </head>
 <body>
+
+<!-- Mobile Overlay -->
+<div class="mobile-overlay"></div>
 
 <!-- Sidebar -->
 <div class="sidebar">
@@ -367,68 +435,80 @@
 <!-- Main Content -->
 <div class="main-content">
   <!-- Header -->
-  <header class="header bg-white d-flex align-items-center px-3">
-    <button id="sidebarToggle" class="btn d-lg-none me-3">
-      <i class="bi bi-list"></i>
-    </button>
-    <h2 class="h5 mb-0">Payment Verification</h2>
-    
-    <div class="ms-auto d-flex align-items-center">
-      <div class="position-relative me-3">
-        <i class="bi bi-bell fs-5"></i>
+  <header class="header">
+    <div class="header-left">
+      <button id="sidebarToggle" class="btn d-lg-none me-3 mobile-menu-toggle">
+        <i class="bi bi-list"></i>
+      </button>
+       <div>
+        <h2 class="header-title">Payment Verification</h2>
+        <p class="header-subtitle">Santa Fe Water Billing System</p>
       </div>
-    <div class="dropdown">
-    <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
-        <span>Accountant</span>
-    </a>
-    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUser">
-        <li><hr class="dropdown-divider"></li>
-        <li>
+    </div>
+   
+    <div class="header-right">
+      <!-- Notification Bell for Admin -->
+      <div class="position-relative me-3">
+        <a href="#" class="text-decoration-none text-dark position-relative" id="notificationBell" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="bi bi-bell fs-5"></i>
+        </a>
+      </div>
+      <!-- User Dropdown -->
+      <div class="dropdown">
+        <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+          <span class="d-none d-md-inline">Accountant</span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUser">
+          <li><hr class="dropdown-divider"></li>
+          <li>
             <a class="dropdown-item text-danger" href="#" id="logoutBtn">
-                <i class="bi bi-box-arrow-right me-2"></i>Sign Out
+              <i class="bi bi-box-arrow-right me-2"></i>Sign Out
             </a>
-        </li>
-    </ul>
-</div>
+          </li>
+        </ul>
+      </div>
     </div>
   </header>
 
-  <!-- Payment Verification Content -->
-  <div class="table-container animate-fadein" id="paymentVerificationSection">
-    <div class="table-title">
-      <div class="d-flex justify-content-between align-items-center w-100">
-        <h3 class="mb-0"><i class="bi bi-credit-card"></i> Payment Verification</h3>
-        <div class="d-flex">
-          <input type="text" class="form-control me-2" id="paymentSearch" placeholder="Search payments...">
-          <select class="form-select" id="paymentStatusFilter">
-            <option value="">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="verified">Verified</option>
-            <option value="rejected">Rejected</option>
-          </select>
+  <!-- Dashboard Content -->
+  <div class="content-wrapper">
+    <!-- Payment Verification Content -->
+    <div class="table-container animate-fadein" id="paymentVerificationSection">
+      <div class="table-title">
+        <div class="d-flex justify-content-between align-items-center w-100">
+          <h3 class="mb-0"><i class="bi bi-credit-card"></i> Payment Verification</h3>
+          <div class="d-flex">
+            <input type="text" class="form-control me-2" id="paymentSearch" placeholder="Search payments...">
+            <select class="form-select" id="paymentStatusFilter">
+              <option value="">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="verified">Verified</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="table-responsive">
-      <table class="table table-hover" id="paymentsTable">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Consumer</th>
-            <th>Meter No.</th>
-            <th>Amount</th>
-            <th>Method</th>
-            <th>Reference No.</th>
-            <th>Submitted</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- AJAX Data -->
-        </tbody>
-      </table>
+      <div class="table-responsive">
+        <table class="table table-hover" id="paymentsTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Consumer</th>
+              <th>Meter No.</th>
+              <th>Amount</th>
+              <th>Method</th>
+              <th>Reference No.</th>
+              <th>Submitted</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- AJAX Data -->
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
@@ -484,7 +564,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 <script>
   // Payment verification functionality
-$(document).ready(function() {
+ $(document).ready(function() {
     // Initialize payments table
     const paymentsTable = $('#paymentsTable').DataTable({
         processing: true,
@@ -494,7 +574,11 @@ $(document).ready(function() {
             type: 'GET',
             error: function(xhr, error, thrown) {
                 console.log('DataTables error:', xhr.responseJSON);
-                alert('Error loading data: ' + (xhr.responseJSON?.message || 'Unknown error'));
+                let errorMsg = "Failed to load data";
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMsg = xhr.responseJSON.error;
+                }
+                Swal.fire('Error', errorMsg, 'error');
             }
         },
         columns: [
@@ -514,7 +598,7 @@ $(document).ready(function() {
                 data: 'meter_no', 
                 name: 'adminConsumer.meter_no',
                 render: function(data, type, row) {
-                    // Check if we have adminConsumer data in the row
+                    // Check if we have adminConsumer data in row
                     if (row.admin_consumer && typeof row.admin_consumer === 'object') {
                         return row.admin_consumer.meter_no || 'N/A';
                     }
@@ -581,7 +665,7 @@ $(document).ready(function() {
     
     $('#paymentStatusFilter').change(function() {
         const status = $(this).val();
-        paymentsTable.column(7).search(status).draw(); // Updated column index
+        paymentsTable.column(7).search(status).draw();
     });
 
     // View payment details
@@ -616,7 +700,7 @@ $(document).ready(function() {
                     let consumerName = 'N/A';
                     let meterNo = 'N/A';
                     
-                    // Try to get consumer data from different possible locations
+                    // Try to get consumer data from different locations
                     if (payment.admin_consumer) {
                         // If admin_consumer is available
                         consumerName = (payment.admin_consumer.first_name || '') + ' ' + (payment.admin_consumer.last_name || '');
@@ -673,7 +757,7 @@ $(document).ready(function() {
                             `);
                         };
                         
-                        // Use the dedicated endpoint
+                        // Use dedicated endpoint
                         const imagePath = `/payment-proof/${paymentId}`;
                         console.log("Loading image from:", imagePath);
                         img.src = imagePath;
@@ -704,13 +788,14 @@ $(document).ready(function() {
                 }
             },
             error: function(xhr) {
-                console.error("Error loading payment details:", xhr);
+                // Show error message in consumer display
+                $('#verifyConsumer').text('Error loading consumer');
+                
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'Failed to load payment details.'
+                    text: xhr.responseJSON?.message || 'Failed to load payment data'
                 });
-                $('#paymentVerificationModal').modal('hide');
             }
         });
     });
@@ -730,59 +815,111 @@ $(document).ready(function() {
         
         verifyPayment(paymentId, 'rejected', notes);
     });
+
+    // Mobile sidebar toggle functionality
+    const sidebar = $('.sidebar');
+    const mainContent = $('.main-content');
+    const header = $('.header');
+    const sidebarToggle = $('#sidebarToggle');
+    const mobileOverlay = $('.mobile-overlay');
+    
+    sidebarToggle.on('click', function() {
+        sidebar.toggleClass('active');
+        mobileOverlay.toggleClass('active');
+        
+        // Add overlay to header when sidebar is active
+        if (sidebar.hasClass('active')) {
+            header.css('background-color', 'var(--overlay-color)');
+            $('body').css('overflow', 'hidden');
+        } else {
+            header.css('background-color', 'white');
+            $('body').css('overflow', '');
+        }
+    });
+    
+    // Close sidebar when clicking on overlay
+    mobileOverlay.on('click', function() {
+        sidebar.removeClass('active');
+        mobileOverlay.removeClass('active');
+        header.css('background-color', 'white');
+        $('body').css('overflow', '');
+    });
+    
+    // Close sidebar when clicking on a nav link (for mobile)
+    $('.sidebar-menu .nav-link').on('click', function() {
+        if ($(window).width() < 992) {
+            sidebar.removeClass('active');
+            mobileOverlay.removeClass('active');
+            header.css('background-color', 'white');
+            $('body').css('overflow', '');
+        }
+    });
+    
+    // Handle window resize
+    $(window).on('resize', function() {
+        // Close sidebar if window is resized to desktop size
+        if ($(window).width() >= 992) {
+            sidebar.removeClass('active');
+            mobileOverlay.removeClass('active');
+            header.css('background-color', 'white');
+            $('body').css('overflow', '');
+        }
+    });
+
     // Logout functionality
-$('#logoutBtn').click(function(e) {
-    e.preventDefault();
-    
-    Swal.fire({
-        title: 'Sign Out?',
-        text: 'Are you sure you want to sign out?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Yes, Sign Out',
-        cancelButtonText: 'Cancel'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Perform logout - you can customize this based on your authentication system
-            performLogout();
-        }
-    });
-});
-
-function performLogout() {
-    // Show loading state
-    Swal.fire({
-        title: 'Signing Out...',
-        text: 'Please wait',
-        allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
+    $('#logoutBtn').click(function(e) {
+        e.preventDefault();
+        
+        Swal.fire({
+            title: 'Sign Out?',
+            text: 'Are you sure you want to sign out?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, Sign Out',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Perform logout - you can customize this based on your authentication system
+                performLogout();
+            }
+        });
     });
 
-    // Example: Send logout request to server
-    // Replace this with your actual logout endpoint
-    $.ajax({
-        url: '/logout', // Your logout route
-        type: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
-        success: function(response) {
-            // Redirect to login page
-            window.location.href = '/admin-login';
-        },
-        error: function(xhr) {
-            // If AJAX fails, still redirect to login
-            window.location.href = '/admin-login';
-        }
-    });
-    
-    // Alternative: Simple redirect (if no server-side logout needed)
-    // window.location.href = '/login';
-}
+    function performLogout() {
+        // Show loading state
+        Swal.fire({
+            title: 'Signing Out...',
+            text: 'Please wait',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // Example: Send logout request to server
+        // Replace this with your actual logout endpoint
+        $.ajax({
+            url: '/logout', // Your logout route
+            type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                // Redirect to login page
+                window.location.href = '/admin-login';
+            },
+            error: function(xhr) {
+                // If AJAX fails, still redirect to login
+                window.location.href = '/admin-login';
+            }
+        });
+        
+        // Alternative: Simple redirect (if no server-side logout needed)
+        // window.location.href = '/login';
+    }
+
     // Verify payment function
     function verifyPayment(paymentId, status, notes) {
         $.ajax({

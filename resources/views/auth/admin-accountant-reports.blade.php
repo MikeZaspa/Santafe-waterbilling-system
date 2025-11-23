@@ -4,22 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Santa Fe Water Billing System - Billing Management</title>
+    <title>Santa Fe Water Billing System - Reports</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+    <!-- SweetAlert2 for notifications -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Custom CSS -->
     <style>
         :root {
             --primary-color: #d32f2f;
             --primary-light: #ff6659;
             --primary-dark: #9a0007;
-            --sidebar-bg: linear-gradient(180deg, #d32f2f 0%, #9a0007 100%);
-            --sidebar-text: rgba(255,255,255,0.9);
-            --sidebar-hover: rgba(255,255,255,0.1);
+            --sidebar-bg: #f8f9fa;
+            --sidebar-text: rgba(0,0,0,0.8);
+            --sidebar-hover: rgba(0,0,255,0.1);
+            --overlay-color: rgba(7, 7, 7, 0.1);
+            --header-height: 70px;
         }
         
         body {
@@ -31,19 +35,24 @@
         /* Sidebar Styles */
         .sidebar {
             width: 280px;
-            background: #f8f9fa;
+            background: var(--sidebar-bg);
             position: fixed;
             height: 100vh;
             overflow-y: auto;
             transition: all 0.3s;
-            z-index: 1000;
+            z-index: 1050;
             box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
+            transform: translateX(-100%);
+        }
+        
+        .sidebar.active {
+            transform: translateX(0);
         }
         
         .sidebar-header {
             padding: 1.5rem;
             color: black;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(0,0,0,0.1);
         }
         
         .sidebar-header .logo {
@@ -73,10 +82,24 @@
             background: blue;
             transform: translateX(5px);
         }
-         
+        
         .sidebar-menu .nav-link.active {
             color: white;
             background: blue;
+            font-weight: 500;
+            position: relative;
+        }
+        
+        .sidebar-menu .nav-link.active::after {
+            content: '';
+            position: absolute;
+            right: -10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 60%;
+            background: white;
+            border-radius: 2px;
         }
         
         .sidebar-menu .nav-link i {
@@ -88,20 +111,52 @@
 
         /* Main Content */
         .main-content {
-            margin-left: 280px;
             min-height: 100vh;
-            transition: all 0.3s;
-            padding: 20px;
+            transition: all 0.3s ease;
+            padding: 0;
+            width: 100%;
+            margin-left: 0;
         }
         
         .header {
-            height: 70px;
+            height: var(--header-height);
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 1040;
             background: white;
             padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+        
+        .header-title {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .header-subtitle {
+            margin: 0;
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+        
+        .content-wrapper {
+            padding: 20px;
         }
         
         /* Table Styles */
@@ -174,7 +229,7 @@
             text-transform: capitalize;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap:4px;
             white-space: nowrap;
         }
 
@@ -237,25 +292,33 @@
             content: " *";
             color: var(--primary-color);
         }
-
-        /* Responsive adjustments */
-        @media (max-width: 992px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-            
-            .sidebar.active {
-                transform: translateX(0);
-            }
-            
-            .main-content {
-                margin-left: 0;
-                padding: 15px;
-            }
-            
-            .main-content.active {
-                margin-left: 280px;
-            }
+        
+        /* Mobile overlay styles */
+        .mobile-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--overlay-color);
+            z-index: 1040;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .mobile-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Mobile menu toggle button */
+        .mobile-menu-toggle {
+            font-size: 1.5rem;
+            padding: 0.25rem 0.5rem;
+            border: none;
+            background: transparent;
+            color: var(--primary-color);
         }
         
         /* Animation */
@@ -274,10 +337,41 @@
             border-radius: 50%; 
             object-fit: cover;  
         }
+        
+        /* Responsive adjustments */
+        @media (min-width: 992px) {
+            .sidebar {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 280px;
+                width: calc(100% - 280px);
+            }
+        }
+        
+        @media (max-width: 991px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            /* Don't move the main content when sidebar is active on mobile */
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+
+<!-- Mobile Overlay -->
+<div class="mobile-overlay"></div>
 
 <!-- Sidebar -->
 <div class="sidebar">
@@ -328,18 +422,28 @@
 <!-- Main Content -->
 <div class="main-content">
     <!-- Header -->
-    <header class="header d-flex align-items-center">
-        <button id="sidebarToggle" class="btn d-lg-none me-3">
-            <i class="bi bi-list"></i>
-        </button>
-       
-        <div class="ms-auto d-flex align-items-center">
-            <div class="position-relative me-3">
-                <i class="bi bi-bell fs-5"></i>
+    <header class="header">
+        <div class="header-left">
+            <button id="sidebarToggle" class="btn d-lg-none me-3 mobile-menu-toggle">
+                <i class="bi bi-list"></i>
+            </button>
+             <div>
+                <h2 class="header-title">Reports</h2>
+                <p class="header-subtitle">Santa Fe Water Billing System</p>
             </div>
+        </div>
+       
+        <div class="header-right">
+            <!-- Notification Bell for Admin -->
+            <div class="position-relative me-3">
+                <a href="#" class="text-decoration-none text-dark position-relative" id="notificationBell" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-bell fs-5"></i>
+                </a>
+            </div>
+            <!-- User Dropdown -->
             <div class="dropdown">
                 <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
-                    <span>Accountant</span>
+                    <span class="d-none d-md-inline">Accountant</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUser">
                     <li><hr class="dropdown-divider"></li>
@@ -352,51 +456,51 @@
             </div>
         </div>
     </header>
-   
-   <div class="table-container animate-fadein">
-    <div class="table-title">
-        <div class="d-flex justify-content-between align-items-center w-100">
-            <h3 class="mb-0">
-                <i class="bi bi-file-earmark-bar-graph me-2"></i>
-                Paid Bills Report
-            </h3>
-            <div class="d-flex gap-3">
-                <div class="input-group" style="width: 200px;">
-                    <input type="month" class="form-control" id="monthFilter">
-                    <button class="btn btn-outline-secondary" id="applyFilter">
-                        <i class="bi bi-funnel"></i>
-                    </button>
+    
+    <!-- Dashboard Content -->
+    <div class="content-wrapper">
+        <div class="table-container animate-fadein">
+            <div class="table-title">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <h3 class="mb-0">
+                        <i class="bi bi-file-earmark-bar-graph me-2"></i>
+                        Paid Bills Report
+                    </h3>
+                    <div class="d-flex gap-3">
+                        <div class="input-group" style="width: 200px;">
+                            <input type="month" class="form-control" id="monthFilter">
+                            <button class="btn btn-outline-secondary" id="applyFilter">
+                                <i class="bi bi-funnel"></i>
+                            </button>
+                        </div>
+                        <button class="btn btn-primary" id="exportBtn">
+                            <i class="bi bi-printer me-2"></i> Print Report
+                        </button>
+                    </div>
                 </div>
-                <button class="btn btn-primary" id="exportBtn">
-                    <i class="bi bi-printer me-2"></i> Print Report
-                </button>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-hover" id="reportsTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Consumer</th>
+                            <th>Meter No.</th>
+                            <th>Due Date</th>
+                            <th>Consumption (m³)</th>
+                            <th>Total Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data will be loaded via AJAX -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-    
-    <div class="table-responsive">
-        <table class="table table-hover" id="reportsTable">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Consumer</th>
-                    <th>Meter No.</th>
-                    <th>Due Date</th>
-                    <th>Consumption (m³)</th>
-                    <th>Total Amount</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Data will be loaded via AJAX -->
-            </tbody>
-        </table>
-    </div>
 </div>
-</div>
-
-
-
 
 <!-- Bootstrap Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -405,8 +509,6 @@
 <!-- DataTables JS -->
 <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
-<!-- SweetAlert2 for notifications -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <!-- Moment.js for date handling -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 
@@ -415,7 +517,7 @@
 <script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
 <script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.print.min.js"></script>
 <script>
-$(document).ready(function() {
+ $(document).ready(function() {
     const reportsTable = $('#reportsTable').DataTable({
         processing: true,
         serverSide: true,
@@ -490,7 +592,7 @@ $(document).ready(function() {
             }
         ],
         initComplete: function() {
-            // Move the print button to our custom button location
+            // Move print button to our custom button location
             $('.dt-buttons').hide();
             $('#exportBtn').click(function() {
                 $('.buttons-print').click();
@@ -502,59 +604,109 @@ $(document).ready(function() {
         reportsTable.ajax.reload();
     });
 
+    // Mobile sidebar toggle functionality
+    const sidebar = $('.sidebar');
+    const mainContent = $('.main-content');
+    const header = $('.header');
+    const sidebarToggle = $('#sidebarToggle');
+    const mobileOverlay = $('.mobile-overlay');
+    
+    sidebarToggle.on('click', function() {
+        sidebar.toggleClass('active');
+        mobileOverlay.toggleClass('active');
+        
+        // Add overlay to header when sidebar is active
+        if (sidebar.hasClass('active')) {
+            header.css('background-color', 'var(--overlay-color)');
+            $('body').css('overflow', 'hidden');
+        } else {
+            header.css('background-color', 'white');
+            $('body').css('overflow', '');
+        }
+    });
+    
+    // Close sidebar when clicking on overlay
+    mobileOverlay.on('click', function() {
+        sidebar.removeClass('active');
+        mobileOverlay.removeClass('active');
+        header.css('background-color', 'white');
+        $('body').css('overflow', '');
+    });
+    
+    // Close sidebar when clicking on a nav link (for mobile)
+    $('.sidebar-menu .nav-link').on('click', function() {
+        if ($(window).width() < 992) {
+            sidebar.removeClass('active');
+            mobileOverlay.removeClass('active');
+            header.css('background-color', 'white');
+            $('body').css('overflow', '');
+        }
+    });
+    
+    // Handle window resize
+    $(window).on('resize', function() {
+        // Close sidebar if window is resized to desktop size
+        if ($(window).width() >= 992) {
+            sidebar.removeClass('active');
+            mobileOverlay.removeClass('active');
+            header.css('background-color', 'white');
+            $('body').css('overflow', '');
+        }
+    });
+
     // Logout functionality
-$('#logoutBtn').click(function(e) {
-    e.preventDefault();
-    
-    Swal.fire({
-        title: 'Sign Out?',
-        text: 'Are you sure you want to sign out?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Yes, Sign Out',
-        cancelButtonText: 'Cancel'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Perform logout - you can customize this based on your authentication system
-            performLogout();
-        }
-    });
-});
-
-function performLogout() {
-    // Show loading state
-    Swal.fire({
-        title: 'Signing Out...',
-        text: 'Please wait',
-        allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
+    $('#logoutBtn').click(function(e) {
+        e.preventDefault();
+        
+        Swal.fire({
+            title: 'Sign Out?',
+            text: 'Are you sure you want to sign out?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, Sign Out',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Perform logout - you can customize this based on your authentication system
+                performLogout();
+            }
+        });
     });
 
-    // Example: Send logout request to server
-    // Replace this with your actual logout endpoint
-    $.ajax({
-        url: '/logout', // Your logout route
-        type: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
-        success: function(response) {
-            // Redirect to login page
-            window.location.href = '/admin-login';
-        },
-        error: function(xhr) {
-            // If AJAX fails, still redirect to login
-            window.location.href = '/admin-login';
-        }
-    });
-    
-    // Alternative: Simple redirect (if no server-side logout needed)
-    // window.location.href = '/login';
-}
+    function performLogout() {
+        // Show loading state
+        Swal.fire({
+            title: 'Signing Out...',
+            text: 'Please wait',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // Example: Send logout request to server
+        // Replace this with your actual logout endpoint
+        $.ajax({
+            url: '/logout', // Your logout route
+            type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                // Redirect to login page
+                window.location.href = '/admin-login';
+            },
+            error: function(xhr) {
+                // If AJAX fails, still redirect to login
+                window.location.href = '/admin-login';
+            }
+        });
+        
+        // Alternative: Simple redirect (if no server-side logout needed)
+        // window.location.href = '/login';
+    }
 });
 </script>
 </body>

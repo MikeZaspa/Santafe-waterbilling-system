@@ -15,13 +15,18 @@
     <link rel="icon" type="image/png" href="image/santa.png">
     <style>
         :root {
-            --primary-color: #d32f2f;
-            --primary-light: #ff6659;
-            --primary-dark: #9a0007;
-            --sidebar-bg: linear-gradient(180deg, #d32f2f 0%, #9a0007 100%);
+            --primary-color: #0d6efd; /* Changed to blue */
+            --primary-light: #6ea8fe;
+            --primary-dark: #0a58ca;
+            --sidebar-bg: linear-gradient(180deg, #0d6efd 0%, #0a58ca 100%); /* Changed to blue */
             --sidebar-text: rgba(255,255,255,0.9);
             --overlay-color: rgba(7, 7, 7, 0.1);
             --header-height: 70px;
+            --edit-color: #198754; /* Green for edit */
+            --delete-color: #dc3545; /* Red for delete */
+            --disconnect-color: #ffc107; /* Yellow for disconnect */
+            --cut-color: blue; /* Purple for cut */
+            --restore-color: #198754; /* Green for restore */
         }
         
         body {
@@ -76,13 +81,13 @@
         
         .sidebar-menu .nav-link:hover {
             color: white;
-            background: blue;
+            background: var(--primary-color);
             transform: translateX(5px);
         }
         
         .sidebar-menu .nav-link.active {
             color: white;
-            background: blue;
+            background: var(--primary-color);
         }
         
         .sidebar-menu .nav-link i {
@@ -186,7 +191,7 @@
         
         .form-control:focus, .form-select:focus {
             border-color: var(--primary-light);
-            box-shadow: 0 0 0 0.25rem rgba(211, 47, 47, 0.25);
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
         }
         
         .login-logo {
@@ -418,14 +423,14 @@
 
         /* Cut button styling */
         .btn-cut {
-            background-color: #dc3545;
-            border-color: #dc3545;
+            background-color: var(--cut-color);
+            border-color: var(--cut-color);
             color: white;
         }
 
         .btn-cut:hover {
-            background-color: #bb2d3b;
-            border-color: #b02a37;
+            background-color: skyblue;
+            border-color: blue;
         }
 
         /* Cut consumer table styling */
@@ -794,6 +799,10 @@
             <button id="sidebarToggle" class="btn d-lg-none me-3 mobile-menu-toggle">
                 <i class="bi bi-list"></i>
             </button>
+             <div>
+                <h2 class="header-title">Reading Consumer</h2>
+                <p class="header-subtitle">Santa Fe Water Billing System</p>
+            </div>
         </div>
         
         <div class="header-right">
@@ -1308,7 +1317,7 @@
                                 <button class="btn btn-sm btn-success btn-action reconnect-btn" data-id="${data}" data-consumer-id="${row.consumer_id}" title="Reconnect">
                                     <i class="bi bi-check-circle"></i>
                                 </button>
-                                <button class="btn btn-sm btn-danger btn-action cut-btn" data-id="${data}" data-consumer-id="${row.consumer_id}" title="Cut Consumer">
+                                <button class="btn btn-sm btn-cut btn-action cut-btn" data-id="${data}" data-consumer-id="${row.consumer_id}" title="Cut Consumer">
                                     <i class="bi bi-scissors"></i>
                                 </button>
                             </div>
@@ -1316,13 +1325,13 @@
                     } else {
                         return `
                             <div class="btn-group">
-                                <button class="btn btn-sm btn-primary btn-action edit-btn" data-id="${data}" title="Edit">
+                                <button class="btn btn-sm btn-success btn-action edit-btn" data-id="${data}" title="Edit">
                                     <i class="bi bi-pencil"></i>
                                 </button>
                                 <button class="btn btn-sm btn-warning btn-action disconnect-btn" data-id="${data}" data-consumer-id="${row.consumer_id}" title="Disconnect">
                                     <i class="bi bi-x-circle"></i>
                                 </button>
-                                <button class="btn btn-sm btn-danger btn-action cut-btn" data-id="${data}" data-consumer-id="${row.consumer_id}" title="Cut Consumer">
+                                <button class="btn btn-sm btn-cut btn-action cut-btn" data-id="${data}" data-consumer-id="${row.consumer_id}" title="Cut Consumer">
                                     <i class="bi bi-scissors"></i>
                                 </button>
                                 <button class="btn btn-sm btn-danger btn-action delete-btn" data-id="${data}" title="Delete">
@@ -1393,20 +1402,20 @@
                     <button class="btn btn-sm btn-success btn-action reconnect-btn" data-id="${item.id}" data-consumer-id="${item.consumer_id}" title="Reconnect">
                         <i class="bi bi-check-circle"></i>
                     </button>
-                    <button class="btn btn-sm btn-danger btn-action cut-btn" data-id="${item.id}" data-consumer-id="${item.consumer_id}" title="Cut Consumer">
+                    <button class="btn btn-sm btn-cut btn-action cut-btn" data-id="${item.id}" data-consumer-id="${item.consumer_id}" title="Cut Consumer">
                         <i class="bi bi-scissors"></i>
                     </button>
                 `;
             } else {
                 status = '<span class="status-connected">Connected</span>';
                 actions = `
-                    <button class="btn btn-sm btn-primary btn-action edit-btn" data-id="${item.id}" title="Edit">
+                    <button class="btn btn-sm btn-success btn-action edit-btn" data-id="${item.id}" title="Edit">
                         <i class="bi bi-pencil"></i>
                     </button>
                     <button class="btn btn-sm btn-warning btn-action disconnect-btn" data-id="${item.id}" data-consumer-id="${item.consumer_id}" title="Disconnect">
                         <i class="bi bi-x-circle"></i>
                     </button>
-                    <button class="btn btn-sm btn-danger btn-action cut-btn" data-id="${item.id}" data-consumer-id="${item.consumer_id}" title="Cut Consumer">
+                    <button class="btn btn-sm btn-cut btn-action cut-btn" data-id="${item.id}" data-consumer-id="${item.consumer_id}" title="Cut Consumer">
                         <i class="bi bi-scissors"></i>
                     </button>
                     <button class="btn btn-sm btn-danger btn-action delete-btn" data-id="${item.id}" title="Delete">
@@ -2113,7 +2122,7 @@
     }
 
    // Restore disconnected consumer functionality
-$(document).on('click', '.restore-disconnected-btn, .reconnect-btn', function() {
+ $(document).on('click', '.restore-disconnected-btn, .reconnect-btn', function() {
     const consumerId = $(this).data('id');
     let consumerName = '';
     

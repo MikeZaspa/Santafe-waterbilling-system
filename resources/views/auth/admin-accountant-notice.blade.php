@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+    <!-- SweetAlert2 for notifications -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Custom CSS -->
     <link rel="icon" type="image/png" href="image/santafe.png">
     <style>
@@ -18,9 +20,11 @@
             --primary-color: #d32f2f;
             --primary-light: #ff6659;
             --primary-dark: #9a0007;
-            --sidebar-bg: linear-gradient(180deg, #d32f2f 0%, #9a0007 100%);
-            --sidebar-text: rgba(255,255,255,0.9);
-            --sidebar-hover: rgba(255,255,255,0.1);
+            --sidebar-bg: #f8f9fa;
+            --sidebar-text: rgba(0,0,0,0.8);
+            --sidebar-hover: rgba(0,0,255,0.1);
+            --overlay-color: rgba(7, 7, 7, 0.1);
+            --header-height: 70px;
         }
         
         body {
@@ -32,19 +36,24 @@
         /* Sidebar Styles */
         .sidebar {
             width: 280px;
-            background: #f8f9fa;
+            background: var(--sidebar-bg);
             position: fixed;
             height: 100vh;
             overflow-y: auto;
             transition: all 0.3s;
-            z-index: 1000;
+            z-index: 1050;
             box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
+            transform: translateX(-100%);
+        }
+        
+        .sidebar.active {
+            transform: translateX(0);
         }
         
         .sidebar-header {
             padding: 1.5rem;
             color: black;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(0,0,0,0.1);
         }
         
         .sidebar-header .logo {
@@ -74,10 +83,24 @@
             background: blue;
             transform: translateX(5px);
         }
-         
+        
         .sidebar-menu .nav-link.active {
             color: white;
             background: blue;
+            font-weight: 500;
+            position: relative;
+        }
+        
+        .sidebar-menu .nav-link.active::after {
+            content: '';
+            position: absolute;
+            right: -10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 60%;
+            background: white;
+            border-radius: 2px;
         }
         
         .sidebar-menu .nav-link i {
@@ -89,21 +112,52 @@
 
         /* Main Content */
         .main-content {
-            margin-left: 280px;
             min-height: 100vh;
-            transition: all 0.3s;
-            padding: 20px;
+            transition: all 0.3s ease;
+            padding: 0;
+            width: 100%;
+            margin-left: 0;
         }
         
         .header {
-            height: 70px;
+            height: var(--header-height);
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 1040;
             background: white;
             padding: 0 20px;
-            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+        
+        .header-title {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .header-subtitle {
+            margin: 0;
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+        
+        .content-wrapper {
+            padding: 20px;
         }
         
         /* Table Styles */
@@ -225,25 +279,33 @@
             text-overflow: unset;
             max-width: none;
         }
-
-        /* Responsive adjustments */
-        @media (max-width: 992px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-            
-            .sidebar.active {
-                transform: translateX(0);
-            }
-            
-            .main-content {
-                margin-left: 0;
-                padding: 15px;
-            }
-            
-            .main-content.active {
-                margin-left: 280px;
-            }
+        
+        /* Mobile overlay styles */
+        .mobile-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--overlay-color);
+            z-index: 1040;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .mobile-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Mobile menu toggle button */
+        .mobile-menu-toggle {
+            font-size: 1.5rem;
+            padding: 0.25rem 0.5rem;
+            border: none;
+            background: transparent;
+            color: var(--primary-color);
         }
         
         /* Animation */
@@ -262,24 +324,33 @@
             border-radius: 50%; 
             object-fit: cover;  
         }
-
-        /* Mobile overlay styles */
-        .mobile-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1040;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
+        
+        /* Responsive adjustments */
+        @media (min-width: 992px) {
+            .sidebar {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 280px;
+                width: calc(100% - 280px);
+            }
         }
         
-        .mobile-overlay.active {
-            opacity: 1;
-            visibility: visible;
+        @media (max-width: 991px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            /* Don't move the main content when sidebar is active on mobile */
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -344,12 +415,18 @@
 <!-- Main Content -->
 <div class="main-content">
     <!-- Header -->
-    <header class="header d-flex align-items-center">
-        <button id="sidebarToggle" class="btn d-lg-none me-3">
-            <i class="bi bi-list"></i>
-        </button>
+    <header class="header">
+        <div class="header-left">
+            <button id="sidebarToggle" class="btn d-lg-none me-3 mobile-menu-toggle">
+                <i class="bi bi-list"></i>
+            </button>
+             <div>
+                <h2 class="header-title">Notice Management</h2>
+                <p class="header-subtitle">Santa Fe Water Billing System</p>
+            </div>
+        </div>
        
-        <div class="ms-auto d-flex align-items-center">
+        <div class="header-right">
             <!-- Notification Bell for Admin -->
             <div class="position-relative me-3">
                 <a href="#" class="text-decoration-none text-dark position-relative" id="notificationBell" data-bs-toggle="dropdown" aria-expanded="false">
@@ -359,7 +436,7 @@
             <!-- User Dropdown -->
             <div class="dropdown">
                 <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
-                    <span>Accountant</span>
+                    <span class="d-none d-md-inline">Accountant</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUser">
                     <li><hr class="dropdown-divider"></li>
@@ -372,50 +449,53 @@
             </div>
         </div>
     </header>
-
-    <!-- Notice Management Content -->
-    <div class="table-container animate-fadein">
-        <div class="table-title">
-            <div class="d-flex justify-content-between align-items-center w-100">
-                <h3 class="mb-0">Notice Management</h3>
-                <button class="btn btn-primary" id="addNoticeBtn" data-bs-toggle="modal" data-bs-target="#noticeModal">
-                    <i class="bi bi-plus-circle-fill me-2"></i>
-                    Add New Notice
-                </button>
-            </div>
-        </div>
-        
-        <!-- Filters and Search -->
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <div class="input-group">
-                    <input type="text" class="form-control" id="searchInput" placeholder="Search notices...">
-                    <button class="btn btn-outline-secondary" type="button" id="searchBtn">
-                        <i class="bi bi-search"></i>
+    
+    <!-- Dashboard Content -->
+    <div class="content-wrapper">
+        <!-- Notice Management Content -->
+        <div class="table-container animate-fadein">
+            <div class="table-title">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <h3 class="mb-0">Notice Management</h3>
+                    <button class="btn btn-primary" id="addNoticeBtn" data-bs-toggle="modal" data-bs-target="#noticeModal">
+                        <i class="bi bi-plus-circle-fill me-2"></i>
+                        Add New Notice
                     </button>
                 </div>
             </div>
-            <div class="col-md-6">
-                <input type="date" class="form-control" id="dateFilter">
+            
+            <!-- Filters and Search -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="searchInput" placeholder="Search notices...">
+                        <button class="btn btn-outline-secondary" type="button" id="searchBtn">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <input type="date" class="form-control" id="dateFilter">
+                </div>
             </div>
-        </div>
-        
-        <!-- Notices Table -->
-        <div class="table-responsive">
-            <table class="table table-hover" id="noticesTable">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Consumer Name</th>
-                        <th>Notice Content</th>
-                        <th>Description</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Notices data will be loaded here via AJAX -->
-                </tbody>
-            </table>
+            
+            <!-- Notices Table -->
+            <div class="table-responsive">
+                <table class="table table-hover" id="noticesTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Consumer Name</th>
+                            <th>Notice Content</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Notices data will be loaded here via AJAX -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -506,13 +586,11 @@
 <!-- DataTables JS -->
 <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
-<!-- SweetAlert2 for notifications -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <!-- Moment.js for date handling -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 
 <script>
-$(document).ready(function() {
+ $(document).ready(function() {
     // Initialize DataTable
     const table = $('#noticesTable').DataTable({
         processing: true,
@@ -841,10 +919,10 @@ $(document).ready(function() {
                     const notice = response.data;
                     const consumer = notice.consumer;
                     
-                    // Fill the form with notice data
+                    // Fill form with notice data
                     $('#noticeId').val(notice.id);
                     
-                    // Build the full name with proper handling of optional fields
+                    // Build full name with proper handling of optional fields
                     let fullName = consumer.last_name || '';
                     if (fullName && consumer.first_name) fullName += ', ';
                     fullName += consumer.first_name || '';
@@ -913,17 +991,54 @@ $(document).ready(function() {
         });
     });
 
-    // Mobile sidebar toggle
-    $('#sidebarToggle').click(function() {
-        $('.sidebar').toggleClass('active');
-        $('.mobile-overlay').toggleClass('active');
-        $('.main-content').toggleClass('active');
+    // Mobile sidebar toggle functionality
+    const sidebar = $('.sidebar');
+    const mainContent = $('.main-content');
+    const header = $('.header');
+    const sidebarToggle = $('#sidebarToggle');
+    const mobileOverlay = $('.mobile-overlay');
+    
+    sidebarToggle.on('click', function() {
+        sidebar.toggleClass('active');
+        mobileOverlay.toggleClass('active');
+        
+        // Add overlay to header when sidebar is active
+        if (sidebar.hasClass('active')) {
+            header.css('background-color', 'var(--overlay-color)');
+            $('body').css('overflow', 'hidden');
+        } else {
+            header.css('background-color', 'white');
+            $('body').css('overflow', '');
+        }
     });
-
-    $('.mobile-overlay').click(function() {
-        $('.sidebar').removeClass('active');
-        $('.mobile-overlay').removeClass('active');
-        $('.main-content').removeClass('active');
+    
+    // Close sidebar when clicking on overlay
+    mobileOverlay.on('click', function() {
+        sidebar.removeClass('active');
+        mobileOverlay.removeClass('active');
+        header.css('background-color', 'white');
+        $('body').css('overflow', '');
+    });
+    
+    // Close sidebar when clicking on a nav link (for mobile)
+    $('.sidebar-menu .nav-link').on('click', function() {
+        if ($(window).width() < 992) {
+            sidebar.removeClass('active');
+            mobileOverlay.removeClass('active');
+            header.css('background-color', 'white');
+            $('body').css('overflow', '');
+        }
+    });
+    
+    // Handle window resize
+    $(window).on('resize', function() {
+        // Close sidebar if window is resized to desktop size
+        if ($(window).width() >= 992) {
+            sidebar.removeClass('active');
+            mobileOverlay.removeClass('active');
+            header.css('background-color', 'white');
+            $('body').css('overflow', '');
+        }
     });
 
     // Logout functionality
@@ -941,12 +1056,14 @@ $(document).ready(function() {
             cancelButtonText: 'Cancel'
         }).then((result) => {
             if (result.isConfirmed) {
+                // Perform logout - you can customize this based on your authentication system
                 performLogout();
             }
         });
     });
 
     function performLogout() {
+        // Show loading state
         Swal.fire({
             title: 'Signing Out...',
             text: 'Please wait',
@@ -956,19 +1073,26 @@ $(document).ready(function() {
             }
         });
 
+        // Example: Send logout request to server
+        // Replace this with your actual logout endpoint
         $.ajax({
-            url: '/logout',
+            url: '/logout', // Your logout route
             type: 'POST',
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
+                // Redirect to login page
                 window.location.href = '/admin-login';
             },
             error: function(xhr) {
+                // If AJAX fails, still redirect to login
                 window.location.href = '/admin-login';
             }
         });
+        
+        // Alternative: Simple redirect (if no server-side logout needed)
+        // window.location.href = '/login';
     }
 });
 </script>
