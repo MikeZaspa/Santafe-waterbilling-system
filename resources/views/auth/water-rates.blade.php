@@ -21,6 +21,8 @@
             --sidebar-hover: rgba(0,0,255,0.1);
             --overlay-color: rgba(7, 7, 7, 0.1);
             --header-height: 70px;
+            --border-color: #dee2e6;
+            --light-border: #e9ecef;
         }
         
         body {
@@ -29,6 +31,7 @@
             overflow-x: hidden;
         }
         
+        /* Sidebar Styles */
         .sidebar {
             width: 280px;
             background: var(--sidebar-bg);
@@ -48,7 +51,6 @@
         .sidebar-header {
             padding: 1.5rem;
             color: black;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
         }
         
         .sidebar-header .logo {
@@ -63,6 +65,7 @@
             font-size: 24px;
             font-weight: bold;
             margin: 0 auto;
+            border: 2px solid var(--primary-color);
         }
         
         .sidebar-menu .nav-link {
@@ -71,6 +74,7 @@
             margin: 0 0.5rem;
             border-radius: 6px;
             transition: all 0.3s;
+            border: 1px solid transparent;
         }
         
         .sidebar-menu .nav-link:hover {
@@ -130,11 +134,13 @@
         .header-left {
             display: flex;
             align-items: center;
+            padding-right: 20px;
         }
         
         .header-right {
             display: flex;
             align-items: center;
+            padding-left: 20px;
         }
         
         .header-title {
@@ -152,6 +158,9 @@
         
         .content-wrapper {
             padding: 20px;
+            border-radius: 8px;
+            margin: 15px;
+            background-color: white;
         }
         
         .login-logo {
@@ -159,6 +168,7 @@
             height: 100px;
             border-radius: 50%;
             object-fit: cover;
+            border: 2px solid var(--primary-color);
         }
         
         /* Mobile overlay styles */
@@ -174,17 +184,18 @@
             visibility: hidden;
             transition: all 0.3s ease;
         }
-
+        
         .mobile-overlay.active {
             opacity: 1;
             visibility: visible;
         }
-
+        
         /* Mobile menu toggle button */
         .mobile-menu-toggle {
             font-size: 1.5rem;
             padding: 0.25rem 0.5rem;
-            border: none;
+            
+            border-radius: 4px;
             background: transparent;
             color: var(--primary-color);
         }
@@ -201,18 +212,18 @@
         .page-title {
             color: var(--primary-color);
             margin-bottom: 20px;
+            padding-bottom: 10px;
         }
         
         .rate-section {
             margin-bottom: 30px;
-            border: 1px solid #dee2e6;
             border-radius: 5px;
             overflow: hidden;
             box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
         }
         
         .section-header {
-            background-color: var(--primary-color);
+            background-color: #6c757d;
             color: white;
             padding: 10px 15px;
             font-weight: bold;
@@ -223,11 +234,57 @@
             background-color: rgba(0, 0, 0, 0.05);
         }
         
+        .table {
+            border: none;
+        }
+        
+        /* Custom table header styles */
+        .table-custom-header {
+            background-color: #6c757d;
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .table-custom-header th {
+            padding: 12px 15px;
+            border: none;
+            position: relative;
+        }
+        
+        .table-custom-header th:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 25%;
+            height: 50%;
+            width: 1px;
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .table-custom-header th:first-child {
+            border-top-left-radius: 5px;
+        }
+        
+        .table-custom-header th:last-child {
+            border-top-right-radius: 5px;
+        }
+        
+        .table td {
+            border-color: var(--light-border);
+            padding: 12px 15px;
+            vertical-align: middle;
+        }
+        
         .no-rates {
             padding: 15px;
             text-align: center;
             color: #6c757d;
             font-style: italic;
+            border-radius: 4px;
+            margin: 10px;
         }
         
         .sequence-number {
@@ -239,14 +296,12 @@
             display: flex;
             justify-content: center;
             margin-bottom: 20px;
-            border-bottom: 1px solid #dee2e6;
         }
         
         .rate-tab {
             padding: 10px 20px;
             cursor: pointer;
-            border: 1px solid transparent;
-            border-bottom: none;
+            border: 1px solid var(--border-color);
             border-radius: 5px 5px 0 0;
             margin: 0 5px;
             transition: all 0.3s ease;
@@ -255,7 +310,7 @@
         .rate-tab.active {
             background-color: var(--primary-color);
             color: white;
-            border-color: #dee2e6;
+            border-color: var(--border-color);
         }
         
         .back-button-container {
@@ -264,12 +319,58 @@
         
         .range-input-error {
             border-color: #dc3545;
+            border-width: 2px;
         }
         
         .error-message {
             color: #dc3545;
             font-size: 0.875rem;
             margin-top: 0.25rem;
+            padding: 5px;
+            border-radius: 4px;
+            background-color: rgba(220, 53, 69, 0.1);
+        }
+        
+        /* Modal styles without borders */
+        .modal-content {
+            border: none;
+            border-radius: 8px;
+        }
+        
+        .modal-header {
+            border-bottom: none;
+        }
+        
+        .modal-footer {
+            border-top: none;
+        }
+        
+        /* Button styles */
+        .btn {
+            border-width: 2px;
+        }
+        
+        .btn-warning {
+            border-color: #ffc107;
+        }
+        
+        .btn-danger {
+            border-color: #dc3545;
+        }
+        
+        .btn-secondary {
+            border-color: #6c757d;
+        }
+        
+        /* Form controls */
+        .form-control, .form-select {
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(211, 47, 47, 0.25);
         }
         
         /* Responsive adjustments */
@@ -293,7 +394,7 @@
                 transform: translateX(0);
             }
             
-            /* Don't move the main content when sidebar is active on mobile */
+            /* Don't move main content when sidebar is active on mobile */
             .main-content {
                 margin-left: 0;
                 width: 100%;
@@ -303,6 +404,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+
 <!-- Mobile Overlay -->
 <div class="mobile-overlay"></div>
 
@@ -342,7 +444,7 @@
                     <i class="bi bi-file-earmark-bar-graph"></i> Reports
                 </a>
             </li>
-             <li class="nav-item">
+            <li class="nav-item">
                 <a class="nav-link" href="paymentVerificationSection">
                     <i class="bi bi-credit-card"></i> Payment Verification
                 </a>
@@ -392,7 +494,12 @@
     <!-- Dashboard Content -->
     <div class="content-wrapper">
         <div class="container py-4">
-            <h1 class="page-title text-center">Water Rates Management</h1>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="page-title mb-0">Water Rates Management</h1>
+                <button type="button" class="btn btn-primary" id="addRateBtn" data-bs-toggle="modal" data-bs-target="#waterRateModal">
+                    <i class="bi bi-plus-circle me-2"></i>Add New Water Rate
+                </button>
+            </div>
             
             @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -400,48 +507,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
             @endif
-            
-            <!-- Add/Edit Form -->
-            <div class="form-container">
-                <h4 id="form-title">{{ isset($waterRate) ? 'Edit Water Rate' : 'Add New Water Rate' }}</h4>
-                <form method="POST" action="{{ isset($waterRate) ? route('water-rates.update', $waterRate->id) : route('water-rates.store') }}" id="water-rate-form">
-                    @csrf
-                    @if(isset($waterRate))
-                        @method('PUT')
-                    @endif
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <label for="type" class="form-label">Type</label>
-                            <select class="form-select" id="type" name="type" required>
-                                <option value="">Select Type</option>
-                                <option value="residential" {{ isset($waterRate) && $waterRate->type == 'residential' ? 'selected' : '' }}>Residential</option>
-                                <option value="commercial" {{ isset($waterRate) && $waterRate->type == 'commercial' ? 'selected' : '' }}>Commercial</option>
-                                <option value="institutional" {{ isset($waterRate) && $waterRate->type == 'institutional' ? 'selected' : '' }}>Institutional</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="range" class="form-label">Range (cubic meters)</label>
-                            <input type="text" class="form-control" id="range" name="range" 
-                                   value="{{ $waterRate->range ?? old('range') }}" 
-                                   placeholder="e.g. 0-10, 11-20, etc." required>
-                            <div id="range-error" class="error-message">Please enter a valid range (e.g., 0-10)</div>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="amount" class="form-label">Amount (₱)</label>
-                            <input type="number" step="0.01" class="form-control" id="amount" name="amount" 
-                                   value="{{ $waterRate->amount ?? old('amount') }}" 
-                                   placeholder="0.00" required>
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-end">
-                        @if(isset($waterRate))
-                            <a href="{{ route('water-rates.index') }}" class="btn btn-secondary me-2">Cancel</a>
-                        @endif
-                        <button type="submit" class="btn btn-primary">Save</button>
-                    </div>
-                </form>
-            </div>
             
             <!-- Rate Tabs Navigation -->
             <div class="rate-tabs">
@@ -456,7 +521,7 @@
                 @if($rates->where('type', 'residential')->count() > 0)
                 <div class="table-responsive">
                     <table class="table table-striped table-hover">
-                        <thead class="table-primary">
+                        <thead class="table-custom-header">
                             <tr>
                                 <th class="sequence-number">#</th>
                                 <th>Range (m³)</th>
@@ -493,7 +558,7 @@
                 @if($rates->where('type', 'commercial')->count() > 0)
                 <div class="table-responsive">
                     <table class="table table-striped table-hover">
-                        <thead class="table-primary">
+                        <thead class="table-custom-header">
                             <tr>
                                 <th class="sequence-number">#</th>
                                 <th>Range (m³)</th>
@@ -530,7 +595,7 @@
                 @if($rates->where('type', 'institutional')->count() > 0)
                 <div class="table-responsive">
                     <table class="table table-striped table-hover">
-                        <thead class="table-primary">
+                        <thead class="table-custom-header">
                             <tr>
                                 <th class="sequence-number">#</th>
                                 <th>Range (m³)</th>
@@ -571,13 +636,57 @@
     </div>
 </div>
 
+<!-- Water Rate Modal -->
+<div class="modal fade" id="waterRateModal" tabindex="-1" aria-labelledby="waterRateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="waterRateModalLabel">Add New Water Rate</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="waterRateForm">
+                    <input type="hidden" id="rateId">
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="modalType" class="form-label fw-bold">Type</label>
+                            <select class="form-select" id="modalType" name="type" required>
+                                <option value="">Select Type</option>
+                                <option value="residential">Residential</option>
+                                <option value="commercial">Commercial</option>
+                                <option value="institutional">Institutional</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="modalRange" class="form-label fw-bold">Range </label>
+                            <input type="text" class="form-control" id="modalRange" name="range" 
+                                   placeholder="e.g. 0-10, 11-20, etc." required>
+                            <div id="modalRangeError" class="error-message">Please enter a valid range (e.g., 0-10)</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="modalAmount" class="form-label fw-bold">Amount (₱)</label>
+                            <input type="number" step="0.01" class="form-control" id="modalAmount" name="amount" 
+                                   placeholder="0.00" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveRate">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Confirmation Modal -->
 <div class="modal fade" id="confirm-modal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header bg-secondary text-white">
                 <h5 class="modal-title">Confirm Deletion</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 Are you sure you want to delete this water rate?
@@ -598,11 +707,11 @@
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script>
     $(document).ready(function() {
-        // Hide error message initially
-        $('#range-error').hide();
+        // Hide error messages initially
+        $('#modalRangeError').hide();
         
         // Validate range input to only allow numbers and hyphens
-        $('#range').on('input', function() {
+        $('#modalRange').on('input', function() {
             // Remove any character that's not a digit or hyphen
             let value = $(this).val().replace(/[^0-9-]/g, '');
             
@@ -615,27 +724,19 @@
         
         // Function to validate range format
         function validateRangeFormat() {
-            const rangeValue = $('#range').val();
+            const rangeValue = $('#modalRange').val();
             const rangePattern = /^\d+-\d+$/; // Pattern for "number-number"
             
             if (rangeValue && !rangePattern.test(rangeValue)) {
-                $('#range').addClass('range-input-error');
-                $('#range-error').show();
+                $('#modalRange').addClass('range-input-error');
+                $('#modalRangeError').show();
                 return false;
             } else {
-                $('#range').removeClass('range-input-error');
-                $('#range-error').hide();
+                $('#modalRange').removeClass('range-input-error');
+                $('#modalRangeError').hide();
                 return true;
             }
         }
-        
-        // Form submission validation
-        $('#water-rate-form').on('submit', function(e) {
-            if (!validateRangeFormat()) {
-                e.preventDefault();
-                return false;
-            }
-        });
         
         // Handle tab switching
         $('.rate-tab').click(function() {
@@ -656,6 +757,130 @@
             const rateId = button.data('id');
             const form = $('#delete-form');
             form.attr('action', '/water-rates/' + rateId);
+        });
+
+        // Initialize modal when opened
+        $('#waterRateModal').on('show.bs.modal', function() {
+            resetForm();
+        });
+
+        // Reset all form fields
+        function resetForm() {
+            $('#waterRateForm')[0].reset();
+            $('#rateId').val('');
+            $('#waterRateModalLabel').text('Add New Water Rate');
+            $('#saveRate').html('<i class="bi bi-save me-2"></i> Save');
+            $('#modalRangeError').hide();
+            $('#modalRange').removeClass('range-input-error');
+        }
+
+        // Save water rate (create or update)
+        $('#saveRate').click(function() {
+            const formData = {
+                type: $('#modalType').val(),
+                range: $('#modalRange').val(),
+                amount: $('#modalAmount').val(),
+                _token: $('meta[name="csrf-token"]').attr('content')
+            };
+
+            // Validation
+            if (!formData.type) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Please select a type'
+                });
+                return;
+            }
+
+            if (!formData.range.trim()) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Please enter a range'
+                });
+                return;
+            }
+
+            if (!validateRangeFormat()) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Please enter a valid range (e.g., 0-10)'
+                });
+                return;
+            }
+
+            if (!formData.amount || parseFloat(formData.amount) <= 0) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Please enter a valid amount'
+                });
+                return;
+            }
+
+            const rateId = $('#rateId').val();
+            const url = rateId ? `/water-rates/${rateId}` : '/water-rates';
+            const method = rateId ? 'PUT' : 'POST';
+
+            // Show loading state
+            const $saveBtn = $(this);
+            $saveBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Processing...');
+
+            $.ajax({
+                url: url,
+                type: method,
+                data: formData,
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        $('#waterRateModal').modal('hide');
+                        location.reload(); // Simple reload to show updated data
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: response.message
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    if (xhr.status === 422) {
+                        // Validation errors
+                        const errors = xhr.responseJSON.errors;
+                        let errorMessages = '';
+                        for (const field in errors) {
+                            errorMessages += errors[field].join('<br>') + '<br>';
+                        }
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Validation Error',
+                            html: errorMessages
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: xhr.responseJSON?.message || 'An error occurred'
+                        });
+                    }
+                },
+                complete: function() {
+                    $saveBtn.prop('disabled', false).html('<i class="bi bi-save me-2"></i> Save');
+                }
+            });
+        });
+
+        // Add rate button click handler
+        $('#addRateBtn').click(function() {
+            resetForm();
+            $('#waterRateModal').modal('show');
         });
 
         // Mobile sidebar toggle functionality
