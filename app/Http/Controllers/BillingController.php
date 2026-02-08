@@ -41,62 +41,59 @@ class BillingController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'consumer_id' => 'required|exists:admin_consumers,id',
-            'meter_no' => 'required|string|max:50',
-            'previous_reading' => 'required|numeric|min:0',
-            'current_reading' => 'required|numeric|min:0|gt:previous_reading',
-            'reading_date' => 'required|date|before_or_equal:today',
+{
+    $validator = Validator::make($request->all(), [
+        'consumer_id' => 'required|exists:admin_consumers,id',
+        'meter_no' => 'required|string|max:50',
+        'previous_reading' => 'required|numeric|min:0',
+        'current_reading' => 'required|numeric|min:0|gt:previous_reading',
+        'reading_date' => 'required|date|before_or_equal:today',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'errors' => $validator->errors(),
+            'message' => 'Validation failed'
+        ], 422);
+    }
+
+    $validated = $validator->validated();
+    $consumer = AdminConsumer::findOrFail($validated['consumer_id']);
+
+    // --- START OF NEW LOGIC ---
+    // Find and delete any existing billing records for this consumer.
+    // This ensures that only the latest reading is ever stored.
+    $previousBillings = Billing::where('consumer_id', $validated['consumer_id'])->get();
+    if ($previousBillings->isNotEmpty()) {
+        $previousBillings->each->delete();
+        // You could also use this for a more direct query:
+        // Billing::where('consumer_id', $validated['consumer_id'])->delete();
+    }
+    // --- END OF NEW LOGIC ---
+
+    try {
+        $billing = Billing::create([
+            'consumer_id' => $validated['consumer_id'],
+            'consumer_type' => $consumer->consumer_type,
+            'meter_no' => $validated['meter_no'],
+            'previous_reading' => $validated['previous_reading'],
+            'current_reading' => $validated['current_reading'],
+            'consumption' => $validated['current_reading'] - $validated['previous_reading'],
+            'reading_date' => $validated['reading_date'],
         ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'errors' => $validator->errors(),
-                'message' => 'Validation failed'
-            ], 422);
-        }
+        return response()->json([
+            'message' => 'Billing record created successfully. Previous record has been removed.',
+            'billing' => $billing->load('consumer')
+        ], 201);
 
-        $validated = $validator->validated();
-        $consumer = AdminConsumer::findOrFail($validated['consumer_id']);
-
-        // Check for existing reading for this consumer in the same month/year
-        $existingReading = Billing::where('consumer_id', $validated['consumer_id'])
-            ->whereYear('reading_date', date('Y', strtotime($validated['reading_date'])))
-            ->whereMonth('reading_date', date('m', strtotime($validated['reading_date'])))
-            ->first();
-
-        if ($existingReading) {
-            return response()->json([
-                'message' => 'This consumer already has a reading for this billing period ('.date('F Y', strtotime($validated['reading_date'])).')',
-                'existing_reading' => $existingReading,
-                'errors' => ['reading_date' => ['Duplicate reading for this period']]
-            ], 422);
-        }
-
-        try {
-            $billing = Billing::create([
-                'consumer_id' => $validated['consumer_id'],
-                'consumer_type' => $consumer->consumer_type,
-                'meter_no' => $validated['meter_no'],
-                'previous_reading' => $validated['previous_reading'],
-                'current_reading' => $validated['current_reading'],
-                'consumption' => $validated['current_reading'] - $validated['previous_reading'],
-                'reading_date' => $validated['reading_date'],
-            ]);
-
-            return response()->json([
-                'message' => 'Billing record created successfully.',
-                'billing' => $billing->load('consumer')
-            ], 201);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Error creating billing record',
-                'error' => $e->getMessage()
-            ], 500);
-        }
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Error creating billing record',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 
     public function show(Billing $billing)
     {

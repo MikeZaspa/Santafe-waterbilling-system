@@ -1308,8 +1308,7 @@
                 name: 'actions',
                 orderable: false,
                 searchable: false,
-                render: function(data, type, row) {
-                    // Check if consumer is disconnected
+               render: function(data, type, row) {
                     const consumer = row.consumer;
                     if (consumer && consumer.status === 'disconnected') {
                         return `
@@ -1323,6 +1322,7 @@
                             </div>
                         `;
                     } else {
+                        // Back to the original, always showing the delete button
                         return `
                             <div class="btn-group">
                                 <button class="btn btn-sm btn-success btn-action edit-btn" data-id="${data}" title="Edit">
