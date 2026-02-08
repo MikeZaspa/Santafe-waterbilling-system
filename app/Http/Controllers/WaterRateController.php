@@ -40,6 +40,7 @@ class WaterRateController extends Controller
             'range' => 'required|string|max:20',
             'amount' => 'required|numeric|min:0'
         ]);
+        
 
         $waterRate->update($validated);
 
