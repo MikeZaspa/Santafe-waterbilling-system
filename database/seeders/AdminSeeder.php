@@ -17,5 +17,14 @@ class AdminSeeder extends Seeder
             'email_verified_at' => now(),
             'active' => true,
         ]);
+
+        // Second Admin (New)
+        Admin::create([
+            'name' => 'Admin', // You can change the name
+            'email' => 'hikoseijaro@gmail.com', // Change this email
+            'password' => Hash::make('Admin1234@'), // Change this password
+            'email_verified_at' => now(),
+            'active' => true,
+        ]);
     }
 }
