@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
     <link rel="icon" type="image/png" href="image/santalogo.png">
     <!-- Custom CSS -->
+     
     <style>
         :root {
             --primary-color: #0d6efd;
