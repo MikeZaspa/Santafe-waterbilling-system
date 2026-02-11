@@ -16,7 +16,7 @@ class AdminAuth
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::guard('admin')->check()) {
+        if (!Auth::guard('plumber')->check()) {
             // If it's an AJAX request, return JSON response
             if ($request->expectsJson()) {
                 return response()->json([
