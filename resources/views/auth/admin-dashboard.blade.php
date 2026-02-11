@@ -483,7 +483,7 @@
             </li>
             <li class="nav-item">
                 <a id="announcementLink" class="nav-link" href="admin-announcement">
-                    <i class="bi bi-megaphone"></i>
+                    <i class="bi bi-megaphone"></i> Announcements
                 </a>
             </li>
 
