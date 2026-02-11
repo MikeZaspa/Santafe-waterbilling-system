@@ -14,7 +14,7 @@
     <!-- SweetAlert2 for notifications -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Custom CSS -->
-    <link rel="icon" type="image/png" href="image/santafe.png">
+     <link rel="icon" type="image/png" href="image/santalogo.png">
     <style>
         :root {
             --primary-color: #d32f2f;

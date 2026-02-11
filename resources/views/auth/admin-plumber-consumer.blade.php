@@ -12,7 +12,7 @@
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
     <!-- Custom CSS -->
-    <link rel="icon" type="image/png" href="image/santa.png">
+    <link rel="icon" type="image/png" href="image/santalogo.png">
     <style>
         :root {
             --primary-color: #0d6efd; /* Changed to blue */
