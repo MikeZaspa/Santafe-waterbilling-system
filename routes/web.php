@@ -493,6 +493,10 @@ Route::post('/validate-plumber-session', function (Request $request) {
 
 Route::post('/accountant/logout', [AccountantManageController::class, 'logout'])->name('accountant.logout');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+Route::get('/admin-announcement', [AuthController::class, 'showAnnouncement'])->name('admin-announcement');
+Route::post('/admin-announcement', [AuthController::class,'announcement']);
+
 Route::get('/', function () {
     return view('auth.consumer-portal');
 

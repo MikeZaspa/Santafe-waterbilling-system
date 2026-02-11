@@ -481,6 +481,12 @@
                     <i class="bi bi-cash-stack"></i> Manage Accountant
                 </a>
             </li>
+            <li class="nav-item">
+                <a id="announcementLink" class="nav-link" href="admin-announcement">
+                    <i class="bi bi-megaphone"></i>
+                </a>
+            </li>
+
         </ul>
     </nav>
 </div>

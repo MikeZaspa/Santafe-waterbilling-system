@@ -162,6 +162,10 @@ public function Showadminlogs()
 {
 return view('auth.admin-logs');
 }
+public function ShowAnnouncement()
+{
+return view('auth.admin-announcement');
+}
 public function showVerifyForm()
 {
 $email = session('verification_email');
