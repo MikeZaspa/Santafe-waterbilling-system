@@ -111,6 +111,7 @@
         }
         
         .header-title {
+            color: blue;
             margin: 0;
             font-size: 1.25rem;
             font-weight: 600;
