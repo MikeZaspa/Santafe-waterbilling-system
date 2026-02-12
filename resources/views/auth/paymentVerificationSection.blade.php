@@ -164,6 +164,7 @@
       margin: 0;
       font-size: 1.25rem;
       font-weight: 600;
+      color: blue;
     }
     
     .header-subtitle {
