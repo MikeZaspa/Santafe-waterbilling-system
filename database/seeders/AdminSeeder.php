@@ -10,12 +10,16 @@ class AdminSeeder extends Seeder
 {
     public function run()
     {
+    
+
+        // Admin 2
         Admin::create([
-            'name' => 'Admin',
-            'email' => 'hikoseijaro@gmail.com',
-            'password' => Hash::make('Onepiece0507@'), // Change this password
+            'name' => 'Admin', // Change name as needed
+            'email' => 'hikoseijaro@gmail.com', // Change email as needed
+            'password' => Hash::make('Admin123@'), // Change password as needed
             'email_verified_at' => now(),
             'active' => true,
         ]);
     }
+    
 }
