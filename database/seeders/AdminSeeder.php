@@ -12,7 +12,7 @@ class AdminSeeder extends Seeder
     {
         Admin::create([
             'name' => 'Admin',
-            'email' => 'zaspamike0@gmail.com',
+            'email' => 'hikoseijaro@gmail.com',
             'password' => Hash::make('Onepiece0507@'), // Change this password
             'email_verified_at' => now(),
             'active' => true,
