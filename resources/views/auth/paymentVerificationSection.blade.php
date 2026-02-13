@@ -194,6 +194,7 @@
       }
     }
 
+
     /* Payment Verification Styles */
     .table-container {
       background: white;
