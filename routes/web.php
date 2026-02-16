@@ -86,33 +86,33 @@ Route::resource('billings', BillingController::class);
 Route::get('/billings', [BillingController::class, 'index'])->name('billings.index');
 Route::post('/billings/{billing}/disconnect', [BillingController::class, 'disconnect'])->name('billings.disconnect');
 
-    Route::get('/water-rates', [AuthController::class,'showRatesForm'])->name('water-rates');
-    Route::post('/water-rates', [AuthController::class,'rates']);
+    Route::get('/water-rates', [AuthController::class,'showRatesForm'])->middleware('accountant.auth')->name('water-rates');
+    Route::post('/water-rates', [AuthController::class,'rates'])->middleware('accountant.auth');
    // Water Rates API Routes
-    Route::get('/water-rates/all', [WaterRateController::class, 'getAllRates']);
-    Route::post('/water-rates/calculate', [WaterRateController::class, 'calculateBill']);
+    Route::get('/water-rates/all', [WaterRateController::class, 'getAllRates'])->middleware('accountant.auth');
+    Route::post('/water-rates/calculate', [WaterRateController::class, 'calculateBill'])->middleware('accountant.auth');
     
     Route::get('/admin-consumer-form', [AuthController::class, 'showManageConsumerForm'])->name('admin-consumer-form');
     Route::post('admin-consumer-form', [AuthController::class, 'manageconsumer']);
     
-    Route::get('water-rates', [WaterRateController::class, 'index'])->name('water-rates.index');
-    Route::post('water-rates', [WaterRateController::class, 'store'])->name('water-rates.store');
-    Route::get('water-rates/create', [WaterRateController::class, 'create'])->name('water-rates.create');
-    Route::get('water-rates/{waterRate}/edit', [WaterRateController::class, 'edit'])->name('water-rates.edit');
-    Route::put('water-rates/{waterRate}', [WaterRateController::class, 'update'])->name('water-rates.update');
-    Route::delete('water-rates/{waterRate}', [WaterRateController::class, 'destroy'])->name('water-rates.destroy');
+    Route::get('water-rates', [WaterRateController::class, 'index'])->middleware('accountant.auth')->name('water-rates.index');
+    Route::post('water-rates', [WaterRateController::class, 'store'])->middleware('accountant.auth')->name('water-rates.store');
+    Route::get('water-rates/create', [WaterRateController::class, 'create'])->middleware('accountant.auth')->name('water-rates.create');
+    Route::get('water-rates/{waterRate}/edit', [WaterRateController::class, 'edit'])->middleware('accountant.auth')->name('water-rates.edit');
+    Route::put('water-rates/{waterRate}', [WaterRateController::class, 'update'])->middleware('accountant.auth')->name('water-rates.update');
+    Route::delete('water-rates/{waterRate}', [WaterRateController::class, 'destroy'])->middleware('accountant.auth')->name('water-rates.destroy');
     
     Route::get('/admin-plumber-dashboard', [AuthController::class,'showPlumberForm'])->middleware('plumber.auth')->name('admin.plumber-dashboard');
     Route::post('/admin-plumber-dashboard', [AuthController::class,'plumber'])->middleware('plumber.auth');
    
-    Route::get('/admin-accountant-dashboard', [AuthController::class, 'showAccountantForm'])->name('admin.accountant-dashboard');
-    Route::post('/admin-accountant-dashboard', [AuthController::class,'accountant']);
+    Route::get('/admin-accountant-dashboard', [AuthController::class, 'showAccountantForm'])->middleware('accountant.auth')->name('admin.accountant-dashboard');
+    Route::post('/admin-accountant-dashboard', [AuthController::class,'accountant'])->middleware('accountant.auth');
 
-    Route::get('/admin-accountant-consumer', [AuthController::class, 'showAccountantConsumerForm'])->name('admin.accountant-consumer');
-    Route::post('/admin-accountant-consumer', [AuthController::class,'accountantconsumer']);
+    Route::get('/admin-accountant-consumer', [AuthController::class, 'showAccountantConsumerForm'])->middleware('accountant.auth')->name('admin.accountant-consumer');
+    Route::post('/admin-accountant-consumer', [AuthController::class,'accountantconsumer'])->middleware('accountant.auth');
     
-     Route::get('/admin-accountant-reports', [AuthController::class, 'showAccountantReportsForm'])->name('admin.accountant-reports');
-    Route::post('/admin-accountant-reports', [AuthController::class,'accountantreports']);
+     Route::get('/admin-accountant-reports', [AuthController::class, 'showAccountantReportsForm'])->middleware('accountant.auth')->name('admin.accountant-reports');
+    Route::post('/admin-accountant-reports', [AuthController::class,'accountantreports'])->middleware('accountant.auth');
 
     Route::get('/consumer-portal', [AuthController::class, 'showConsumerPortalForm'])->name('consumer-portal');
     Route::post('/consumer-portal', [AuthController::class,'consumerportal']);
@@ -165,17 +165,17 @@ Route::middleware(['consumer.auth'])->group(function () {
     Route::post('/consumer/payment', [ConsumerDashboardController::class, 'processPayment']);
 });
 
-    Route::get('/admin-accountant-dashboard', [AccountantDashboardController::class, 'index']);
+    Route::get('/admin-accountant-dashboard', [AccountantDashboardController::class, 'index'])->middleware('accountant.auth');
    // routes/web.php
-Route::get('/accountant/reports/data', [ReportController::class, 'data'])->name('accountant.reports.data');
+Route::get('/accountant/reports/data', [ReportController::class, 'data'])->middleware('accountant.auth')->name('accountant.reports.data');
 
-Route::get('/accountant/billings/{billing}/details', [AccountantController::class, 'getBillingDetails'])
+Route::get('/accountant/billings/{billing}/details', [AccountantController::class, 'getBillingDetails'])->middleware('accountant.auth')
     ->name('accountant.billings.details');
 
 
-Route::get('/accountant/billings/{id}/receipt', [AccountantController::class, 'getReceiptData'])->name('accountant.billings.receipt');
+Route::get('/accountant/billings/{id}/receipt', [AccountantController::class, 'getReceiptData'])->middleware('accountant.auth')->name('accountant.billings.receipt');
 
-Route::prefix('accountant')->group(function() {
+Route::prefix('accountant')->middleware('accountant.auth')->group(function() {
     Route::get('/billings', [AccountantController::class, 'index'])->name('accountant.billings');
     Route::get('/billings/data', [AccountantController::class, 'getBillings'])->name('accountant.billings.data');
     Route::get('/billings/last-reading/{consumerId}', [AccountantController::class, 'getLastReading']);
@@ -184,7 +184,7 @@ Route::prefix('accountant')->group(function() {
     Route::put('/billings/{id}', [AccountantController::class, 'update'])->name('accountant.billings.update');
     Route::delete('/billings/{id}', [AccountantController::class, 'destroy'])->name('accountant.billings.destroy');
 });
-Route::get('/accountant/billings/existing', [AccountantController::class, 'getExistingBilling']);
+Route::get('/accountant/billings/existing', [AccountantController::class, 'getExistingBilling'])->middleware('accountant.auth');
 
 
 Route::middleware(['auth'])->group(function () {
@@ -256,8 +256,8 @@ Route::post('/consumer/logout', [ConsumerAuthController::class, 'logout'])->name
 Route::get('/consumer/dashboard', [ConsumerAuthController::class, 'dashboard'])->name('consumer.dashboard');
 
 
-    Route::get('/paymentVerificationSection', [AuthController::class, 'showPaymentVerificationForm'])->name('paymentVerificationSection');
-    Route::post('/paymentVerificationSection', [AuthController::class,'paymentverification']);
+    Route::get('/paymentVerificationSection', [AuthController::class, 'showPaymentVerificationForm'])->middleware('accountant.auth')->name('paymentVerificationSection');
+    Route::post('/paymentVerificationSection', [AuthController::class,'paymentverification'])->middleware('accountant.auth');
 
 // Consumer dashboard route (protected)
 Route::get('/consumer-dashboard', function() {
@@ -355,11 +355,11 @@ Route::post('/consumer/notifications/read-all', [NotificationController::class, 
 
 Route::post('/admin-plumber-disconnection/{id}/reconnect', [ReadingController::class, 'reconnectConsumer'])->middleware('plumber.auth')->name('admin.reconnect');
 
-Route::get('/admin-accountant-notice', [AuthController::class, 'showNotice'])->name('admin-accountant-notice');
-Route::post('admin-accountant-notice', [AuthController::class, 'notice']);
+Route::get('/admin-accountant-notice', [AuthController::class, 'showNotice'])->middleware('accountant.auth')->name('admin-accountant-notice');
+Route::post('admin-accountant-notice', [AuthController::class, 'notice'])->middleware('accountant.auth');
 
-Route::get('/accountant-archieve', [AuthController::class, 'showArchieve'])->name('accountant-archieve');
-Route::post('accountant-archieve', [AuthController::class, 'archieve']);
+Route::get('/accountant-archieve', [AuthController::class, 'showArchieve'])->middleware('accountant.auth')->name('accountant-archieve');
+Route::post('accountant-archieve', [AuthController::class, 'archieve'])->middleware('accountant.auth');
 
 
 Route::get('/notices/consumers', [NoticeController::class, 'getConsumers'])->name('notices.consumers');
@@ -389,21 +389,21 @@ Route::get('/consumer/notices', [ConsumerAuthController::class, 'getNotices'])->
 // routes/web.php
 
 // Billing routes
-Route::get('/accountant/billings/data', [BillingController::class, 'getBillingsData'])->name('accountant.billings.data');
-Route::get('/accountant/billings/archived/data', [BillingController::class, 'getArchivedBillingsData'])->name('accountant.billings.archived.data');
+Route::get('/accountant/billings/data', [BillingController::class, 'getBillingsData'])->middleware('accountant.auth')->name('accountant.billings.data');
+Route::get('/accountant/billings/archived/data', [BillingController::class, 'getArchivedBillingsData'])->middleware('accountant.auth')->name('accountant.billings.archived.data');
 
 
 // Archive routes
-Route::post('/accountant/billings/{id}/archive', [BillingController::class, 'archive'])->name('accountant.billings.archive');
-Route::post('/accountant/billings/{id}/restore', [BillingController::class, 'restore'])->name('accountant.billings.restore');
-Route::delete('/accountant/billings/{id}/force-delete', [BillingController::class, 'forceDelete'])->name('accountant.billings.force-delete');
-Route::post('/accountant/billings/empty-archive', [BillingController::class, 'emptyArchive'])->name('accountant.billings.empty-archive');
-Route::get('/accountant/billings/{id}/archive-details', [BillingController::class, 'getArchiveDetails'])->name('accountant.billings.archive-details');
+Route::post('/accountant/billings/{id}/archive', [BillingController::class, 'archive'])->middleware('accountant.auth')->name('accountant.billings.archive');
+Route::post('/accountant/billings/{id}/restore', [BillingController::class, 'restore'])->middleware('accountant.auth')->name('accountant.billings.restore');
+Route::delete('/accountant/billings/{id}/force-delete', [BillingController::class, 'forceDelete'])->middleware('accountant.auth')->name('accountant.billings.force-delete');
+Route::post('/accountant/billings/empty-archive', [BillingController::class, 'emptyArchive'])->middleware('accountant.auth')->name('accountant.billings.empty-archive');
+Route::get('/accountant/billings/{id}/archive-details', [BillingController::class, 'getArchiveDetails'])->middleware('accountant.auth')->name('accountant.billings.archive-details');
 
 // Other billing routes
 Route::get('/billing/last-reading/{consumerId}', [BillingController::class, 'getLastReading']);
-Route::get('/accountant/billings/{id}/details', [BillingController::class, 'getBillingDetails']);
-Route::get('/accountant/billings/{id}/receipt', [BillingController::class, 'getReceipt']);
+Route::get('/accountant/billings/{id}/details', [BillingController::class, 'getBillingDetails'])->middleware('accountant.auth');
+Route::get('/accountant/billings/{id}/receipt', [BillingController::class, 'getReceipt'])->middleware('accountant.auth');
 
 
 // Cut Consumer Routes
