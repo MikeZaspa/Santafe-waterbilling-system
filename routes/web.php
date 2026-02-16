@@ -33,6 +33,7 @@ use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\NoticeController;
+use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\AdminLogController;
 use App\Http\Controllers\AccountantNotificationController;
 use App\Http\Controllers\Admin\BackupController;
@@ -71,8 +72,8 @@ Route::get('/admin-consumer', [AdminConsumerController::class, 'index'])->name('
     Route::delete('/{adminConsumer}', [AdminConsumerController::class, 'destroy'])->name('admin.consumer.destroy');
 });
 
-Route::get('/admin-plumber-consumer', [AuthController::class, 'showPlumberConsumerForm'])->name('admin.plumber-consumer');
-Route::post('admin-plumber-consumer', [AuthController::class, 'plumberconsumer']);
+Route::get('/admin-plumber-consumer', [AuthController::class, 'showPlumberConsumerForm'])->middleware('plumber.auth')->name('admin.plumber-consumer');
+Route::post('admin-plumber-consumer', [AuthController::class, 'plumberconsumer'])->middleware('plumber.auth');
 
  Route::get('/consumers/{consumer}/last-reading', [BillingController::class, 'getLastReading']);
 Route::get('/billing/last-reading/{consumerId}', [BillingController::class, 'getLastReading'])->name('billing.lastReading');
@@ -101,8 +102,8 @@ Route::post('/billings/{billing}/disconnect', [BillingController::class, 'discon
     Route::put('water-rates/{waterRate}', [WaterRateController::class, 'update'])->name('water-rates.update');
     Route::delete('water-rates/{waterRate}', [WaterRateController::class, 'destroy'])->name('water-rates.destroy');
     
-    Route::get('/admin-plumber-dashboard', [AuthController::class,'showPlumberForm'])->name('admin.plumber-dashboard');
-    Route::post('/admin-plumber-dashboard', [AuthController::class,'plumber']);
+    Route::get('/admin-plumber-dashboard', [AuthController::class,'showPlumberForm'])->middleware('plumber.auth')->name('admin.plumber-dashboard');
+    Route::post('/admin-plumber-dashboard', [AuthController::class,'plumber'])->middleware('plumber.auth');
    
     Route::get('/admin-accountant-dashboard', [AuthController::class, 'showAccountantForm'])->name('admin.accountant-dashboard');
     Route::post('/admin-accountant-dashboard', [AuthController::class,'accountant']);
@@ -208,7 +209,7 @@ Route::prefix('account-management')->group(function() {
     Route::delete('/{id}', [AccountManagementController::class, 'destroy'])->name('account-management.destroy');
 });
 
-Route::get('/admin-plumber-dashboard', [ReadingController::class, 'index']);
+Route::get('/admin-plumber-dashboard', [ReadingController::class, 'index'])->middleware('plumber.auth');
 
 Route::get('/admin-plumber', [PlumberController::class, 'index'])->name('admin-plumber');
     Route::prefix('admin-plumber')->group(function() {
@@ -302,20 +303,20 @@ Route::delete('/admin-accountant/{id}', [AccountantManageController::class, 'des
 Route::get('/consumer-information', [AuthController::class, 'showInformation'])->name('consumer-information');
     Route::post('/consumer-information', [AuthController::class,'consumerinformation']);
 
-Route::get('/admin-plumber-disconnection', [AuthController::class, 'showDisconnectionForm'])->name('admin-plumber-disconnection');
-Route::post('/admin-plumber-disconnection', [AuthController::class,'admindisconnection']);
+Route::get('/admin-plumber-disconnection', [AuthController::class, 'showDisconnectionForm'])->middleware('plumber.auth')->name('admin-plumber-disconnection');
+Route::post('/admin-plumber-disconnection', [AuthController::class,'admindisconnection'])->middleware('plumber.auth');
 
 // Disconnection routes
 Route::get('/disconnections', [BillingController::class, 'getDisconnectedConsumers']);
 Route::post('/disconnections', [BillingController::class, 'disconnect']);
 Route::post('/disconnections/{id}/restore', [BillingController::class, 'restoreDisconnectedConsumer']);
-Route::post('/admin-plumber-disconnection/{disconnection}/reconnect', [DisconnectionController::class, 'reconnect'])->name('admin.plumber.disconnection.reconnect');
+Route::post('/admin-plumber-disconnection/{disconnection}/reconnect', [DisconnectionController::class, 'reconnect'])->middleware('plumber.auth')->name('admin.plumber.disconnection.reconnect');
 
-Route::get('/reconnected-consumers', [ReadingController::class, 'getReconnectedConsumers']);
-Route::get('/all-reconnected-consumers', [ReadingController::class, 'getAllReconnectedConsumers']);
-Route::post('/disconnections/{id}/restore', [ReadingController::class, 'reconnect']);
-Route::get('/dashboard-data', [ReadingController::class, 'getDashboardData'])->name('dashboard.data');
-Route::get('/reconnected-consumers', [ReadingController::class, 'getReconnectedConsumers'])->name('reconnected.consumers');
+Route::get('/reconnected-consumers', [ReadingController::class, 'getReconnectedConsumers'])->middleware('plumber.auth');
+Route::get('/all-reconnected-consumers', [ReadingController::class, 'getAllReconnectedConsumers'])->middleware('plumber.auth');
+Route::post('/disconnections/{id}/restore', [ReadingController::class, 'reconnect'])->middleware('plumber.auth');
+Route::get('/dashboard-data', [ReadingController::class, 'getDashboardData'])->middleware('plumber.auth')->name('dashboard.data');
+Route::get('/reconnected-consumers', [ReadingController::class, 'getReconnectedConsumers'])->middleware('plumber.auth')->name('reconnected.consumers');
 
 Route::get('/main-form', [AuthController::class, 'showMainForm'])->name('main-form');
 Route::post('/main-form', [AuthController::class, 'main']);
@@ -348,11 +349,11 @@ Route::get('/reset-password/{token}', [ForgotPasswordController::class, 'showRes
 Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword'])->name('password.update');
 
 Route::get('/consumer/notifications', [NotificationController::class, 'index']);
-Route::get('/consumer/notifications/unread-count', [NotificationController::class, 'getUnreadCount']);
+Route::get('/consumer/notifications/unread-count', [NotificationController::class, 'unreadCount']);
 Route::post('/consumer/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 Route::post('/consumer/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
 
-Route::post('/admin-plumber-disconnection/{id}/reconnect', [ReadingController::class, 'reconnectConsumer'])->name('admin.reconnect');
+Route::post('/admin-plumber-disconnection/{id}/reconnect', [ReadingController::class, 'reconnectConsumer'])->middleware('plumber.auth')->name('admin.reconnect');
 
 Route::get('/admin-accountant-notice', [AuthController::class, 'showNotice'])->name('admin-accountant-notice');
 Route::post('admin-accountant-notice', [AuthController::class, 'notice']);
@@ -372,6 +373,15 @@ Route::prefix('notices')->group(function () {
     Route::put('/{notice}', [NoticeController::class, 'update'])->name('notices.update');
     Route::delete('/{notice}', [NoticeController::class, 'destroy'])->name('notices.destroy');
     Route::patch('/{notice}/toggle-status', [NoticeController::class, 'toggleStatus'])->name('notices.toggle-status');
+});
+
+Route::prefix('announcements')->group(function () {
+    Route::get('/', [AnnouncementController::class, 'index'])->name('announcements.index');
+    Route::post('/', [AnnouncementController::class, 'store'])->name('announcements.store');
+    Route::get('/{announcement}', [AnnouncementController::class, 'show'])->name('announcements.show');
+    Route::put('/{announcement}', [AnnouncementController::class, 'update'])->name('announcements.update');
+    Route::delete('/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
+    Route::patch('/{announcement}/toggle-status', [AnnouncementController::class, 'toggleStatus'])->name('announcements.toggle-status');
 });
 
 Route::get('/consumer/notices', [ConsumerAuthController::class, 'getNotices'])->name('consumer.notices');
@@ -459,7 +469,7 @@ Route::put('/admin/plumbers/{id}', [PlumberController::class, 'update'])->name('
 Route::delete('/admin/plumbers/{id}', [PlumberController::class, 'destroy'])->name('admin.plumbers.destroy');
 
 // Admin plumber dashboard route
-Route::get('/admin-plumber-dashboard', [ReadingController::class, 'index'])->name('admin.plumber.dashboard');
+Route::get('/admin-plumber-dashboard', [ReadingController::class, 'index'])->middleware('plumber.auth')->name('admin.plumber.dashboard');
 
 // Accountant Login Routes
 Route::get('/accountant-login', function() {
@@ -494,8 +504,7 @@ Route::post('/validate-plumber-session', function (Request $request) {
 Route::post('/accountant/logout', [AccountantManageController::class, 'logout'])->name('accountant.logout');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-Route::get('/admin-announcement', [AuthController::class, 'showAnnouncement'])->name('admin-announcement');
-Route::post('/admin-announcement', [AuthController::class,'announcement']);
+Route::get('/admin-announcement', [AnnouncementController::class, 'page'])->name('admin-announcement');
 
 Route::get('/', function () {
     return view('auth.consumer-portal');

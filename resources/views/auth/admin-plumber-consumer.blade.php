@@ -2598,18 +2598,16 @@ function restoreDisconnectedConsumer(consumerId, consumerName) {
         // Example: Send logout request to server
         // Replace this with your actual logout endpoint
         $.ajax({
-            url: '/logout', // Your logout route
+            url: '/plumber/logout',
             type: 'POST',
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
-                // Redirect to login page
-                window.location.href = '/admin-login';
+                window.location.href = '/plumber/login';
             },
             error: function(xhr) {
-                // If AJAX fails, still redirect to login
-                window.location.href = '/admin-login';
+                window.location.href = '/plumber/login';
             }
         });
     }
