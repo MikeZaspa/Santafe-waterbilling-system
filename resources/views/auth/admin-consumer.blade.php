@@ -142,7 +142,7 @@
             margin: 0;
             font-size: 1.25rem;
             font-weight: 600;
-            color: #333;
+            color: blue;
         }
         
         .header-subtitle {
@@ -209,7 +209,7 @@
 
         .table-title h3 {
             font-weight: 600;
-            color: gray;
+            color: blue;
             margin: 0;
         }
 
@@ -621,6 +621,11 @@
                     <i class="bi bi-cash-stack"></i> Manage Accountant
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link " href="admin-announcement">
+                    <i class="bi bi-megaphone"></i> Announcements
+                </a>
+            </li>
         </ul>
     </nav>
 </div>
@@ -663,7 +668,7 @@
         <div class="table-container animate-fadein">
             <div class="table-title">
                 <div class="d-flex justify-content-between align-items-center w-100">
-                    <h3 class="mb-0">Consumer Management</h3>
+                    <h3 class="">Consumer Management</h3>
                     <button class="btn btn-primary" id="addConsumerBtn" data-bs-toggle="modal" data-bs-target="#consumerModal">
                         <i class="bi bi-plus-circle-fill me-2"></i>
                         Add New Consumer

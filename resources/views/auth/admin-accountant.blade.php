@@ -142,7 +142,7 @@
             margin: 0;
             font-size: 1.25rem;
             font-weight: 600;
-            color: #333;
+            color: blue;
         }
         
         .header-subtitle {
@@ -209,7 +209,7 @@
 
         .table-title h3 {
             font-weight: 600;
-            color: gray;
+            color: blue;
             margin: 0;
         }
 
@@ -555,6 +555,11 @@
             <li class="nav-item">
                 <a id="accountantLink" class="nav-link active" href="admin-accountant">
                     <i class="bi bi-cash-stack"></i> Manage Accountant
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link " href="admin-announcement">
+                    <i class="bi bi-megaphone"></i> Announcements
                 </a>
             </li>
         </ul>
