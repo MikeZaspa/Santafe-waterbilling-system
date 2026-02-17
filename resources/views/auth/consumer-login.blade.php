@@ -474,16 +474,22 @@
             align-items: center;
             justify-content: center;
             margin: 0 auto 15px;
-            font-size: 24px;
-            color: white;
+            background-color: #ffffff;
+            border: 1px solid #e9ecef;
+        }
+
+        .payment-logo {
+            width: 38px;
+            height: 38px;
+            object-fit: contain;
         }
         
         .gcash-color {
-            background-color: #00a99d;
+            color: #0057ff;
         }
         
         .maya-color {
-            background-color: #6f42c1;
+            color: #00b14f;
         }
         
         /* QR Code Styles */
@@ -1177,9 +1183,7 @@
                             <div class="col-md-6 mb-3">
                                 <div class="payment-method" data-method="gcash">
                                     <div class="text-center">
-                                        <div class="payment-icon gcash-color">
-                                            <i class="bi bi-phone-fill"></i>
-                                        </div>
+                                        
                                         <h5 class="gcash-color">GCash</h5>
                                         <p class="text-muted">Pay using your GCash account</p>
                                     </div>
@@ -1188,9 +1192,7 @@
                             <div class="col-md-6 mb-3">
                                 <div class="payment-method" data-method="maya">
                                     <div class="text-center">
-                                        <div class="payment-icon maya-color">
-                                            <i class="bi bi-credit-card-fill"></i>
-                                        </div>
+                                        
                                         <h5 class="maya-color">Maya</h5>
                                         <p class="text-muted">Pay using your Maya account</p>
                                     </div>
