@@ -776,7 +776,7 @@
 <!-- Session Timer Display -->
 <div id="sessionTimer" class="session-timer">
     <i class="fas fa-clock me-2"></i>
-    Session expires in: <span id="sessionTimeDisplay">03:00</span>
+    Session expires in: <span id="sessionTimeDisplay">240:00</span>
 </div>
 
 <!-- Bootstrap Bundle with Popper -->
@@ -798,7 +798,7 @@
     let sessionTimeout; // Will store timeout ID
     let warningTimeout; // Will store warning timeout ID
     let sessionInterval; // Will store the interval ID for updating the display
-    const sessionDuration = 3 * 60 * 1000; // 3 minutes in milliseconds
+    const sessionDuration = 4 * 60 * 60 * 1000; // 4 hours in milliseconds
     const warningTime = 30 * 1000; // 30 seconds before expiry to show warning
     let sessionStartTime;
     let sessionExpiryTime;
@@ -937,7 +937,7 @@
                 
                 Swal.fire({
                     title: 'Session Extended',
-                    text: 'Your session has been extended for another 3 minutes.',
+                    text: 'Your session has been extended for another 4 hours.',
                     icon: 'success',
                     timer: 3000,
                     showConfirmButton: false

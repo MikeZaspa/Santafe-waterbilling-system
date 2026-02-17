@@ -796,7 +796,7 @@
 <div class="session-timer" id="sessionTimer">
     <i class="bi bi-clock session-timer-icon"></i>
     <div class="session-timer-text">
-        Session: <span class="session-timer-countdown" id="sessionCountdown">3:00</span>
+        Session: <span class="session-timer-countdown" id="sessionCountdown">240:00</span>
     </div>
 </div>
 
@@ -823,7 +823,7 @@
 <script>
  $(document).ready(function() {
     // Session Management Variables
-    const sessionTimeout = 180000; // 3 minutes in milliseconds
+    const sessionTimeout = 4 * 60 * 60 * 1000; // 4 hours in milliseconds
     const warningTimeout = 30000; // 30 seconds before expiry
     let sessionTimer;
     let warningTimer;
@@ -917,7 +917,7 @@
         resetSessionTimer();
         
         // Show success message
-        showSuccessToast('Session extended for another 3 minutes');
+        showSuccessToast('Session extended for another 4 hours');
     }
     
     // Logout user
@@ -1536,3 +1536,4 @@
 
 </body>
 </html>
+
