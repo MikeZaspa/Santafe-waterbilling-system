@@ -641,5 +641,6 @@
             loadAnnouncements();
         });
     </script>
+    @include('auth.partials.session-timeout')
 </body>
 </html>
