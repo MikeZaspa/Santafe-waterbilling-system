@@ -31,7 +31,16 @@ class BillingController extends Controller
 }
    public function create()
     {
+        $currentMonth = now()->month;
+        $currentYear = now()->year;
+
         $consumers = AdminConsumer::where('status', 'active') // Correct
+            ->whereNotIn('id', function ($query) use ($currentMonth, $currentYear) {
+                $query->select('consumer_id')
+                    ->from('billings')
+                    ->whereMonth('reading_date', $currentMonth)
+                    ->whereYear('reading_date', $currentYear);
+            })
             ->select(['id', 'first_name', 'middle_name', 'last_name', 'suffix', 'meter_no', 'consumer_type'])
             ->orderBy('last_name')
             ->orderBy('first_name')
@@ -60,16 +69,18 @@ class BillingController extends Controller
     $validated = $validator->validated();
     $consumer = AdminConsumer::findOrFail($validated['consumer_id']);
 
-    // --- START OF NEW LOGIC ---
-    // Find and delete any existing billing records for this consumer.
-    // This ensures that only the latest reading is ever stored.
-    $previousBillings = Billing::where('consumer_id', $validated['consumer_id'])->get();
-    if ($previousBillings->isNotEmpty()) {
-        $previousBillings->each->delete();
-        // You could also use this for a more direct query:
-        // Billing::where('consumer_id', $validated['consumer_id'])->delete();
+    $readingDate = \Carbon\Carbon::parse($validated['reading_date']);
+
+    $alreadyReadThisMonth = Billing::where('consumer_id', $validated['consumer_id'])
+        ->whereMonth('reading_date', $readingDate->month)
+        ->whereYear('reading_date', $readingDate->year)
+        ->exists();
+
+    if ($alreadyReadThisMonth) {
+        return response()->json([
+            'message' => 'This consumer already has a reading for ' . $readingDate->format('F Y') . '.'
+        ], 422);
     }
-    // --- END OF NEW LOGIC ---
 
     try {
         $billing = Billing::create([
@@ -83,7 +94,7 @@ class BillingController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Billing record created successfully. Previous record has been removed.',
+            'message' => 'Billing record created successfully.',
             'billing' => $billing->load('consumer')
         ], 201);
 
