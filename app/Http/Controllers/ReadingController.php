@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Billing;
 use App\Models\Disconnection;
 use App\Models\AdminConsumer;
+use App\Models\Notification;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -119,6 +120,15 @@ class ReadingController extends Controller
                 $consumer->update([
                     'status' => 'active',
                     'updated_at' => now()
+                ]);
+
+                Notification::create([
+                    'consumer_id' => $consumer->id,
+                    'billing_id' => null,
+                    'title' => 'Water Service Reconnected',
+                    'message' => 'Your water service was reconnected on ' . now()->format('M d, Y') . '. Reconnection fee: ₱500.00.',
+                    'type' => 'system',
+                    'is_read' => false,
                 ]);
             }
 

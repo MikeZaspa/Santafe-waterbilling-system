@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Disconnection;
 use App\Models\Billing;
 use App\Models\AdminConsumer;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -56,6 +57,15 @@ class DisconnectionController extends Controller
                 'disconnection_date' => $request->disconnection_date
             ]);
 
+            Notification::create([
+                'consumer_id' => $consumer->id,
+                'billing_id' => null,
+                'title' => 'Water Service Disconnected',
+                'message' => 'Your water service was disconnected on ' . now()->format('M d, Y') . '. Reason: ' . $request->reason . '.',
+                'type' => 'system',
+                'is_read' => false,
+            ]);
+
             DB::commit();
 
             return response()->json([
@@ -105,6 +115,15 @@ class DisconnectionController extends Controller
             $disconnection->consumer->update([
                 'status' => 'active',
                 'disconnection_date' => null // Clear disconnection date
+            ]);
+
+            Notification::create([
+                'consumer_id' => $disconnection->consumer->id,
+                'billing_id' => null,
+                'title' => 'Water Service Reconnected',
+                'message' => 'Your water service was reconnected on ' . now()->format('M d, Y') . '.',
+                'type' => 'system',
+                'is_read' => false,
             ]);
         }
 

@@ -7,6 +7,7 @@ use App\Models\AdminConsumer;
 use App\Models\Disconnection;
 use App\Models\CutConsumer;
 use App\Models\AccountantBilling;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth; // Add this line
@@ -258,6 +259,15 @@ public function disconnect(Request $request)
             'status' => 'disconnected'
         ]);
 
+        Notification::create([
+            'consumer_id' => $consumer->id,
+            'billing_id' => null,
+            'title' => 'Water Service Disconnected',
+            'message' => 'Your water service was disconnected on ' . now()->format('M d, Y') . '. Reason: ' . $request->reason . '.',
+            'type' => 'system',
+            'is_read' => false,
+        ]);
+
         DB::commit();
 
         return response()->json([
@@ -351,6 +361,15 @@ public function restoreDisconnectedConsumer(Request $request, $id)
             'reconnection_notes' => $reconnectionNotes,
             'reconnection_fee' => 500.00, // Set the reconnection fee
             'reconnected_by' => auth()->id() ?? 1
+        ]);
+
+        Notification::create([
+            'consumer_id' => $consumer->id,
+            'billing_id' => null,
+            'title' => 'Water Service Reconnected',
+            'message' => 'Your water service was reconnected on ' . now()->format('M d, Y') . '. Reconnection fee: ₱500.00.',
+            'type' => 'system',
+            'is_read' => false,
         ]);
 
         DB::commit();
