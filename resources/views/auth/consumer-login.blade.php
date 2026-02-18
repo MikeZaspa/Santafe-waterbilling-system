@@ -554,6 +554,12 @@
             width: 400px;
             max-width: 90vw;
         }
+
+        .notification-list {
+            max-height: 320px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
         
         .notification-item {
             padding: 12px 15px;
@@ -964,28 +970,30 @@
             <button class="btn btn-sm btn-outline-primary mark-all-read-btn">Mark all as read</button>
             @endif
         </div>
-        
-        @if($notifications->count() > 0)
-        @foreach($notifications as $notification)
-        <div class="notification-item {{ !$notification->is_read ? 'unread' : '' }}" data-id="{{ $notification->id }}">
-            <div class="d-flex">
-                <div class="notification-icon {{ $notification->type === 'billing' ? 'info' : ($notification->type === 'payment' ? 'success' : 'warning') }}">
-                    <i class="bi {{ $notification->type === 'billing' ? 'bi-receipt' : ($notification->type === 'payment' ? 'bi-check-circle' : 'bi-info-circle') }}"></i>
-                </div>
-                <div class="flex-grow-1">
-                    <div class="notification-title">{{ $notification->title }}</div>
-                    <div class="notification-message">{{ $notification->message }}</div>
-                    <div class="notification-time">{{ $notification->created_at->diffForHumans() }}</div>
+
+        <div class="notification-list">
+            @if($notifications->count() > 0)
+            @foreach($notifications as $notification)
+            <div class="notification-item {{ !$notification->is_read ? 'unread' : '' }}" data-id="{{ $notification->id }}">
+                <div class="d-flex">
+                    <div class="notification-icon {{ $notification->type === 'billing' ? 'info' : ($notification->type === 'payment' ? 'success' : 'warning') }}">
+                        <i class="bi {{ $notification->type === 'billing' ? 'bi-receipt' : ($notification->type === 'payment' ? 'bi-check-circle' : 'bi-info-circle') }}"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="notification-title">{{ $notification->title }}</div>
+                        <div class="notification-message">{{ $notification->message }}</div>
+                        <div class="notification-time">{{ $notification->created_at->diffForHumans() }}</div>
+                    </div>
                 </div>
             </div>
+            @endforeach
+            @else
+            <div class="notification-empty">
+                <i class="bi bi-bell-slash"></i>
+                <p>No notifications</p>
+            </div>
+            @endif
         </div>
-        @endforeach
-        @else
-        <div class="notification-empty">
-            <i class="bi bi-bell-slash"></i>
-            <p>No notifications</p>
-        </div>
-        @endif
     </div>
 </div>
             
