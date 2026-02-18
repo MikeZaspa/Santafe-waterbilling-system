@@ -7,6 +7,7 @@ use App\Models\ConsumerAccount;
 use App\Models\Billing;
 use App\Models\Consumer;
 use App\Models\Notice;
+use App\Models\Notification;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
@@ -37,6 +38,9 @@ class ConsumerDashboardController extends Controller
         // Get notices for this consumer
         $notices = Notice::with('consumer')
             ->where('consumer_id', $consumer->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        $notifications = Notification::where('consumer_id', $consumer->id)
             ->orderBy('created_at', 'desc')
             ->get();
         
@@ -92,6 +96,7 @@ class ConsumerDashboardController extends Controller
             'bills' => $bills,
             'recentBills' => $recentBills,
             'notices' => $notices,
+            'notifications' => $notifications,
             'paidCount' => $paidCount,
             'unpaidCount' => $unpaidCount,
             'overdueCount' => $overdueCount,

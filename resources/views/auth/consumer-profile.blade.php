@@ -258,6 +258,110 @@
             background-color: #0b5ed7;
             border-color: #0a58ca;
         }
+
+        /* Notification Styles */
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .notification-dropdown {
+            width: 400px;
+            max-width: 90vw;
+        }
+
+        .notification-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f1f1f1;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .notification-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .notification-item.unread {
+            background-color: rgba(211, 47, 47, 0.05);
+        }
+
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+        }
+
+        .notification-message {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-bottom: 5px;
+            line-height: 1.4;
+        }
+
+        .notification-time {
+            font-size: 0.75rem;
+            color: #adb5bd;
+        }
+
+        .notification-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .notification-icon.success {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+        }
+
+        .notification-icon.warning {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+        }
+
+        .notification-icon.info {
+            background-color: rgba(0, 123, 255, 0.1);
+            color: #007bff;
+        }
+
+        .notification-actions {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 15px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .notification-empty {
+            padding: 30px 20px;
+            text-align: center;
+            color: #6c757d;
+        }
+
+        .notification-empty i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #dee2e6;
+        }
         
         /* Mobile overlay styles */
         .mobile-overlay {
@@ -380,6 +484,50 @@
         </div>
        
         <div class="header-right">
+            @php
+                $notifications = $notifications ?? collect();
+                $unreadNotificationsCount = $notifications->where('is_read', false)->count();
+            @endphp
+            <div class="dropdown position-relative me-3">
+                <a href="#" class="text-decoration-none text-dark position-relative" id="notificationBell" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-bell fs-5"></i>
+                    @if($unreadNotificationsCount > 0)
+                        <span class="notification-badge">{{ $unreadNotificationsCount }}</span>
+                    @endif
+                </a>
+
+                <div class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationBell">
+                    <div class="notification-actions">
+                        <h6 class="mb-0">Notifications</h6>
+                        @if($unreadNotificationsCount > 0)
+                            <button class="btn btn-sm btn-outline-primary mark-all-read-btn">Mark all as read</button>
+                        @endif
+                    </div>
+
+                    @if($notifications->count() > 0)
+                        @foreach($notifications as $notification)
+                            <div class="notification-item {{ !$notification->is_read ? 'unread' : '' }}" data-id="{{ $notification->id }}">
+                                <div class="d-flex">
+                                    <div class="notification-icon {{ $notification->type === 'billing' ? 'info' : ($notification->type === 'payment' ? 'success' : 'warning') }}">
+                                        <i class="bi {{ $notification->type === 'billing' ? 'bi-receipt' : ($notification->type === 'payment' ? 'bi-check-circle' : 'bi-info-circle') }}"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="notification-title">{{ $notification->title }}</div>
+                                        <div class="notification-message">{{ $notification->message }}</div>
+                                        <div class="notification-time">{{ $notification->created_at->diffForHumans() }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    @else
+                        <div class="notification-empty">
+                            <i class="bi bi-bell-slash"></i>
+                            <p>No notifications</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
             <!-- User Dropdown -->
             <div class="dropdown">
                 <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
@@ -473,6 +621,63 @@
 
 <script>
  $(document).ready(function() {
+    // Mark notification as read when clicked
+    $('.notification-item').click(function() {
+        const notificationId = $(this).data('id');
+        const $item = $(this);
+
+        if ($item.hasClass('unread')) {
+            $.ajax({
+                url: `/consumer/notifications/${notificationId}/read`,
+                type: 'POST',
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $item.removeClass('unread');
+                        updateNotificationBadge();
+                    }
+                }
+            });
+        }
+    });
+
+    // Mark all notifications as read
+    $('.mark-all-read-btn').click(function(e) {
+        e.stopPropagation();
+
+        $.ajax({
+            url: '/consumer/notifications/read-all',
+            type: 'POST',
+            data: {
+                _token: $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                if (response.success) {
+                    $('.notification-item').removeClass('unread');
+                    updateNotificationBadge();
+                }
+            }
+        });
+    });
+
+    // Function to update notification badge
+    function updateNotificationBadge() {
+        const unreadCount = $('.notification-item.unread').length;
+        const $badge = $('.notification-badge');
+
+        if (unreadCount > 0) {
+            if ($badge.length === 0) {
+                $('#notificationBell').append('<span class="notification-badge">' + unreadCount + '</span>');
+            } else {
+                $badge.text(unreadCount);
+            }
+        } else {
+            $badge.remove();
+        }
+    }
+
     // Mobile sidebar toggle functionality
     const sidebar = $('.sidebar');
     const mainContent = $('.main-content');
