@@ -13,12 +13,19 @@ use App\Exports\PaidBillsExport;
 
 class ReportController extends Controller
 {
+    private const REPORT_STATUSES = ['paid', 'unpaid', 'overdue'];
+
     public function data(Request $request)
     {
         try {
             $query = AccountantBilling::with('consumer')
-                ->where('status', 'paid')
+                ->whereIn('status', self::REPORT_STATUSES)
                 ->select('accountant_billings.*');
+
+            $status = strtolower((string) $request->input('status', ''));
+            if ($status !== '' && in_array($status, self::REPORT_STATUSES, true)) {
+                $query->where('status', $status);
+            }
 
             if ($request->has('month') && $request->month != '') {
                 $month = Carbon::parse($request->month);
@@ -45,7 +52,8 @@ class ReportController extends Controller
                     return $row->meter_no ?: ($row->consumer ? $row->consumer->meter_number : 'N/A');
                 })
                 ->addColumn('status', function($row) {
-                    return 'PAID';
+                    $status = strtolower((string) ($row->status ?? ''));
+                    return in_array($status, self::REPORT_STATUSES, true) ? $status : 'unpaid';
                 })
                 ->make(true);
 
@@ -61,10 +69,15 @@ class ReportController extends Controller
     {
         $format = $request->format ?? 'excel';
         $month = $request->month ? Carbon::parse($request->month) : null;
+        $status = strtolower((string) $request->input('status', ''));
 
         $query = AccountantBilling::with('consumer')
-            ->where('status', 'paid')
+            ->whereIn('status', self::REPORT_STATUSES)
             ->orderBy('due_date', 'desc');
+
+        if ($status !== '' && in_array($status, self::REPORT_STATUSES, true)) {
+            $query->where('status', $status);
+        }
 
         if ($month) {
             $query->whereMonth('due_date', $month->month)
@@ -91,11 +104,12 @@ class ReportController extends Controller
                 'Payment Method' => $item->formatted_payment_method['name'] ?? ucfirst($item->payment_method),
                 'Total Amount' => '₱' . number_format($item->total_amount, 2),
                 'Amount Paid' => '₱' . number_format($item->amount_paid, 2),
-                'Status' => 'Paid'
+                'Status' => ucfirst(strtolower((string) ($item->status ?? 'unpaid')))
             ];
         });
 
-        $filename = 'paid_bills_report_' . ($month ? $month->format('Y_m') : 'all_time');
+        $statusSegment = $status !== '' ? $status : 'all_statuses';
+        $filename = 'bills_report_' . $statusSegment . '_' . ($month ? $month->format('Y_m') : 'all_time');
 
         if ($format === 'pdf') {
             $pdf = PDF::loadView('exports.report', ['data' => $data]);

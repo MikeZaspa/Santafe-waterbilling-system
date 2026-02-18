@@ -568,9 +568,17 @@
                 <div class="d-flex justify-content-between align-items-center w-100">
                     <h3 class="mb-0">
                         <i class="bi bi-file-earmark-bar-graph me-2"></i>
-                        Paid Bills Report
+                        Billing Status Report
                     </h3>
                     <div class="filter-controls">
+                        <div class="input-group" style="width: 180px;">
+                            <select class="form-select" id="statusFilter">
+                                <option value="">All Status</option>
+                                <option value="paid">Paid</option>
+                                <option value="unpaid">Unpaid</option>
+                                <option value="overdue">Overdue</option>
+                            </select>
+                        </div>
                         <div class="input-group" style="width: 200px;">
                             <input type="month" class="form-control" id="monthFilter">
                             <button class="btn btn-outline-secondary" id="applyFilter">
@@ -771,7 +779,7 @@
                     <td>${escapeHtml(formatDueDateForPrint(row.due_date))}</td>
                     <td>${escapeHtml(formatConsumptionForPrint(row.consumption))}</td>
                     <td>${escapeHtml(formatAmountForPrint(row.total_amount))}</td>
-                    <td>${escapeHtml(row.status || '')}</td>
+                    <td>${escapeHtml((row.status || '').toUpperCase())}</td>
                 </tr>
             `;
         }).join('');
@@ -781,6 +789,7 @@
         const now = moment().format('MMM D, YYYY h:mm A');
         const monthFilter = $('#monthFilter').val() ? moment($('#monthFilter').val(), 'YYYY-MM').format('MMMM YYYY') : 'All Months';
         const nameFilter = $('#nameSearch').val() ? $('#nameSearch').val() : 'All Consumers';
+        const statusFilter = $('#statusFilter').val() ? $('#statusFilter').val().toUpperCase() : 'ALL';
 
         return `
             <div style="font-family:Arial, sans-serif; color:#212529;">
@@ -795,10 +804,11 @@
                     </div>
                 </div>
 
-                <h4 style="text-align:center; margin:12px 0 8px;">Paid Bills Report</h4>
+                <h4 style="text-align:center; margin:12px 0 8px;">Billing Status Report</h4>
                 <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:13px;">
                     <div><strong>Month:</strong> ${escapeHtml(monthFilter)}</div>
                     <div><strong>Name:</strong> ${escapeHtml(nameFilter)}</div>
+                    <div><strong>Status:</strong> ${escapeHtml(statusFilter)}</div>
                     <div><strong>Generated:</strong> ${escapeHtml(now)}</div>
                 </div>
 
@@ -838,7 +848,7 @@
             <!DOCTYPE html>
             <html>
                 <head>
-                    <title>Paid Bills Report</title>
+                    <title>Billing Status Report</title>
                     <style>
                         body { margin: 16px; font-family: Arial, sans-serif; }
                     </style>
@@ -866,6 +876,7 @@
             data: function(d) {
                 d.month = $('#monthFilter').val();
                 d.name = $('#nameSearch').val();
+                d.status = $('#statusFilter').val();
             },
             error: function(xhr) {
                 let errorMsg = "Failed to load data";
@@ -904,8 +915,20 @@
             { 
                 data: 'status', 
                 name: 'status',
-                render: function() {
-                    return '<span class="badge badge-paid">PAID</span>';
+                render: function(data) {
+                    const status = String(data || '').toLowerCase();
+                    let badgeClass = 'bg-secondary';
+                    let label = status ? status.toUpperCase() : 'UNKNOWN';
+
+                    if (status === 'paid') {
+                        badgeClass = 'badge-paid';
+                    } else if (status === 'unpaid') {
+                        badgeClass = 'badge-unpaid';
+                    } else if (status === 'overdue') {
+                        badgeClass = 'badge-overdue';
+                    }
+
+                    return `<span class="badge ${badgeClass}">${label}</span>`;
                 }
             }
         ],
@@ -925,6 +948,10 @@
     });
 
     $('#applyFilter').click(function() {
+        reportsTable.ajax.reload();
+    });
+
+    $('#statusFilter').change(function() {
         reportsTable.ajax.reload();
     });
     
