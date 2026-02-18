@@ -45,6 +45,21 @@ class OnlinePaymentController extends Controller
                 ], 422);
             }
 
+            // Remove previous rejected attempts for this bill before accepting a new submission.
+            $rejectedPayments = OnlinePayment::where('bill_id', $request->bill_id)
+                ->where('status', 'rejected')
+                ->get();
+
+            foreach ($rejectedPayments as $rejectedPayment) {
+                if (!empty($rejectedPayment->proof_image) && Storage::disk('public')->exists($rejectedPayment->proof_image)) {
+                    Storage::disk('public')->delete($rejectedPayment->proof_image);
+                }
+            }
+
+            if ($rejectedPayments->isNotEmpty()) {
+                OnlinePayment::whereIn('id', $rejectedPayments->pluck('id'))->delete();
+            }
+
             // Upload proof image
             $imagePath = $request->file('proof_image')->store('payment-proofs', 'public');
 
