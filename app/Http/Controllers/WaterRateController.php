@@ -23,6 +23,13 @@ class WaterRateController extends Controller
 
         WaterRate::create($validated);
 
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Water rate created successfully.'
+            ]);
+        }
+
         return redirect()->route('water-rates.index')
             ->with('success', 'Water rate created successfully.');
     }
@@ -43,6 +50,13 @@ class WaterRateController extends Controller
         
 
         $waterRate->update($validated);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Water rate updated successfully.'
+            ]);
+        }
 
         return redirect()->route('water-rates.index')
             ->with('success', 'Water rate updated successfully.');
