@@ -505,6 +505,11 @@
     max-width: 90vw;
 }
 
+.notification-list {
+    max-height: 320px;
+    overflow-y: auto;
+}
+
 .notification-item {
     padding: 12px 15px;
     border-bottom: 1px solid #f1f1f1;
@@ -663,7 +668,17 @@
             <div class="position-relative me-3">
                 <a href="#" class="text-decoration-none text-dark position-relative" id="notificationBell" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-bell fs-5"></i>
+                    <span class="notification-badge d-none" id="notificationBadge">0</span>
                 </a>
+                <div class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationBell">
+                    <div class="notification-actions">
+                        <h6 class="mb-0">Pending Payments</h6>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="refreshNotificationsBtn">Refresh</button>
+                    </div>
+                    <div class="notification-list" id="notificationList">
+                        <div class="notification-empty">No pending payments.</div>
+                    </div>
+                </div>
             </div>
             <!-- User Dropdown -->
             <div class="dropdown">
@@ -1066,6 +1081,88 @@
 
 <script>
  $(document).ready(function() {
+    const notificationBadge = $('#notificationBadge');
+    const notificationList = $('#notificationList');
+
+    function formatNotificationTime(value) {
+        if (!value) return 'Just now';
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return 'Just now';
+
+        const diffSeconds = Math.floor((Date.now() - date.getTime()) / 1000);
+        if (diffSeconds < 60) return `${Math.max(diffSeconds, 1)}s ago`;
+        if (diffSeconds < 3600) return `${Math.floor(diffSeconds / 60)}m ago`;
+        if (diffSeconds < 86400) return `${Math.floor(diffSeconds / 3600)}h ago`;
+        if (diffSeconds < 604800) return `${Math.floor(diffSeconds / 86400)}d ago`;
+        return date.toLocaleString();
+    }
+
+    function renderNotificationBadge(count) {
+        if (count > 0) {
+            notificationBadge.text(count > 99 ? '99+' : count).removeClass('d-none');
+        } else {
+            notificationBadge.addClass('d-none').text('0');
+        }
+    }
+
+    function renderNotificationList(notifications) {
+        if (!Array.isArray(notifications) || notifications.length === 0) {
+            notificationList.html('<div class="notification-empty">No pending payments.</div>');
+            return;
+        }
+
+        const notificationHtml = notifications.map(function(payment) {
+            const amount = Number(payment.amount || 0).toFixed(2);
+            return `
+                <a href="#" class="notification-item payment-notification-item" data-id="${payment.id}">
+                    <div class="notification-title">${payment.consumer_name || 'N/A'}</div>
+                    <div class="notification-message">Meter: ${payment.meter_no || 'N/A'} | Ref: ${payment.reference_number || 'N/A'} | Amount: P${amount}</div>
+                    <div class="notification-time">Submitted ${formatNotificationTime(payment.created_at)}</div>
+                </a>
+            `;
+        }).join('');
+
+        notificationList.html(notificationHtml);
+    }
+
+    function fetchPendingPaymentNotifications() {
+        $.ajax({
+            url: '/admin/payments/pending-notifications',
+            type: 'GET',
+            data: { limit: 10 },
+            success: function(response) {
+                if (!response || !response.success) {
+                    renderNotificationBadge(0);
+                    renderNotificationList([]);
+                    return;
+                }
+
+                const notifications = response.notifications || [];
+                renderNotificationBadge(response.pending_count ?? notifications.length);
+                renderNotificationList(notifications);
+            },
+            error: function() {
+                renderNotificationBadge(0);
+            }
+        });
+    }
+
+    $('#refreshNotificationsBtn').on('click', function(e) {
+        e.preventDefault();
+        fetchPendingPaymentNotifications();
+    });
+
+    $(document).on('click', '.payment-notification-item', function(e) {
+        e.preventDefault();
+        const paymentId = $(this).data('id');
+        if (paymentId) {
+            window.location.href = `/paymentVerificationSection?payment_id=${paymentId}`;
+        }
+    });
+
+    fetchPendingPaymentNotifications();
+    setInterval(fetchPendingPaymentNotifications, 15000);
+
     // Mobile sidebar toggle functionality
     const sidebar = $('.sidebar');
     const mainContent = $('.main-content');

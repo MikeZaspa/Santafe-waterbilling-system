@@ -74,6 +74,18 @@ class OnlinePaymentController extends Controller
                 'status' => 'pending'
             ]);
 
+            // Notify consumer that payment is submitted and waiting for verification
+            if (!empty($bill->consumer_id)) {
+                Notification::create([
+                    'consumer_id' => $bill->consumer_id,
+                    'billing_id' => $bill->id,
+                    'title' => 'Payment Submitted',
+                    'message' => 'Your payment was submitted and is now waiting for verification.',
+                    'type' => 'payment',
+                    'is_read' => false,
+                ]);
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Payment submitted successfully. Waiting for verification.',
