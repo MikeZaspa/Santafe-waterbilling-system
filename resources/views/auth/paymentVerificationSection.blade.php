@@ -273,6 +273,86 @@
       color: var(--danger);
     }
 
+    .notification-badge {
+      position: absolute;
+      top: -6px;
+      right: -8px;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: 999px;
+      background: #dc3545;
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    .notification-dropdown {
+      width: 360px;
+      max-width: 92vw;
+      padding: 0;
+    }
+
+    .notification-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 15px;
+      border-bottom: 1px solid #eef0f3;
+    }
+
+    .notification-list {
+      max-height: 360px;
+      overflow-y: auto;
+    }
+
+    .notification-item {
+      display: block;
+      padding: 12px 15px;
+      border-bottom: 1px solid #f1f3f5;
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .notification-item:hover {
+      background-color: rgba(67, 97, 238, 0.06);
+    }
+
+    .notification-item:last-child {
+      border-bottom: none;
+    }
+
+    .notification-title {
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 2px;
+    }
+
+    .notification-message {
+      font-size: 0.84rem;
+      color: #5e6670;
+      margin-bottom: 2px;
+      line-height: 1.3;
+    }
+
+    .notification-time {
+      font-size: 0.75rem;
+      color: #8c939b;
+    }
+
+    .notification-empty {
+      padding: 18px 15px;
+      text-align: center;
+      color: #6c757d;
+      font-size: 0.9rem;
+    }
+
     .modal-content {
       border-radius: 12px;
       border: none;
@@ -454,7 +534,17 @@
       <div class="position-relative me-3">
         <a href="#" class="text-decoration-none text-dark position-relative" id="notificationBell" data-bs-toggle="dropdown" aria-expanded="false">
           <i class="bi bi-bell fs-5"></i>
+          <span class="notification-badge d-none" id="notificationBadge">0</span>
         </a>
+        <div class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationBell">
+          <div class="notification-actions">
+            <h6 class="mb-0">Pending Payments</h6>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="refreshNotificationsBtn">Refresh</button>
+          </div>
+          <div class="notification-list" id="notificationList">
+            <div class="notification-empty">No pending payments.</div>
+          </div>
+        </div>
       </div>
       <!-- User Dropdown -->
       <div class="dropdown">
@@ -661,6 +751,80 @@
         ]
     });
 
+    const notificationBadge = $('#notificationBadge');
+    const notificationList = $('#notificationList');
+    let knownPendingPaymentIds = new Set();
+
+    function renderNotificationBadge(count) {
+        if (count > 0) {
+            notificationBadge.text(count > 99 ? '99+' : count).removeClass('d-none');
+        } else {
+            notificationBadge.addClass('d-none').text('0');
+        }
+    }
+
+    function renderNotificationList(notifications) {
+        if (!notifications.length) {
+            notificationList.html('<div class="notification-empty">No pending payments.</div>');
+            return;
+        }
+
+        const notificationHtml = notifications.map(function(payment) {
+            const submittedText = payment.created_at ? moment(payment.created_at).fromNow() : 'Just now';
+            const amount = parseFloat(payment.amount || 0).toFixed(2);
+            return `
+                <a href="#" class="notification-item payment-notification-item" data-id="${payment.id}">
+                    <div class="notification-title">${payment.consumer_name}</div>
+                    <div class="notification-message">
+                        Meter: ${payment.meter_no || 'N/A'} | Ref: ${payment.reference_number || 'N/A'} | Amount:${amount}
+                    </div>
+                    <div class="notification-time">Submitted ${submittedText}</div>
+                </a>
+            `;
+        }).join('');
+
+        notificationList.html(notificationHtml);
+    }
+
+    function fetchPendingPaymentNotifications(showToastForNew = false) {
+        $.ajax({
+            url: '/admin/payments/pending-notifications',
+            type: 'GET',
+            data: { limit: 10 },
+            success: function(response) {
+                if (!response.success) return;
+
+                const notifications = response.notifications || [];
+                const currentIds = new Set(notifications.map(item => Number(item.id)));
+                const newPayments = showToastForNew
+                    ? notifications.filter(item => !knownPendingPaymentIds.has(Number(item.id)))
+                    : [];
+
+                renderNotificationBadge(response.pending_count || notifications.length);
+                renderNotificationList(notifications);
+                knownPendingPaymentIds = currentIds;
+
+                if (newPayments.length > 0) {
+                    const title = newPayments.length === 1
+                        ? '1 new payment submitted'
+                        : `${newPayments.length} new payments submitted`;
+
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'info',
+                        title: title,
+                        showConfirmButton: false,
+                        timer: 3500,
+                        timerProgressBar: true
+                    });
+
+                    paymentsTable.ajax.reload(null, false);
+                }
+            }
+        });
+    }
+
     // Apply filters
     $('#paymentSearch').on('keyup', function() {
         paymentsTable.search(this.value).draw();
@@ -671,10 +835,7 @@
         paymentsTable.column(7).search(status).draw();
     });
 
-    // View payment details
-    $(document).on('click', '.view-payment-btn', function() {
-        const paymentId = $(this).data('id');
-        
+    function openPaymentDetails(paymentId) {
         // Show loading
         $('#paymentVerificationModal').modal('show');
         $('#verifyConsumer').text('Loading...');
@@ -697,7 +858,6 @@
             success: function(response) {
                 if (response.success) {
                     const payment = response.data;
-                    console.log("Payment details:", payment); // For debugging
                     
                     // Extract consumer information from multiple possible sources
                     let consumerName = 'N/A';
@@ -762,7 +922,6 @@
                         
                         // Use dedicated endpoint
                         const imagePath = `/payment-proof/${paymentId}`;
-                        console.log("Loading image from:", imagePath);
                         img.src = imagePath;
                     } else {
                         // Show placeholder when no image is available
@@ -801,7 +960,30 @@
                 });
             }
         });
+    }
+
+    // View payment details from table
+    $(document).on('click', '.view-payment-btn', function() {
+        const paymentId = $(this).data('id');
+        openPaymentDetails(paymentId);
     });
+
+    // View payment details from notification dropdown
+    $(document).on('click', '.payment-notification-item', function(e) {
+        e.preventDefault();
+        const paymentId = $(this).data('id');
+        openPaymentDetails(paymentId);
+    });
+
+    $('#refreshNotificationsBtn').on('click', function(e) {
+        e.preventDefault();
+        fetchPendingPaymentNotifications(false);
+    });
+
+    fetchPendingPaymentNotifications(false);
+    setInterval(function() {
+        fetchPendingPaymentNotifications(true);
+    }, 15000);
 
     // Approve payment
     $('#approvePaymentBtn').click(function() {
@@ -940,6 +1122,7 @@
                 if (response.success) {
                     $('#paymentVerificationModal').modal('hide');
                     paymentsTable.ajax.reload();
+                    fetchPendingPaymentNotifications(false);
                     
                     Swal.fire({
                         icon: 'success',

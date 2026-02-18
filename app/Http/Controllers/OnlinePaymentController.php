@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\OnlinePayment;
 use App\Models\AccountantBilling;
 use App\Models\AdminConsumer;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
@@ -130,8 +131,37 @@ class OnlinePaymentController extends Controller
                     'paid_at' => now()
                 ]);
                 
+                $consumerId = $payment->bill->consumer_id ?? $payment->consumer_id;
+                if ($consumerId) {
+                    Notification::create([
+                        'consumer_id' => $consumerId,
+                        'billing_id' => $payment->bill_id,
+                        'title' => 'Payment Approved',
+                        'message' => 'Your payment has been approved and your bill is now marked as paid.',
+                        'type' => 'payment',
+                        'is_read' => false,
+                    ]);
+                }
+
                 $message = 'Payment verified successfully.';
             } else {
+                $consumerId = $payment->bill->consumer_id ?? $payment->consumer_id;
+                if ($consumerId) {
+                    $rejectionMessage = 'Your payment was rejected. Please upload a new valid proof of payment.';
+                    if (!empty($request->admin_notes)) {
+                        $rejectionMessage .= ' Admin note: ' . $request->admin_notes;
+                    }
+
+                    Notification::create([
+                        'consumer_id' => $consumerId,
+                        'billing_id' => $payment->bill_id,
+                        'title' => 'Payment Rejected',
+                        'message' => $rejectionMessage,
+                        'type' => 'system',
+                        'is_read' => false,
+                    ]);
+                }
+
                 $message = 'Payment rejected.';
             }
 
@@ -162,7 +192,7 @@ class OnlinePaymentController extends Controller
     ]);
 }
 
-   public function datatable(Request $request)
+    public function datatable(Request $request)
     {
         $query = OnlinePayment::with(['bill.consumer', 'adminConsumer']);
 
@@ -289,6 +319,48 @@ class OnlinePaymentController extends Controller
             'recordsTotal' => $totalRecords,
             'recordsFiltered' => $filteredCount,
             'data' => $formattedData
+        ]);
+    }
+
+    public function pendingNotifications(Request $request)
+    {
+        $limit = (int) $request->input('limit', 10);
+        $limit = max(1, min($limit, 50));
+
+        $pendingQuery = OnlinePayment::with(['adminConsumer', 'bill.consumer'])
+            ->where('status', 'pending')
+            ->orderBy('created_at', 'desc');
+
+        $pendingCount = (clone $pendingQuery)->count();
+        $pendingPayments = $pendingQuery->limit($limit)->get();
+
+        $notifications = $pendingPayments->map(function ($payment) {
+            $consumerName = 'N/A';
+            $meterNo = 'N/A';
+
+            if ($payment->adminConsumer) {
+                $consumerName = trim(($payment->adminConsumer->first_name ?? '') . ' ' . ($payment->adminConsumer->last_name ?? ''));
+                $meterNo = $payment->adminConsumer->meter_no ?? 'N/A';
+            } elseif ($payment->bill && $payment->bill->consumer) {
+                $consumerName = trim(($payment->bill->consumer->first_name ?? '') . ' ' . ($payment->bill->consumer->last_name ?? ''));
+                $meterNo = $payment->bill->consumer->meter_no ?? 'N/A';
+            }
+
+            return [
+                'id' => $payment->id,
+                'consumer_name' => $consumerName ?: 'N/A',
+                'meter_no' => $meterNo,
+                'amount' => $payment->amount,
+                'payment_method' => $payment->payment_method,
+                'reference_number' => $payment->reference_number,
+                'created_at' => $payment->created_at ? $payment->created_at->toIso8601String() : null,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'pending_count' => $pendingCount,
+            'notifications' => $notifications,
         ]);
     }
 

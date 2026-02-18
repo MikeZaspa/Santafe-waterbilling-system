@@ -286,6 +286,8 @@ Route::prefix('consumer')->group(function () {
 Route::get('/admin/payments/datatable', [OnlinePaymentController::class, 'datatable'])
     ->name('admin.payments.datatable');
 Route::get('/admin/payments', [OnlinePaymentController::class, 'datatable'])->name('admin.payments.index');
+Route::get('/admin/payments/pending-notifications', [OnlinePaymentController::class, 'pendingNotifications'])
+    ->name('admin.payments.pending-notifications');
 // Admin/Accountant payment management routes
 Route::prefix('admin')->group(function () {
     Route::get('/payments', [OnlinePaymentController::class, 'index'])->name('admin.payments.index');
