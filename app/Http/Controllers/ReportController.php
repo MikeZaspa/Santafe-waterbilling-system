@@ -45,9 +45,8 @@ class ReportController extends Controller
                     return $row->meter_no ?: ($row->consumer ? $row->consumer->meter_number : 'N/A');
                 })
                 ->addColumn('status', function($row) {
-                    return '<span class="badge badge-paid">PAID</span>';
+                    return 'PAID';
                 })
-                ->rawColumns(['status'])
                 ->make(true);
 
         } catch (\Exception $e) {

@@ -612,6 +612,27 @@
     </div>
 </div>
 
+<!-- Print Preview Modal -->
+<div class="modal fade" id="printReportModal" tabindex="-1" aria-labelledby="printReportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="printReportModalLabel">Print Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="printPreviewContent"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="printPreviewBtn">
+                    <i class="bi bi-printer me-2"></i>Print Now
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Bootstrap Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <!-- jQuery -->
@@ -621,11 +642,6 @@
 <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
 <!-- Moment.js for date handling -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-
-<!-- DataTables Buttons JS -->
-<script src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.print.min.js"></script>
 <script>
  $(document).ready(function() {
     const notificationBadge = $('#notificationBadge');
@@ -710,28 +726,140 @@
     fetchPendingPaymentNotifications();
     setInterval(fetchPendingPaymentNotifications, 15000);
 
+    const printHeaderLogo = "{{ asset('image/santafe.png') }}";
+
+    const printPreviewContent = $('#printPreviewContent');
+    const printReportModal = new bootstrap.Modal(document.getElementById('printReportModal'));
+    let printPreviewHtml = '';
+
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function formatDueDateForPrint(value) {
+        return value ? moment(value).format('MMM D, YYYY') : '';
+    }
+
+    function formatConsumptionForPrint(value) {
+        if (value === null || value === undefined || value === '') return '0.00 m³';
+        return `${parseFloat(value).toFixed(2)} m³`;
+    }
+
+    function formatAmountForPrint(value) {
+        if (value === null || value === undefined || value === '') return '₱0.00';
+        return `₱${parseFloat(value).toFixed(2)}`;
+    }
+
+    function buildPrintRows() {
+        const rows = reportsTable.rows({ page: 'current', search: 'applied' }).data().toArray();
+
+        if (!rows.length) {
+            return '<tr><td colspan="7" style="text-align:center; padding:12px;">No records found for current filters.</td></tr>';
+        }
+
+        return rows.map(function(row, index) {
+            return `
+                <tr>
+                    <td>${escapeHtml(row.DT_RowIndex || (index + 1))}</td>
+                    <td>${escapeHtml(row.consumer_name || '')}</td>
+                    <td>${escapeHtml(row.meter_no || '')}</td>
+                    <td>${escapeHtml(formatDueDateForPrint(row.due_date))}</td>
+                    <td>${escapeHtml(formatConsumptionForPrint(row.consumption))}</td>
+                    <td>${escapeHtml(formatAmountForPrint(row.total_amount))}</td>
+                    <td>${escapeHtml(row.status || '')}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function buildPrintPreviewHtml() {
+        const now = moment().format('MMM D, YYYY h:mm A');
+        const monthFilter = $('#monthFilter').val() ? moment($('#monthFilter').val(), 'YYYY-MM').format('MMMM YYYY') : 'All Months';
+        const nameFilter = $('#nameSearch').val() ? $('#nameSearch').val() : 'All Consumers';
+
+        return `
+            <div style="font-family:Arial, sans-serif; color:#212529;">
+                <div style="display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:12px;">
+                    <img src="${printHeaderLogo}" alt="Santa Fe Logo" style="width:58px; height:58px; object-fit:cover;">
+                    <div style="text-align:center; line-height:1.25;">
+                        <div style="font-weight:700;">Santa Fe Water System and</div>
+                        <div style="font-weight:700;">Management Board</div>
+                        <div>Santa Fe New Municipal Hall</div>
+                        <div>PooC, Santa Fe, Cebu 6047</div>
+                        <div><strong>CONTACT NO.</strong> 09469615234/09305694771</div>
+                    </div>
+                </div>
+
+                <h4 style="text-align:center; margin:12px 0 8px;">Paid Bills Report</h4>
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:13px;">
+                    <div><strong>Month:</strong> ${escapeHtml(monthFilter)}</div>
+                    <div><strong>Name:</strong> ${escapeHtml(nameFilter)}</div>
+                    <div><strong>Generated:</strong> ${escapeHtml(now)}</div>
+                </div>
+
+                <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                    <thead>
+                        <tr>
+                            <th style="border:1px solid #000; padding:6px; text-align:left;">ID</th>
+                            <th style="border:1px solid #000; padding:6px; text-align:left;">Consumer</th>
+                            <th style="border:1px solid #000; padding:6px; text-align:left;">Meter No.</th>
+                            <th style="border:1px solid #000; padding:6px; text-align:left;">Due Date</th>
+                            <th style="border:1px solid #000; padding:6px; text-align:left;">Consumption (m³)</th>
+                            <th style="border:1px solid #000; padding:6px; text-align:left;">Total Amount</th>
+                            <th style="border:1px solid #000; padding:6px; text-align:left;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${buildPrintRows()}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+
+    function printFromModalContent(htmlContent) {
+        const printFrame = document.createElement('iframe');
+        printFrame.style.position = 'fixed';
+        printFrame.style.right = '0';
+        printFrame.style.bottom = '0';
+        printFrame.style.width = '0';
+        printFrame.style.height = '0';
+        printFrame.style.border = '0';
+        document.body.appendChild(printFrame);
+
+        const frameDoc = printFrame.contentWindow.document;
+        frameDoc.open();
+        frameDoc.write(`
+            <!DOCTYPE html>
+            <html>
+                <head>
+                    <title>Paid Bills Report</title>
+                    <style>
+                        body { margin: 16px; font-family: Arial, sans-serif; }
+                    </style>
+                </head>
+                <body>${htmlContent}</body>
+            </html>
+        `);
+        frameDoc.close();
+
+        printFrame.onload = function() {
+            printFrame.contentWindow.focus();
+            printFrame.contentWindow.print();
+            setTimeout(function() {
+                document.body.removeChild(printFrame);
+            }, 500);
+        };
+    }
+
     const reportsTable = $('#reportsTable').DataTable({
         processing: true,
         serverSide: true,
-        dom: 'Bfrtip',
-        buttons: [
-            {
-                extend: 'print',
-                text: '<i class="bi bi-printer me-2"></i> Print Report',
-                title: 'Paid Bills Report',
-                className: 'btn btn-primary',
-                exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5, 6], // Include all columns
-                    modifier: {
-                        page: 'current' // Print current page only
-                    }
-                },
-                customize: function(win) {
-                    $(win.document.body).find('h1').css('text-align', 'center');
-                    $(win.document.body).find('table').addClass('compact').css('font-size', 'inherit');
-                }
-            }
-        ],
         ajax: {
             url: "{{ route('accountant.reports.data') }}",
             type: 'GET',
@@ -776,21 +904,24 @@
             { 
                 data: 'status', 
                 name: 'status',
-                render: function(data) {
-                    let badgeClass = 'badge-paid';
-                    if (data === 'Unpaid') badgeClass = 'badge-unpaid';
-                    if (data === 'Overdue') badgeClass = 'badge-overdue';
-                    return `<span class="badge ${badgeClass}">${data}</span>`;
+                render: function() {
+                    return '<span class="badge badge-paid">PAID</span>';
                 }
             }
         ],
-        initComplete: function() {
-            // Move print button to our custom button location
-            $('.dt-buttons').hide();
-            $('#exportBtn').click(function() {
-                $('.buttons-print').click();
-            });
+    });
+
+    $('#exportBtn').on('click', function() {
+        printPreviewHtml = buildPrintPreviewHtml();
+        printPreviewContent.html(printPreviewHtml);
+        printReportModal.show();
+    });
+
+    $('#printPreviewBtn').on('click', function() {
+        if (!printPreviewHtml) {
+            printPreviewHtml = buildPrintPreviewHtml();
         }
+        printFromModalContent(printPreviewHtml);
     });
 
     $('#applyFilter').click(function() {
