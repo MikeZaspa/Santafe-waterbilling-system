@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AccountantBilling;
 use App\Models\AdminConsumer;
+use App\Models\Billing;
 use App\Models\WaterRate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -71,7 +72,7 @@ public function getBillings(Request $request)
 {
     $validator = Validator::make($request->all(), [
         'consumer_id' => 'required|exists:admin_consumers,id',
-        'current_reading' => 'required|numeric|min:0',
+        'current_reading' => 'nullable|numeric|min:0',
         'payment_method' => 'nullable|string|in:cash,gcash,maya',
         'due_date' => 'required|date',
         'status' => 'required|in:paid,unpaid,overdue',
@@ -127,23 +128,28 @@ public function getBillings(Request $request)
             }
         }
 
-        // Get previous reading
-        $previousReading = AccountantBilling::where('consumer_id', $consumer->id)
-            ->latest()
-            ->value('current_reading') ?? 0;
+        // Get plumber reading for the selected billing month
+        $monthlyReading = Billing::where('consumer_id', $consumer->id)
+            ->whereMonth('reading_date', $dueDate->month)
+            ->whereYear('reading_date', $dueDate->year)
+            ->orderBy('reading_date', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->first();
 
-        // Validate that we have a valid previous reading
-        if ($previousReading === null || $previousReading === '') {
+        if (!$monthlyReading) {
             return response()->json([
                 'success' => false,
                 'errors' => [
-                    'reading' => ['Previous reading data is not available. Please check the consumer\'s billing history.']
+                    'reading' => ['No reading found for ' . $dueDate->format('F Y') . '. Please add monthly reading first in Admin Plumber Consumer.']
                 ]
             ], 422);
         }
 
+        $previousReading = (float) $monthlyReading->previous_reading;
+        $currentReading = (float) $monthlyReading->current_reading;
+
         // Validate current reading
-        if ($request->current_reading < $previousReading) {
+        if ($currentReading < $previousReading) {
             return response()->json([
                 'success' => false,
                 'errors' => [
@@ -153,7 +159,7 @@ public function getBillings(Request $request)
         }
 
         // Calculate consumption & total
-        $consumption = $request->current_reading - $previousReading;
+        $consumption = $currentReading - $previousReading;
         $totalAmount = $this->calculateWaterBill($consumer->consumer_type, $consumption);
         
         // Calculate penalty if status is overdue
@@ -163,7 +169,7 @@ public function getBillings(Request $request)
         }
         
         // Validate that not all readings are zero and total amount is not zero
-        if ($previousReading == 0 && $request->current_reading == 0 && $consumption == 0 && $totalAmount == 0) {
+        if ($previousReading == 0 && $currentReading == 0 && $consumption == 0 && $totalAmount == 0) {
             return response()->json([
                 'success' => false,
                 'errors' => [
@@ -179,7 +185,7 @@ public function getBillings(Request $request)
             'meter_no' => $consumer->meter_no,
             'due_date' => $request->due_date,
             'previous_reading' => $previousReading,
-            'current_reading' => $request->current_reading,
+            'current_reading' => $currentReading,
             'consumption' => $consumption,
             'payment_method' => $request->payment_method,
             'total_amount' => $totalAmount,
@@ -414,17 +420,27 @@ public function destroy($id)
     /**
      * Get last reading for a consumer
      */
-    public function getLastReading($consumerId)
+    public function getLastReading(Request $request, $consumerId)
     {
-        $lastReading = AccountantBilling::where('consumer_id', $consumerId)
-            ->latest()
-            ->first(['previous_reading', 'current_reading']);
+        $query = Billing::where('consumer_id', $consumerId);
+
+        if ($request->filled('month')) {
+            $monthDate = Carbon::parse($request->month);
+            $query->whereMonth('reading_date', $monthDate->month)
+                ->whereYear('reading_date', $monthDate->year);
+        }
+
+        $lastReading = $query
+            ->orderBy('reading_date', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->first(['previous_reading', 'current_reading', 'reading_date']);
 
         return response()->json([
             'success' => true,
             'data' => $lastReading ?: [
                 'previous_reading' => 0,
-                'current_reading' => 0
+                'current_reading' => 0,
+                'reading_date' => null
             ]
         ]);
     }
@@ -584,13 +600,14 @@ public function getReceiptData($id)
 }
 public function calculatePenalty($dueDate, $paymentDate = null)
 {
-    $due = Carbon::parse($dueDate);
-    $now = $paymentDate ? Carbon::parse($paymentDate) : Carbon::now();
-    
-    if ($now->greaterThan($due)) {
-        return 10.00; // ₱10 penalty
+    $due = Carbon::parse($dueDate)->startOfDay();
+    $paidOrNow = $paymentDate ? Carbon::parse($paymentDate)->startOfDay() : Carbon::now()->startOfDay();
+    $graceDeadline = $due->copy()->addDays(3);
+
+    if ($paidOrNow->greaterThan($graceDeadline)) {
+        return 10.00; // Late penalty after 3-day grace period
     }
-    
+
     return 0.00;
 }
 
@@ -618,4 +635,36 @@ public function getExistingBilling(Request $request)
         'message' => 'No existing billing found for this month'
     ]);
 }
+
+public function getBillableConsumers(Request $request)
+{
+    $monthDate = $request->filled('month')
+        ? Carbon::parse($request->month)
+        : Carbon::now();
+
+    $month = $monthDate->month;
+    $year = $monthDate->year;
+
+    $consumers = AdminConsumer::where('status', 'active')
+        ->whereIn('id', function ($query) use ($month, $year) {
+            $query->select('consumer_id')
+                ->from('billings')
+                ->whereMonth('reading_date', $month)
+                ->whereYear('reading_date', $year);
+        })
+        ->whereNotIn('id', function ($query) use ($month, $year) {
+            $query->select('consumer_id')
+                ->from('accountant_billings')
+                ->whereMonth('due_date', $month)
+                ->whereYear('due_date', $year)
+                ->whereNull('deleted_at');
+        })
+        ->select('id', 'first_name', 'middle_name', 'last_name', 'suffix', 'meter_no', 'consumer_type')
+        ->orderBy('last_name')
+        ->orderBy('first_name')
+        ->get();
+
+    return response()->json($consumers);
 }
+}
+

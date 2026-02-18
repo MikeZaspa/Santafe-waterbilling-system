@@ -178,6 +178,7 @@ Route::get('/accountant/billings/{id}/receipt', [AccountantController::class, 'g
 Route::prefix('accountant')->middleware('accountant.auth')->group(function() {
     Route::get('/billings', [AccountantController::class, 'index'])->name('accountant.billings');
     Route::get('/billings/data', [AccountantController::class, 'getBillings'])->name('accountant.billings.data');
+    Route::get('/billings/consumers', [AccountantController::class, 'getBillableConsumers'])->name('accountant.billings.consumers');
     Route::get('/billings/last-reading/{consumerId}', [AccountantController::class, 'getLastReading']);
     Route::post('/billings', [AccountantController::class, 'store'])->name('accountant.billings.store');
     Route::get('/billings/{id}/edit', [AccountantController::class, 'edit'])->name('accountant.billings.edit');

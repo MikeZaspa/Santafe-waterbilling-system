@@ -183,9 +183,17 @@ class BillingController extends Controller
         }
     }
 
-    public function getLastReading($consumerId)
+    public function getLastReading(Request $request, $consumerId)
 {
-    $lastReading = Billing::where('consumer_id', $consumerId)
+    $query = Billing::where('consumer_id', $consumerId);
+
+    if ($request->filled('month')) {
+        $monthDate = \Carbon\Carbon::parse($request->month);
+        $query->whereMonth('reading_date', $monthDate->month)
+            ->whereYear('reading_date', $monthDate->year);
+    }
+
+    $lastReading = $query
         ->orderBy('reading_date', 'desc')
         ->orderBy('created_at', 'desc')
         ->first();

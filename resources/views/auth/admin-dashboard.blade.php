@@ -654,7 +654,7 @@
                             <thead id="logsTableHead" class="table-light">
                                 <tr id="logsTableHeaderRow">
                                     <th id="idColumnHeader">ID</th>
-                                    
+                                        
                                     <th id="emailColumnHeader">Email</th>
                                     <th id="ipColumnHeader">IP Address</th>
                                     <th id="locationColumnHeader">Location</th>

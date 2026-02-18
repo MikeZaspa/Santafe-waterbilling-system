@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Payment;
 use App\Models\AccountantBilling;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class PaymentController extends Controller
 {
@@ -97,10 +98,8 @@ class PaymentController extends Controller
     try {
         DB::beginTransaction();
 
-        $billing = AccountantBilling::lockForUpdate()->findOrFail($validated['billing_id']); 
-        // lockForUpdate prevents race conditions
+        $billing = AccountantBilling::lockForUpdate()->findOrFail($validated['billing_id']);
 
-        // ✅ Prevent duplicate payment
         if ($billing->status === 'paid') {
             return response()->json([
                 'success' => false,
@@ -108,23 +107,32 @@ class PaymentController extends Controller
             ], 400);
         }
 
-        // ✅ Prevent underpayment
-        if ($validated['payment_amount'] < $billing->total_amount) {
+        $paymentDate = Carbon::parse($validated['payment_date'])->startOfDay();
+        $dueDate = Carbon::parse($billing->due_date)->startOfDay();
+        $graceDeadline = $dueDate->copy()->addDays(3);
+
+        $computedPenalty = $paymentDate->greaterThan($graceDeadline) ? 10.00 : 0.00;
+        $penaltyAmount = max((float) ($billing->penalty_amount ?? 0), $computedPenalty);
+        $totalDue = (float) $billing->total_amount + $penaltyAmount;
+
+        if ($validated['payment_amount'] < $totalDue) {
             return response()->json([
                 'success' => false,
-                'message' => 'Payment cannot be less than the total amount due (₱' . number_format($billing->total_amount, 2) . ')'
+                'message' => 'Payment cannot be less than the total amount due (PHP ' . number_format($totalDue, 2) . ').'
             ], 400);
         }
 
         $payment = Payment::create([
             'billing_id' => $validated['billing_id'],
             'amount' => $validated['payment_amount'],
-            'change_amount' => max(0, $validated['payment_amount'] - $billing->total_amount),
+            'change_amount' => max(0, $validated['payment_amount'] - $totalDue),
             'payment_date' => $validated['payment_date'],
         ]);
 
-        // ✅ Mark billing as paid
-        $billing->update(['status' => 'paid']);
+        $billing->update([
+            'status' => 'paid',
+            'penalty_amount' => $penaltyAmount
+        ]);
 
         DB::commit();
 
@@ -141,7 +149,7 @@ class PaymentController extends Controller
             'success' => false,
             'message' => 'Payment processing failed: ' . $e->getMessage()
         ], 500);
-    } 
+    }
 }
 
 }

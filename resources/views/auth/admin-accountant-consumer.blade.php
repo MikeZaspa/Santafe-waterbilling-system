@@ -1657,6 +1657,8 @@
     function resetForm() {
         $('#billingForm')[0].reset();
         $('#billingId').val('');
+        $('#billingModal .modal-title').text('Create New Billing');
+        $('#saveBilling').html('Save').prop('disabled', true);
         $('#selectedConsumerText').text('Select Consumer');
         $('#consumer_id').val('');
         $('#type').val('');
@@ -1666,19 +1668,22 @@
         $('#consumption').val('');
         $('#totalAmount').val('');
         
-        // Set default due date (15 days from today)
+        // Set default due date to today so billing month matches current reading month
         const today = new Date();
-        const dueDate = new Date(today);
-        dueDate.setDate(dueDate.getDate() + 15);
-        $('#dueDate').val(dueDate.toISOString().split('T')[0]);
+        $('#dueDate').val(today.toISOString().split('T')[0]);
     }
 
     // Function to fetch consumers and populate dropdown
     function fetchConsumers() {
+        const selectedMonth = $('#dueDate').val();
+
         $.ajax({
-            url: '/admin-consumer/create',
+            url: '/accountant/billings/consumers',
             type: 'GET',
             dataType: 'json',
+            data: {
+                month: selectedMonth
+            },
             beforeSend: function() {
                 $('#consumerOptions').html(`
                     <div class="text-center py-3 text-muted">
@@ -1695,7 +1700,7 @@
                     $('#consumerOptions').html(`
                         <div class="text-center py-3 text-muted">
                             <i class="bi bi-info-circle"></i>
-                            <span class="ms-2">No consumers found</span>
+                            <span class="ms-2">No consumers with monthly reading found</span>
                         </div>
                     `);
                 }
@@ -1764,14 +1769,20 @@
 
     // Function to fetch last reading data
     function fetchLastReading(consumerId) {
+        const selectedMonth = $('#dueDate').val();
+
         $.ajax({
             url: `/billing/last-reading/${consumerId}`,
             type: 'GET',
             dataType: 'json',
+            data: {
+                month: selectedMonth
+            },
             beforeSend: function() {
                 $('#previousReading').val('Loading...');
                 $('#currentReading').val('Loading...');
                 $('#consumption').val('Loading...');
+                $('#saveBilling').prop('disabled', true);
             },
             success: function(response) {
                 if (response.last_reading) {
@@ -1779,10 +1790,18 @@
                     $('#previousReading').val(parseFloat(last.previous_reading).toFixed(2));
                     $('#currentReading').val(parseFloat(last.current_reading).toFixed(2));
                     calculateConsumption();
+                    $('#saveBilling').prop('disabled', false);
                 } else {
                     $('#previousReading').val('0.00');
                     $('#currentReading').val('0.00');
                     $('#consumption').val('0.00');
+                    $('#totalAmount').val('0.00');
+                    $('#saveBilling').prop('disabled', true);
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'No Monthly Reading',
+                        text: 'No plumber reading found for the selected billing month.'
+                    });
                 }
                 calculateWaterBill();
             },
@@ -1791,6 +1810,8 @@
                 $('#previousReading').val('Error');
                 $('#currentReading').val('Error');
                 $('#consumption').val('Error');
+                $('#totalAmount').val('0.00');
+                $('#saveBilling').prop('disabled', true);
                 alert('Failed to retrieve meter readings.');
             }
         });
@@ -2098,7 +2119,7 @@ function showPaidBillingDetails(billing) {
                     
                     // Update modal title and button text
                     $('#billingModal .modal-title').text('Edit Billing');
-                    $('#saveBilling').html('<i class="bi bi-save me-2"></i> Update Billing');
+                    $('#saveBilling').html('<i class="bi bi-save me-2"></i> Update Billing').prop('disabled', false);
                 }
             },
             error: function(xhr) {
@@ -2200,6 +2221,42 @@ function showPaidBillingDetails(billing) {
 });
 
     // Handle payment button click
+    function calculateLatePenalty(dueDate, paymentDate) {
+        if (!dueDate || !paymentDate) return 0;
+
+        const due = moment(dueDate).startOf('day');
+        const paid = moment(paymentDate).startOf('day');
+        if (!due.isValid() || !paid.isValid()) return 0;
+
+        // Apply fixed ₱10 penalty only after 3 full days from due date.
+        return paid.isAfter(due.clone().add(3, 'days')) ? 10 : 0;
+    }
+
+    function updatePaymentAmountDue() {
+        const baseAmount = parseFloat($('#paymentForm').data('base-amount')) || 0;
+        const existingPenalty = parseFloat($('#paymentForm').data('existing-penalty')) || 0;
+        const dueDate = $('#paymentForm').data('due-date');
+        const paymentDate = $('#paymentDate').val();
+
+        const latePenalty = calculateLatePenalty(dueDate, paymentDate);
+        const penaltyAmount = Math.max(existingPenalty, latePenalty);
+        const totalDue = baseAmount + penaltyAmount;
+
+        $('#paymentAmountDue').val('₱' + totalDue.toFixed(2));
+        $('.penalty-info').remove();
+
+        if (penaltyAmount > 0) {
+            $('#paymentAmountDue').after(`
+                <div class="alert alert-warning mt-2 mb-2 p-2 penalty-info">
+                    <small>
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        Includes ₱${penaltyAmount.toFixed(2)} late payment penalty
+                    </small>
+                </div>
+            `);
+        }
+    }
+
  $(document).on('click', '.payment-btn', function(e) {
     e.preventDefault();
     const billingId = $(this).data('id');
@@ -2224,25 +2281,11 @@ function showPaidBillingDetails(billing) {
             if (response.success) {
                 const billing = response.data;
                 const totalAmount = parseFloat(billing.total_amount);
-                const penaltyAmount = parseFloat(billing.penalty_amount || 0);
-                const totalDue = totalAmount + penaltyAmount;
-                
-                console.log('Total amount:', totalAmount, 'Penalty:', penaltyAmount, 'Total Due:', totalDue);
-
                 $('#paymentBillingId').val(billing.id);
-                $('#paymentAmountDue').val('₱' + totalDue.toFixed(2));
-                
-                // Show penalty information if applicable
-                if (penaltyAmount > 0) {
-                    $('#paymentAmountDue').after(`
-                        <div class="alert alert-warning mt-2 mb-2 p-2">
-                            <small>
-                                <i class="bi bi-exclamation-triangle me-1"></i>
-                                Includes ₱${penaltyAmount.toFixed(2)} late payment penalty
-                            </small>
-                        </div>
-                    `);
-                }
+                $('#paymentForm').data('base-amount', totalAmount);
+                $('#paymentForm').data('existing-penalty', parseFloat(billing.penalty_amount || 0));
+                $('#paymentForm').data('due-date', billing.due_date);
+                updatePaymentAmountDue();
             } else {
                 console.error('Failed to load billing details');
                 Swal.fire({
@@ -2328,6 +2371,12 @@ function showPaidBillingDetails(billing) {
         });
     });
 
+    // Recalculate due amount/penalty when payment date changes.
+    $(document).on('change', '#paymentDate', function() {
+        updatePaymentAmountDue();
+        $('#paymentAmount').trigger('input');
+    });
+
     // Handle real-time change calculation
     $(document).on('input', '#paymentAmount', function() {
         const totalAmount = parseFloat($('#paymentAmountDue').val().replace(/[₱,]/g, '')) || 0;
@@ -2341,6 +2390,8 @@ function showPaidBillingDetails(billing) {
     $('#paymentModal').on('hidden.bs.modal', function () {
         $('#paymentChange').val('₱0.00');
         $('#paymentAmount').val('');
+        $('.penalty-info').remove();
+        $('#paymentForm').removeData('base-amount existing-penalty due-date');
     });
 
     // Handle receipt button click

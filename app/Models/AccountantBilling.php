@@ -21,6 +21,7 @@ class AccountantBilling extends Model
         'current_reading',
         'consumption',
         'total_amount',
+        'penalty_amount',
         'status',
         'is_archived',
         'archived_at',
@@ -35,6 +36,7 @@ class AccountantBilling extends Model
         'current_reading' => 'float',
         'consumption' => 'float',
         'total_amount' => 'float',
+        'penalty_amount' => 'float',
         'is_archived' => 'boolean',
         'archived_at' => 'datetime'
     ];
