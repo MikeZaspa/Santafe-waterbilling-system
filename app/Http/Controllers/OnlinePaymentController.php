@@ -185,7 +185,7 @@ class OnlinePaymentController extends Controller
                         'billing_id' => $payment->bill_id,
                         'title' => 'Payment Rejected',
                         'message' => $rejectionMessage,
-                        'type' => 'system',
+                        'type' => 'payment',
                         'is_read' => false,
                     ]);
                 }

@@ -1380,62 +1380,188 @@
     $(document).ready(function() {
 
 
-        // Mark notification as read when clicked
-    $('.notification-item').click(function() {
-        const notificationId = $(this).data('id');
-        const $item = $(this);
-        
-        if ($item.hasClass('unread')) {
+        const notificationList = $('.notification-list').first();
+        const notificationActions = $('.notification-actions').first();
+        let knownNotificationIds = new Set(
+            $('.notification-item[data-id]').map(function () {
+                return Number($(this).data('id'));
+            }).get()
+        );
+
+        function escapeHtml(value) {
+            return String(value || '').replace(/[&<>"']/g, function (char) {
+                return ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;'
+                })[char];
+            });
+        }
+
+        function getNotificationVisual(notification) {
+            const title = String(notification.title || '').toLowerCase();
+
+            if (title.includes('payment rejected')) {
+                return { wrapperClass: 'warning', iconClass: 'bi-x-circle' };
+            }
+
+            if (title.includes('payment approved') || notification.type === 'payment') {
+                return { wrapperClass: 'success', iconClass: 'bi-check-circle' };
+            }
+
+            if (notification.type === 'billing') {
+                return { wrapperClass: 'info', iconClass: 'bi-receipt' };
+            }
+
+            return { wrapperClass: 'warning', iconClass: 'bi-info-circle' };
+        }
+
+        function renderMarkAllButton(unreadCount) {
+            const existingButton = notificationActions.find('.mark-all-read-btn');
+
+            if (unreadCount > 0) {
+                if (!existingButton.length) {
+                    notificationActions.append('<button class="btn btn-sm btn-outline-primary mark-all-read-btn">Mark all as read</button>');
+                }
+            } else if (existingButton.length) {
+                existingButton.remove();
+            }
+        }
+
+        function updateNotificationBadge(unreadCount) {
+            const $badge = $('#notificationBell').find('.notification-badge');
+
+            if (unreadCount > 0) {
+                if ($badge.length) {
+                    $badge.text(unreadCount);
+                } else {
+                    $('#notificationBell').append('<span class="notification-badge">' + unreadCount + '</span>');
+                }
+            } else {
+                $badge.remove();
+            }
+        }
+
+        function renderNotificationList(notifications) {
+            if (!notifications.length) {
+                notificationList.html(`
+                    <div class="notification-empty">
+                        <i class="bi bi-bell-slash"></i>
+                        <p>No notifications</p>
+                    </div>
+                `);
+                return;
+            }
+
+            const html = notifications.map(function (notification) {
+                const visual = getNotificationVisual(notification);
+                const unreadClass = notification.is_read ? '' : 'unread';
+
+                return `
+                    <div class="notification-item ${unreadClass}" data-id="${Number(notification.id)}">
+                        <div class="d-flex">
+                            <div class="notification-icon ${visual.wrapperClass}">
+                                <i class="bi ${visual.iconClass}"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="notification-title">${escapeHtml(notification.title || 'Notification')}</div>
+                                <div class="notification-message">${escapeHtml(notification.message || '')}</div>
+                                <div class="notification-time">${escapeHtml(notification.time_ago || 'Just now')}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            notificationList.html(html);
+        }
+
+        function isPaymentVerificationUpdate(notification) {
+            const text = `${notification.title || ''} ${notification.message || ''}`.toLowerCase();
+            return text.includes('payment approved') || text.includes('payment rejected');
+        }
+
+        function fetchNotifications(showToastForNew) {
             $.ajax({
-                url: `/consumer/notifications/${notificationId}/read`,
-                type: 'POST',
-                data: {
-                    _token: $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function(response) {
-                    if (response.success) {
-                        $item.removeClass('unread');
-                        updateNotificationBadge();
+                url: "{{ route('consumer.notifications.index') }}",
+                type: 'GET',
+                data: { limit: 20 },
+                success: function (response) {
+                    if (!response || !response.success) {
+                        return;
+                    }
+
+                    const notifications = Array.isArray(response.notifications) ? response.notifications : [];
+                    const unreadCount = Number(response.unread_count ?? notifications.filter(n => !n.is_read).length);
+                    const currentIds = new Set(notifications.map(n => Number(n.id)));
+                    const newNotifications = showToastForNew
+                        ? notifications.filter(n => !knownNotificationIds.has(Number(n.id)))
+                        : [];
+
+                    renderNotificationList(notifications);
+                    updateNotificationBadge(unreadCount);
+                    renderMarkAllButton(unreadCount);
+                    knownNotificationIds = currentIds;
+
+                    const paymentUpdates = newNotifications.filter(isPaymentVerificationUpdate);
+                    if (paymentUpdates.length > 0) {
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'info',
+                            title: paymentUpdates.length === 1 ? paymentUpdates[0].title : `${paymentUpdates.length} payment updates`,
+                            showConfirmButton: false,
+                            timer: 4000,
+                            timerProgressBar: true
+                        });
                     }
                 }
             });
         }
-    });
-    
-    // Mark all notifications as read
-    $('.mark-all-read-btn').click(function(e) {
-        e.stopPropagation();
-        
-        $.ajax({
-            url: '/consumer/notifications/read-all',
-            type: 'POST',
-            data: {
-                _token: $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) {
-                if (response.success) {
-                    $('.notification-item').removeClass('unread');
-                    updateNotificationBadge();
+
+        $(document).on('click', '.notification-item', function () {
+            const notificationId = Number($(this).data('id'));
+            if (!notificationId || !$(this).hasClass('unread')) {
+                return;
+            }
+
+            $.ajax({
+                url: `{{ url('/consumer/notifications') }}/${notificationId}/read`,
+                type: 'POST',
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function (response) {
+                    if (response && response.success) {
+                        fetchNotifications(false);
+                    }
                 }
-            }
+            });
         });
-    });
-    
-    // Function to update notification badge
-    function updateNotificationBadge() {
-        const unreadCount = $('.notification-item.unread').length;
-        const $badge = $('.notification-badge');
-        
-        if (unreadCount > 0) {
-            if ($badge.length === 0) {
-                $('#notificationBell').append('<span class="notification-badge">' + unreadCount + '</span>');
-            } else {
-                $badge.text(unreadCount);
-            }
-        } else {
-            $badge.remove();
-        }
-    }
+
+        $(document).on('click', '.mark-all-read-btn', function (e) {
+            e.stopPropagation();
+
+            $.ajax({
+                url: "{{ route('consumer.notifications.read-all') }}",
+                type: 'POST',
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function (response) {
+                    if (response && response.success) {
+                        fetchNotifications(false);
+                    }
+                }
+            });
+        });
+
+        fetchNotifications(false);
+        setInterval(function () {
+            fetchNotifications(true);
+        }, 15000);
         // Mobile sidebar toggle functionality
         const sidebar = $('.sidebar');
         const mainContent = $('.main-content');

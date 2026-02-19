@@ -355,10 +355,12 @@ Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLink
 Route::get('/reset-password/{token}', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset.form');
 Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword'])->name('password.update');
 
-Route::get('/consumer/notifications', [NotificationController::class, 'index']);
-Route::get('/consumer/notifications/unread-count', [NotificationController::class, 'unreadCount']);
-Route::post('/consumer/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
-Route::post('/consumer/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+Route::middleware('consumer.auth')->group(function () {
+    Route::get('/consumer/notifications', [ConsumerAuthController::class, 'notifications'])->name('consumer.notifications.index');
+    Route::post('/consumer/notifications/{id}/read', [ConsumerAuthController::class, 'markNotificationAsRead'])->name('consumer.notifications.read');
+    Route::post('/consumer/notifications/read-all', [ConsumerAuthController::class, 'markAllNotificationsAsRead'])->name('consumer.notifications.read-all');
+    Route::post('/consumer/notifications/create', [ConsumerAuthController::class, 'createNotification'])->name('consumer.notifications.create');
+});
 
 Route::post('/admin-plumber-disconnection/{id}/reconnect', [ReadingController::class, 'reconnectConsumer'])->middleware('plumber.auth')->name('admin.reconnect');
 
@@ -445,10 +447,7 @@ Route::post('/plumber/verify-2fa', [PlumberController::class, 'verify2FA'])->nam
 Route::post('/plumber/resend-2fa', [PlumberController::class, 'resend2FA'])->name('plumber.resend.2fa');
 
 
-// Add these routes for consumer notifications
-Route::post('/consumer/notifications/{id}/read', [ConsumerAuthController::class, 'markNotificationAsRead']);
-Route::post('/consumer/notifications/read-all', [ConsumerAuthController::class, 'markAllNotificationsAsRead']);
-Route::post('/consumer/notifications/create', [ConsumerAuthController::class, 'createNotification']);
+// Consumer notification routes are defined above with consumer.auth middleware.
 
 // Accountant notification routes
 Route::prefix('admin')->name('admin.')->middleware('auth:admin')->group(function() {

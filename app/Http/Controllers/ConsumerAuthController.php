@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\ConsumerAccount;
 use App\Models\Billing;
 use App\Models\Notice;
+use App\Models\Notification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -227,7 +228,7 @@ class ConsumerAuthController extends Controller
     // Add these methods to ConsumerAuthController
     public function markNotificationAsRead($id)
     {
-        $notification = \App\Models\Notification::findOrFail($id);
+        $notification = Notification::findOrFail($id);
         
         // Check if the notification belongs to the authenticated consumer
         if ($notification->consumer_id !== Auth::guard('consumer')->user()->consumer->id) {
@@ -244,18 +245,46 @@ class ConsumerAuthController extends Controller
     {
         $consumerId = Auth::guard('consumer')->user()->consumer->id;
         
-        \App\Models\Notification::where('consumer_id', $consumerId)
+        Notification::where('consumer_id', $consumerId)
             ->where('is_read', false)
             ->update(['is_read' => true]);
         
         return response()->json(['success' => true]);
     }
 
+    public function notifications(Request $request)
+    {
+        $consumerId = Auth::guard('consumer')->user()->consumer->id;
+        $limit = (int) $request->input('limit', 20);
+        $limit = max(1, min($limit, 50));
+
+        $baseQuery = Notification::where('consumer_id', $consumerId)->orderBy('created_at', 'desc');
+        $notifications = (clone $baseQuery)->limit($limit)->get()->map(function ($notification) {
+            return [
+                'id' => $notification->id,
+                'title' => $notification->title,
+                'message' => $notification->message,
+                'type' => $notification->type,
+                'is_read' => (bool) $notification->is_read,
+                'created_at' => $notification->created_at ? $notification->created_at->toIso8601String() : null,
+                'time_ago' => $notification->created_at ? $notification->created_at->diffForHumans() : 'Just now',
+            ];
+        });
+
+        $unreadCount = (clone $baseQuery)->where('is_read', false)->count();
+
+        return response()->json([
+            'success' => true,
+            'unread_count' => $unreadCount,
+            'notifications' => $notifications,
+        ]);
+    }
+
     public function createNotification(Request $request)
     {
         $consumerId = Auth::guard('consumer')->user()->consumer->id;
         
-        \App\Models\Notification::create([
+        Notification::create([
             'consumer_id' => $consumerId,
             'title' => $request->title,
             'message' => $request->message,
