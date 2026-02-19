@@ -399,6 +399,18 @@
             padding: 1.5rem;
         }
 
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 56px;
+            padding: 0.9rem 1.5rem;
+        }
+
+        .card-header > * {
+            margin-bottom: 0;
+        }
+
         .card h3 {
             font-weight: 700;
             color: #2c3e50;
@@ -436,6 +448,39 @@
             color: #dc3545;
             font-size: 1.25rem;
         }
+
+        #complaintsModal .modal-dialog {
+            max-width: 92%;
+        }
+
+        #complaintsModal .modal-content {
+            height: 85vh;
+        }
+
+        #complaintsModal .modal-body {
+            height: calc(85vh - 140px);
+        }
+
+        #complaintAttachmentModal .modal-dialog {
+            max-width: 88%;
+        }
+
+        #complaintAttachmentModal .modal-content {
+            height: 88vh;
+        }
+
+        #complaintAttachmentModal .modal-body {
+            height: calc(88vh - 86px);
+            overflow: hidden;
+        }
+
+        .attachment-preview-frame {
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            border: 0;
+            background-color: #f8f9fa;
+        }
         
         @media (max-width: 576px) {
             .header-title {
@@ -462,6 +507,30 @@
             
             .modal-body {
                 height: calc(100vh - 140px);
+            }
+
+            .attachment-preview-frame {
+                min-height: 60vh;
+            }
+
+            #complaintsModal .modal-dialog,
+            #complaintAttachmentModal .modal-dialog {
+                max-width: 100%;
+                margin: 0;
+            }
+
+            #complaintsModal .modal-content,
+            #complaintAttachmentModal .modal-content {
+                height: 100vh;
+                border-radius: 0;
+            }
+
+            #complaintsModal .modal-body {
+                height: calc(100vh - 140px);
+            }
+
+            #complaintAttachmentModal .modal-body {
+                height: calc(100vh - 86px);
             }
         }
     </style>
@@ -687,7 +756,7 @@
                         <tbody>
                             @forelse ($recentComplaints as $complaint)
                                 <tr>
-                                    <td>{{ $complaint->id }}</td>
+                                    <td>{{ $loop->iteration }}</td>
                                     <td>{{ optional($complaint->consumer)->first_name }} {{ optional($complaint->consumer)->last_name }}</td>
                                     <td>{{ optional($complaint->consumer)->meter_no ?? 'N/A' }}</td>
                                     <td>
@@ -697,9 +766,9 @@
                                     </td>
                                     <td>
                                         @if ($complaint->attachment_path)
-                                            <a href="{{ route('admin.complaints.attachment', $complaint->id) }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary view-complaint-attachment-btn" data-attachment-url="{{ route('admin.complaints.attachment', $complaint->id) }}">
                                                 <i class="bi bi-paperclip"></i> View
-                                            </a>
+                                            </button>
                                         @else
                                             <span class="text-muted">None</span>
                                         @endif
@@ -714,6 +783,23 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Complaint Attachment Viewer Modal -->
+<div id="complaintAttachmentModal" class="modal fade" tabindex="-1" aria-labelledby="complaintAttachmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 id="complaintAttachmentModalLabel" class="modal-title">
+                    <i class="bi bi-paperclip me-2"></i>Complaint Attachment
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-2 p-md-3">
+                <iframe id="complaintAttachmentFrame" class="attachment-preview-frame" title="Complaint Attachment Preview"></iframe>
             </div>
         </div>
     </div>
@@ -913,6 +999,10 @@
     let isSessionActive = false;
     let map; // Will store the map instance
     let currentMarker; // Will store the current marker
+    const complaintsModalEl = document.getElementById('complaintsModal');
+    const complaintAttachmentModalEl = document.getElementById('complaintAttachmentModal');
+    const complaintAttachmentFrame = document.getElementById('complaintAttachmentFrame');
+    let reopenComplaintsAfterAttachment = false;
     
     // Initialize session management
     function initSessionManagement() {
@@ -1343,6 +1433,33 @@
     
     // Admin Logs Modal functionality
     let currentPage = 1;
+
+    $('.view-complaint-attachment-btn').on('click', function() {
+        const attachmentUrl = $(this).data('attachment-url');
+        if (!attachmentUrl || !complaintAttachmentModalEl || !complaintAttachmentFrame) {
+            return;
+        }
+
+        complaintAttachmentFrame.src = attachmentUrl;
+        reopenComplaintsAfterAttachment = true;
+
+        const complaintsModal = bootstrap.Modal.getInstance(complaintsModalEl);
+        if (complaintsModal) {
+            complaintsModal.hide();
+        }
+        bootstrap.Modal.getOrCreateInstance(complaintAttachmentModalEl).show();
+    });
+
+    $('#complaintAttachmentModal').on('hidden.bs.modal', function() {
+        if (complaintAttachmentFrame) {
+            complaintAttachmentFrame.src = 'about:blank';
+        }
+
+        if (reopenComplaintsAfterAttachment && complaintsModalEl) {
+            bootstrap.Modal.getOrCreateInstance(complaintsModalEl).show();
+        }
+        reopenComplaintsAfterAttachment = false;
+    });
     
     // Initialize when modal is shown
     $('#adminLogsModal').on('shown.bs.modal', function() {

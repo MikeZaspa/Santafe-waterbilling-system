@@ -384,7 +384,7 @@
                     <table class="table table-hover align-middle mb-0" id="announcementsTable">
                         <thead>
                             <tr>
-                                <th>ID</th>
+                                <th>#</th>
                                 <th>Title</th>
                                 <th>Message</th>
                                 <th>Status</th>
@@ -461,14 +461,14 @@
             }
 
             function renderTable() {
-                const rows = announcements.map((a) => {
+                const rows = announcements.map((a, index) => {
                     const statusBadge = a.is_active
                         ? '<span class="badge text-bg-success">Active</span>'
                         : '<span class="badge text-bg-secondary">Inactive</span>';
                     const publishedAt = a.published_at ? new Date(a.published_at).toLocaleString() : '-';
                     return `
                         <tr>
-                            <td>${a.id}</td>
+                            <td>${index + 1}</td>
                             <td>${escapeHtml(a.title)}</td>
                             <td style="max-width:420px; white-space:normal;">${escapeHtml(a.message)}</td>
                             <td>${statusBadge}</td>

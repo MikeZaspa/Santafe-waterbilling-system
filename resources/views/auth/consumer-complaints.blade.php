@@ -340,7 +340,7 @@
                         <div class="complaint-row">
                             <div class="complaint-bubble">
                                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                    <span class="badge text-bg-primary-subtle text-primary">Complaint #{{ $complaint->id }}</span>
+                                    <span class="badge text-bg-primary-subtle text-primary">Complaint #{{ $loop->iteration }}</span>
                                     <span class="complaint-meta">{{ $complaint->created_at->format('M d, Y h:i A') }}</span>
                                 </div>
                                 <p class="complaint-message">{{ $complaint->message }}</p>
@@ -369,7 +369,7 @@
                                         @csrf
                                         @method('PUT')
                                         <div class="modal-header">
-                                            <h5 class="modal-title">Edit Complaint #{{ $complaint->id }}</h5>
+                                            <h5 class="modal-title">Edit Complaint #{{ $loop->iteration }}</h5>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                         </div>
                                         <div class="modal-body">
