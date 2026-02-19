@@ -37,6 +37,7 @@ use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\AdminLogController;
 use App\Http\Controllers\AccountantNotificationController;
 use App\Http\Controllers\Admin\BackupController;
+use App\Http\Controllers\ConsumerComplaintController;
 
 Route::get('/admin/backup-database', [BackupController::class, 'backupDatabase'])->name('admin.backup.database');
 
@@ -360,6 +361,14 @@ Route::middleware('consumer.auth')->group(function () {
     Route::post('/consumer/notifications/{id}/read', [ConsumerAuthController::class, 'markNotificationAsRead'])->name('consumer.notifications.read');
     Route::post('/consumer/notifications/read-all', [ConsumerAuthController::class, 'markAllNotificationsAsRead'])->name('consumer.notifications.read-all');
     Route::post('/consumer/notifications/create', [ConsumerAuthController::class, 'createNotification'])->name('consumer.notifications.create');
+});
+
+Route::middleware('auth:consumer')->prefix('consumer/complaints')->name('consumer.complaints.')->group(function () {
+    Route::get('/', [ConsumerComplaintController::class, 'index'])->name('index');
+    Route::post('/', [ConsumerComplaintController::class, 'store'])->name('store');
+    Route::put('/{complaint}', [ConsumerComplaintController::class, 'update'])->name('update');
+    Route::delete('/{complaint}', [ConsumerComplaintController::class, 'destroy'])->name('destroy');
+    Route::get('/{complaint}/attachment', [ConsumerComplaintController::class, 'attachment'])->name('attachment');
 });
 
 Route::post('/admin-plumber-disconnection/{id}/reconnect', [ReadingController::class, 'reconnectConsumer'])->middleware('plumber.auth')->name('admin.reconnect');

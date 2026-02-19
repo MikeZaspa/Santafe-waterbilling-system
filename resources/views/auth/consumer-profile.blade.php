@@ -472,6 +472,11 @@
                     <i class="bi bi-receipt"></i> Billing
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('consumer.complaints.index') }}">
+                    <i class="bi bi-chat-left-text"></i> Complain
+                </a>
+            </li>
         </ul>
     </nav>
 </div>

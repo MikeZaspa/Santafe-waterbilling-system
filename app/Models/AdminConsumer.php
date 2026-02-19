@@ -43,5 +43,10 @@ class AdminConsumer extends Model
         return $this->hasMany(AccountantBilling::class, 'consumer_id');
     }
 
+    public function complaints()
+    {
+        return $this->hasMany(Complaint::class, 'consumer_id');
+    }
+    
     
 }
