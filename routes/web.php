@@ -47,7 +47,8 @@ Route::post('/admin-register', [AuthController::class, 'register']);
 Route::get('/admin-login', [AuthController::class, 'showLoginForm'])->name('admin-login');
 Route::post('/admin-login', [AuthController::class,'login']);
 
-Route::get('/admin-dashboard', [AuthController::class, 'showDashboard'])->middleware('admin.auth')->name('admin.dashboard');
+Route::get('/admin-dashboard', [DashboardController::class, 'index'])->middleware('admin.auth')->name('admin.dashboard');
+Route::get('/admin/complaints/{complaint}/attachment', [DashboardController::class, 'complaintAttachment'])->middleware('admin.auth')->name('admin.complaints.attachment');
 
 Route::get('/admin-consumer', [AdminConsumerController::class, 'index'])->name('admin-consumer');
    // Add these routes to your web.php
@@ -59,8 +60,6 @@ Route::get('/admin-check-auth', function () {
         'authenticated' => Auth::guard('admin')->check()
     ]);
 });
-
-Route::get('/admin-dashboard', [DashboardController::class, 'index']);
 
 Route::get('/admin-consumer', [AdminConsumerController::class, 'index'])->name('admin-consumer');
    Route::prefix('admin-consumer')->group(function() {

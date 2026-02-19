@@ -414,6 +414,28 @@
             height: 300px;
             width: 100%;
         }
+
+        .complaints-table td {
+            vertical-align: middle;
+        }
+
+        .complaint-message-preview {
+            max-width: 340px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .complaints-summary-card .summary-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            background: rgba(220, 53, 69, 0.12);
+            color: #dc3545;
+            font-size: 1.25rem;
+        }
         
         @media (max-width: 576px) {
             .header-title {
@@ -605,6 +627,92 @@
                             <canvas id="totalConsumersChart"></canvas>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mt-2">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm complaints-summary-card">
+                    <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="summary-icon">
+                                <i class="bi bi-chat-left-text"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-1">Consumer Complaints</h5>
+                                <p class="text-muted mb-0">Review all submitted complaint messages in one modal.</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-danger-subtle text-danger fs-6">Total: {{ $totalComplaints }}</span>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#complaintsModal">
+                                <i class="bi bi-eye me-1"></i> View Complaints
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Consumer Complaints Modal -->
+<div id="complaintsModal" class="modal fade" tabindex="-1" aria-labelledby="complaintsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 id="complaintsModalLabel" class="modal-title">
+                    <i class="bi bi-chat-left-text me-2"></i>Consumer Complaints
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <p class="text-muted mb-0">Latest complaint records from consumers.</p>
+                    <span class="badge bg-danger-subtle text-danger">Total: {{ $totalComplaints }}</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover complaints-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Consumer</th>
+                                <th>Meter No.</th>
+                                <th>Message</th>
+                                <th>Attachment</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($recentComplaints as $complaint)
+                                <tr>
+                                    <td>{{ $complaint->id }}</td>
+                                    <td>{{ optional($complaint->consumer)->first_name }} {{ optional($complaint->consumer)->last_name }}</td>
+                                    <td>{{ optional($complaint->consumer)->meter_no ?? 'N/A' }}</td>
+                                    <td>
+                                        <div class="complaint-message-preview" title="{{ $complaint->message }}">
+                                            {{ $complaint->message }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if ($complaint->attachment_path)
+                                            <a href="{{ route('admin.complaints.attachment', $complaint->id) }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                                <i class="bi bi-paperclip"></i> View
+                                            </a>
+                                        @else
+                                            <span class="text-muted">None</span>
+                                        @endif
+                                    </td>
+                                    <td>{{ $complaint->created_at->format('M d, Y h:i A') }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">No consumer complaints found.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

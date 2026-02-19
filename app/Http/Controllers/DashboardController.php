@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 use App\Models\AdminConsumer;
 use App\Models\AdminLog;
 use App\Models\Admin;
+use App\Models\Complaint;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -30,12 +32,34 @@ class DashboardController extends Controller
             ->pluck('count')
             ->toArray();
 
+        $recentComplaints = Complaint::with(['consumer:id,first_name,last_name,meter_no'])
+            ->latest()
+            ->take(20)
+            ->get();
+
+        $totalComplaints = Complaint::count();
+
         return view('auth.admin-dashboard', compact(
             'totalConsumers',
             'activeConsumers',
             'inactiveConsumers',
-            'monthlyGrowth'
+            'monthlyGrowth',
+            'recentComplaints',
+            'totalComplaints'
         ));
+    }
+
+    public function complaintAttachment(Complaint $complaint)
+    {
+        if (!Auth::guard('admin')->check()) {
+            return redirect('/admin-login');
+        }
+
+        if (empty($complaint->attachment_path) || !Storage::disk('public')->exists($complaint->attachment_path)) {
+            abort(404, 'Attachment not found.');
+        }
+
+        return response()->file(storage_path('app/public/' . $complaint->attachment_path));
     }
     
     /**
