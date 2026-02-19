@@ -66,7 +66,8 @@ class OnlinePaymentController extends Controller
             // Create online payment record
             $payment = OnlinePayment::create([
                 'bill_id' => $request->bill_id,
-                'consumer_id' => Auth::guard('consumer')->id(),
+                // Use the bill's consumer_id (admin_consumers.id) to keep relations consistent.
+                'consumer_id' => $bill->consumer_id,
                 'payment_method' => $request->payment_method,
                 'amount' => $bill->total_amount,
                 'reference_number' => $request->reference_number,

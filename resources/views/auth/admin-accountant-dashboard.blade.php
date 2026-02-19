@@ -417,7 +417,7 @@
                 </a>
             </li>
              <li class="nav-item">
-                <a class="nav-link" href="paymentVerificationSection">
+                <a class="nav-link" href="{{ route('paymentVerificationSection') }}">
                     <i class="bi bi-credit-card"></i> Payment Verification
                 </a>
             </li>
@@ -644,7 +644,7 @@
 
     function fetchPendingPaymentNotifications() {
         $.ajax({
-            url: '/admin/payments/pending-notifications',
+            url: "{{ route('admin.payments.pending-notifications') }}",
             type: 'GET',
             data: { limit: 10 },
             success: function(response) {
@@ -673,7 +673,7 @@
         e.preventDefault();
         const paymentId = $(this).data('id');
         if (paymentId) {
-            window.location.href = `/paymentVerificationSection?payment_id=${paymentId}`;
+            window.location.href = `{{ route('paymentVerificationSection') }}?payment_id=${paymentId}`;
         }
     });
 

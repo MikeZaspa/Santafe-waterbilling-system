@@ -507,7 +507,7 @@
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link active" href="paymentVerificationSection">
+        <a class="nav-link active" href="{{ route('paymentVerificationSection') }}">
           <i class="bi bi-credit-card"></i> Payment Verification
         </a>
       </li>
@@ -663,7 +663,7 @@
         processing: true,
         serverSide: true,
         ajax: {
-            url: "/admin/payments/datatable",
+            url: "{{ route('admin.payments.datatable') }}",
             type: 'GET',
             error: function(xhr, error, thrown) {
                 console.log('DataTables error:', xhr.responseJSON);
@@ -788,7 +788,7 @@
 
     function fetchPendingPaymentNotifications(showToastForNew = false) {
         $.ajax({
-            url: '/admin/payments/pending-notifications',
+            url: "{{ route('admin.payments.pending-notifications') }}",
             type: 'GET',
             data: { limit: 10 },
             success: function(response) {
@@ -853,7 +853,7 @@
         
         // Fetch payment details
         $.ajax({
-            url: `/admin/payments/${paymentId}`,
+            url: `{{ url('/admin/payments') }}/${paymentId}`,
             type: 'GET',
             success: function(response) {
                 if (response.success) {
@@ -911,7 +911,7 @@
                                         <i class="bi bi-x-circle" style="font-size: 3rem;"></i>
                                         <p class="mt-2">Failed to load image</p>
                                         <div class="mt-3">
-                                            <button class="btn btn-sm btn-outline-primary me-2" onclick="window.open('/payment-proof/${paymentId}', '_blank')">
+                                            <button class="btn btn-sm btn-outline-primary me-2" onclick="window.open('{{ url('/payment-proof') }}/${paymentId}', '_blank')">
                                                 <i class="bi bi-box-arrow-up-right"></i> Open in New Tab
                                             </button>
                                         </div>
@@ -921,7 +921,7 @@
                         };
                         
                         // Use dedicated endpoint
-                        const imagePath = `/payment-proof/${paymentId}`;
+                        const imagePath = `{{ url('/payment-proof') }}/${paymentId}`;
                         img.src = imagePath;
                     } else {
                         // Show placeholder when no image is available
@@ -1086,18 +1086,18 @@
         // Example: Send logout request to server
         // Replace this with your actual logout endpoint
         $.ajax({
-            url: '/logout', // Your logout route
+            url: "{{ route('logout') }}", // Your logout route
             type: 'POST',
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
                 // Redirect to login page
-                window.location.href = '/admin-login';
+                window.location.href = "{{ url('/admin-login') }}";
             },
             error: function(xhr) {
                 // If AJAX fails, still redirect to login
-                window.location.href = '/admin-login';
+                window.location.href = "{{ url('/admin-login') }}";
             }
         });
         
@@ -1108,7 +1108,7 @@
     // Verify payment function
     function verifyPayment(paymentId, status, notes) {
         $.ajax({
-            url: `/admin/payments/${paymentId}/verify`,
+            url: `{{ url('/admin/payments') }}/${paymentId}/verify`,
             type: 'POST',
             data: {
                 status: status,

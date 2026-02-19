@@ -285,12 +285,16 @@ Route::prefix('consumer')->group(function () {
     Route::post('/payment/submit', [OnlinePaymentController::class, 'store'])->name('consumer.payment.submit');
 });
 Route::get('/admin/payments/datatable', [OnlinePaymentController::class, 'datatable'])
+    ->middleware('accountant.auth')
     ->name('admin.payments.datatable');
-Route::get('/admin/payments', [OnlinePaymentController::class, 'datatable'])->name('admin.payments.index');
+Route::get('/admin/payments', [OnlinePaymentController::class, 'datatable'])
+    ->middleware('accountant.auth')
+    ->name('admin.payments.index');
 Route::get('/admin/payments/pending-notifications', [OnlinePaymentController::class, 'pendingNotifications'])
+    ->middleware('accountant.auth')
     ->name('admin.payments.pending-notifications');
 // Admin/Accountant payment management routes
-Route::prefix('admin')->group(function () {
+Route::prefix('admin')->middleware('accountant.auth')->group(function () {
     Route::get('/payments', [OnlinePaymentController::class, 'index'])->name('admin.payments.index');
     Route::get('/payments/{id}', [OnlinePaymentController::class, 'show'])->name('admin.payments.show');
     Route::post('/payments/{id}/verify', [OnlinePaymentController::class, 'verify'])->name('admin.payments.verify');
