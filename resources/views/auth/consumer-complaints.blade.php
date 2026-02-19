@@ -220,6 +220,14 @@
             box-shadow: 0 10px 25px rgba(13, 110, 253, 0.35);
         }
 
+        .attachment-viewer-frame {
+            width: 100%;
+            min-height: 70vh;
+            border: 0;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+
         @media (max-width: 575.98px) {
             .complaint-chat-modal .modal-content {
                 border-radius: 0;
@@ -345,9 +353,15 @@
                                 </div>
                                 <p class="complaint-message">{{ $complaint->message }}</p>
                                 @if ($complaint->attachment_path)
-                                    <a class="btn btn-sm btn-outline-secondary mb-2" href="{{ route('consumer.complaints.attachment', $complaint->id) }}" target="_blank">
+                                    <button
+                                        class="btn btn-sm btn-outline-secondary mb-2"
+                                        type="button"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#attachmentViewerModal"
+                                        data-attachment-url="{{ route('consumer.complaints.attachment', $complaint->id) }}"
+                                    >
                                         <i class="bi bi-paperclip me-1"></i> View Attachment
-                                    </a>
+                                    </button>
                                 @endif
                                 <div class="chat-actions">
                                     <button class="btn btn-sm btn-warning" type="button" data-bs-toggle="modal" data-bs-target="#editComplaintModal{{ $complaint->id }}">
@@ -423,6 +437,23 @@
     </div>
 </div>
 
+<div class="modal fade" id="attachmentViewerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-fullscreen-sm-down">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title mb-0">Attachment Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <iframe id="attachmentViewerFrame" class="attachment-viewer-frame" title="Attachment preview"></iframe>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     const sidebar = document.querySelector('.sidebar');
@@ -430,6 +461,8 @@
     const mobileOverlay = document.querySelector('.mobile-overlay');
     const complaintThread = document.getElementById('complaintThread');
     const complaintChatModalEl = document.getElementById('complaintChatModal');
+    const attachmentViewerModalEl = document.getElementById('attachmentViewerModal');
+    const attachmentViewerFrame = document.getElementById('attachmentViewerFrame');
     const hasComplaintErrors = @json($errors->any());
 
     if (sidebarToggle) {
@@ -455,6 +488,21 @@
     if (hasComplaintErrors && complaintChatModalEl) {
         const complaintChatModal = new bootstrap.Modal(complaintChatModalEl);
         complaintChatModal.show();
+    }
+
+    if (attachmentViewerModalEl && attachmentViewerFrame) {
+        attachmentViewerModalEl.addEventListener('show.bs.modal', function (event) {
+            const trigger = event.relatedTarget;
+            const attachmentUrl = trigger ? trigger.getAttribute('data-attachment-url') : '';
+
+            if (attachmentUrl) {
+                attachmentViewerFrame.src = attachmentUrl;
+            }
+        });
+
+        attachmentViewerModalEl.addEventListener('hidden.bs.modal', function () {
+            attachmentViewerFrame.src = '';
+        });
     }
 </script>
 </body>
