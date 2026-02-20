@@ -1007,11 +1007,10 @@
             <!-- User Dropdown -->
             <div class="dropdown">
                 <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
-                    <span>Consumer</span>
+                    <span>{{ $consumer->first_name ?? 'Consumer' }} {{ $consumer->last_name ?? '' }}</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUser">
-                    <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
-                    <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                    
                     <li><hr class="dropdown-divider"></li>
                     <!-- In the dropdown menu -->
                     <li>

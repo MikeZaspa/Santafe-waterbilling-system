@@ -442,6 +442,20 @@
             text-overflow: ellipsis;
         }
 
+        .complaint-message-cell {
+            min-width: 300px;
+        }
+
+        .complaint-message-content {
+            white-space: pre-wrap;
+            word-break: break-word;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            background: #f8f9fa;
+            padding: 1rem;
+            min-height: 140px;
+        }
+
         .complaints-summary-card .summary-icon {
             width: 52px;
             height: 52px;
@@ -476,6 +490,15 @@
         #complaintAttachmentModal .modal-body {
             height: calc(88vh - 86px);
             overflow: hidden;
+        }
+
+        #complaintMessageModal .modal-dialog {
+            max-width: 720px;
+        }
+
+        #complaintMessageModal .modal-content,
+        #complaintMessageModal .modal-body {
+            height: auto;
         }
 
         .attachment-preview-frame {
@@ -766,9 +789,19 @@
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ optional($complaint->consumer)->first_name }} {{ optional($complaint->consumer)->last_name }}</td>
                                     <td>{{ optional($complaint->consumer)->meter_no ?? 'N/A' }}</td>
-                                    <td>
-                                        <div class="complaint-message-preview" title="{{ $complaint->message }}">
-                                            {{ $complaint->message }}
+                                    <td class="complaint-message-cell">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="complaint-message-preview mb-0" title="{{ $complaint->message }}">
+                                                {{ $complaint->message }}
+                                            </div>
+                                            <button
+                                                type="button"
+                                                class="btn btn-sm btn-outline-primary view-complaint-message-btn"
+                                                data-consumer-name="{{ optional($complaint->consumer)->first_name }} {{ optional($complaint->consumer)->last_name }}"
+                                                data-complaint-message="{{ $complaint->message }}"
+                                            >
+                                                <i class="bi bi-eye"></i> View
+                                            </button>
                                         </div>
                                     </td>
                                     <td>
@@ -790,6 +823,24 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Complaint Message Viewer Modal -->
+<div id="complaintMessageModal" class="modal fade" tabindex="-1" aria-labelledby="complaintMessageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 id="complaintMessageModalLabel" class="modal-title">
+                    <i class="bi bi-chat-left-text me-2"></i>Complaint Message
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3">
+                <p id="complaintMessageConsumer" class="text-muted mb-2 small"></p>
+                <div id="complaintMessageContent" class="complaint-message-content"></div>
             </div>
         </div>
     </div>
@@ -1007,8 +1058,12 @@
     let map; // Will store the map instance
     let currentMarker; // Will store the current marker
     const complaintsModalEl = document.getElementById('complaintsModal');
+    const complaintMessageModalEl = document.getElementById('complaintMessageModal');
+    const complaintMessageContentEl = document.getElementById('complaintMessageContent');
+    const complaintMessageConsumerEl = document.getElementById('complaintMessageConsumer');
     const complaintAttachmentModalEl = document.getElementById('complaintAttachmentModal');
     const complaintAttachmentFrame = document.getElementById('complaintAttachmentFrame');
+    let reopenComplaintsAfterMessage = false;
     let reopenComplaintsAfterAttachment = false;
     
     // Initialize session management
@@ -1440,6 +1495,43 @@
     
     // Admin Logs Modal functionality
     let currentPage = 1;
+
+    $('.view-complaint-message-btn').on('click', function() {
+        if (!complaintMessageModalEl || !complaintMessageContentEl) {
+            return;
+        }
+
+        const complaintMessage = $(this).data('complaint-message');
+        const consumerName = ($(this).data('consumer-name') || '').toString().trim();
+
+        complaintMessageContentEl.textContent = complaintMessage || 'No message provided.';
+        if (complaintMessageConsumerEl) {
+            complaintMessageConsumerEl.textContent = consumerName ? `From: ${consumerName}` : 'From: Unknown Consumer';
+        }
+
+        reopenComplaintsAfterMessage = true;
+
+        const complaintsModal = bootstrap.Modal.getInstance(complaintsModalEl);
+        if (complaintsModal) {
+            complaintsModal.hide();
+        }
+        bootstrap.Modal.getOrCreateInstance(complaintMessageModalEl).show();
+    });
+
+    $('#complaintMessageModal').on('hidden.bs.modal', function() {
+        if (complaintMessageContentEl) {
+            complaintMessageContentEl.textContent = '';
+        }
+
+        if (complaintMessageConsumerEl) {
+            complaintMessageConsumerEl.textContent = '';
+        }
+
+        if (reopenComplaintsAfterMessage && complaintsModalEl) {
+            bootstrap.Modal.getOrCreateInstance(complaintsModalEl).show();
+        }
+        reopenComplaintsAfterMessage = false;
+    });
 
     $('.view-complaint-attachment-btn').on('click', function() {
         const attachmentUrl = $(this).data('attachment-url');

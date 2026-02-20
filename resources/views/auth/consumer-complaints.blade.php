@@ -288,15 +288,25 @@
             </button>
             
         </div>
-        <div>
-            <span class="me-3">{{ $consumer->first_name }} {{ $consumer->last_name }}</span>
-            <form action="{{ route('consumer.logout') }}" method="POST" class="d-inline">
-                @csrf
-                <button type="submit" class="btn btn-sm btn-outline-danger">
-                    <i class="bi bi-box-arrow-right me-1"></i> Logout
-                </button>
-            </form>
-        </div>
+        <!-- User Dropdown -->
+            <div class="dropdown">
+                <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                    <span>{{ $consumer->first_name ?? 'Consumer' }} {{ $consumer->last_name ?? '' }}</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownUser">
+                   
+                    <li><hr class="dropdown-divider"></li>
+                    <!-- In the dropdown menu -->
+                    <li>
+                        <a class="dropdown-item text-danger" href="#" id="logout-btn">
+                            <i class="bi bi-box-arrow-right me-2"></i>Sign Out
+                        </a>
+                        <form id="logout-form" action="/logout" method="POST" style="display: none;">
+                            @csrf
+                        </form>
+                    </li>
+                </ul>
+            </div>
     </header>
 
     <div class="content-wrapper">
