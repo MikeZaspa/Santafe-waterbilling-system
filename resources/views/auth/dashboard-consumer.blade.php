@@ -37,6 +37,8 @@
             background: var(--sidebar-bg);
             position: fixed;
             height: 100vh;
+            top: 0;
+            left: 0;
             overflow-y: auto;
             transition: all 0.3s;
             z-index: 1050;
@@ -108,11 +110,13 @@
             top: 0;
             z-index: 1040;
             background: white;
+            margin: 16px 20px 0;
             padding: 0 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             transition: all 0.3s ease;
+            border-radius: 8px;
         }
         
         .header-left {
@@ -207,8 +211,8 @@
             background: white;
             border-radius: 12px;
             box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-            padding: 25px;
-            margin-top: 25px;
+            padding: 25px;;
+            margin-top: 25px
             border: 1px solid rgba(0, 0, 0, 0.04);
             height: 100%;
         }

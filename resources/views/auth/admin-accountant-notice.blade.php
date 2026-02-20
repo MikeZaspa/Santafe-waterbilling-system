@@ -39,6 +39,8 @@
             background: var(--sidebar-bg);
             position: fixed;
             height: 100vh;
+            top: 0;
+            left: 0;
             overflow-y: auto;
             transition: all 0.3s;
             z-index: 1050;
@@ -126,11 +128,13 @@
             top: 0;
             z-index: 1040;
             background: white;
+            margin: 16px 20px 0;
             padding: 0 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             transition: all 0.3s ease;
+            border-radius: 8px;
         }
         
         .header-left {
@@ -157,7 +161,7 @@
         }
         
         .content-wrapper {
-            padding: 20px;
+            margin: 20px;
         }
         
         /* Table Styles */
@@ -185,8 +189,9 @@
 
         .table-title h3 {
             font-weight: 600;
-            color: #4361ee;
+            color: blue;
             margin: 0;
+            font-size: 24px;
         }
 
         .table-responsive {
@@ -534,7 +539,7 @@
         <div class="table-container animate-fadein">
             <div class="table-title">
                 <div class="d-flex justify-content-between align-items-center w-100">
-                    <h3 class="mb-0">Notice Management</h3>
+                    <h3 class="mb-0">Consumer Notices</h3>
                     <button class="btn btn-primary" id="addNoticeBtn" data-bs-toggle="modal" data-bs-target="#noticeModal">
                         <i class="bi bi-plus-circle-fill me-2"></i>
                         Add New Notice

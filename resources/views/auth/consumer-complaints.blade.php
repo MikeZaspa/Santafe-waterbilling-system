@@ -27,6 +27,8 @@
             background: var(--sidebar-bg);
             position: fixed;
             height: 100vh;
+            top: 0;
+            left: 0;
             overflow-y: auto;
             transition: all 0.3s;
             z-index: 1050;
@@ -79,17 +81,20 @@
             margin-left: 0;
         }
 
-        .header {
+         .header {
             height: var(--header-height);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             position: sticky;
             top: 0;
             z-index: 1040;
             background: white;
+            margin: 16px 20px 0;
             padding: 0 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            transition: all 0.3s ease;
+            border-radius: 8px;
         }
 
         .content-wrapper {
@@ -281,7 +286,7 @@
             <button id="sidebarToggle" class="btn d-lg-none me-3">
                 <i class="bi bi-list"></i>
             </button>
-            <h2 class="h5 mb-0">Complaint Management</h2>
+            
         </div>
         <div>
             <span class="me-3">{{ $consumer->first_name }} {{ $consumer->last_name }}</span>
@@ -316,7 +321,7 @@
                         <i class="bi bi-chat-left-dots"></i>
                     </div>
                     <div>
-                        <h4 class="mb-1">Complaint Chatbox</h4>
+                        <h4 class="mb-1 text-primary">Complaint Chatbox</h4>
                         <p class="mb-0 text-muted">Open the modal to send and manage your complaints in chat view.</p>
                     </div>
                 </div>

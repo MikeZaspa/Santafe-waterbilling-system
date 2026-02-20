@@ -39,6 +39,8 @@
             width: 280px;
             background: #f8f9fa;
             position: fixed;
+            top: 0;
+            left: 0;
             height: 100vh;
             overflow-y: auto;
             transition: all 0.3s ease;
@@ -105,18 +107,20 @@
             margin-left: 0;
         }
         
-        .header {
+         .header {
             height: var(--header-height);
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             position: sticky;
             top: 0;
             z-index: 1040;
             background: white;
+            margin: 16px 20px 0;
             padding: 0 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             transition: all 0.3s ease;
+            border-radius: 8px;
         }
         
         .header-left {
@@ -143,7 +147,7 @@
         }
         
         .content-wrapper {
-            padding: 20px;
+            margin: 10px;
         }
         
         .card {
@@ -833,7 +837,7 @@
                 <div class="col-12">
                     <div class="card animate-fadein">
                         <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center">
-                            <h5 class="mb-2 mb-md-0">Water Consumption Records</h5>
+                            <h5 class="mb-2 mb-md-0"  style="color: blue;">Water Consumption Records</h5>
                             <div>
                                 <button class="btn btn-primary btn-sm btn-md me-2" data-bs-toggle="modal" data-bs-target="#addBillingModal">
                                     <i class="bi bi-plus-circle me-1 me-md-2"></i>Add Reading

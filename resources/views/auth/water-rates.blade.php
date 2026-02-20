@@ -38,6 +38,8 @@
             background: var(--sidebar-bg);
             position: fixed;
             height: 100vh;
+            top: 0;
+            left: 0;
             overflow-y: auto;
             transition: all 0.3s;
             z-index: 1050;
@@ -125,11 +127,13 @@
             top: 0;
             z-index: 1040;
             background: white;
+            margin: 16px 20px 0;
             padding: 0 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             transition: all 0.3s ease;
+            border-radius: 8px;
         }
         
         .header-left {
@@ -160,7 +164,7 @@
         .content-wrapper {
             padding: 20px;
             border-radius: 8px;
-            margin: 15px;
+            margin: 20px;
             background-color: white;
         }
         
@@ -285,10 +289,11 @@
         }
         
         .page-title {
-            color: #4361ee;
-            font-size: 30px;
+            color: blue;
+            font-size: 23px;
             margin-bottom: 20px;
             padding-bottom: 10px;
+            font-weight: bold;
         }
         
         .rate-section {
@@ -581,7 +586,7 @@
     <div class="content-wrapper">
         <div class="container py-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="page-title mb-0">Water Rates Management</h1>
+                <h1 class="page-title mb-0">Cubic Range</h1>
                 <button type="button" class="btn btn-primary" id="addRateBtn" data-bs-toggle="modal" data-bs-target="#waterRateModal">
                     <i class="bi bi-plus-circle me-2"></i>Add New Water Rate
                 </button>

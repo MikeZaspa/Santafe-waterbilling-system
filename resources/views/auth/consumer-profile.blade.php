@@ -35,6 +35,8 @@
             background: var(--sidebar-bg);
             position: fixed;
             height: 100vh;
+            top: 0;
+            left: 0;
             overflow-y: auto;
             transition: all 0.3s;
             z-index: 1050;
@@ -113,18 +115,20 @@
             margin-left: 0;
         }
         
-        .header {
+         .header {
             height: var(--header-height);
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             position: sticky;
             top: 0;
             z-index: 1040;
             background: white;
+            margin: 16px 20px 0;
             padding: 0 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             transition: all 0.3s ease;
+            border-radius: 10px;
         }
         
         .header-left {
@@ -160,7 +164,7 @@
             border-radius: 12px;
             box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
             padding: 25px;
-            margin-top: 25px;
+            
             border: 1px solid rgba(0, 0, 0, 0.04);
         }
         
@@ -489,9 +493,7 @@
             <button id="sidebarToggle" class="btn d-lg-none me-3 mobile-menu-toggle">
                 <i class="bi bi-list"></i>
             </button>
-            <div>
-                <h2 class="header-title">Consumer Profile</h2>
-            </div>
+            
         </div>
        
         <div class="header-right">
