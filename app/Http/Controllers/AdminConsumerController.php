@@ -43,7 +43,7 @@ public function create()
 {
     $validated = $request->validate([
         'first_name' => 'required|string|max:255',
-        'middle_name' => 'nullable|string|max:255',
+        'middle_name' => 'nullable|string|max:2|regex:/^[A-Za-z]\.$/',
         'last_name' => 'required|string|max:255',
         'suffix' => 'nullable|string|max:20',
         'contact_number' => 'required|string|max:20|regex:/^09\d{9}$/',
@@ -92,7 +92,7 @@ public function create()
 {
     $validated = $request->validate([
         'first_name' => 'required|string|max:255',
-        'middle_name' => 'nullable|string|max:255',
+        'middle_name' => 'nullable|string|max:2|regex:/^[A-Za-z]\.$/',
         'last_name' => 'required|string|max:255',
         'suffix' => 'nullable|string|max:10',
         'contact_number' => 'required|string|max:20',

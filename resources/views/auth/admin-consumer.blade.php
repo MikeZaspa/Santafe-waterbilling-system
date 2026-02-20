@@ -773,7 +773,7 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="middleName" class="form-label">Middle Name</label>
-                            <input type="text" class="form-control" id="middleName">
+                            <input type="text" class="form-control" id="middleName" maxlength="2" placeholder="e.g., A.">
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="lastName" class="form-label required">Last Name</label>
@@ -781,7 +781,15 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="suffix" class="form-label">Suffix</label>
-                            <input type="text" class="form-control" id="suffix" placeholder="e.g., Jr., Sr., III">
+                            <select class="form-select" id="suffix">
+                                <option value="" selected>None (Optional)</option>
+                                <option value="Jr.">Jr.</option>
+                                <option value="Sr.">Sr.</option>
+                                <option value="II">II</option>
+                                <option value="III">III</option>
+                                <option value="IV">IV</option>
+                                <option value="V">V</option>
+                            </select>
                         </div>
                     </div>
 
@@ -1073,7 +1081,7 @@
 
      
     
-     $('#firstName, #middleName, #lastName, #suffix').on('input', function() {
+     $('#firstName, #lastName').on('input', function() {
     const originalValue = this.value;
     // Allow only letters, spaces, hyphens, apostrophes, and periods
     this.value = this.value.replace(/[^a-zA-Z\s\-\.\']/g, '');
@@ -1093,6 +1101,15 @@
         }, 2000);
     }
 });
+
+    function formatMiddleInitial(value) {
+        const lettersOnly = (value || '').replace(/[^a-zA-Z]/g, '');
+        return lettersOnly ? lettersOnly.charAt(0).toUpperCase() + '.' : '';
+    }
+
+    $('#middleName').on('input blur', function() {
+        this.value = formatMiddleInitial(this.value);
+    });
     
     sidebarToggle.on('click', function() {
         sidebar.toggleClass('active');
@@ -1246,13 +1263,15 @@
     // Save Consumer (Add/Edit)
     $('#saveConsumer').click(function() {
         const firstName = $('#firstName').val().trim();
-        const middleName = $('#middleName').val().trim();
+        const middleName = formatMiddleInitial($('#middleName').val().trim());
         const lastName = $('#lastName').val().trim();
         const suffix = $('#suffix').val().trim();
         const contactNumber = $('#contactNumber').val().trim();
         const meterNumber = $('#meter_no').val().trim();
 
         // Basic validation
+        $('#middleName').val(middleName);
+
         if (!firstName || !lastName || !contactNumber || !meterNumber || 
             !$('#address').val() || !$('#connectionDate').val() || 
             !$('#consumerType').val() || !$('#status').val()) {
@@ -1269,6 +1288,15 @@
                 icon: 'error',
                 title: 'Invalid Contact Number',
                 text: 'Contact number must be exactly 11 digits starting with 09 (e.g. 09171234567)'
+            });
+            return;
+        }
+
+        if (middleName && !/^[A-Za-z]\.$/.test(middleName)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid Middle Initial',
+                text: 'Middle name must be one letter followed by a period (e.g., A.)'
             });
             return;
         }
@@ -1343,7 +1371,7 @@
                 $('#modalTitle').text('Edit Consumer');
                 $('#consumerId').val(response.id);
                 $('#firstName').val(response.first_name);
-                $('#middleName').val(response.middle_name);
+                $('#middleName').val(formatMiddleInitial(response.middle_name || ''));
                 $('#lastName').val(response.last_name);
                 $('#suffix').val(response.suffix);
                 $('#contactNumber').val(response.contact_number);
