@@ -793,9 +793,9 @@
                         <label for="meterNo" class="form-label required">Meter Number</label>
                         <div class="input-group">
                             <input type="text" class="form-control" id="meter_no" name="meter_no" required>
-                            <span class="input-group-text" id="meterCount">0/8</span>
+                            <span class="input-group-text" id="meterCount">0/12</span>
                         </div>
-                        <small class="text-muted">Enter at least 8 digits (hyphens are allowed, e.g., 1234-5678)</small>
+                        <small class="text-muted">Enter 5 to 12 digits (hyphens are allowed, e.g., 1234-5678)</small>
                     </div>
                     <div class="mb-3">
                         <label for="address" class="form-label required">Address (Barangay)</label>
@@ -1183,14 +1183,25 @@
 
      $('#meter_no').on('input', function() {
     // Allow only numbers and hyphens
-    this.value = this.value.replace(/[^0-9-]/g, '');
+    const sanitizedValue = this.value.replace(/[^0-9-]/g, '');
+    let digitCount = 0;
+    this.value = sanitizedValue
+        .split('')
+        .filter(char => {
+            if (char === '-') {
+                return true;
+            }
+            digitCount += 1;
+            return digitCount <= 12;
+        })
+        .join('');
     
     // Update counter
     const digitsOnly = this.value.replace(/-/g, '');
-    $('#meterCount').text(digitsOnly.length + '/8');
+    $('#meterCount').text(digitsOnly.length + '/12');
     
     // Change color based on whether minimum is met
-    if (digitsOnly.length >= 8) {
+    if (digitsOnly.length >= 5) {
         $('#meterCount').removeClass('text-danger').addClass('text-success');
     } else {
         $('#meterCount').removeClass('text-success').addClass('text-danger');
@@ -1262,11 +1273,13 @@
             return;
         }
 
-        if (!/^[\d-]+$/.test(meterNumber)) {
+        const meterDigitsOnly = meterNumber.replace(/-/g, '');
+
+        if (!/^[\d-]+$/.test(meterNumber) || meterDigitsOnly.length < 5 || meterDigitsOnly.length > 12) {
             Swal.fire({
                 icon: 'error',
                 title: 'Invalid Meter Number',
-                text: 'Meter number must contain only numbers and hyphens'
+                text: 'Meter number must contain only numbers and hyphens, with 5 to 12 digits'
             });
             return;
         }
