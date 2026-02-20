@@ -217,6 +217,75 @@
             margin: 0;
         }
 
+        .table-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .consumer-search {
+            display: flex;
+            align-items: center;
+            min-width: 320px;
+            max-width: 420px;
+            width: 100%;
+            border: 1px solid #d7def1;
+            border-radius: 10px;
+            padding: 6px 12px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            box-shadow: 0 3px 12px rgba(13, 110, 253, 0.08);
+            transition: all 0.2s ease;
+        }
+
+        .consumer-search:focus-within {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+        }
+
+        .consumer-search i {
+            color: #64748b;
+            font-size: 0.95rem;
+            margin-right: 8px;
+        }
+
+        .consumer-search input {
+            border: 0;
+            outline: 0;
+            width: 100%;
+            background: transparent;
+            color: #1f2937;
+            font-size: 0.95rem;
+        }
+
+        .consumer-search input::placeholder {
+            color: #94a3b8;
+        }
+
+        .search-clear {
+            border: 0;
+            background: rgba(148, 163, 184, 0.15);
+            color: #475569;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            margin-left: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .search-clear:hover {
+            background: rgba(13, 110, 253, 0.2);
+            color: var(--primary-color);
+        }
+
+        .consumer-search.has-value .search-clear {
+            display: inline-flex;
+        }
+
         .table-responsive {
             width: 100%;
             overflow-x: auto;
@@ -575,6 +644,11 @@
             .header-title {
                 font-size: 1rem;
             }
+
+            .consumer-search {
+                min-width: 100%;
+                max-width: 100%;
+            }
             
             .header-subtitle {
                 display: none;
@@ -671,11 +745,18 @@
     <div class="content-wrapper">
         <div class="table-container animate-fadein">
             <div class="table-title">
-                <div class="d-flex justify-content-between align-items-center w-100">
-                    <h3 class="">Consumers Information</h3>
-                    <button class="btn btn-primary" id="addConsumerBtn" data-bs-toggle="modal" data-bs-target="#consumerModal">
-                        <i class="bi bi-plus-circle-fill me-2"></i>
-                        Add New Consumer
+                <h3 class="">Consumers Information</h3>
+                <button class="btn btn-primary" id="addConsumerBtn" data-bs-toggle="modal" data-bs-target="#consumerModal">
+                    <i class="bi bi-plus-circle-fill me-2"></i>
+                    Add New Consumer
+                </button>
+            </div>
+            <div class="table-toolbar">
+                <div class="consumer-search" id="consumerSearchWrap">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="consumerSearchInput" placeholder="Search name, meter no, contact..." aria-label="Search consumers">
+                    <button type="button" class="search-clear" id="clearConsumerSearch" aria-label="Clear search">
+                        <i class="bi bi-x"></i>
                     </button>
                 </div>
             </div>
@@ -1155,14 +1236,12 @@
     });
       
     // Initialize DataTable
-    $('#consumersTable').DataTable({
+    const consumersTable = $('#consumersTable').DataTable({
         responsive: true,
-        dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+        dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'>>" +
             "<'row'<'col-sm-12'tr>>" +
             "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
         language: {
-            search: "",
-            searchPlaceholder: "Search consumers...",
             lengthMenu: "Show _MENU_ entries",
             info: "Showing _START_ to _END_ of _TOTAL_ entries",
             infoEmpty: "Showing 0 to 0 of 0 entries",
@@ -1176,8 +1255,28 @@
             }
         },
         initComplete: function() {
-            $('.dataTables_filter input').addClass('form-control');
             $('.dataTables_length select').addClass('form-select');
+
+            const tableApi = this.api();
+            const searchInput = $('#consumerSearchInput');
+            const searchWrap = $('#consumerSearchWrap');
+            const clearSearchBtn = $('#clearConsumerSearch');
+
+            function updateSearchState(value) {
+                searchWrap.toggleClass('has-value', value.length > 0);
+            }
+
+            searchInput.on('input', function() {
+                const keyword = this.value;
+                tableApi.search(keyword).draw();
+                updateSearchState(keyword);
+            });
+
+            clearSearchBtn.on('click', function() {
+                searchInput.val('').trigger('input').focus();
+            });
+
+            updateSearchState(searchInput.val() || '');
         },
         columnDefs: [
             { responsivePriority: 1, targets: 0 },
