@@ -129,7 +129,7 @@
         }
 
         .content-wrapper {
-            padding: 20px;
+            margin: 20px;
         }
 
         .table-container {

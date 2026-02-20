@@ -156,7 +156,7 @@
         }
         
         .content-wrapper {
-            padding: 20px;
+            margin: 20px;
         }
 
         /* Add Consumer Button Styles */
@@ -672,7 +672,7 @@
         <div class="table-container animate-fadein">
             <div class="table-title">
                 <div class="d-flex justify-content-between align-items-center w-100">
-                    <h3 class="">Consumer Management</h3>
+                    <h3 class="">Consumers Information</h3>
                     <button class="btn btn-primary" id="addConsumerBtn" data-bs-toggle="modal" data-bs-target="#consumerModal">
                         <i class="bi bi-plus-circle-fill me-2"></i>
                         Add New Consumer

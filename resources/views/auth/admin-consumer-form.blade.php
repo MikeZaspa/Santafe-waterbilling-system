@@ -158,7 +158,7 @@
         }
 
         .content-wrapper {
-            padding: 20px;
+            margin: 20px;
         }
         
         /* Table Styles */
@@ -516,7 +516,7 @@
         <div class="table-container animate-fadein">
             <div class="search-add-container">
                 <div class="table-title">
-                    <h3>Account Management</h3>
+                    <h3>Consumers Account</h3>
                 </div>
                 <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#accountModal">
                     <i class="bi bi-plus-lg"></i> Add New Account
