@@ -11,28 +11,7 @@ class AdminLogService
 {
     public function logLogin(Admin $admin, Request $request, string $activity = 'admin-login')
     {
-        $ip = $request->ip();
-        $geolocation = $this->getGeolocation($ip);
-        $userAgent = $request->userAgent();
-        $deviceInfo = $this->parseUserAgent($userAgent);
-
-        return AdminLog::create([
-            'admin_id' => $admin->id,
-            'email' => $admin->email,
-            'ip_address' => $ip,
-            'country' => $geolocation['country'] ?? null,
-            'city' => $geolocation['city'] ?? null,
-            'region' => $geolocation['region'] ?? null,
-            'timezone' => $geolocation['timezone'] ?? null,
-            'latitude' => $geolocation['latitude'] ?? null,
-            'longitude' => $geolocation['longitude'] ?? null,
-            'browser' => $deviceInfo['browser'],
-            'platform' => $deviceInfo['platform'],
-            'device' => $deviceInfo['device'],
-            'user_agent' => $userAgent,
-            'activity' => $activity,
-            'login_at' => now(),
-        ]);
+        return AdminLog::create($this->buildLogPayload($admin, $request, $activity));
     }
 
     public function logLogout(Admin $admin)
@@ -52,34 +31,83 @@ class AdminLogService
 
     public function logActivity(Admin $admin = null, string $activity, Request $request = null)
     {
+        return AdminLog::create($this->buildLogPayload($admin, $request, $activity));
+    }
+
+    private function buildLogPayload(?Admin $admin, ?Request $request, string $activity): array
+    {
         $ip = $request ? $request->ip() : null;
-        $userAgent = $request ? $request->userAgent() : null;
+        $userAgent = $request ? (string) $request->userAgent() : '';
         $geolocation = [];
         $deviceInfo = ['browser' => 'Unknown', 'platform' => 'Unknown', 'device' => 'Unknown'];
-        
-        // Only try to get geolocation if we have an IP address
+        $requestLocation = $this->extractLocationFromRequest($request);
+
         if ($ip) {
             $geolocation = $this->getGeolocation($ip);
             $deviceInfo = $this->parseUserAgent($userAgent);
         }
 
-        return AdminLog::create([
+        $municipality = $requestLocation['municipality']
+            ?? ($geolocation['municipality'] ?? null)
+            ?? ($geolocation['city'] ?? null);
+
+        $street = $requestLocation['street']
+            ?? ($geolocation['street'] ?? null);
+
+        $barangay = $requestLocation['barangay']
+            ?? ($geolocation['barangay'] ?? null);
+
+        return [
             'admin_id' => $admin ? $admin->id : null,
-            'email' => $admin ? $admin->email : null,
+            'email' => $admin ? $admin->email : ($request ? $request->input('email') : null),
             'ip_address' => $ip,
             'country' => $geolocation['country'] ?? null,
-            'city' => $geolocation['city'] ?? null,
+            'city' => $geolocation['city'] ?? $municipality,
+            'municipality' => $municipality,
+            'street' => $street,
+            'barangay' => $barangay,
             'region' => $geolocation['region'] ?? null,
             'timezone' => $geolocation['timezone'] ?? null,
-            'latitude' => $geolocation['latitude'] ?? null,
-            'longitude' => $geolocation['longitude'] ?? null,
+            'latitude' => $requestLocation['latitude'] ?? ($geolocation['latitude'] ?? null),
+            'longitude' => $requestLocation['longitude'] ?? ($geolocation['longitude'] ?? null),
             'browser' => $deviceInfo['browser'],
             'platform' => $deviceInfo['platform'],
             'device' => $deviceInfo['device'],
-            'user_agent' => $userAgent,
+            'user_agent' => $userAgent ?: null,
             'activity' => $activity,
             'login_at' => now(),
-        ]);
+        ];
+    }
+
+    private function extractLocationFromRequest(?Request $request): array
+    {
+        if (!$request) {
+            return [
+                'municipality' => null,
+                'street' => null,
+                'barangay' => null,
+                'latitude' => null,
+                'longitude' => null,
+            ];
+        }
+
+        return [
+            'municipality' => $this->cleanLocationValue($request->input('municipality')),
+            'street' => $this->cleanLocationValue($request->input('street')),
+            'barangay' => $this->cleanLocationValue($request->input('barangay')),
+            'latitude' => $request->filled('latitude') ? (float) $request->input('latitude') : null,
+            'longitude' => $request->filled('longitude') ? (float) $request->input('longitude') : null,
+        ];
+    }
+
+    private function cleanLocationValue($value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $value = trim((string) $value);
+        return $value === '' ? null : $value;
     }
 
     private function getGeolocation(string $ip)
@@ -89,6 +117,9 @@ class AdminLogService
             return [
                 'country' => 'Local',
                 'city' => 'Local Network',
+                'municipality' => 'Local Network',
+                'street' => null,
+                'barangay' => null,
                 'region' => 'Local',
                 'timezone' => config('app.timezone', 'UTC'),
                 'latitude' => null,
@@ -105,6 +136,9 @@ class AdminLogService
                 return [
                     'country' => $data['country_name'] ?? null,
                     'city' => $data['city'] ?? null,
+                    'municipality' => $data['city'] ?? null,
+                    'street' => null,
+                    'barangay' => null,
                     'region' => $data['region'] ?? null,
                     'timezone' => $data['timezone'] ?? null,
                     'latitude' => $data['latitude'] ?? null,
@@ -121,6 +155,9 @@ class AdminLogService
                     return [
                         'country' => $data['country'] ?? null,
                         'city' => $data['city'] ?? null,
+                        'municipality' => $data['city'] ?? null,
+                        'street' => null,
+                        'barangay' => null,
                         'region' => $data['regionName'] ?? null,
                         'timezone' => $data['timezone'] ?? null,
                         'latitude' => $data['lat'] ?? null,
@@ -136,6 +173,9 @@ class AdminLogService
         return [
             'country' => null,
             'city' => null,
+            'municipality' => null,
+            'street' => null,
+            'barangay' => null,
             'region' => null,
             'timezone' => null,
             'latitude' => null,
