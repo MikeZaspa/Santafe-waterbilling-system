@@ -1204,5 +1204,11 @@
     }
 });
 </script>
+<script src="{{ asset('js/complaint-notifications.js') }}"></script>
+<script>
+$(function () {
+    initComplaintNotifications({ role: 'admin' });
+});
+</script>
 </body>
 </html>

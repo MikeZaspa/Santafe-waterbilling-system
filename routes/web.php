@@ -38,6 +38,7 @@ use App\Http\Controllers\AdminLogController;
 use App\Http\Controllers\AccountantNotificationController;
 use App\Http\Controllers\Admin\BackupController;
 use App\Http\Controllers\ConsumerComplaintController;
+use App\Http\Controllers\ComplaintNotificationController;
 
 Route::get('/admin/backup-database', [BackupController::class, 'backupDatabase'])->name('admin.backup.database');
 
@@ -368,6 +369,16 @@ Route::middleware('auth:consumer')->prefix('consumer/complaints')->name('consume
     Route::put('/{complaint}', [ConsumerComplaintController::class, 'update'])->name('update');
     Route::delete('/{complaint}', [ConsumerComplaintController::class, 'destroy'])->name('destroy');
     Route::get('/{complaint}/attachment', [ConsumerComplaintController::class, 'attachment'])->name('attachment');
+});
+
+Route::middleware('admin.auth')->prefix('admin/complaint-notifications')->name('admin.complaint-notifications.')->group(function () {
+    Route::get('/', [ComplaintNotificationController::class, 'adminIndex'])->name('index');
+    Route::post('/read-all', [ComplaintNotificationController::class, 'adminMarkAllRead'])->name('read-all');
+});
+
+Route::middleware('plumber.auth')->prefix('plumber/complaint-notifications')->name('plumber.complaint-notifications.')->group(function () {
+    Route::get('/', [ComplaintNotificationController::class, 'plumberIndex'])->name('index');
+    Route::post('/read-all', [ComplaintNotificationController::class, 'plumberMarkAllRead'])->name('read-all');
 });
 
 Route::post('/admin-plumber-disconnection/{id}/reconnect', [ReadingController::class, 'reconnectConsumer'])->middleware('plumber.auth')->name('admin.reconnect');

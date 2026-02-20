@@ -609,6 +609,9 @@
             <div class="position-relative me-3 d-none d-sm-block">
                 <i class="bi bi-clock-history header-icon" id="adminLogsIcon" data-bs-toggle="modal" data-bs-target="#adminLogsModal" title="Admin Logs"></i>
             </div>
+            <div class="position-relative me-3 d-none d-sm-block">
+                <i class="bi bi-bell header-icon" title="Complaint Notifications"></i>
+            </div>
             <div id="userDropdown" class="dropdown">
                 <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
                     <span class="d-none d-md-inline">Admin</span>
@@ -2055,6 +2058,12 @@ function renderLogsTable(logs) {
 });
 
 
+</script>
+<script src="{{ asset('js/complaint-notifications.js') }}"></script>
+<script>
+$(function () {
+    initComplaintNotifications({ role: 'admin' });
+});
 </script>
 
 </body>

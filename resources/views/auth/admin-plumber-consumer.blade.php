@@ -2640,6 +2640,12 @@ function restoreDisconnectedConsumer(consumerId, consumerName) {
         logoutRedirectUrl: '/plumber/login'
     };
 </script>
+<script src="{{ asset('js/complaint-notifications.js') }}"></script>
+<script>
+$(function () {
+    initComplaintNotifications({ role: 'plumber' });
+});
+</script>
 @include('auth.partials.session-timeout')
 </body>
 </html>

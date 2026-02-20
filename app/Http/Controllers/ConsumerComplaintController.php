@@ -48,7 +48,7 @@ class ConsumerComplaintController extends Controller
             'attachment_path' => $attachmentPath,
         ]);
 
-        return redirect()->route('consumer.complaints.index')->with('success', 'Complaint submitted successfully.');
+        return redirect()->route('consumer.complaints.index')->with('success', 'Complaint submitted successfully. Admin and plumber have been notified.');
     }
 
     public function update(Request $request, Complaint $complaint)

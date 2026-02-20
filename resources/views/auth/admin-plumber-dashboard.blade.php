@@ -1537,7 +1537,12 @@
     }
 });
 </script>
+<script src="{{ asset('js/complaint-notifications.js') }}"></script>
+<script>
+$(function () {
+    initComplaintNotifications({ role: 'plumber' });
+});
+</script>
 
 </body>
 </html>
-
