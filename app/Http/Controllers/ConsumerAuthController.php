@@ -255,11 +255,17 @@ class ConsumerAuthController extends Controller
     public function notifications(Request $request)
     {
         $consumerId = Auth::guard('consumer')->user()->consumer->id;
+        $loadAll = $request->boolean('all');
         $limit = (int) $request->input('limit', 20);
         $limit = max(1, min($limit, 50));
 
         $baseQuery = Notification::where('consumer_id', $consumerId)->orderBy('created_at', 'desc');
-        $notifications = (clone $baseQuery)->limit($limit)->get()->map(function ($notification) {
+        $notificationsQuery = clone $baseQuery;
+        if (!$loadAll) {
+            $notificationsQuery->limit($limit);
+        }
+
+        $notifications = $notificationsQuery->get()->map(function ($notification) {
             return [
                 'id' => $notification->id,
                 'title' => $notification->title,

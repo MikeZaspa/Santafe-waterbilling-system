@@ -679,7 +679,15 @@
             }
         },
         columns: [
-            { data: 'id', name: 'id' },
+            {
+                data: null,
+                name: 'id',
+                orderable: false,
+                searchable: false,
+                render: function(data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
             { 
                 data: 'admin_consumer', 
                 name: 'adminConsumer.first_name',

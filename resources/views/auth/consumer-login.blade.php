@@ -981,10 +981,19 @@
         <div class="notification-list">
             @if($notifications->count() > 0)
             @foreach($notifications as $notification)
+            @php
+                $isPaymentRejected = \Illuminate\Support\Str::contains(\Illuminate\Support\Str::lower($notification->title ?? ''), 'payment rejected');
+                $notificationIconWrapper = $isPaymentRejected
+                    ? 'danger'
+                    : ($notification->type === 'billing' ? 'info' : ($notification->type === 'payment' ? 'success' : 'warning'));
+                $notificationIcon = $isPaymentRejected
+                    ? 'bi-x-octagon-fill'
+                    : ($notification->type === 'billing' ? 'bi-receipt' : ($notification->type === 'payment' ? 'bi-check-circle' : 'bi-info-circle'));
+            @endphp
             <div class="notification-item {{ !$notification->is_read ? 'unread' : '' }}" data-id="{{ $notification->id }}">
                 <div class="d-flex">
-                    <div class="notification-icon {{ $notification->type === 'billing' ? 'info' : ($notification->type === 'payment' ? 'success' : 'warning') }}">
-                        <i class="bi {{ $notification->type === 'billing' ? 'bi-receipt' : ($notification->type === 'payment' ? 'bi-check-circle' : 'bi-info-circle') }}"></i>
+                    <div class="notification-icon {{ $notificationIconWrapper }}">
+                        <i class="bi {{ $notificationIcon }}"></i>
                     </div>
                     <div class="flex-grow-1">
                         <div class="notification-title">{{ $notification->title }}</div>
@@ -1410,7 +1419,7 @@
             const title = String(notification.title || '').toLowerCase();
 
             if (title.includes('payment rejected')) {
-                return { wrapperClass: 'warning', iconClass: 'bi-x-circle' };
+                return { wrapperClass: 'danger', iconClass: 'bi-x-octagon-fill' };
             }
 
             if (title.includes('payment approved') || notification.type === 'payment') {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Complaint;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -21,10 +22,14 @@ class ConsumerComplaintController extends Controller
         $complaints = Complaint::where('consumer_id', $consumer->id)
             ->latest()
             ->get();
+        $notifications = Notification::where('consumer_id', $consumer->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return view('auth.consumer-complaints', [
             'consumer' => $consumer,
             'complaints' => $complaints,
+            'notifications' => $notifications,
         ]);
     }
 
