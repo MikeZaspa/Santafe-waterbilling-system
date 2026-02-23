@@ -2628,20 +2628,11 @@ function restoreDisconnectedConsumer(consumerId, consumerName) {
     });
 });
 </script>
-<script>
-    window.sessionTimeoutConfig = {
-        durationMinutes: 240,
-        warningSeconds: 30,
-        logoutEndpoint: '/plumber/logout',
-        logoutRedirectUrl: '/plumber/login'
-    };
-</script>
 <script src="{{ asset('js/complaint-notifications.js') }}"></script>
 <script>
 $(function () {
     initComplaintNotifications({ role: 'plumber' });
 });
 </script>
-@include('auth.partials.session-timeout')
 </body>
 </html>
