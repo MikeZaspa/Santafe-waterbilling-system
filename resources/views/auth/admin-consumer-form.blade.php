@@ -337,32 +337,6 @@
             color: var(--primary-color);
         }
         
-        /* Session management styles */
-        .session-timer {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: white;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 10px 15px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            font-size: 0.8rem;
-            color: #6c757d;
-            z-index: 1000;
-            display: none;
-        }
-
-        .session-timer.warning {
-            border-color: var(--warning);
-            color: var(--warning);
-        }
-
-        .session-timer.danger {
-            border-color: var(--error);
-            color: var(--error);
-        }
-    
         @media (min-width: 992px) {
             .sidebar {
                 transform: translateX(0);
@@ -620,12 +594,6 @@
     </div>
 </div>
 
-<!-- Session Timer Display -->
-<div class="session-timer" id="sessionTimer">
-    <i class="fas fa-clock me-2"></i>
-    Session expires in: <span id="sessionTimeDisplay">240:00</span>
-</div>
-
 <!-- Bootstrap Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <!-- jQuery -->
@@ -640,137 +608,6 @@
 
 <script>
  $(document).ready(function() {
-    // Session management variables
-    const sessionTimer = document.getElementById('sessionTimer');
-    const sessionTimeDisplay = document.getElementById('sessionTimeDisplay');
-    let sessionTimeout;
-    let warningTimeout;
-    let sessionInterval;
-    const sessionDuration = 4 * 60 * 60 * 1000; // 4 hours in milliseconds
-    const warningTime = 30 * 1000; // 30 seconds
-    let sessionStartTime;
-    let sessionExpiryTime;
-    let isSessionActive = false;
-    
-    // Initialize session management
-    function initSessionManagement() {
-        document.addEventListener('mousemove', resetSessionTimer);
-        document.addEventListener('mousedown', resetSessionTimer);
-        document.addEventListener('keypress', resetSessionTimer);
-        document.addEventListener('scroll', resetSessionTimer);
-        document.addEventListener('touchstart', resetSessionTimer);
-        document.addEventListener('click', resetSessionTimer);
-        startSession();
-    }
-    
-    function startSession() {
-        isSessionActive = true;
-        sessionStartTime = new Date();
-        sessionExpiryTime = new Date(sessionStartTime.getTime() + sessionDuration);
-        sessionTimer.style.display = 'block';
-        updateSessionDisplay();
-        
-        clearTimeout(sessionTimeout);
-        sessionTimeout = setTimeout(() => endSession(), sessionDuration);
-        
-        clearTimeout(warningTimeout);
-        warningTimeout = setTimeout(() => showSessionWarning(), sessionDuration - warningTime);
-        
-        clearInterval(sessionInterval);
-        sessionInterval = setInterval(() => {
-            updateSessionDisplay();
-            const now = new Date();
-            const timeLeft = sessionExpiryTime - now;
-            if (timeLeft <= warningTime && timeLeft > 0) {
-                sessionTimer.classList.add('warning');
-            } else if (timeLeft <= 30000) {
-                sessionTimer.classList.remove('warning');
-                sessionTimer.classList.add('danger');
-            }
-        }, 1000);
-    }
-    
-    function resetSessionTimer() {
-        if (!isSessionActive) return;
-        clearTimeout(sessionTimeout);
-        clearTimeout(warningTimeout);
-        clearInterval(sessionInterval);
-        sessionStartTime = new Date();
-        sessionExpiryTime = new Date(sessionStartTime.getTime() + sessionDuration);
-        sessionTimer.classList.remove('warning', 'danger');
-        updateSessionDisplay();
-        sessionTimeout = setTimeout(() => endSession(), sessionDuration);
-        warningTimeout = setTimeout(() => showSessionWarning(), sessionDuration - warningTime);
-        sessionInterval = setInterval(() => {
-            updateSessionDisplay();
-            const now = new Date();
-            const timeLeft = sessionExpiryTime - now;
-            if (timeLeft <= warningTime && timeLeft > 0) {
-                sessionTimer.classList.add('warning');
-            } else if (timeLeft <= 30000) {
-                sessionTimer.classList.remove('warning');
-                sessionTimer.classList.add('danger');
-            }
-        }, 1000);
-    }
-    
-    function updateSessionDisplay() {
-        if (!isSessionActive) return;
-        const now = new Date();
-        const timeLeft = Math.max(0, sessionExpiryTime - now);
-        const minutes = Math.floor(timeLeft / 60000);
-        const seconds = Math.floor((timeLeft % 60000) / 1000);
-        sessionTimeDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    }
-    
-    function showSessionWarning() {
-        Swal.fire({
-            title: 'Session Expiring Soon',
-            html: 'Your session will expire in <strong>30 seconds</strong> due to inactivity.<br><br>Would you like to extend your session?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#0d6efd',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Extend Session',
-            cancelButtonText: 'Log Out',
-            allowOutsideClick: false,
-            allowEscapeKey: false
-        }).then((result) => {
-            if (result.isConfirmed) {
-                resetSessionTimer();
-                Swal.fire({
-                    title: 'Session Extended',
-                    text: 'Your session has been extended for another 4 hours.',
-                    icon: 'success',
-                    timer: 3000,
-                    showConfirmButton: false
-                });
-            } else {
-                endSession();
-            }
-        });
-    }
-    
-    function endSession() {
-        isSessionActive = false;
-        clearTimeout(sessionTimeout);
-        clearTimeout(warningTimeout);
-        clearInterval(sessionInterval);
-        sessionTimer.style.display = 'none';
-        Swal.fire({
-            title: 'Session Expired',
-            text: 'Your session has expired due to inactivity. Please log in again.',
-            icon: 'info',
-            confirmButtonColor: '#0d6efd',
-            allowOutsideClick: false,
-            allowEscapeKey: false
-        }).then(() => {
-            performLogout();
-        });
-    }
-    
-    initSessionManagement();
-
     // Mobile sidebar toggle functionality
     const sidebar = $('.sidebar');
     const mainContent = $('.main-content');
