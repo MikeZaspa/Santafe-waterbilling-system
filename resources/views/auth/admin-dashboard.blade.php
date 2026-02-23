@@ -42,8 +42,6 @@
             width: 280px;
             background: var(--sidebar-bg);
             position: fixed;
-            top: 0;
-            left: 0;
             height: 100vh;
             overflow-y: auto;
             transition: all 0.3s;
@@ -131,13 +129,12 @@
             top: 0;
             z-index: 1040;
             background: white;
-            margin: 16px 20px 0;
             padding: 0 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             transition: all 0.3s ease;
-            border-radius: 10px;
+            
         }
         
         .header-left {

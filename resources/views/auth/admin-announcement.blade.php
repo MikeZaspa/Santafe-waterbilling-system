@@ -23,13 +23,11 @@
             overflow-x: hidden;
         }
 
-        .sidebar {
+         .sidebar {
             width: 280px;
             background: var(--sidebar-bg);
             position: fixed;
             height: 100vh;
-            top: 0;
-            left: 0;
             overflow-y: auto;
             transition: all 0.3s;
             z-index: 1050;
@@ -101,12 +99,10 @@
             top: 0;
             z-index: 1040;
             background: white;
-            margin: 16px 20px 0;
             padding: 0 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-radius: 10px;
         }
 
         .header-left,
