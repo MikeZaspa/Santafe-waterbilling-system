@@ -841,14 +841,5 @@ $('#logout-btn').on('click', function(e) {
 });
 });
 </script>
-<script>
-    window.sessionTimeoutConfig = {
-        durationMinutes: 240,
-        warningSeconds: 30,
-        logoutRedirectUrl: '/accountant-login'
-    };
-</script>
-@include('auth.partials.session-timeout')
-
 </body>
 </html>
