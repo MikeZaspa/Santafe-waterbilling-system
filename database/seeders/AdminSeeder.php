@@ -12,8 +12,16 @@ class AdminSeeder extends Seeder
     {
         // Admin 2
         Admin::create([
-            'name' => 'Super Admin', // Change name as needed
-            'email' => 'hikoseijaro@gmail.com', // Change email as needed
+            'name' => 'Admin1', // Change name as needed
+            'email' => 'mikeyzaspa@gmail.com', // Change email as needed
+            'password' => Hash::make('Admin123@'), // Change password as needed
+            'email_verified_at' => now(),
+            'active' => true,
+        ]);
+
+        Admin::create([
+            'name' => 'Admin2', // Change name as needed
+            'email' => 'honorkings0701@gmail.com', // Change email as needed
             'password' => Hash::make('Admin123@'), // Change password as needed
             'email_verified_at' => now(),
             'active' => true,
