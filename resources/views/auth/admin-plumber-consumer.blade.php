@@ -162,12 +162,39 @@
         
         .table-responsive {
             border-radius: 8px;
-            overflow: hidden;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .table-responsive::-webkit-scrollbar {
+            height: 10px;
+        }
+
+        .table-responsive::-webkit-scrollbar-track {
+            background: #e9ecef;
+            border-radius: 10px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: #adb5bd;
+            border-radius: 10px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: #6c757d;
         }
         
         .table {
             margin-bottom: 0;
             width: 100%;
+        }
+
+        /* Keep a horizontal scrollbar available at the bottom */
+        #billingTable,
+        #disconnectedConsumersTable,
+        #cutConsumersTable {
+            min-width: 1200px;
         }
         
         .table th {
