@@ -624,7 +624,12 @@
                                 <td>{{ $rate->range }}</td>
                                 <td>₱{{ number_format($rate->amount, 2) }}</td>
                                 <td>
-                                    <a href="{{ route('water-rates.edit', $rate->id) }}" class="btn btn-sm btn-warning">Edit</a>
+                                    <a href="{{ route('water-rates.edit', $rate->id) }}"
+                                       class="btn btn-sm btn-warning edit-rate-btn"
+                                       data-id="{{ $rate->id }}"
+                                       data-type="{{ $rate->type }}"
+                                       data-range="{{ $rate->range }}"
+                                       data-amount="{{ $rate->amount }}">Edit</a>
                                     <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" 
                                             data-bs-target="#confirm-modal" data-id="{{ $rate->id }}">
                                         Delete
@@ -661,7 +666,12 @@
                                 <td>{{ $rate->range }}</td>
                                 <td>₱{{ number_format($rate->amount, 2) }}</td>
                                 <td>
-                                    <a href="{{ route('water-rates.edit', $rate->id) }}" class="btn btn-sm btn-warning">Edit</a>
+                                    <a href="{{ route('water-rates.edit', $rate->id) }}"
+                                       class="btn btn-sm btn-warning edit-rate-btn"
+                                       data-id="{{ $rate->id }}"
+                                       data-type="{{ $rate->type }}"
+                                       data-range="{{ $rate->range }}"
+                                       data-amount="{{ $rate->amount }}">Edit</a>
                                     <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" 
                                             data-bs-target="#confirm-modal" data-id="{{ $rate->id }}">
                                         Delete
@@ -704,7 +714,12 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <a href="{{ route('water-rates.edit', $rate->id) }}" class="btn btn-sm btn-warning">Edit</a>
+                                    <a href="{{ route('water-rates.edit', $rate->id) }}"
+                                       class="btn btn-sm btn-warning edit-rate-btn"
+                                       data-id="{{ $rate->id }}"
+                                       data-type="{{ $rate->type }}"
+                                       data-range="{{ $rate->range }}"
+                                       data-amount="{{ $rate->amount }}">Edit</a>
                                     <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" 
                                             data-bs-target="#confirm-modal" data-id="{{ $rate->id }}">
                                         Delete
@@ -794,6 +809,8 @@
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script>
     $(document).ready(function() {
+        const waterRateModalEl = document.getElementById('waterRateModal');
+        const waterRateModal = waterRateModalEl ? bootstrap.Modal.getOrCreateInstance(waterRateModalEl) : null;
         const notificationBadge = $('#notificationBadge');
         const notificationList = $('#notificationList');
 
@@ -928,11 +945,6 @@
             form.attr('action', '/water-rates/' + rateId);
         });
 
-        // Initialize modal when opened
-        $('#waterRateModal').on('show.bs.modal', function() {
-            resetForm();
-        });
-
         // Reset all form fields
         function resetForm() {
             $('#waterRateForm')[0].reset();
@@ -1004,7 +1016,9 @@
                 dataType: 'json',
                 success: function(response) {
                     if (response.success) {
-                        $('#waterRateModal').modal('hide');
+                        if (waterRateModal) {
+                            waterRateModal.hide();
+                        }
                         location.reload(); // Simple reload to show updated data
                         Swal.fire({
                             icon: 'success',
@@ -1046,10 +1060,29 @@
             });
         });
 
+        // Edit rate button click handler
+        $(document).on('click', '.edit-rate-btn', function(e) {
+            e.preventDefault();
+
+            resetForm();
+            $('#rateId').val($(this).data('id'));
+            $('#modalType').val($(this).data('type'));
+            $('#modalRange').val($(this).data('range'));
+            $('#modalAmount').val($(this).data('amount'));
+            $('#waterRateModalLabel').text('Edit Water Rate');
+            $('#saveRate').html('<i class="bi bi-save me-2"></i> Update');
+
+            if (waterRateModal) {
+                waterRateModal.show();
+            }
+        });
+
         // Add rate button click handler
         $('#addRateBtn').click(function() {
             resetForm();
-            $('#waterRateModal').modal('show');
+            if (waterRateModal) {
+                waterRateModal.show();
+            }
         });
 
         // Mobile sidebar toggle functionality
