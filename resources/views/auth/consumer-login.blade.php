@@ -1095,9 +1095,6 @@
                                             <i class="bi bi-credit-card me-1"></i> Pay
                                         </button>
                                     @endif
-                                    <button class="btn btn-sm btn-outline-primary receipt-btn" data-id="{{ $bill->id }}">
-                                        <i class="bi bi-receipt"></i>
-                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -1159,9 +1156,6 @@
                                 <i class="bi bi-credit-card me-1"></i> Pay
                             </button>
                         @endif
-                        <button class="btn btn-sm btn-outline-primary receipt-btn" data-id="{{ $bill->id }}">
-                            <i class="bi bi-receipt"></i> Receipt
-                        </button>
                     </div>
                 </div>
                 @endforeach
