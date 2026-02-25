@@ -1048,7 +1048,9 @@
                 </div>
             </div>
             @php
-                $showActionsColumn = $bills->contains(fn($bill) => $bill->status !== 'paid');
+                $showActionsColumn = $bills->contains(function ($bill) {
+                    return $bill->status !== 'paid';
+                });
             @endphp
             
             <!-- Desktop Table View -->
