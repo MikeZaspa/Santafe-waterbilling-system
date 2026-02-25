@@ -1047,6 +1047,9 @@
                     </select>
                 </div>
             </div>
+            @php
+                $showActionsColumn = $bills->contains(fn($bill) => $bill->status !== 'paid');
+            @endphp
             
             <!-- Desktop Table View -->
             <div class="table-responsive">
