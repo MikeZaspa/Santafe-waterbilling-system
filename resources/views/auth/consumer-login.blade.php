@@ -1062,7 +1062,9 @@
                             <th>Consumption (m³)</th>
                             <th>Amount</th>
                             <th>Status</th>
-                            <th>Actions</th>
+                            @if($showActionsColumn)
+                                <th>Actions</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody>
@@ -1088,18 +1090,20 @@
                                     </span>
                                 @endif
                             </td>
-                            <td>
-                                <div class="d-flex">
-                                    @if($bill->status !== 'paid')
-                                        <button class="btn btn-sm btn-success payment-btn me-1"
-                                            data-id="{{ $bill->id }}"
-                                            data-amount="{{ $bill->total_amount }}"
-                                            data-billno="{{ $loop->iteration }}">
-                                            <i class="bi bi-credit-card me-1"></i> Pay
-                                        </button>
-                                    @endif
-                                </div>
-                            </td>
+                            @if($showActionsColumn)
+                                <td>
+                                    <div class="d-flex">
+                                        @if($bill->status !== 'paid')
+                                            <button class="btn btn-sm btn-success payment-btn me-1"
+                                                data-id="{{ $bill->id }}"
+                                                data-amount="{{ $bill->total_amount }}"
+                                                data-billno="{{ $loop->iteration }}">
+                                                <i class="bi bi-credit-card me-1"></i> Pay
+                                            </button>
+                                        @endif
+                                    </div>
+                                </td>
+                            @endif
                         </tr>
                         @endforeach
                     </tbody>
