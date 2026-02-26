@@ -697,11 +697,25 @@
             document.cookie = mobileAppFlagKey + '=true; max-age=' + oneYearInSeconds + '; path=/; SameSite=Lax' + cookieDomain + secureFlag;
         }
 
-        if (queryParams.get('reset_app_modal') === '1') {
+        const shouldResetMobileModal = queryParams.get('reset_app_modal') === '1';
+        const forceShowMobileModal = queryParams.get('show_app_modal') === '1';
+
+        if (shouldResetMobileModal) {
             clearMobileDownloadFlag();
         }
 
-        const forceShowMobileModal = queryParams.get('show_app_modal') === '1';
+        if (shouldResetMobileModal || forceShowMobileModal) {
+            queryParams.delete('reset_app_modal');
+            queryParams.delete('show_app_modal');
+
+            const cleanedQueryString = queryParams.toString();
+            const cleanedUrl = window.location.pathname
+                + (cleanedQueryString ? '?' + cleanedQueryString : '')
+                + window.location.hash;
+
+            window.history.replaceState({}, document.title, cleanedUrl);
+        }
+
         const hasDownloadedMobileApp = hasMobileDownloadFlag();
         const isInMobileApp = isStandaloneAppContext();
         const accessOtherPortalsBtn = document.getElementById('accessOtherPortalsBtn');
