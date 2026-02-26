@@ -743,9 +743,6 @@
                 }, 700);
             }
 
-            androidAppModalEl.addEventListener('hidden.bs.modal', function() {
-                persistMobileDownloadFlag();
-            });
         }
 
         $('#downloadAndroidApp, #downloadIosApp').on('click', function() {
