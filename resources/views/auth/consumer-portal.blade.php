@@ -612,21 +612,62 @@
 
         const isTwoFactorPending = @json((bool) session('show2faModal'));
 
-        const mobileAppFlagKey = 'hasDownloadedMobileApp';
+        const mobileAppFlagKey = 'hasDownloadedMobileAppV2';
+        const legacyMobileAppFlagKey = 'hasDownloadedMobileApp';
+
+        function getCookieValue(key) {
+            const cookie = document.cookie
+                .split('; ')
+                .find(function(item) {
+                    return item.indexOf(key + '=') === 0;
+                });
+
+            return cookie ? cookie.substring((key + '=').length) : '';
+        }
+
+        function clearMobileDownloadFlag() {
+            try {
+                localStorage.removeItem(mobileAppFlagKey);
+                localStorage.removeItem(legacyMobileAppFlagKey);
+            } catch (error) {
+                // Ignore storage errors.
+            }
+
+            const expires = 'expires=Thu, 01 Jan 1970 00:00:00 GMT';
+            const basePath = '; path=/; SameSite=Lax';
+            const cookieDomain = window.location.hostname.endsWith('santafe-waterbilling.com')
+                ? '; domain=.santafe-waterbilling.com'
+                : '';
+
+            document.cookie = mobileAppFlagKey + '=; ' + expires + basePath + cookieDomain;
+            document.cookie = legacyMobileAppFlagKey + '=; ' + expires + basePath + cookieDomain;
+            document.cookie = mobileAppFlagKey + '=; ' + expires + basePath;
+            document.cookie = legacyMobileAppFlagKey + '=; ' + expires + basePath;
+        }
+
+        function isMobileBrowser() {
+            return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
+        }
+
+        function isStandaloneAppContext() {
+            const isStandaloneDisplay = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+            const isIOSStandalone = window.navigator.standalone === true;
+            const isAndroidWebView = /\bwv\b|WebView/i.test(navigator.userAgent || '');
+
+            return isStandaloneDisplay || isIOSStandalone || isAndroidWebView;
+        }
 
         function hasMobileDownloadFlag() {
             let hasLocalStorageFlag = false;
             try {
-                hasLocalStorageFlag = localStorage.getItem(mobileAppFlagKey) === 'true';
+                hasLocalStorageFlag = localStorage.getItem(mobileAppFlagKey) === 'true'
+                    || localStorage.getItem(legacyMobileAppFlagKey) === 'true';
             } catch (error) {
                 hasLocalStorageFlag = false;
             }
 
-            const hasCookieFlag = document.cookie
-                .split('; ')
-                .some(function(cookie) {
-                    return cookie === mobileAppFlagKey + '=true';
-                });
+            const hasCookieFlag = getCookieValue(mobileAppFlagKey) === 'true'
+                || getCookieValue(legacyMobileAppFlagKey) === 'true';
 
             return hasLocalStorageFlag || hasCookieFlag;
         }
@@ -646,12 +687,22 @@
             document.cookie = mobileAppFlagKey + '=true; max-age=' + oneYearInSeconds + '; path=/; SameSite=Lax' + cookieDomain + secureFlag;
         }
 
+        const queryParams = new URLSearchParams(window.location.search);
+        if (queryParams.get('reset_app_modal') === '1') {
+            clearMobileDownloadFlag();
+        }
+
+        const forceShowMobileModal = queryParams.get('show_app_modal') === '1';
         const hasDownloadedMobileApp = hasMobileDownloadFlag();
         const androidAppModalEl = document.getElementById('androidAppModal');
         if (androidAppModalEl) {
             const androidAppModal = new bootstrap.Modal(androidAppModalEl);
+            const shouldShowMobileDownloadModal = isMobileBrowser()
+                && !isStandaloneAppContext()
+                && !isTwoFactorPending
+                && (forceShowMobileModal || !hasDownloadedMobileApp);
 
-            if (!isTwoFactorPending && !hasDownloadedMobileApp) {
+            if (shouldShowMobileDownloadModal) {
                 setTimeout(function() {
                     androidAppModal.show();
                 }, 700);
