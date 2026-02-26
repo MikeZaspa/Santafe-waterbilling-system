@@ -525,24 +525,13 @@
                 </div>
                 <div class="modal-body">
                     <p class="mobile-download-copy">Download Santa Fe Water Billing for your phone.</p>
-                    @php($iosAppStoreUrl = env('IOS_APP_STORE_URL'))
                     <div class="mobile-download-actions d-flex flex-column gap-2">
                         <a href="{{ asset('android.apk') }}" id="downloadAndroidApp" class="btn btn-outline-success" download>
                             <i class="bi bi-android2 me-1"></i>Android APK
                         </a>
-                        @if(file_exists(public_path('ios.apk')))
-                            <a href="{{ asset('ios.apk') }}" id="downloadIosApp" class="btn btn-outline-dark" download>
-                                <i class="bi bi-apple me-1"></i>iOS APK
-                            </a>
-                        @elseif(!empty($iosAppStoreUrl))
-                            <a href="{{ $iosAppStoreUrl }}" id="downloadIosApp" class="btn btn-outline-dark" target="_blank" rel="noopener">
-                                <i class="bi bi-apple me-1"></i>iOS App Store
-                            </a>
-                        @else
-                            <button type="button" class="btn btn-outline-secondary" disabled>
-                                <i class="bi bi-apple me-1"></i>iOS Coming Soon
-                            </button>
-                        @endif
+                        <button type="button" class="btn btn-outline-secondary" disabled>
+                            <i class="bi bi-apple me-1"></i>iOS Coming Soon
+                        </button>
                     </div>
                 </div>
             </div>
