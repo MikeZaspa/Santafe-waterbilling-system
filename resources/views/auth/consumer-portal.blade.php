@@ -614,6 +614,7 @@
 
         const mobileAppFlagKey = 'hasDownloadedMobileAppV2';
         const legacyMobileAppFlagKey = 'hasDownloadedMobileApp';
+        const queryParams = new URLSearchParams(window.location.search);
 
         function getCookieValue(key) {
             const cookie = document.cookie
@@ -646,11 +647,18 @@
         }
 
         function isStandaloneAppContext() {
-            const isStandaloneDisplay = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+            const userAgent = navigator.userAgent || '';
+            const isStandaloneDisplay = window.matchMedia && (
+                window.matchMedia('(display-mode: standalone)').matches
+                || window.matchMedia('(display-mode: fullscreen)').matches
+                || window.matchMedia('(display-mode: minimal-ui)').matches
+            );
             const isIOSStandalone = window.navigator.standalone === true;
-            const isAndroidWebView = /\bwv\b|WebView/i.test(navigator.userAgent || '');
+            const isAndroidWebView = /\bwv\b|WebView|Version\/[\d.]+.*Chrome\/[\d.]+ Mobile/i.test(userAgent);
+            const isAndroidAppReferrer = (document.referrer || '').indexOf('android-app://') === 0;
+            const isForcedAppContext = queryParams.get('app') === '1' || queryParams.get('app_context') === '1';
 
-            return isStandaloneDisplay || isIOSStandalone || isAndroidWebView;
+            return isForcedAppContext || isStandaloneDisplay || isIOSStandalone || isAndroidWebView || isAndroidAppReferrer;
         }
 
         function hasMobileDownloadFlag() {
@@ -683,7 +691,6 @@
             document.cookie = mobileAppFlagKey + '=true; max-age=' + oneYearInSeconds + '; path=/; SameSite=Lax' + cookieDomain + secureFlag;
         }
 
-        const queryParams = new URLSearchParams(window.location.search);
         if (queryParams.get('reset_app_modal') === '1') {
             clearMobileDownloadFlag();
         }
@@ -693,7 +700,7 @@
         const isInMobileApp = isStandaloneAppContext();
         const accessOtherPortalsBtn = document.getElementById('accessOtherPortalsBtn');
         const portalModalEl = document.getElementById('portalModal');
-        if (hasDownloadedMobileApp && isInMobileApp) {
+        if (isInMobileApp) {
             if (accessOtherPortalsBtn) {
                 accessOtherPortalsBtn.style.display = 'none';
             }
@@ -706,7 +713,7 @@
         const androidAppModalEl = document.getElementById('androidAppModal');
         if (androidAppModalEl) {
             const androidAppModal = new bootstrap.Modal(androidAppModalEl);
-            const shouldShowMobileDownloadModal = !isStandaloneAppContext()
+            const shouldShowMobileDownloadModal = !isInMobileApp
                 && !isTwoFactorPending
                 && (forceShowMobileModal || !hasDownloadedMobileApp);
 
