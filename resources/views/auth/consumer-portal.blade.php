@@ -645,10 +645,6 @@
             document.cookie = legacyMobileAppFlagKey + '=; ' + expires + basePath;
         }
 
-        function isMobileBrowser() {
-            return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '');
-        }
-
         function isStandaloneAppContext() {
             const isStandaloneDisplay = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
             const isIOSStandalone = window.navigator.standalone === true;
@@ -697,8 +693,7 @@
         const androidAppModalEl = document.getElementById('androidAppModal');
         if (androidAppModalEl) {
             const androidAppModal = new bootstrap.Modal(androidAppModalEl);
-            const shouldShowMobileDownloadModal = isMobileBrowser()
-                && !isStandaloneAppContext()
+            const shouldShowMobileDownloadModal = !isStandaloneAppContext()
                 && !isTwoFactorPending
                 && (forceShowMobileModal || !hasDownloadedMobileApp);
 
