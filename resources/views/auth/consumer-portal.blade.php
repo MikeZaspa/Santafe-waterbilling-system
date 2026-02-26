@@ -18,142 +18,96 @@
     <link rel="icon" type="image/png" href="image/santalogo.png">
     <style>
         :root {
-            --primary-color: #ef3340;
-            --primary-light: #ff6d76;
-            --primary-dark: #cf1f2c;
+            --primary-color: #d32f2f;
+            --primary-light: #ff6659;
+            --primary-dark: #9a0007;
         }
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            min-height: 100vh;
-            margin: 0;
+            background-color: #f8f9fa;
+            height: 100vh;
             display: flex;
             align-items: center;
-            justify-content: center;
-            padding: 1.2rem 0.75rem;
-            background: linear-gradient(180deg, #d9eef2 0%, #eaf7f7 100%);
-        }
-
-        .container {
-            max-width: 360px;
-            width: 100%;
-            padding: 0;
+            background-image: url('https://images.unsplash.com/photo-1569336415962-a2bddaa96e4d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
+            background-size: cover;
+            background-position: center;
         }
 
         .login-container {
+            max-width: 450px;
             width: 100%;
             margin: 0 auto;
-            background-color: #f6f6f6;
-            border-radius: 18px;
-            border-top: 4px solid var(--primary-color);
-            box-shadow: 0 14px 28px rgba(20, 37, 52, 0.12);
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             overflow: hidden;
-            animation: fadeIn 0.5s ease-out forwards;
+            animation: fadeIn 0.6s ease-out forwards;
         }
 
         .login-header {
-            color: #2f2f2f;
-            padding: 2.2rem 1.6rem 1.2rem;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 2rem;
             text-align: center;
         }
 
         .login-logo {
-            width: 68px;
-            height: 68px;
-            object-fit: contain;
-            margin-bottom: 0.4rem;
-        }
-
-        .logo-caption {
-            color: #4a4a4a;
-            font-size: 0.97rem;
-            line-height: 1.2;
-            font-weight: 600;
-            margin-bottom: 1.9rem;
-        }
-
-        .portal-title {
-            font-size: 2rem;
-            line-height: 1.2;
-            font-weight: 700;
-            color: #2f2f2f;
-            margin-bottom: 0.75rem;
-            letter-spacing: -0.02em;
-        }
-
-        .portal-subtitle {
-            margin: 0;
-            color: #8e8e8e;
-            font-size: 0.84rem;
-            font-weight: 700;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 1rem;
+            border: 4px solid rgba(255, 255, 255, 0.2);
         }
 
         .login-body {
-            padding: 0.5rem 1.5rem 1.25rem;
+            padding: 2rem;
         }
 
-        .form-label {
-            margin-bottom: 0.45rem;
-            color: #5f5f5f;
-            font-size: 0.92rem;
+        .form-control {
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 0.25rem rgba(211, 47, 47, 0.25);
+        }
+
+        .btn-login {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
             font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+        }
+
+        .btn-login:hover {
+            background-color: var(--primary-dark);
+            color: white;
         }
 
         .input-group-text {
-            background-color: #fbfbfb;
-            border: 1px solid #dedede;
+            background-color: #f8f9fa;
+            border: 1px solid #e0e0e0;
             border-right: none;
-            border-radius: 10px 0 0 10px;
-            color: #b1b1b1;
-            padding: 0 0.8rem;
         }
         
         .input-group .form-control {
             border-left: none;
-            border-radius: 0 10px 10px 0;
-        }
-
-        #loginForm .form-control {
-            padding: 0.72rem 0.9rem;
-            border: 1px solid #dedede;
-            background: #fbfbfb;
-            font-size: 1rem;
-            color: #4b4b4b;
-            transition: all 0.2s ease;
-        }
-
-        #loginForm .form-control:focus {
-            border-color: #e3a8ad;
-            box-shadow: 0 0 0 0.18rem rgba(239, 51, 64, 0.12);
-            background: #fff;
-        }
-
-        .btn-login {
-            background: var(--primary-color);
-            color: #fff;
-            padding: 0.78rem 0.9rem;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 1.04rem;
-            transition: all 0.2s ease;
-            border: none;
-            margin-top: 0.45rem;
-        }
-
-        .btn-login:hover,
-        .btn-login:focus {
-            background: var(--primary-dark);
-            color: #fff;
         }
 
         .login-footer {
             text-align: center;
-            padding: 0.45rem 1.2rem 1.4rem;
-            font-size: 0.75rem;
-            color: #9c9c9c;
-            line-height: 1.3;
+            padding: 1rem;
+            font-size: 0.9rem;
+            color: #6c757d;
+            border-top: 1px solid #e9ecef;
         }
 
         @keyframes fadeIn {
@@ -457,66 +411,66 @@
 </head>
 <body>
     <div class="container">
-        <div class="login-container">
-            <div class="login-header">
-                <img src="{{ asset('image/santafe.png') }}" class="login-logo" alt="Bayan ng Santa Fe Logo">
-                <p class="logo-caption">Bayan ng<br>Santa Fe Logo</p>
-                <h1 class="portal-title">Santa Fe Consumer Portal</h1>
-                <p class="portal-subtitle">Bayan ng Santa Fe, Lalawigan ng Cebu</p>
-            </div>
-
-            <div class="login-body">
-                <form id="loginForm" action="{{ route('consumer.login') }}" method="POST">
-                    @csrf
-                    <!-- Hidden reCAPTCHA field -->
-                    <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
-
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Meter Number</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-person"></i></span>
-                            <input type="text" class="form-control @error('username') is-invalid @enderror"
-                                id="username" name="username"
-                                value="{{ old('username') }}"
-                                placeholder="Enter your meter number" required>
-                        </div>
-                        @error('username')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                            <input type="password" class="form-control @error('password') is-invalid @enderror"
-                                id="password" name="password"
-                                placeholder="Enter your password" required>
-                        </div>
-                        @error('password')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="attempt-counter visually-hidden" id="attemptCounter">
-                        <span id="attemptText">Login attempts remaining: 3</span>
-                    </div>
-
-                    <button type="submit" class="btn btn-login w-100 mb-3" id="loginButton">Login</button>
-                </form>
-
-                <div class="text-center mt-2">
-                    <button type="button" id="accessOtherPortalsBtn" class="portal-launch-btn d-none" data-bs-toggle="modal" data-bs-target="#portalModal">
-                        <i class="bi bi-grid"></i>
-                        Access Other Portals
-                        <i class="bi bi-chevron-right"></i>
-                    </button>
+            <div class="login-container">
+                <div class="login-header">
+                <img src="{{ asset('image/santafe.png') }}" class="login-logo">
+                <h2>Santa Fe Water Billing System</h2>
+                <p class="mb-0">Consumer Login Portal</p>
                 </div>
-            </div>
 
-            <div class="login-footer">
-                &copy; 2026 Municipality of Santa Fe. All rights reserved.
-            </div>
+                <div class="login-body">
+                    <form id="loginForm" action="{{ route('consumer.login') }}" method="POST">
+                        @csrf
+                        <!-- Hidden reCAPTCHA field -->
+                        <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
+
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Account Number</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <input type="text" class="form-control @error('username') is-invalid @enderror"
+                                    id="username" name="username"
+                                    value="{{ old('username') }}"
+                                    placeholder="Enter your meter number" required>
+                            </div>
+                            @error('username')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                <input type="password" class="form-control @error('password') is-invalid @enderror"
+                                    id="password" name="password"
+                                    placeholder="Enter your password" required>
+                                <span class="password-toggle" id="togglePassword">
+                                    <i class="bi bi-eye"></i>
+                                </span>
+                            </div>
+                            @error('password')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="attempt-counter" id="attemptCounter">
+                            <span id="attemptText">Login attempts remaining: 3</span>
+                        </div>
+
+                        <button type="submit" class="btn btn-login w-100 mb-3" id="loginButton">
+                            <i class="bi bi-box-arrow-in-right me-2"></i> Login
+                        </button>
+
+                    </form>
+                    <div class="text-center mt-3">
+                <button type="button" id="accessOtherPortalsBtn" class="portal-launch-btn" data-bs-toggle="modal" data-bs-target="#portalModal">
+                    <i class="bi bi-grid"></i>
+                    Access Other Portals
+                    <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
         </div>
     </div>
     
