@@ -373,33 +373,157 @@
         }
 
         .mobile-download-modal .modal-content {
-            border: 1px solid #e9ecef;
-            border-radius: 10px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            border: none;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 18px 42px rgba(0, 0, 0, 0.18);
         }
 
         .mobile-download-modal .modal-header {
-            padding: 1rem 1.25rem;
-            border-bottom: 1px solid #f1f3f5;
+            padding: 1rem 1.1rem;
+            border-bottom: none;
+            background: linear-gradient(135deg, #d32f2f 0%, #9a0007 100%);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .mobile-download-head {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+        }
+
+        .mobile-download-badge {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            background: rgba(255, 255, 255, 0.22);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 1rem;
+        }
+
+        .mobile-download-modal .modal-title {
+            color: #ffffff;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .mobile-download-subtitle {
+            margin: 0.1rem 0 0;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 0.78rem;
+        }
+
+        .mobile-download-modal .btn-close {
+            filter: invert(1) brightness(2);
+            opacity: 0.95;
         }
 
         .mobile-download-modal .modal-body {
-            padding: 1rem 1.25rem 1.25rem;
+            padding: 1rem 1.1rem 1.2rem;
+            background: linear-gradient(180deg, #ffffff 0%, #fff7f7 100%);
         }
 
         .mobile-download-copy {
             color: #495057;
-            margin-bottom: 0.9rem;
+            margin-bottom: 0.8rem;
+            font-size: 0.9rem;
         }
 
-        .mobile-download-actions .btn {
+        .mobile-download-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+        }
+
+        .mobile-download-action {
             width: 100%;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 0.75rem 0.85rem;
+            background: #ffffff;
+            color: #212529;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.7rem;
+            transition: all 0.2s ease;
+        }
+
+        .mobile-download-action:hover {
+            text-decoration: none;
+            color: #212529;
+            border-color: #cfd4da;
+            transform: translateY(-1px);
+        }
+
+        .mobile-download-action-left {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .mobile-download-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: #eef8f2;
+            color: #198754;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .mobile-download-meta {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+        }
+
+        .mobile-download-name {
+            font-weight: 600;
+            line-height: 1.15;
+        }
+
+        .mobile-download-desc {
+            font-size: 0.76rem;
+            color: #6c757d;
+            line-height: 1.2;
+        }
+
+        .mobile-download-action-arrow {
+            color: #adb5bd;
+        }
+
+        .mobile-download-action.is-disabled {
+            border-color: #e5e7eb;
+            color: #6c757d;
+            background: #f8f9fa;
+            cursor: not-allowed;
+            opacity: 0.9;
+        }
+
+        .mobile-download-action.is-disabled:hover {
+            transform: none;
+        }
+
+        .mobile-download-action.is-disabled .mobile-download-icon {
+            background: #eceff1;
+            color: #9ea4aa;
         }
 
         .mobile-download-note {
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: #6c757d;
             margin-top: 0.75rem;
+            margin-bottom: 0;
+            text-align: center;
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -520,19 +644,40 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="androidAppModalLabel">Get The Mobile App</h5>
+                    <div class="mobile-download-head">
+                        <span class="mobile-download-badge"><i class="bi bi-phone"></i></span>
+                        <div>
+                            <h5 class="modal-title" id="androidAppModalLabel">Get The Mobile App</h5>
+                            <p class="mobile-download-subtitle">Install the official Santa Fe Water Billing app</p>
+                        </div>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p class="mobile-download-copy">Download Santa Fe Water Billing for your phone.</p>
-                    <div class="mobile-download-actions d-flex flex-column gap-2">
-                        <a href="{{ asset('android.apk') }}" id="downloadAndroidApp" class="btn btn-outline-success" download>
-                            <i class="bi bi-android2 me-1"></i>Android APK
+                    <p class="mobile-download-copy">Choose your device to continue with installation.</p>
+                    <div class="mobile-download-actions">
+                        <a href="{{ asset('android.apk') }}" id="downloadAndroidApp" class="mobile-download-action" download>
+                            <span class="mobile-download-action-left">
+                                <span class="mobile-download-icon"><i class="bi bi-android2"></i></span>
+                                <span class="mobile-download-meta">
+                                    <span class="mobile-download-name">Android APK</span>
+                                    <span class="mobile-download-desc">Download installer for Android phones</span>
+                                </span>
+                            </span>
+                            <i class="bi bi-download mobile-download-action-arrow"></i>
                         </a>
-                        <button type="button" class="btn btn-outline-secondary" disabled>
-                            <i class="bi bi-apple me-1"></i>iOS Coming Soon
+                        <button type="button" class="mobile-download-action is-disabled" disabled>
+                            <span class="mobile-download-action-left">
+                                <span class="mobile-download-icon"><i class="bi bi-apple"></i></span>
+                                <span class="mobile-download-meta">
+                                    <span class="mobile-download-name">iOS Coming Soon</span>
+                                    <span class="mobile-download-desc">The iOS version is not available yet</span>
+                                </span>
+                            </span>
+                            <i class="bi bi-lock mobile-download-action-arrow"></i>
                         </button>
                     </div>
+                    <p class="mobile-download-note">You can continue using the web portal while waiting for iOS release.</p>
                 </div>
             </div>
         </div>
