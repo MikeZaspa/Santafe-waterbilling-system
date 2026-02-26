@@ -373,206 +373,38 @@
         }
 
         .mobile-download-modal .modal-content {
-            border: 1px solid #f2d9d9;
-            border-radius: 20px;
-            overflow: hidden;
-            background:
-                radial-gradient(120% 90% at 100% 0%, #ffecec 0%, rgba(255, 236, 236, 0) 60%),
-                linear-gradient(180deg, #ffffff 0%, #fff9f9 100%);
-            box-shadow: 0 20px 48px rgba(80, 20, 20, 0.2);
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
         }
 
         .mobile-download-modal .modal-header {
-            padding: 1.05rem 1.1rem 0.65rem;
-            border-bottom: none;
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 0.6rem;
-        }
-
-        .mobile-download-title-wrap {
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-        }
-
-        .mobile-download-chip {
-            display: inline-flex;
-            align-items: center;
-            width: fit-content;
-            font-size: 0.68rem;
-            font-weight: 700;
-            color: #b42318;
-            background: #ffe3e0;
-            border: 1px solid #ffc9c2;
-            border-radius: 999px;
-            padding: 0.22rem 0.55rem;
-            letter-spacing: 0.02em;
-            text-transform: uppercase;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #f1f3f5;
         }
 
         .mobile-download-modal .modal-title {
-            margin: 0;
-            color: #1f2937;
-            font-size: 1.12rem;
-            font-weight: 800;
-        }
-
-        .mobile-download-subtitle {
-            margin: 0;
-            color: #6b7280;
-            font-size: 0.8rem;
-        }
-
-        .mobile-download-modal .btn-close {
-            margin-top: 0.1rem;
+            font-weight: 700;
         }
 
         .mobile-download-modal .modal-body {
-            padding: 0.35rem 1.1rem 1.15rem;
-        }
-
-        .mobile-download-hero {
-            border: 1px solid #f2e1e1;
-            border-radius: 14px;
-            background: #ffffff;
-            padding: 0.75rem;
-            display: flex;
-            align-items: center;
-            gap: 0.7rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .mobile-download-hero-icon {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            background: linear-gradient(160deg, #d32f2f 0%, #9a0007 100%);
-            color: #ffffff;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            flex-shrink: 0;
+            padding: 1rem 1.25rem 1.25rem;
         }
 
         .mobile-download-copy {
-            margin: 0;
-            color: #374151;
-            font-size: 0.84rem;
-            line-height: 1.35;
+            color: #495057;
+            margin-bottom: 0.9rem;
         }
 
-        .mobile-store-grid {
-            display: grid;
-            gap: 0.6rem;
-        }
-
-        .mobile-store-btn {
+        .mobile-download-actions .btn {
             width: 100%;
-            border: 1px solid #e5e7eb;
-            border-radius: 14px;
-            background: #ffffff;
-            color: #111827;
-            text-decoration: none;
-            padding: 0.78rem 0.82rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 0.7rem;
-            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-        }
-
-        .mobile-store-btn:hover {
-            text-decoration: none;
-            color: #111827;
-            transform: translateY(-1px);
-            box-shadow: 0 8px 18px rgba(17, 24, 39, 0.08);
-        }
-
-        .mobile-store-btn-android {
-            border-color: #cfe9d9;
-            background: linear-gradient(180deg, #ffffff 0%, #f7fcf9 100%);
-        }
-
-        .mobile-store-btn-android:hover {
-            border-color: #93d3af;
-        }
-
-        .mobile-store-btn-disabled {
-            border-color: #eceff1;
-            background: #f9fafb;
-            color: #6b7280;
-            cursor: not-allowed;
-        }
-
-        .mobile-store-btn-disabled:hover {
-            transform: none;
-            box-shadow: none;
-        }
-
-        .mobile-store-left {
-            display: flex;
-            align-items: center;
-            gap: 0.68rem;
-        }
-
-        .mobile-store-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            flex-shrink: 0;
-            background: #e8f7ee;
-            color: #198754;
-        }
-
-        .mobile-store-btn-disabled .mobile-store-icon {
-            background: #eceff1;
-            color: #97a0a8;
-        }
-
-        .mobile-store-text {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.2;
-            text-align: left;
-        }
-
-        .mobile-store-name {
-            font-weight: 700;
-            font-size: 0.92rem;
-        }
-
-        .mobile-store-desc {
-            font-size: 0.74rem;
-            color: #6b7280;
-        }
-
-        .mobile-store-end {
-            color: #9ca3af;
-            font-size: 0.92rem;
         }
 
         .mobile-download-note {
-            margin: 0.7rem 0 0;
-            font-size: 0.76rem;
-            color: #6b7280;
-            text-align: center;
-        }
-
-        @media (max-width: 575.98px) {
-            .mobile-download-modal .modal-header {
-                padding: 1rem 0.9rem 0.6rem;
-            }
-
-            .mobile-download-modal .modal-body {
-                padding: 0.3rem 0.9rem 1rem;
-            }
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-top: 0.75rem;
+            margin-bottom: 0;
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -693,41 +525,20 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <div class="mobile-download-title-wrap">
-                        <span class="mobile-download-chip">Mobile Access</span>
-                        <h5 class="modal-title" id="androidAppModalLabel">Get The Mobile App</h5>
-                        <p class="mobile-download-subtitle">Manage bills and updates directly from your phone.</p>
-                    </div>
+                    <h5 class="modal-title" id="androidAppModalLabel">Get The Mobile App</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mobile-download-hero">
-                        <span class="mobile-download-hero-icon"><i class="bi bi-droplet-half"></i></span>
-                        <p class="mobile-download-copy">Choose your platform and install the Santa Fe Water Billing app in seconds.</p>
-                    </div>
-                    <div class="mobile-store-grid">
-                        <a href="{{ asset('android.apk') }}" id="downloadAndroidApp" class="mobile-store-btn mobile-store-btn-android" download>
-                            <span class="mobile-store-left">
-                                <span class="mobile-store-icon"><i class="bi bi-android2"></i></span>
-                                <span class="mobile-store-text">
-                                    <span class="mobile-store-name">Android APK</span>
-                                    <span class="mobile-store-desc">Direct installer for Android devices</span>
-                                </span>
-                            </span>
-                            <i class="bi bi-download mobile-store-end"></i>
+                    <p class="mobile-download-copy">Download Santa Fe Water Billing for your phone.</p>
+                    <div class="mobile-download-actions d-flex flex-column gap-2">
+                        <a href="{{ asset('android.apk') }}" id="downloadAndroidApp" class="btn btn-outline-success" download>
+                            <i class="bi bi-android2 me-1"></i>Android APK
                         </a>
-                        <button type="button" class="mobile-store-btn mobile-store-btn-disabled" disabled>
-                            <span class="mobile-store-left">
-                                <span class="mobile-store-icon"><i class="bi bi-apple"></i></span>
-                                <span class="mobile-store-text">
-                                    <span class="mobile-store-name">iOS Coming Soon</span>
-                                    <span class="mobile-store-desc">The iPhone app will be released soon</span>
-                                </span>
-                            </span>
-                            <i class="bi bi-lock mobile-store-end"></i>
+                        <button type="button" class="btn btn-outline-secondary" disabled>
+                            <i class="bi bi-apple me-1"></i>iOS Coming Soon
                         </button>
                     </div>
-                    <p class="mobile-download-note">While iOS is in progress, you can continue using this web portal.</p>
+                    <p class="mobile-download-note">You can continue using the web portal while waiting for iOS release.</p>
                 </div>
             </div>
         </div>
