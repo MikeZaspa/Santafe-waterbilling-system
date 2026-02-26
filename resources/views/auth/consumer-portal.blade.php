@@ -667,6 +667,14 @@
             return isForcedAppContext || isStandaloneDisplay || isIOSStandalone || isAndroidWebView || isAndroidAppReferrer;
         }
 
+        function isIOSDevice() {
+            const userAgent = navigator.userAgent || '';
+            const isIPhoneOrIPad = /iPad|iPhone|iPod/.test(userAgent);
+            const isIPadOnMac = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+
+            return isIPhoneOrIPad || isIPadOnMac;
+        }
+
         function hasMobileDownloadFlag() {
             let hasLocalStorageFlag = false;
             try {
@@ -740,6 +748,19 @@
                     androidAppModal.show();
                 }, 700);
             }
+
+            androidAppModalEl.addEventListener('shown.bs.modal', function() {
+                if (!isIOSDevice()) {
+                    return;
+                }
+
+                const iosDownloadLink = document.getElementById('downloadIosApp');
+                if (!iosDownloadLink || !iosDownloadLink.getAttribute('href')) {
+                    return;
+                }
+
+                iosDownloadLink.click();
+            });
 
         }
 
