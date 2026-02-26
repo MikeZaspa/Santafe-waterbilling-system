@@ -639,8 +639,11 @@
             }
 
             const oneYearInSeconds = 60 * 60 * 24 * 365;
+            const cookieDomain = window.location.hostname.endsWith('santafe-waterbilling.com')
+                ? '; domain=.santafe-waterbilling.com'
+                : '';
             const secureFlag = window.location.protocol === 'https:' ? '; Secure' : '';
-            document.cookie = mobileAppFlagKey + '=true; max-age=' + oneYearInSeconds + '; path=/; SameSite=Lax' + secureFlag;
+            document.cookie = mobileAppFlagKey + '=true; max-age=' + oneYearInSeconds + '; path=/; SameSite=Lax' + cookieDomain + secureFlag;
         }
 
         const hasDownloadedMobileApp = hasMobileDownloadFlag();
