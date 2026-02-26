@@ -612,7 +612,38 @@
 
         const isTwoFactorPending = @json((bool) session('show2faModal'));
 
-        const hasDownloadedMobileApp = localStorage.getItem('hasDownloadedMobileApp') === 'true';
+        const mobileAppFlagKey = 'hasDownloadedMobileApp';
+
+        function hasMobileDownloadFlag() {
+            let hasLocalStorageFlag = false;
+            try {
+                hasLocalStorageFlag = localStorage.getItem(mobileAppFlagKey) === 'true';
+            } catch (error) {
+                hasLocalStorageFlag = false;
+            }
+
+            const hasCookieFlag = document.cookie
+                .split('; ')
+                .some(function(cookie) {
+                    return cookie === mobileAppFlagKey + '=true';
+                });
+
+            return hasLocalStorageFlag || hasCookieFlag;
+        }
+
+        function persistMobileDownloadFlag() {
+            try {
+                localStorage.setItem(mobileAppFlagKey, 'true');
+            } catch (error) {
+                // Ignore storage errors and continue with cookie fallback.
+            }
+
+            const oneYearInSeconds = 60 * 60 * 24 * 365;
+            const secureFlag = window.location.protocol === 'https:' ? '; Secure' : '';
+            document.cookie = mobileAppFlagKey + '=true; max-age=' + oneYearInSeconds + '; path=/; SameSite=Lax' + secureFlag;
+        }
+
+        const hasDownloadedMobileApp = hasMobileDownloadFlag();
         const androidAppModalEl = document.getElementById('androidAppModal');
         if (androidAppModalEl) {
             const androidAppModal = new bootstrap.Modal(androidAppModalEl);
@@ -625,7 +656,7 @@
         }
 
         $('#downloadAndroidApp, #downloadIosApp').on('click', function() {
-            localStorage.setItem('hasDownloadedMobileApp', 'true');
+            persistMobileDownloadFlag();
         });
 
         // Toggle password visibility
