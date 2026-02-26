@@ -386,13 +386,6 @@
                 <span>Log In as Accountant</span>
             </button>
             
-            <!-- reCAPTCHA info -->
-            <div class="recaptcha-info">
-                This site is protected by reCAPTCHA and the Google
-                <a href="https://policies.google.com/privacy">Privacy Policy</a> and
-                <a href="https://policies.google.com/terms">Terms of Service</a> apply.
-            </div>
-            
             <div class="back-link">
                 <a href="{{ url('/consumer-portal') }}">
                     <i class="fas fa-arrow-left"></i> Back to Main Login

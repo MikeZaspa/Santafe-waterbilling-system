@@ -328,13 +328,6 @@
             <button type="submit" class="btn-login" id="loginBtn">
                 <span>Log In as Plumber</span>
             </button>
-            
-            <div class="recaptcha-info">
-                This site is protected by reCAPTCHA and the Google
-                <a href="https://policies.google.com/privacy">Privacy Policy</a> and
-                <a href="https://policies.google.com/terms">Terms of Service</a> apply.
-            </div>
-            
             <div class="back-link">
                 <a href="{{ url('/consumer-portal') }}">
                     <i class="fas fa-arrow-left"></i> Back to Main Login

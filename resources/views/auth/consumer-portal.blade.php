@@ -22,7 +22,7 @@
             --primary-light: #ff6659;
             --primary-dark: #9a0007;
         }
-        
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background-color: #f8f9fa;
@@ -33,7 +33,7 @@
             background-size: cover;
             background-position: center;
         }
-        
+
         .login-container {
             max-width: 450px;
             width: 100%;
@@ -44,14 +44,14 @@
             overflow: hidden;
             animation: fadeIn 0.6s ease-out forwards;
         }
-        
+
         .login-header {
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
             color: white;
             padding: 2rem;
             text-align: center;
         }
-        
+
         .login-logo {
             width: 100px;
             height: 100px;
@@ -60,23 +60,23 @@
             margin-bottom: 1rem;
             border: 4px solid rgba(255, 255, 255, 0.2);
         }
-        
+
         .login-body {
             padding: 2rem;
         }
-        
+
         .form-control {
             padding: 12px 15px;
             border-radius: 8px;
             border: 1px solid #e0e0e0;
             transition: all 0.3s;
         }
-        
+
         .form-control:focus {
             border-color: var(--primary-light);
             box-shadow: 0 0 0 0.25rem rgba(211, 47, 47, 0.25);
         }
-        
+
         .btn-login {
             background-color: var(--primary-color);
             color: white;
@@ -86,12 +86,12 @@
             transition: all 0.3s;
             border: none;
         }
-        
+
         .btn-login:hover {
             background-color: var(--primary-dark);
             color: white;
         }
-        
+
         .input-group-text {
             background-color: #f8f9fa;
             border: 1px solid #e0e0e0;
@@ -101,7 +101,7 @@
         .input-group .form-control {
             border-left: none;
         }
-        
+
         .login-footer {
             text-align: center;
             padding: 1rem;
@@ -109,12 +109,12 @@
             color: #6c757d;
             border-top: 1px solid #e9ecef;
         }
-        
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
+
         .password-toggle {
             cursor: pointer;
             background-color: #f8f9fa;
@@ -128,52 +128,52 @@
         .password-toggle:hover {
             background-color: #e9ecef;
         }
-        
+
         /* Simplified 2FA Modal Styles */
         .modal-content {
             border-radius: 8px;
             border: none;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
-        
+
         .modal-header {
             border-bottom: 1px solid #e9ecef;
             padding: 1.5rem 1.5rem 0.5rem;
         }
-        
+
         .modal-body {
             padding: 1.5rem;
         }
-        
+
         .verification-container {
             text-align: center;
             margin-bottom: 1.5rem;
         }
-        
+
         .verification-icon {
             font-size: 3rem;
             color: var(--primary-color);
             margin-bottom: 1rem;
         }
-        
+
         .verification-title {
             font-size: 1.25rem;
             font-weight: 600;
             margin-bottom: 0.5rem;
         }
-        
+
         .verification-subtitle {
             color: #6c757d;
             margin-bottom: 1.5rem;
         }
-        
+
         .code-inputs {
             display: flex;
             justify-content: center;
             gap: 10px;
             margin-bottom: 1.5rem;
         }
-        
+
         .code-input {
             width: 45px;
             height: 45px;
@@ -183,12 +183,12 @@
             border: 1px solid #ced4da;
             border-radius: 6px;
         }
-        
+
         .code-input:focus {
             border-color: var(--primary-color);
             box-shadow: 0 0 0 0.2rem rgba(211, 47, 47, 0.25);
         }
-        
+
         .btn-verify {
             background-color: var(--primary-color);
             color: white;
@@ -198,33 +198,33 @@
             transition: all 0.3s;
             border: none;
         }
-        
+
         .btn-verify:hover {
             background-color: var(--primary-dark);
             color: white;
         }
-        
+
         .resend-container {
             margin-top: 1rem;
             font-size: 0.9rem;
             color: #6c757d;
         }
-        
+
         .resend-link {
             color: var(--primary-color);
             text-decoration: none;
             font-weight: 500;
         }
-        
+
         .resend-link:hover {
             text-decoration: underline;
         }
-        
+
         .resend-link.disabled {
             color: #6c757d;
             pointer-events: none;
         }
-        
+
         /* Attempt counter styles */
         .attempt-counter {
             font-size: 0.85rem;
@@ -236,165 +236,315 @@
         .attempt-counter.warning {
             color: #ff9800;
         }
-        
+
         .attempt-counter.danger {
             color: #f44336;
             font-weight: 600;
         }
-        
+
         /* reCAPTCHA info text */
         .recaptcha-info {
             font-size: 0.7rem;
             color: #6c757d;
             margin-top: 0.5rem;
             text-align: center;
-        }
+            }
         
         .recaptcha-info a {
             color: var(--primary-color);
             text-decoration: none;
-        }
+            }
         
-        /* Portal Modal Styles */
-        .portal-btn {
-            padding: 12px 20px;
+        /* Portal Access Redesign */
+        .portal-launch-btn {
+            border: 1px solid #dee2e6;
+            background: #ffffff;
+            color: #212529;
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .portal-launch-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background: #fff5f5;
+        }
+
+        .portal-modal .modal-content {
+            border: none;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 14px 38px rgba(0, 0, 0, 0.16);
+        }
+
+        .portal-modal .modal-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #f0eaea;
+            background: linear-gradient(135deg, #ffffff 0%, #fff6f6 100%);
+        }
+
+        .portal-modal .modal-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #212529;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .portal-modal .modal-body {
+            padding: 1rem 1.25rem 1.25rem;
+        }
+
+        .portal-modal-subtitle {
+            margin: 0 0 0.9rem;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .portal-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+        }
+
+        .portal-card {
+            text-decoration: none;
+            color: #212529;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 0.8rem 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            background: #ffffff;
+            transition: all 0.2s ease;
+        }
+
+        .portal-card:hover {
+            color: #212529;
+            border-color: var(--primary-color);
+            background: #fff8f8;
+            transform: translateY(-1px);
+        }
+
+        .portal-card-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .portal-card-icon {
+            width: 36px;
+            height: 36px;
             border-radius: 8px;
-            font-weight: 500;
-            transition: all 0.3s;
+            background: #fdecec;
+            color: var(--primary-color);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            font-size: 1rem;
+            flex-shrink: 0;
         }
-        
-        .portal-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+        .portal-card-meta {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
         }
-        
-        .divider {
-            position: relative;
-            text-align: center;
-            margin: 20px 0;
+
+        .portal-card-name {
+            font-weight: 600;
         }
-        
-        .divider::before {
-            content: "";
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background-color: #e9ecef;
+
+        .portal-card-desc {
+            font-size: 0.78rem;
+            color: #6c757d;
         }
-        
-        .divider span {
-            position: relative;
-            padding: 0 15px;
-            background-color: white;
+
+        .portal-card-arrow {
+            color: #adb5bd;
+        }
+
+        .mobile-download-modal .modal-content {
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .mobile-download-modal .modal-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #f1f3f5;
+        }
+
+        .mobile-download-modal .modal-body {
+            padding: 1rem 1.25rem 1.25rem;
+        }
+
+        .mobile-download-copy {
+            color: #495057;
+            margin-bottom: 0.9rem;
+        }
+
+        .mobile-download-actions .btn {
+            width: 100%;
+        }
+
+        .mobile-download-note {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-top: 0.75rem;
         }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
-        <div class="login-container">
-            <div class="login-header">
+            <div class="login-container">
+                <div class="login-header">
                 <img src="{{ asset('image/santafe.png') }}" class="login-logo">
                 <h2>Santa Fe Water Billing System</h2>
                 <p class="mb-0">Consumer Login Portal</p>
-            </div>
-            
-            <div class="login-body">
-                <form id="loginForm" action="{{ route('consumer.login') }}" method="POST">
-                    @csrf
-                    <!-- Hidden reCAPTCHA field -->
-                    <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
-                    
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Account Number</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-person"></i></span>
-                            <input type="text" class="form-control @error('username') is-invalid @enderror" 
-                                id="username" name="username" 
-                                value="{{ old('username') }}" 
-                                placeholder="Enter your meter number" required>
-                        </div>
-                        @error('username')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                            <input type="password" class="form-control @error('password') is-invalid @enderror" 
-                                id="password" name="password" 
-                                placeholder="Enter your password" required>
-                            <span class="password-toggle" id="togglePassword">
-                                <i class="bi bi-eye"></i>
-                            </span>
-                        </div>
-                        @error('password')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    
-                    <div class="attempt-counter" id="attemptCounter">
-                        <span id="attemptText">Login attempts remaining: 3</span>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-login w-100 mb-3" id="loginButton">
-                        <i class="bi bi-box-arrow-in-right me-2"></i> Login
-                    </button>
-                    
-                    <!-- reCAPTCHA info -->
-                    <div class="recaptcha-info">
-                        This site is protected by reCAPTCHA and the Google
-                        <a href="https://policies.google.com/privacy">Privacy Policy</a> and
-                        <a href="https://policies.google.com/terms">Terms of Service</a> apply.
-                    </div>
-                </form>
-                <div class="text-center mt-3">
-                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#portalModal">
-                    Access Other Portals
-                </button>
                 </div>
-            </div>
+
+                <div class="login-body">
+                    <form id="loginForm" action="{{ route('consumer.login') }}" method="POST">
+                        @csrf
+                        <!-- Hidden reCAPTCHA field -->
+                        <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
+
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Account Number</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <input type="text" class="form-control @error('username') is-invalid @enderror"
+                                    id="username" name="username"
+                                    value="{{ old('username') }}"
+                                    placeholder="Enter your meter number" required>
+                            </div>
+                            @error('username')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                <input type="password" class="form-control @error('password') is-invalid @enderror"
+                                    id="password" name="password"
+                                    placeholder="Enter your password" required>
+                                <span class="password-toggle" id="togglePassword">
+                                    <i class="bi bi-eye"></i>
+                                </span>
+                            </div>
+                            @error('password')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="attempt-counter" id="attemptCounter">
+                            <span id="attemptText">Login attempts remaining: 3</span>
+                        </div>
+
+                        <button type="submit" class="btn btn-login w-100 mb-3" id="loginButton">
+                            <i class="bi bi-box-arrow-in-right me-2"></i> Login
+                        </button>
+
+                    </form>
+                    <div class="text-center mt-3">
+                <button type="button" class="portal-launch-btn" data-bs-toggle="modal" data-bs-target="#portalModal">
+                    <i class="bi bi-grid"></i>
+                    Access Other Portals
+                    <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
         </div>
     </div>
     
     <!-- Portal Modal -->
-    <div class="modal fade" id="portalModal" tabindex="-1" aria-labelledby="portalModalLabel" aria-hidden="true">
+    <div class="modal fade portal-modal" id="portalModal" tabindex="-1" aria-labelledby="portalModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content shadow-lg border-0 rounded-4">
-                <div class="modal-header bg-primary text-white rounded-top-4">
-                    <h5 class="modal-title" id="portalModalLabel">Access Other Portals</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="portalModalLabel">
+                        <i class="bi bi-grid-3x3-gap"></i>
+                        Access Other Portals
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body text-center">
-                    <div class="divider my-3 text-muted">Choose a portal below</div>
-                    
-                    <div class="portal-links d-flex flex-column gap-3">
-                        <a href="{{ route('plumber.login') }}" class="btn btn-outline-secondary portal-btn">
-                            <i class="fas fa-tools"></i> Plumber Portal
+                <div class="modal-body">
+                    <div class="portal-links">
+                        <a href="{{ route('plumber.login') }}" class="portal-card">
+                            <div class="portal-card-left">
+                                <span class="portal-card-icon"><i class="fas fa-tools"></i></span>
+                                <span class="portal-card-meta">
+                                    <span class="portal-card-name">Plumber Portal</span>  
+                                </span>
+                            </div>
+                            <i class="bi bi-chevron-right portal-card-arrow"></i>
                         </a>
-                        <a href="{{ route('accountant.login') }}" class="btn btn-outline-secondary portal-btn">
-                            <i class="fas fa-calculator"></i> Accountant Portal
+                        <a href="{{ route('accountant.login') }}" class="portal-card">
+                            <div class="portal-card-left">
+                                <span class="portal-card-icon"><i class="fas fa-calculator"></i></span>
+                                <span class="portal-card-meta">
+                                    <span class="portal-card-name">Accountant Portal</span>
+                                </span>
+                            </div>
+                            <i class="bi bi-chevron-right portal-card-arrow"></i>
                         </a>
-                        <a href="{{ route('admin-login') }}" class="btn btn-outline-secondary portal-btn">
-                            <i class="fas fa-user-shield"></i> Admin Portal
+                        <a href="{{ route('admin-login') }}" class="portal-card">
+                            <div class="portal-card-left">
+                                <span class="portal-card-icon"><i class="fas fa-user-shield"></i></span>
+                                <span class="portal-card-meta">
+                                    <span class="portal-card-name">Admin Portal</span>
+                                </span>
+                            </div>
+                            <i class="bi bi-chevron-right portal-card-arrow"></i>
                         </a>
                     </div>
-                </div>
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
     </div>
-    
+
+    <!-- Mobile App Download Modal -->
+    <div class="modal fade mobile-download-modal" id="androidAppModal" tabindex="-1" aria-labelledby="androidAppModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="androidAppModalLabel">Get The Mobile App</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mobile-download-copy">Download Santa Fe Water Billing for your phone.</p>
+                    @php($iosAppStoreUrl = env('IOS_APP_STORE_URL'))
+                    <div class="mobile-download-actions d-flex flex-column gap-2">
+                        <a href="{{ asset('android.apk') }}" id="downloadAndroidApp" class="btn btn-outline-success" download>
+                            <i class="bi bi-android2 me-1"></i>Android APK
+                        </a>
+                        @if(!empty($iosAppStoreUrl))
+                            <a href="{{ $iosAppStoreUrl }}" id="downloadIosApp" class="btn btn-outline-dark" target="_blank" rel="noopener">
+                                <i class="bi bi-apple me-1"></i>iOS App Store
+                            </a>
+                        @else
+                            <button type="button" class="btn btn-outline-secondary" disabled>
+                                <i class="bi bi-apple me-1"></i>iOS Coming Soon
+                            </button>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Simplified 2FA Verification Modal -->
     <div class="modal fade" id="twoFactorModal" tabindex="-1" aria-labelledby="twoFactorModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered">
@@ -459,7 +609,20 @@
     $(document).ready(function() {
         // Set current year in footer
         $('#currentYear').text(new Date().getFullYear());
-        
+
+        const isTwoFactorPending = @json((bool) session('show2faModal'));
+
+        const androidAppModalEl = document.getElementById('androidAppModal');
+        if (androidAppModalEl) {
+            const androidAppModal = new bootstrap.Modal(androidAppModalEl);
+
+            if (!isTwoFactorPending) {
+                setTimeout(function() {
+                    androidAppModal.show();
+                }, 700);
+            }
+        }
+
         // Toggle password visibility
         $('#togglePassword').click(function() {
             const passwordField = $('#password');
