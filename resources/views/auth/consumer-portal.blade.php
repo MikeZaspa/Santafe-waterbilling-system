@@ -716,7 +716,6 @@
             window.history.replaceState({}, document.title, cleanedUrl);
         }
 
-        const hasDownloadedMobileApp = hasMobileDownloadFlag();
         const isInMobileApp = isStandaloneAppContext();
         const accessOtherPortalsBtn = document.getElementById('accessOtherPortalsBtn');
         const portalModalEl = document.getElementById('portalModal');
@@ -734,8 +733,7 @@
         if (androidAppModalEl) {
             const androidAppModal = new bootstrap.Modal(androidAppModalEl);
             const shouldShowMobileDownloadModal = !isInMobileApp
-                && !isTwoFactorPending
-                && (forceShowMobileModal || !hasDownloadedMobileApp);
+                && !isTwoFactorPending;
 
             if (shouldShowMobileDownloadModal) {
                 setTimeout(function() {
