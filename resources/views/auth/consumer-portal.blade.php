@@ -757,7 +757,8 @@
                     return;
                 }
 
-                iosDownloadLink.click();
+                persistMobileDownloadFlag();
+                window.location.assign(iosDownloadLink.getAttribute('href'));
             });
 
         }
