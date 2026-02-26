@@ -459,7 +459,7 @@
 
                     </form>
                     <div class="text-center mt-3">
-                <button type="button" class="portal-launch-btn" data-bs-toggle="modal" data-bs-target="#portalModal">
+                <button type="button" id="accessOtherPortalsBtn" class="portal-launch-btn" data-bs-toggle="modal" data-bs-target="#portalModal">
                     <i class="bi bi-grid"></i>
                     Access Other Portals
                     <i class="bi bi-chevron-right"></i>
@@ -690,6 +690,19 @@
 
         const forceShowMobileModal = queryParams.get('show_app_modal') === '1';
         const hasDownloadedMobileApp = hasMobileDownloadFlag();
+        const isInMobileApp = isStandaloneAppContext();
+        const accessOtherPortalsBtn = document.getElementById('accessOtherPortalsBtn');
+        const portalModalEl = document.getElementById('portalModal');
+        if (hasDownloadedMobileApp && isInMobileApp) {
+            if (accessOtherPortalsBtn) {
+                accessOtherPortalsBtn.style.display = 'none';
+            }
+
+            if (portalModalEl) {
+                portalModalEl.style.display = 'none';
+            }
+        }
+
         const androidAppModalEl = document.getElementById('androidAppModal');
         if (androidAppModalEl) {
             const androidAppModal = new bootstrap.Modal(androidAppModalEl);
