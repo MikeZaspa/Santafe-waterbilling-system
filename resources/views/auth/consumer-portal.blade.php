@@ -612,16 +612,21 @@
 
         const isTwoFactorPending = @json((bool) session('show2faModal'));
 
+        const hasDownloadedMobileApp = localStorage.getItem('hasDownloadedMobileApp') === 'true';
         const androidAppModalEl = document.getElementById('androidAppModal');
         if (androidAppModalEl) {
             const androidAppModal = new bootstrap.Modal(androidAppModalEl);
 
-            if (!isTwoFactorPending) {
+            if (!isTwoFactorPending && !hasDownloadedMobileApp) {
                 setTimeout(function() {
                     androidAppModal.show();
                 }, 700);
             }
         }
+
+        $('#downloadAndroidApp, #downloadIosApp').on('click', function() {
+            localStorage.setItem('hasDownloadedMobileApp', 'true');
+        });
 
         // Toggle password visibility
         $('#togglePassword').click(function() {
