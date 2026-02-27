@@ -184,30 +184,10 @@
         .complaint-bubble {
             width: min(100%, 760px);
             background: #ffffff;
-            border: 1px solid rgba(13, 110, 253, 0.12);
             border-radius: 16px 16px 6px 16px;
             padding: 0.85rem 0.95rem;
+            border: 1px solid rgba(13, 110, 253, 0.12);
             box-shadow: 0 10px 24px rgba(13, 48, 108, 0.08);
-        }
-
-        .complaint-bubble.bg-success {
-            background: #28a745;
-        }
-
-        .complaint-bubble.bg-light {
-            background: #f8f9fa;
-        }
-
-        .complaint-meta {
-            color: #64748b;
-            font-size: 0.82rem;
-            line-height: 1.2;
-        }
-
-        .complaint-message {
-            margin: 0.55rem 0 0.65rem;
-            white-space: pre-wrap;
-            word-break: break-word;
         }
 
         .complaint-meta {
@@ -503,120 +483,105 @@
                         <p class="mb-0 text-muted">Open the modal to send and manage your complaints in chat view.</p>
                     </div>
                 </div>
-                <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#newComplaintModal">
-                    <i class="bi bi-plus-circle me-1"></i> New Complaint
+                <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#complaintChatModal">
+                    <i class="bi bi-chat-left-text me-1"></i> Open Chatbox
                 </button>
             </div>
         </div>
-
-        <!-- Complaints List -->
-        <div class="row g-3 mt-2" id="complaintsListContainer">
-            @forelse($complaints as $complaint)
-                <div class="col-12">
-                    <div class="card-box p-3 complaint-card cursor-pointer" data-complaint-id="{{ $complaint->id }}" style="cursor: pointer; transition: all 0.3s;">
-                        <div class="row align-items-center">
-                            <div class="col-md-8">
-                                <h6 class="mb-1">{{ $complaint->subject ?? 'Complaint #' . $complaint->id }}</h6>
-                                <p class="mb-2 text-muted small">{{ Str::limit($complaint->messages->last()?->message ?? $complaint->message, 100) }}</p>
-                                <div class="d-flex gap-2 flex-wrap">
-                                    <span class="badge bg-light text-dark">{{ ucfirst($complaint->status) }}</span>
-                                    <span class="text-muted small">{{ $complaint->created_at->format('M d, Y') }}</span>
-                                </div>
-                            </div>
-                            <div class="col-md-4 text-end">
-                                <small class="text-muted d-block">Last updated</small>
-                                <small class="d-block">{{ $complaint->last_message_at->diffForHumans() }}</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            @empty
-                <div class="col-12">
-                    <div class="text-center text-muted py-5">
-                        <i class="bi bi-chat-square-text d-block mb-2 fs-3"></i>
-                        <p>No complaints yet. Click "New Complaint" to get started.</p>
-                    </div>
-                </div>
-            @endforelse
-        </div>
     </div>
 </div>
 
-<button class="btn btn-primary floating-complaint-btn d-lg-none" type="button" data-bs-toggle="modal" data-bs-target="#newComplaintModal">
-    <i class="bi bi-plus-circle me-1"></i> New
+<button class="btn btn-primary floating-complaint-btn d-lg-none" type="button" data-bs-toggle="modal" data-bs-target="#complaintChatModal">
+    <i class="bi bi-chat-left-dots me-1"></i> Complain
 </button>
 
-<!-- New Complaint Modal -->
-<div class="modal fade complaint-chat-modal" id="newComplaintModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+<div class="modal fade complaint-chat-modal" id="complaintChatModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-sm-down">
         <div class="modal-content">
             <div class="modal-header">
                 <div>
-                    <h5 class="modal-title mb-0">Create New Complaint</h5>
-                    <p class="mb-0 text-muted small">Tell us about your issue</p>
-                </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="{{ route('consumer.complaints.store') }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Subject</label>
-                        <input type="text" name="subject" class="form-control @error('subject') is-invalid @enderror" placeholder="Brief subject of your complaint" required value="{{ old('subject') }}">
-                        @error('subject')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Message</label>
-                        <textarea name="message" class="form-control @error('message') is-invalid @enderror" rows="5" placeholder="Describe your complaint in detail..." required>{{ old('message') }}</textarea>
-                        @error('message')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Attachment (optional)</label>
-                        <input type="file" name="attachment" class="form-control @error('attachment') is-invalid @enderror" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx">
-                        <small class="text-muted">Allowed formats: JPG, PNG, PDF, DOC, DOCX (max 5MB)</small>
-                        @error('attachment')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
-                        @enderror
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-send me-1"></i> Submit Complaint
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Complaint Conversation Modal -->
-<div class="modal fade complaint-chat-modal" id="complaintConversationModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div>
-                    <h5 class="modal-title mb-0" id="complaintSubjectTitle">Complaint</h5>
-                    <p class="mb-0 text-muted small" id="complaintStatusBadge"></p>
+                    <h5 class="modal-title mb-0">Complaint Chatbox</h5>
+                    <p class="mb-0 text-muted small">Keep all your complaints in one place.</p>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-0">
-                <div class="complaint-thread" id="complaintMessagesThread">
-                    <!-- Messages will be loaded here -->
+                <div class="complaint-thread" id="complaintThread">
+                    @forelse ($complaints as $complaint)
+                        <div class="complaint-row">
+                            <div class="complaint-bubble">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                    <span class="badge text-bg-primary-subtle text-primary">Complaint #{{ $loop->iteration }}</span>
+                                    <span class="complaint-meta">{{ $complaint->created_at->format('M d, Y h:i A') }}</span>
+                                </div>
+                                <p class="complaint-message">{{ $complaint->message }}</p>
+                                @if ($complaint->attachment_path)
+                                    <button
+                                        class="btn btn-sm btn-outline-secondary mb-2"
+                                        type="button"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#attachmentViewerModal"
+                                        data-attachment-url="{{ route('consumer.complaints.attachment', $complaint->id) }}"
+                                    >
+                                        <i class="bi bi-paperclip me-1"></i> View Attachment
+                                    </button>
+                                @endif
+                                <div class="chat-actions">
+                                    <button class="btn btn-sm btn-warning" type="button" data-bs-toggle="modal" data-bs-target="#editComplaintModal{{ $complaint->id }}">
+                                        Edit
+                                    </button>
+                                    <form action="{{ route('consumer.complaints.destroy', $complaint->id) }}" method="POST" onsubmit="return confirm('Delete this complaint?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal fade" id="editComplaintModal{{ $complaint->id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <form action="{{ route('consumer.complaints.update', $complaint->id) }}" method="POST" enctype="multipart/form-data">
+                                        @csrf
+                                        @method('PUT')
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Edit Complaint #{{ $loop->iteration }}</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label class="form-label">Update Message</label>
+                                                <textarea name="message" class="form-control" rows="4" required>{{ $complaint->message }}</textarea>
+                                            </div>
+                                            <div class="mb-0">
+                                                <label class="form-label">Replace Attachment (optional)</label>
+                                                <input type="file" name="attachment" class="form-control" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx">
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="text-center text-muted py-5">
+                            <i class="bi bi-chat-square-text d-block mb-2 fs-3"></i>
+                            No complaints yet. Send your first message below.
+                        </div>
+                    @endforelse
                 </div>
             </div>
             <div class="modal-footer complaint-composer">
-                <form id="complaintReplyForm" enctype="multipart/form-data" method="POST" class="w-100">
+                <form action="{{ route('consumer.complaints.store') }}" method="POST" enctype="multipart/form-data" class="w-100">
                     @csrf
                     <div class="row g-2 align-items-end">
                         <div class="col-12">
-                            <label class="form-label mb-1">Your Reply</label>
-                            <textarea name="message" class="form-control" rows="2" placeholder="Type your reply..." required></textarea>
+                            <label class="form-label mb-1">Message</label>
+                            <textarea name="message" class="form-control" rows="3" placeholder="Type your complaint message here..." required>{{ old('message') }}</textarea>
                         </div>
                         <div class="col-md-8">
                             <label class="form-label mb-1">Attachment (optional)</label>
@@ -625,7 +590,7 @@
                         </div>
                         <div class="col-md-4 d-grid">
                             <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-send me-1"></i> Send Reply
+                                <i class="bi bi-send me-1"></i> Send Complaint
                             </button>
                         </div>
                     </div>
@@ -658,9 +623,8 @@
     const sidebar = document.querySelector('.sidebar');
     const sidebarToggle = document.getElementById('sidebarToggle');
     const mobileOverlay = document.querySelector('.mobile-overlay');
-    const complaintConversationModalEl = document.getElementById('complaintConversationModal');
-    const complaintMessagesThread = document.getElementById('complaintMessagesThread');
-    const complaintReplyForm = document.getElementById('complaintReplyForm');
+    const complaintThread = document.getElementById('complaintThread');
+    const complaintChatModalEl = document.getElementById('complaintChatModal');
     const attachmentViewerModalEl = document.getElementById('attachmentViewerModal');
     const attachmentViewerFrame = document.getElementById('attachmentViewerFrame');
     const hasComplaintErrors = @json($errors->any());
@@ -673,7 +637,6 @@
     const csrfToken = document.querySelector('meta[name=\"csrf-token\"]')?.getAttribute('content') || '';
     const logoutButton = document.getElementById('logout-btn');
     const logoutForm = document.getElementById('logout-form');
-    let currentComplaintId = null;
 
     if (sidebarToggle) {
         sidebarToggle.addEventListener('click', function () {
@@ -689,159 +652,15 @@
         });
     }
 
-    // Complaint list item click handler - Load complaint conversation
-    document.querySelectorAll('.complaint-card').forEach(card => {
-        card.addEventListener('click', function() {
-            const complaintId = this.getAttribute('data-complaint-id');
-            loadComplaintConversation(complaintId);
-        });
-    });
-
-    // Load complaint conversation
-    async function loadComplaintConversation(complaintId) {
-        try {
-            const response = await fetch(`{{ route('consumer.complaints.index') }}/${complaintId}`, {
-                method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                }
-            });
-
-            if (!response.ok) throw new Error('Failed to load complaint');
-            
-            const data = await response.json();
-            if (!data.success) throw new Error(data.message || 'Failed to load complaint');
-
-            currentComplaintId = complaintId;
-            
-            // Update modal title and status
-            document.getElementById('complaintSubjectTitle').textContent = data.complaint.subject || 'Complaint';
-            const statusBadge = document.getElementById('complaintStatusBadge');
-            statusBadge.innerHTML = `<span class="badge bg-primary">${data.complaint.status.toUpperCase()}</span>`;
-
-            // Render messages
-            renderComplaintMessages(data.messages);
-
-            // Update reply form action
-            complaintReplyForm.action = `{{ route('consumer.complaints.index') }}/${complaintId}/reply`;
-
-            // Show modal
-            const modal = new bootstrap.Modal(complaintConversationModalEl);
-            modal.show();
-
-            // Scroll to bottom
-            setTimeout(() => {
-                complaintMessagesThread.scrollTop = complaintMessagesThread.scrollHeight;
-            }, 100);
-        } catch (error) {
-            console.error('Error loading complaint:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: error.message || 'Failed to load complaint'
-            });
-        }
-    }
-
-    // Render complaint messages in the conversation
-    function renderComplaintMessages(messages) {
-        if (!complaintMessagesThread) return;
-
-        complaintMessagesThread.innerHTML = '';
-
-        if (!Array.isArray(messages) || messages.length === 0) {
-            complaintMessagesThread.innerHTML = '<div class="text-center text-muted py-5">No messages yet</div>';
-            return;
-        }
-
-        messages.forEach(msg => {
-            const isConsumer = msg.sender_type === 'consumer';
-            const alignClass = isConsumer ? 'flex-end' : 'flex-start';
-            const bubbleClass = isConsumer ? 'bg-success text-white' : 'bg-light';
-            const bubbleStyle = isConsumer ? 'border-radius: 16px 16px 6px 16px;' : 'border-radius: 16px 16px 16px 6px;';
-
-            const html = `
-                <div class="complaint-row d-flex justify-content-${alignClass} mb-3">
-                    <div class="complaint-bubble ${bubbleClass}" style="${bubbleStyle}">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <small class="fw-bold">${escapeHtml(msg.sender_name)}</small>
-                            <small class="ms-2">${msg.created_at}</small>
-                        </div>
-                        <p class="complaint-message mb-2">${escapeHtml(msg.message)}</p>
-                        ${msg.has_attachment ? `
-                            <a href="{{ route('consumer.complaints.index') }}/${currentComplaintId}/message/${msg.id}/attachment" 
-                               class="btn btn-sm btn-outline-secondary" target="_blank">
-                                <i class="bi bi-download"></i> Download
-                            </a>
-                        ` : ''}
-                    </div>
-                </div>
-            `;
-
-            complaintMessagesThread.insertAdjacentHTML('beforeend', html);
+    if (complaintChatModalEl && complaintThread) {
+        complaintChatModalEl.addEventListener('shown.bs.modal', function () {
+            complaintThread.scrollTop = complaintThread.scrollHeight;
         });
     }
 
-    // Helper function to escape HTML
-    function escapeHtml(text) {
-        const map = {
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#39;'
-        };
-        return String(text || '').replace(/[&<>"']/g, m => map[m]);
-    }
-
-    // Handle complaint reply form submission
-    if (complaintReplyForm) {
-        complaintReplyForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const formData = new FormData(this);
-            const submitBtn = this.querySelector('button[type="submit"]');
-            submitBtn.disabled = true;
-
-            try {
-                const response = await fetch(this.action, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': csrfToken,
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json',
-                    },
-                    body: formData
-                });
-
-                if (!response.ok) throw new Error('Failed to send reply');
-                
-                const data = await response.json();
-                if (!data.success) throw new Error(data.message || 'Failed to send reply');
-
-                // Clear form
-                this.reset();
-
-                // Reload conversation
-                await loadComplaintConversation(currentComplaintId);
-
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: 'Reply sent successfully!'
-                });
-            } catch (error) {
-                console.error('Error sending reply:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: error.message || 'Failed to send reply'
-                });
-            } finally {
-                submitBtn.disabled = false;
-            }
-        });
+    if (hasComplaintErrors && complaintChatModalEl) {
+        const complaintChatModal = new bootstrap.Modal(complaintChatModalEl);
+        complaintChatModal.show();
     }
 
     if (attachmentViewerModalEl && attachmentViewerFrame) {
