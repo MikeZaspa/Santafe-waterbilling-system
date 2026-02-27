@@ -412,11 +412,10 @@
     <div class="container">
             <div class="login-container">
                 <div class="login-header">
-                <img src="{{ asset('image/santafe.png') }}" class="login-logo">
+                <img src="{{ asset('image/santalogo.png') }}" class="login-logo">
                 <h2>Santa Fe Water Billing System</h2>
                 <p class="mb-0">Consumer Login Portal</p>
                 </div>
-
                 <div class="login-body">
                     <form id="loginForm" action="{{ route('consumer.login') }}" method="POST">
                         @csrf
