@@ -957,7 +957,6 @@
     </div>
 </div>
 
-@include('admin.complaints.conversation-modal')
 
 <!-- Map Modal -->
 <div id="mapModal" class="modal fade" tabindex="-1" aria-labelledby="mapModalLabel" aria-hidden="true">
