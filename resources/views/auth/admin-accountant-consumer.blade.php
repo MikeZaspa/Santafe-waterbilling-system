@@ -605,7 +605,7 @@
 }
 
 .notification-actions h6 {
-    font-size: 1.75rem;
+    font-size: 1rem;
     font-weight: 500;
 }
 
