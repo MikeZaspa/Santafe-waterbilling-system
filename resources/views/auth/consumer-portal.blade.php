@@ -54,7 +54,7 @@
         .login-logo {
             width: 78px;
             height: 78px;
-            border-radius: 8px;
+            border-radius: 50px;
             object-fit: cover;
             margin-bottom: 0.75rem;
             border: 1px solid #e9ecef;
