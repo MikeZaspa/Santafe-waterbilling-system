@@ -749,8 +749,7 @@
                                 <th>#</th>
                                 <th>Consumer</th>
                                 <th>Meter No.</th>
-                                <th>Subject</th>
-                                <th>Status</th>
+                                <th>Message</th>
                                 <th>Last Message</th>
                                 <th>Actions</th>
                             </tr>
@@ -761,27 +760,44 @@
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ optional($complaint->consumer)->first_name }} {{ optional($complaint->consumer)->last_name }}</td>
                                     <td>{{ optional($complaint->consumer)->meter_no ?? 'N/A' }}</td>
-                                    <td>{{ $complaint->subject ?? 'N/A' }}</td>
-                                    <td>
-                                        <span class="badge bg-{{ $complaint->status === 'open' ? 'warning' : ($complaint->status === 'in_progress' ? 'info' : ($complaint->status === 'resolved' ? 'success' : 'secondary')) }}">
-                                            {{ ucfirst($complaint->status) }}
+                                    <td class="complaint-message-cell">
+                                        <span class="complaint-message-preview" title="{{ $complaint->message }}">
+                                            {{ $complaint->message ?? 'No message provided.' }}
                                         </span>
                                     </td>
                                     <td >
                                         <small>{{ $complaint->last_message_at?->format('M d, Y h:i A') ?? $complaint->created_at->format('M d, Y h:i A') }}</small>
                                     </td>
                                     <td>
-                                        <button 
-                                            type="button" 
-                                            class="btn btn-sm btn-primary view-complaint-conversation-btn"
-                                            onclick="loadAdminComplaintConversation({{ $complaint->id }})">
-                                            <i class="bi bi-chat-dots"></i> Conversation
-                                        </button>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <button
+                                                type="button"
+                                                class="btn btn-sm btn-primary view-complaint-message-btn"
+                                                data-complaint-message="{{ $complaint->message }}"
+                                                data-consumer-name="{{ trim(optional($complaint->consumer)->first_name . ' ' . optional($complaint->consumer)->last_name) }}">
+                                                <i class="bi bi-chat-left-text"></i> View Message
+                                            </button>
+                                            @if (!empty($complaint->attachment_path))
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-sm btn-outline-secondary view-complaint-attachment-btn"
+                                                    data-attachment-url="{{ route('admin.complaints.attachment', $complaint->id) }}">
+                                                    <i class="bi bi-paperclip"></i> View File
+                                                </button>
+                                            @else
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-sm btn-outline-secondary"
+                                                    disabled>
+                                                    <i class="bi bi-paperclip"></i> No File
+                                                </button>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="text-center text-muted py-4">No consumer complaints found.</td>
+                                    <td colspan="6" class="text-center text-muted py-4">No consumer complaints found.</td>
                                 </tr>
                             @endforelse
                         </tbody>
