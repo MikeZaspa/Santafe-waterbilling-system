@@ -504,14 +504,22 @@
 .notification-dropdown {
     width: 400px;
     max-width: 90vw;
+    padding: 0;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.14);
 }
 
 .notification-list {
     max-height: 320px;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .notification-item {
+    display: block;
+    text-decoration: none;
+    color: #212529;
     padding: 12px 15px;
     border-bottom: 1px solid #f1f1f1;
     cursor: pointer;
@@ -534,6 +542,8 @@
     font-weight: 600;
     margin-bottom: 4px;
     font-size: 0.9rem;
+    color: #1f2937;
+    text-decoration: none;
 }
 
 .notification-message {
@@ -541,11 +551,30 @@
     color: #6c757d;
     margin-bottom: 5px;
     line-height: 1.4;
+    word-break: break-word;
+    text-decoration: none;
 }
 
 .notification-time {
     font-size: 0.75rem;
     color: #adb5bd;
+    text-decoration: none;
+}
+
+.notification-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.notification-meta span {
+    font-size: 0.8rem;
+    color: #6b7280;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 999px;
+    padding: 2px 8px;
 }
 
 .notification-icon {
@@ -582,8 +611,11 @@
 .notification-actions {
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    gap: 12px;
     padding: 10px 15px;
-    border-top: 1px solid #e9ecef;
+    border-bottom: 1px solid #e9ecef;
+    background: #fff;
 }
 
 .notification-empty {
@@ -1117,7 +1149,11 @@
             return `
                 <a href="#" class="notification-item payment-notification-item" data-id="${payment.id}">
                     <div class="notification-title">${payment.consumer_name || 'N/A'}</div>
-                    <div class="notification-message">Meter: ${payment.meter_no || 'N/A'} | Ref: ${payment.reference_number || 'N/A'} | Amount: P${amount}</div>
+                    <div class="notification-meta">
+                        <span>Meter: ${payment.meter_no || 'N/A'}</span>
+                        <span>Ref: ${payment.reference_number || 'N/A'}</span>
+                        <span>Amount: P${amount}</span>
+                    </div>
                     <div class="notification-time">Submitted ${formatNotificationTime(payment.created_at)}</div>
                 </a>
             `;
