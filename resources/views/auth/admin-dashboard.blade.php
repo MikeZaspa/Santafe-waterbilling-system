@@ -43,6 +43,8 @@
             background: var(--sidebar-bg);
             position: fixed;
             height: 100vh;
+            top: 0;
+            left: 0;
             overflow-y: auto;
             transition: all 0.3s;
             z-index: 1050;
@@ -130,11 +132,15 @@
             z-index: 1040;
             background: white;
             padding: 0 20px;
+            margin: 12px;
+            margin-left: 20px;
+            margin-right: 20px;
+            margin-bottom: 0px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             transition: all 0.3s ease;
-            
+            border-radius: 5px;
         }
         
         .header-left {
@@ -481,16 +487,63 @@
         }
         
         @media (max-width: 576px) {
+            .header {
+                margin: 8px 12px;
+                padding: 0 12px;
+            }
+
             .header-title {
-                font-size: 1rem;
+                font-size: 1.1rem;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
             
             .header-subtitle {
                 display: none;
             }
-            
+
+            .header-left {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .header-left > div {
+                min-width: 0;
+            }
+
+            .header-right {
+                margin-left: 8px;
+                flex-shrink: 0;
+            }
+
+            .mobile-menu-toggle {
+                margin-right: 8px !important;
+                width: 32px;
+                height: 32px;
+                padding: 0;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
             .dropdown-toggle span {
                 display: none;
+            }
+
+            #dropdownUser {
+                padding: 0;
+                display: inline-flex;
+                align-items: center;
+            }
+
+            #dropdownUser::after {
+                margin-left: 0;
+                vertical-align: middle;
+            }
+
+            .content-wrapper {
+                padding: 12px;
             }
             
             .modal-dialog {

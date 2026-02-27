@@ -42,6 +42,8 @@
             overflow-y: auto;
             transition: all 0.3s;
             z-index: 1050;
+            top: 0;
+            left: 0;
             box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
             transform: translateX(-100%);
         }
@@ -119,7 +121,7 @@
             margin-left: 0;
         }
         
-        .header {
+       .header {
             height: var(--header-height);
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             position: sticky;
@@ -127,10 +129,15 @@
             z-index: 1040;
             background: white;
             padding: 0 20px;
+            margin: 12px;
+            margin-left: 20px;
+            margin-right: 20px;
+            margin-bottom: 0px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             transition: all 0.3s ease;
+            border-radius: 5px;
         }
         
         .header-left {
