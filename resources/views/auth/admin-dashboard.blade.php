@@ -749,7 +749,6 @@
                                 <th>#</th>
                                 <th>Consumer</th>
                                 <th>Meter No.</th>
-                                <th>Message</th>
                                 <th>Last Message</th>
                                 <th>Actions</th>
                             </tr>
@@ -760,11 +759,6 @@
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ optional($complaint->consumer)->first_name }} {{ optional($complaint->consumer)->last_name }}</td>
                                     <td>{{ optional($complaint->consumer)->meter_no ?? 'N/A' }}</td>
-                                    <td class="complaint-message-cell">
-                                        <span class="complaint-message-preview" title="{{ $complaint->message }}">
-                                            {{ $complaint->message ?? 'No message provided.' }}
-                                        </span>
-                                    </td>
                                     <td >
                                         <small>{{ $complaint->last_message_at?->format('M d, Y h:i A') ?? $complaint->created_at->format('M d, Y h:i A') }}</small>
                                     </td>
@@ -797,7 +791,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center text-muted py-4">No consumer complaints found.</td>
+                                    <td colspan="5" class="text-center text-muted py-4">No consumer complaints found.</td>
                                 </tr>
                             @endforelse
                         </tbody>
