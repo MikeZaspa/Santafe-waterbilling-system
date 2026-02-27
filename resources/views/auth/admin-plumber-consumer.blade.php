@@ -1013,7 +1013,6 @@
                             <option value="">Select Reason</option>
                             <option value="Non-payment">Non-payment</option>
                             <option value="Overdue bill">Overdue bill</option>
-                            <option value="Violation of terms">Violation of terms</option>
                             <option value="Other">Other</option>
                         </select>
                     </div>
