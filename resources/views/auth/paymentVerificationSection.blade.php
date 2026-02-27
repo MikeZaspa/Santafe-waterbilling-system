@@ -384,16 +384,30 @@
       display: inline-block;
     }
 
-    #verifyProofImage {
+    .proof-image-frame {
+      width: 100%;
+      height: 320px;
       border-radius: 8px;
       border: 1px solid #eee;
+      background-color: #f8f9fa;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #verifyProofImage {
+      width: 100%;
+      height: 100%;
+      border-radius: 8px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-      max-height: 300px;
       object-fit: contain;
+      background-color: #f8f9fa;
     }
 
     .image-placeholder {
-      height: 300px;
+      width: 100%;
+      height: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -630,7 +644,7 @@
           </div>
           <div class="col-md-6">
             <h6 class="text-primary fw-bold">Proof of Payment</h6>
-            <div id="imageContainer">
+            <div id="imageContainer" class="proof-image-frame">
               <img id="verifyProofImage" class="img-fluid rounded shadow-sm" alt="Proof of Payment">
             </div>
           </div>
@@ -906,8 +920,6 @@
                         img.id = 'verifyProofImage';
                         img.className = 'img-fluid rounded shadow-sm';
                         img.alt = 'Proof of Payment';
-                        img.style.maxHeight = '300px';
-                        img.style.objectFit = 'contain';
                         
                         img.onload = function() {
                             $('#imageContainer').html(img);
