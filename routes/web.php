@@ -366,9 +366,12 @@ Route::middleware('consumer.auth')->group(function () {
 Route::middleware('auth:consumer')->prefix('consumer/complaints')->name('consumer.complaints.')->group(function () {
     Route::get('/', [ConsumerComplaintController::class, 'index'])->name('index');
     Route::post('/', [ConsumerComplaintController::class, 'store'])->name('store');
+    Route::get('/{complaint}', [ConsumerComplaintController::class, 'show'])->name('show');
+    Route::post('/{complaint}/reply', [ConsumerComplaintController::class, 'addReply'])->name('reply');
     Route::put('/{complaint}', [ConsumerComplaintController::class, 'update'])->name('update');
     Route::delete('/{complaint}', [ConsumerComplaintController::class, 'destroy'])->name('destroy');
     Route::get('/{complaint}/attachment', [ConsumerComplaintController::class, 'attachment'])->name('attachment');
+    Route::get('/{complaint}/message/{messageId}/attachment', [ConsumerComplaintController::class, 'attachment'])->name('message.attachment');
 });
 
 Route::middleware('admin.auth')->prefix('admin/complaint-notifications')->name('admin.complaint-notifications.')->group(function () {
@@ -444,6 +447,16 @@ Route::post('/cut-consumers/{id}/restore', [BillingController::class, 'restoreCo
 // Admin logs API endpoints
 Route::get('/admin/logs/api', [DashboardController::class, 'getAdminLogs'])->name('admin.logs.api');
 Route::get('/admin/admins/api', [DashboardController::class, 'getAdmins'])->name('admin.admins.api');
+
+// Admin Complaints Routes
+Route::middleware('admin.auth')->prefix('admin/complaints')->name('admin.complaints.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Admin\AdminComplaintController::class, 'index'])->name('index');
+    Route::get('/{complaint}', [\App\Http\Controllers\Admin\AdminComplaintController::class, 'show'])->name('show');
+    Route::post('/{complaint}/reply', [\App\Http\Controllers\Admin\AdminComplaintController::class, 'addReply'])->name('reply');
+    Route::put('/{complaint}/status', [\App\Http\Controllers\Admin\AdminComplaintController::class, 'updateStatus'])->name('status');
+    Route::get('/{complaint}/attachment', [\App\Http\Controllers\Admin\AdminComplaintController::class, 'attachment'])->name('attachment');
+    Route::get('/{complaint}/message/{messageId}/attachment', [\App\Http\Controllers\Admin\AdminComplaintController::class, 'attachment'])->name('message.attachment');
+});
 
 Route::get('/consumer-dashboard', [AuthController::class, 'consumerDashboard']);
 Route::get('/consumer-profile', [AuthController::class, 'consumerprofile']);

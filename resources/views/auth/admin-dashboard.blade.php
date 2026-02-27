@@ -747,11 +747,13 @@
                         <thead>
                             <tr>
                                 <th>#</th>
+                                <th>#</th>
                                 <th>Consumer</th>
                                 <th>Meter No.</th>
-                                <th>Message</th>
-                                <th>Attachment</th>
-                                <th>Date</th>
+                                <th>Subject</th>
+                                <th>Status</th>
+                                <th>Last Message</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -760,35 +762,27 @@
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ optional($complaint->consumer)->first_name }} {{ optional($complaint->consumer)->last_name }}</td>
                                     <td>{{ optional($complaint->consumer)->meter_no ?? 'N/A' }}</td>
-                                    <td class="complaint-message-cell">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <div class="complaint-message-preview mb-0" title="{{ $complaint->message }}">
-                                                {{ $complaint->message }}
-                                            </div>
-                                            <button
-                                                type="button"
-                                                class="btn btn-sm btn-outline-primary view-complaint-message-btn"
-                                                data-consumer-name="{{ optional($complaint->consumer)->first_name }} {{ optional($complaint->consumer)->last_name }}"
-                                                data-complaint-message="{{ $complaint->message }}"
-                                            >
-                                                <i class="bi bi-eye"></i> View
-                                            </button>
-                                        </div>
+                                    <td>{{ $complaint->subject ?? 'N/A' }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ $complaint->status === 'open' ? 'warning' : ($complaint->status === 'in_progress' ? 'info' : ($complaint->status === 'resolved' ? 'success' : 'secondary')) }}">
+                                            {{ ucfirst($complaint->status) }}
+                                        </span>
+                                    </td>
+                                    <td >
+                                        <small>{{ $complaint->last_message_at?->format('M d, Y h:i A') ?? $complaint->created_at->format('M d, Y h:i A') }}</small>
                                     </td>
                                     <td>
-                                        @if ($complaint->attachment_path)
-                                            <button type="button" class="btn btn-sm btn-outline-secondary view-complaint-attachment-btn" data-attachment-url="{{ route('admin.complaints.attachment', $complaint->id) }}">
-                                                <i class="bi bi-paperclip"></i> View
-                                            </button>
-                                        @else
-                                            <span class="text-muted">None</span>
-                                        @endif
+                                        <button 
+                                            type="button" 
+                                            class="btn btn-sm btn-primary view-complaint-conversation-btn"
+                                            onclick="loadAdminComplaintConversation({{ $complaint->id }})">
+                                            <i class="bi bi-chat-dots"></i> Conversation
+                                        </button>
                                     </td>
-                                    <td>{{ $complaint->created_at->format('M d, Y h:i A') }}</td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center text-muted py-4">No consumer complaints found.</td>
+                                    <td colspan="7" class="text-center text-muted py-4">No consumer complaints found.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -962,6 +956,8 @@
         </div>
     </div>
 </div>
+
+@include('admin.complaints.conversation-modal')
 
 <!-- Map Modal -->
 <div id="mapModal" class="modal fade" tabindex="-1" aria-labelledby="mapModalLabel" aria-hidden="true">
