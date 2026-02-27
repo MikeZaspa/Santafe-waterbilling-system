@@ -618,6 +618,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     const sidebar = document.querySelector('.sidebar');
     const sidebarToggle = document.getElementById('sidebarToggle');
@@ -634,6 +635,8 @@
     const notificationReadAllEndpoint = "{{ route('consumer.notifications.read-all') }}";
     const notificationReadEndpointBase = "{{ url('/consumer/notifications') }}";
     const csrfToken = document.querySelector('meta[name=\"csrf-token\"]')?.getAttribute('content') || '';
+    const logoutButton = document.getElementById('logout-btn');
+    const logoutForm = document.getElementById('logout-form');
 
     if (sidebarToggle) {
         sidebarToggle.addEventListener('click', function () {
@@ -854,6 +857,46 @@
 
         fetchNotifications();
         setInterval(fetchNotifications, 15000);
+    }
+
+    if (logoutButton && logoutForm && typeof Swal !== 'undefined') {
+        logoutButton.addEventListener('click', function (event) {
+            event.preventDefault();
+
+            Swal.fire({
+                title: 'Logout Confirmation',
+                text: 'Are you sure you want to logout?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#d32f2f',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, Logout!',
+                cancelButtonText: 'Cancel',
+                reverseButtons: false,
+                customClass: {
+                    confirmButton: 'btn btn-danger',
+                    cancelButton: 'btn btn-secondary'
+                },
+                buttonsStyling: false
+            }).then(function (result) {
+                if (!result.isConfirmed) {
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'Logging out...',
+                    text: 'Please wait while we securely log you out.',
+                    allowOutsideClick: false,
+                    didOpen: function () {
+                        Swal.showLoading();
+                    }
+                });
+
+                setTimeout(function () {
+                    logoutForm.submit();
+                }, 1000);
+            });
+        });
     }
 </script>
 </body>
