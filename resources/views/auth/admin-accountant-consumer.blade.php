@@ -543,7 +543,7 @@
 .notification-title {
     font-weight: 600;
     margin-bottom: 3px;
-    font-size: 1.7rem;
+    font-size: 1rem;
     color: #1f2937;
     text-decoration: none;
 }
