@@ -25,44 +25,43 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background-color: #f8f9fa;
+            background-color: #f4f4f4;
             height: 100vh;
             display: flex;
             align-items: center;
-            background-image: url('https://images.unsplash.com/photo-1569336415962-a2bddaa96e4d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
-            background-size: cover;
-            background-position: center;
         }
 
         .login-container {
             max-width: 450px;
             width: 100%;
             margin: 0 auto;
-            background-color: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            border-top: 6px solid #d32f2f;
+            border-radius: 8px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
             overflow: hidden;
-            animation: fadeIn 0.6s ease-out forwards;
+            animation: fadeIn 0.3s ease-out forwards;
         }
 
         .login-header {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-            color: white;
-            padding: 2rem;
+            background: #ffffff;
+            color: #212529;
+            padding: 1.5rem 1.5rem 1rem;
             text-align: center;
+            border-bottom: 1px solid #e9ecef;
         }
 
         .login-logo {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
+            width: 78px;
+            height: 78px;
+            border-radius: 8px;
             object-fit: cover;
-            margin-bottom: 1rem;
-            border: 4px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 0.75rem;
+            border: 1px solid #e9ecef;
         }
 
         .login-body {
-            padding: 2rem;
+            padding: 1.5rem;
         }
 
         .form-control {
