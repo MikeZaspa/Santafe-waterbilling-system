@@ -479,7 +479,7 @@
                         <i class="bi bi-chat-left-dots"></i>
                     </div>
                     <div>
-                        <h4 class="mb-1 text-primary">Complaint Chatbox</h4>
+                        <h4 class="mb-1 text-primary">Complaints </h4>
                         <p class="mb-0 text-muted">Open the modal to send and manage your complaints in chat view.</p>
                     </div>
                 </div>
