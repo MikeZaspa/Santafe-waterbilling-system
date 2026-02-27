@@ -371,40 +371,6 @@
             color: #adb5bd;
         }
 
-        .mobile-download-modal .modal-content {
-            border: 1px solid #e9ecef;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-        }
-
-        .mobile-download-modal .modal-header {
-            padding: 1rem 1.25rem;
-            border-bottom: 1px solid #f1f3f5;
-        }
-
-        .mobile-download-modal .modal-title {
-            font-weight: 700;
-        }
-
-        .mobile-download-modal .modal-body {
-            padding: 1rem 1.25rem 1.25rem;
-        }
-
-        .mobile-download-copy {
-            color: #495057;
-            margin-bottom: 0.9rem;
-        }
-
-        .mobile-download-actions .btn {
-            width: 100%;
-        }
-
-        .mobile-download-note {
-            font-size: 0.8rem;
-            color: #6c757d;
-            margin-top: 0.75rem;
-            margin-bottom: 0;
-        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -513,30 +479,6 @@
                             <i class="bi bi-chevron-right portal-card-arrow"></i>
                         </a>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Mobile App Download Modal -->
-    <div class="modal fade mobile-download-modal" id="androidAppModal" tabindex="-1" aria-labelledby="androidAppModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="androidAppModalLabel">Get The Mobile App</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="mobile-download-copy">Download Santa Fe Water Billing for your phone.</p>
-                    <div class="mobile-download-actions d-flex flex-column gap-2">
-                        <a href="{{ asset('android.apk') }}" id="downloadAndroidApp" class="btn btn-outline-success" download>
-                            <i class="bi bi-android2 me-1"></i>Android APK
-                        </a>
-                        <button type="button" class="btn btn-outline-secondary" disabled>
-                            <i class="bi bi-apple me-1"></i>iOS Coming Soon
-                        </button>
-                    </div>
-                    <p class="mobile-download-note">You can continue using the web portal while waiting for iOS release.</p>
                 </div>
             </div>
         </div>
@@ -658,14 +600,6 @@
             return isForcedAppContext || isStandaloneDisplay || isIOSStandalone || isAndroidWebView || isAndroidAppReferrer;
         }
 
-        function isIOSDevice() {
-            const userAgent = navigator.userAgent || '';
-            const isIPhoneOrIPad = /iPad|iPhone|iPod/.test(userAgent);
-            const isIPadOnMac = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
-
-            return isIPhoneOrIPad || isIPadOnMac;
-        }
-
         function hasMobileDownloadFlag() {
             let hasLocalStorageFlag = false;
             try {
@@ -698,6 +632,7 @@
 
         const shouldResetMobileModal = queryParams.get('reset_app_modal') === '1';
         const forceShowMobileModal = queryParams.get('show_app_modal') === '1';
+        const androidAppDownloadUrl = @json(asset('android.apk'));
 
         if (shouldResetMobileModal) {
             clearMobileDownloadFlag();
@@ -728,37 +663,29 @@
             }
         }
 
-        const androidAppModalEl = document.getElementById('androidAppModal');
-        if (androidAppModalEl) {
-            const androidAppModal = new bootstrap.Modal(androidAppModalEl);
-            const shouldShowMobileDownloadModal = !isInMobileApp
-                && !isTwoFactorPending;
+        const shouldShowMobileDownloadPrompt = !isInMobileApp
+            && !isTwoFactorPending;
 
-            if (shouldShowMobileDownloadModal) {
-                setTimeout(function() {
-                    androidAppModal.show();
-                }, 700);
-            }
+        if (shouldShowMobileDownloadPrompt) {
+            setTimeout(function() {
+                Swal.fire({
+                    title: 'Get The Mobile App',
+                    text: 'Download Santa Fe Water Billing for your phone.',
+                    icon: 'info',
+                    showCancelButton: true,
+                    confirmButtonText: 'Download Android APK',
+                    cancelButtonText: 'Maybe later',
+                    confirmButtonColor: '#198754'
+                }).then(function(result) {
+                    if (!result.isConfirmed) {
+                        return;
+                    }
 
-            androidAppModalEl.addEventListener('shown.bs.modal', function() {
-                if (!isIOSDevice()) {
-                    return;
-                }
-
-                const iosDownloadLink = document.getElementById('downloadIosApp');
-                if (!iosDownloadLink || !iosDownloadLink.getAttribute('href')) {
-                    return;
-                }
-
-                persistMobileDownloadFlag();
-                window.location.assign(iosDownloadLink.getAttribute('href'));
-            });
-
+                    persistMobileDownloadFlag();
+                    window.location.assign(androidAppDownloadUrl);
+                });
+            }, 700);
         }
-
-        $('#downloadAndroidApp, #downloadIosApp').on('click', function() {
-            persistMobileDownloadFlag();
-        });
 
         // Toggle password visibility
         $('#togglePassword').click(function() {
