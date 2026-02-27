@@ -747,7 +747,6 @@
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>#</th>
                                 <th>Consumer</th>
                                 <th>Meter No.</th>
                                 <th>Subject</th>
