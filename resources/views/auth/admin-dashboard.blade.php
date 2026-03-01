@@ -1045,26 +1045,6 @@
             </div>
         </div>
 
-        <div class="row g-4 mt-2">
-            <div class="col-12">
-                <div class="card border-0 shadow-sm complaints-summary-card">
-                    <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="summary-icon">
-                                <i class="bi bi-chat-left-text"></i>
-                            </div>
-                            <div>
-                                <h5 class="mb-1">Consumer Complaints</h5>
-                                <p class="text-muted mb-0">Review all submitted complaint messages in one modal.</p>
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                            <span id="totalComplaintsSummary" class="badge bg-danger-subtle text-danger fs-6">Total: {{ $totalComplaints }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 
