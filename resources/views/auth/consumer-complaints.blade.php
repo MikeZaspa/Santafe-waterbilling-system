@@ -163,41 +163,80 @@
             background: rgba(13, 110, 253, 0.12);
         }
 
+        .complaint-chat-modal .modal-dialog {
+            max-width: 380px;
+            width: calc(100% - 1.5rem);
+            margin: 0.75rem 1rem 0.75rem auto;
+            display: flex;
+            align-items: center;
+            min-height: calc(100% - 1.5rem);
+        }
+
         .complaint-chat-modal .modal-content {
+            height: 70vh;
+            max-height: 560px;
             border: 0;
-            border-radius: 18px;
+            border-radius: 24px;
             overflow: hidden;
-            box-shadow: 0 18px 45px rgba(19, 41, 82, 0.18);
+            box-shadow: 0 18px 42px rgba(15, 23, 42, 0.28);
+            display: flex;
+            flex-direction: column;
         }
 
         .complaint-chat-modal .modal-header {
-            border-bottom: 1px solid rgba(13, 110, 253, 0.14);
-            background: linear-gradient(90deg, #f8fbff, #eef4ff);
+            border-bottom: 0;
+            background: #1f6feb;
+            color: #ffffff;
+        }
+
+        .complaint-chat-modal .modal-body {
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         .complaint-thread {
-            max-height: 60vh;
+            flex: 1;
+            min-height: 0;
+            max-height: none;
             overflow-y: auto;
-            padding: 1rem 1rem 0.6rem;
-            background: radial-gradient(circle at top left, #f4f8ff, #edf2fb 55%, #e7edf9);
+            padding: 0.9rem;
+            background: #d5dbe7;
         }
 
         .complaint-row {
             display: flex;
-            justify-content: flex-end;
+            justify-content: flex-start;
             margin-bottom: 0.85rem;
         }
 
-        .complaint-bubble {
-            width: min(100%, 760px);
-            background: #ffffff;
-            border-radius: 16px 16px 6px 16px;
-            padding: 0.85rem 0.95rem;
-            border: 1px solid rgba(13, 110, 253, 0.12);
-            box-shadow: 0 10px 24px rgba(13, 48, 108, 0.08);
+        .complaint-row.is-admin {
+            justify-content: flex-end;
         }
 
-        .complaint-meta {
+        .complaint-bubble {
+            width: auto;
+            max-width: 88%;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 0.82rem 0.9rem;
+            border: 1px solid #c7d2e4;
+            box-shadow: 0 6px 16px rgba(43, 62, 94, 0.08);
+        }
+
+        .complaint-row.is-admin .complaint-bubble {
+            border-radius: 16px 16px 6px 16px;
+            border-color: #bcd3f5;
+            box-shadow: 0 8px 18px rgba(64, 74, 84, 0.08);
+        }
+
+        .complaint-meta-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
             color: #64748b;
             font-size: 0.82rem;
             line-height: 1.2;
@@ -208,15 +247,82 @@
             white-space: pre-wrap;
         }
 
-        .chat-actions {
-            display: flex;
-            gap: 0.4rem;
-            flex-wrap: wrap;
-        }
-
         .complaint-composer {
             border-top: 1px solid rgba(13, 110, 253, 0.14);
             background: #ffffff;
+            padding: 0.75rem 0.9rem;
+        }
+
+        .consumer-complaint-form {
+            width: 100%;
+        }
+
+        .consumer-complaint-form .form-label {
+            margin-bottom: 0.45rem;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .typing-indicator {
+            min-height: 18px;
+            margin-bottom: 0.35rem;
+            color: #64748b;
+            font-size: 0.82rem;
+            line-height: 1.2;
+        }
+
+        .consumer-composer-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: end;
+            gap: 0.55rem;
+        }
+
+        .consumer-textarea {
+            min-height: 76px;
+            resize: none;
+            border: 2px solid #93c5fd;
+            border-radius: 10px;
+            background: #f8fbff;
+            padding: 0.6rem 0.72rem;
+            font-size: 0.98rem;
+            line-height: 1.35;
+            box-shadow: none;
+        }
+
+        .consumer-textarea:focus {
+            border-color: #3b82f6;
+            background: #ffffff;
+            box-shadow: 0 0 0 0.18rem rgba(59, 130, 246, 0.18);
+        }
+
+        .consumer-send-btn {
+            min-width: 124px;
+            height: 76px;
+            border: 0;
+            border-radius: 10px;
+            background: #dc3545;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 1rem;
+            line-height: 1.2;
+            padding: 0.5rem 0.78rem;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+        }
+
+        .consumer-send-btn:hover,
+        .consumer-send-btn:focus {
+            background: #c92c3a;
+            color: #ffffff;
+        }
+
+        .consumer-attachment-row {
+            margin-top: 0.55rem;
         }
 
         .floating-complaint-btn {
@@ -224,8 +330,31 @@
             right: 1.1rem;
             bottom: 1.1rem;
             z-index: 1060;
-            border-radius: 50px;
-            box-shadow: 0 10px 25px rgba(13, 110, 253, 0.35);
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 12px 28px rgba(13, 110, 253, 0.35);
+            padding: 0;
+        }
+
+        .floating-complaint-count {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 999px;
+            background: #dc3545;
+            color: #ffffff;
+            font-size: 0.7rem;
+            line-height: 20px;
+            font-weight: 700;
+            text-align: center;
+            border: 2px solid #ffffff;
+            padding: 0 4px;
         }
 
         .attachment-viewer-frame {
@@ -346,12 +475,35 @@
         }
 
         @media (max-width: 575.98px) {
-            .complaint-chat-modal .modal-content {
-                border-radius: 0;
+            .complaint-chat-modal .modal-dialog {
+                max-width: 360px;
+                width: calc(100% - 1rem);
+                margin: 0.5rem 0.5rem 0.5rem auto;
+                min-height: calc(100% - 1rem);
             }
 
-            .complaint-thread {
-                max-height: calc(100vh - 245px);
+            .complaint-chat-modal .modal-content {
+                height: 78vh;
+                max-height: none;
+                border-radius: 22px;
+            }
+
+            .consumer-composer-row {
+                grid-template-columns: 1fr 112px;
+                gap: 0.5rem;
+            }
+
+            .consumer-send-btn {
+                width: 100%;
+                min-width: 0;
+                height: 76px;
+            }
+
+            .floating-complaint-btn {
+                right: 0.9rem;
+                bottom: 0.9rem;
+                width: 50px;
+                height: 50px;
             }
         }
     </style>
@@ -498,30 +650,57 @@
     </div>
 </div>
 
-<button class="btn btn-primary floating-complaint-btn d-lg-none" type="button" data-bs-toggle="modal" data-bs-target="#complaintChatModal">
-    <i class="bi bi-chat-left-dots me-1"></i> Complain
+<button
+    class="btn btn-primary floating-complaint-btn"
+    type="button"
+    data-bs-toggle="modal"
+    data-bs-target="#complaintChatModal"
+    title="Open Complaint Chatbox"
+    aria-label="Open Complaint Chatbox">
+    <i class="bi bi-chat-left-dots fs-5"></i>
+    @if ($complaints->count() > 0)
+        <span class="floating-complaint-count">{{ $complaints->count() > 99 ? '99+' : $complaints->count() }}</span>
+    @endif
 </button>
 
 <div class="modal fade complaint-chat-modal" id="complaintChatModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-sm-down">
+    <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
                 <div>
-                    <h5 class="modal-title mb-0">Complaint Chatbox</h5>
-                    <p class="mb-0 text-muted small">Keep all your complaints in one place.</p>
+                    <h5 class="modal-title mb-0">
+                        <i class="bi bi-chat-left-text me-2"></i>{{ $consumer->first_name ?? 'Consumer' }} {{ $consumer->last_name ?? '' }}
+                    </h5>
+                    <p class="mb-0 text-white-50 small">Meter No: {{ $consumer->meter_no ?? 'N/A' }}</p>
                 </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div class="d-flex align-items-center gap-2">
+                    <form
+                        action="{{ route('consumer.complaints.destroy-conversation') }}"
+                        method="POST"
+                        class="js-delete-conversation-form"
+                        data-confirm-message="Delete your whole complaint conversation? This cannot be undone.">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-sm btn-outline-light" title="Delete Conversation" aria-label="Delete Conversation">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
             </div>
             <div class="modal-body p-0">
                 <div class="complaint-thread" id="complaintThread">
                     @forelse ($complaints as $complaint)
-                        <div class="complaint-row">
+                        @php
+                            $isAdminReply = $complaint->isAdminReply();
+                        @endphp
+                        <div class="complaint-row js-consumer-chat-message {{ $isAdminReply ? 'is-admin' : 'is-consumer' }}" data-message-id="{{ $complaint->id }}">
                             <div class="complaint-bubble">
-                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                    <span class="badge text-bg-primary-subtle text-primary">Complaint #{{ $loop->iteration }}</span>
+                                <div class="complaint-meta-row">
+                                    <span>{{ $isAdminReply ? 'Admin' : 'Consumer' }}</span>
                                     <span class="complaint-meta">{{ $complaint->created_at->format('M d, Y h:i A') }}</span>
                                 </div>
-                                <p class="complaint-message">{{ $complaint->message }}</p>
+                                <p class="complaint-message">{{ $complaint->plainMessage() }}</p>
                                 @if ($complaint->attachment_path)
                                     <button
                                         class="btn btn-sm btn-outline-secondary mb-2"
@@ -533,45 +712,6 @@
                                         <i class="bi bi-paperclip me-1"></i> View Attachment
                                     </button>
                                 @endif
-                                <div class="chat-actions">
-                                    <button class="btn btn-sm btn-warning" type="button" data-bs-toggle="modal" data-bs-target="#editComplaintModal{{ $complaint->id }}">
-                                        Edit
-                                    </button>
-                                    <form action="{{ route('consumer.complaints.destroy', $complaint->id) }}" method="POST" onsubmit="return confirm('Delete this complaint?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="modal fade" id="editComplaintModal{{ $complaint->id }}" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered">
-                                <div class="modal-content">
-                                    <form action="{{ route('consumer.complaints.update', $complaint->id) }}" method="POST" enctype="multipart/form-data">
-                                        @csrf
-                                        @method('PUT')
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">Edit Complaint #{{ $loop->iteration }}</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <div class="mb-3">
-                                                <label class="form-label">Update Message</label>
-                                                <textarea name="message" class="form-control" rows="4" required>{{ $complaint->message }}</textarea>
-                                            </div>
-                                            <div class="mb-0">
-                                                <label class="form-label">Replace Attachment (optional)</label>
-                                                <input type="file" name="attachment" class="form-control" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx">
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                                            <button type="submit" class="btn btn-primary">Save Changes</button>
-                                        </div>
-                                    </form>
-                                </div>
                             </div>
                         </div>
                     @empty
@@ -583,23 +723,20 @@
                 </div>
             </div>
             <div class="modal-footer complaint-composer">
-                <form action="{{ route('consumer.complaints.store') }}" method="POST" enctype="multipart/form-data" class="w-100">
+                <form id="consumerComplaintForm" action="{{ route('consumer.complaints.store') }}" method="POST" enctype="multipart/form-data" class="consumer-complaint-form">
                     @csrf
-                    <div class="row g-2 align-items-end">
-                        <div class="col-12">
-                            <label class="form-label mb-1">Message</label>
-                            <textarea name="message" class="form-control" rows="3" placeholder="Type your complaint message here..." required>{{ old('message') }}</textarea>
-                        </div>
-                        <div class="col-md-8">
-                            <label class="form-label mb-1">Attachment (optional)</label>
-                            <input type="file" name="attachment" class="form-control" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx">
-                            <small class="text-muted">Allowed: JPG, PNG, PDF, DOC, DOCX (max 5MB)</small>
-                        </div>
-                        <div class="col-md-4 d-grid">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-send me-1"></i> Send Complaint
-                            </button>
-                        </div>
+                    <p id="adminTypingIndicator" class="typing-indicator d-none">Admin is typing...</p>
+                    <label class="form-label">Message</label>
+                    <div class="consumer-composer-row">
+                        <textarea id="consumerTypingInput" name="message" class="form-control consumer-textarea" rows="3" placeholder="Type your reply here..." required>{{ old('message') }}</textarea>
+                        <button type="submit" class="btn consumer-send-btn">
+                            <i class="bi bi-send me-1"></i> Send Reply
+                        </button>
+                    </div>
+                    <div class="consumer-attachment-row">
+                        <label class="form-label mb-1">Attachment (optional)</label>
+                        <input type="file" name="attachment" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx">
+                        <small class="text-muted">Allowed: JPG, PNG, PDF, DOC, DOCX (max 5MB)</small>
                     </div>
                 </form>
             </div>
@@ -641,9 +778,47 @@
     const notificationEndpoint = "{{ route('consumer.notifications.index') }}";
     const notificationReadAllEndpoint = "{{ route('consumer.notifications.read-all') }}";
     const notificationReadEndpointBase = "{{ url('/consumer/notifications') }}";
+    const complaintLiveEndpoint = "{{ route('consumer.complaints.live') }}";
+    const complaintTypingEndpoint = "{{ route('consumer.complaints.typing') }}";
+    const complaintHeartbeatEndpoint = "{{ route('consumer.complaints.heartbeat') }}";
+    const complaintTypingStatusEndpoint = "{{ route('consumer.complaints.typing-status') }}";
     const csrfToken = document.querySelector('meta[name=\"csrf-token\"]')?.getAttribute('content') || '';
     const logoutButton = document.getElementById('logout-btn');
     const logoutForm = document.getElementById('logout-form');
+    const consumerTypingInputEl = document.getElementById('consumerTypingInput');
+    const consumerComplaintFormEl = document.getElementById('consumerComplaintForm');
+    const adminTypingIndicatorEl = document.getElementById('adminTypingIndicator');
+    const knownComplaintMessageIds = new Set(
+        Array.from(document.querySelectorAll('.js-consumer-chat-message'))
+            .map((node) => Number(node.getAttribute('data-message-id')))
+            .filter((value) => Number.isFinite(value))
+    );
+    let latestComplaintMessageId = Math.max(0, ...Array.from(knownComplaintMessageIds));
+    let isComplaintSyncBusy = false;
+    let isConsumerSendBusy = false;
+    let consumerTypingIdleTimer = null;
+    let consumerTypingHeartbeatTimer = null;
+    let isTypingStatusBusy = false;
+
+    async function sendConsumerOnlineHeartbeat() {
+        if (!complaintHeartbeatEndpoint) {
+            return;
+        }
+
+        try {
+            await fetch(complaintHeartbeatEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({})
+            });
+        } catch (error) {
+            // Silent fail to avoid interrupting complaint page usage.
+        }
+    }
 
     if (sidebarToggle) {
         sidebarToggle.addEventListener('click', function () {
@@ -684,6 +859,367 @@
             attachmentViewerFrame.src = '';
         });
     }
+
+    async function postConsumerTypingState(isTyping) {
+        if (!complaintTypingEndpoint) {
+            return;
+        }
+
+        try {
+            await fetch(complaintTypingEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    is_typing: Boolean(isTyping)
+                })
+            });
+        } catch (error) {
+            // Silent fail to keep chat flow uninterrupted.
+        }
+    }
+
+    function setAdminTypingIndicator(isTyping) {
+        if (!adminTypingIndicatorEl) {
+            return;
+        }
+
+        if (isTyping && complaintChatModalEl && complaintChatModalEl.classList.contains('show')) {
+            adminTypingIndicatorEl.classList.remove('d-none');
+        } else {
+            adminTypingIndicatorEl.classList.add('d-none');
+        }
+    }
+
+    function stopConsumerTypingFlow() {
+        if (consumerTypingIdleTimer) {
+            clearTimeout(consumerTypingIdleTimer);
+            consumerTypingIdleTimer = null;
+        }
+
+        if (consumerTypingHeartbeatTimer) {
+            clearInterval(consumerTypingHeartbeatTimer);
+            consumerTypingHeartbeatTimer = null;
+        }
+
+        postConsumerTypingState(false);
+    }
+
+    function startConsumerTypingFlow() {
+        postConsumerTypingState(true);
+
+        if (!consumerTypingHeartbeatTimer) {
+            consumerTypingHeartbeatTimer = setInterval(function () {
+                postConsumerTypingState(true);
+            }, 4000);
+        }
+
+        if (consumerTypingIdleTimer) {
+            clearTimeout(consumerTypingIdleTimer);
+        }
+
+        consumerTypingIdleTimer = setTimeout(function () {
+            stopConsumerTypingFlow();
+        }, 2500);
+    }
+
+    async function syncAdminTypingStatus() {
+        if (isTypingStatusBusy || !complaintTypingStatusEndpoint) {
+            return;
+        }
+
+        if (!complaintChatModalEl || !complaintChatModalEl.classList.contains('show')) {
+            setAdminTypingIndicator(false);
+            return;
+        }
+
+        isTypingStatusBusy = true;
+        try {
+            const response = await fetch(complaintTypingStatusEndpoint, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (!response.ok) {
+                return;
+            }
+
+            const payload = await response.json();
+            setAdminTypingIndicator(Boolean(payload?.is_typing));
+        } catch (error) {
+            // Silent fail to avoid noisy UI.
+        } finally {
+            isTypingStatusBusy = false;
+        }
+    }
+
+    if (consumerTypingInputEl) {
+        consumerTypingInputEl.addEventListener('input', function () {
+            const value = (consumerTypingInputEl.value || '').trim();
+            if (value.length > 0) {
+                startConsumerTypingFlow();
+            } else {
+                stopConsumerTypingFlow();
+            }
+        });
+
+        consumerTypingInputEl.addEventListener('blur', function () {
+            stopConsumerTypingFlow();
+        });
+    }
+
+    if (consumerComplaintFormEl) {
+        consumerComplaintFormEl.addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            if (isConsumerSendBusy) {
+                return;
+            }
+
+            const formEl = consumerComplaintFormEl;
+            const messageInputEl = formEl.querySelector('textarea[name="message"]');
+            const attachmentInputEl = formEl.querySelector('input[name="attachment"]');
+            const submitButtonEl = formEl.querySelector('button[type="submit"]');
+            const messageValue = (messageInputEl?.value || '').trim();
+
+            if (!messageValue.length) {
+                return;
+            }
+
+            stopConsumerTypingFlow();
+
+            const formData = new FormData(formEl);
+            isConsumerSendBusy = true;
+
+            if (submitButtonEl) {
+                submitButtonEl.disabled = true;
+            }
+
+            try {
+                const response = await fetch(formEl.action, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                });
+
+                const payload = await response.json().catch(() => ({}));
+                if (!response.ok || payload?.success !== true) {
+                    const firstError = payload?.errors
+                        ? Object.values(payload.errors).flat()[0]
+                        : 'Unable to send message right now.';
+                    throw new Error(firstError || 'Unable to send message right now.');
+                }
+
+                const complaint = payload?.complaint;
+                if (complaint && Number.isFinite(Number(complaint.id))) {
+                    appendLiveComplaintMessage(complaint);
+                }
+
+                if (messageInputEl) {
+                    messageInputEl.value = '';
+                    messageInputEl.focus();
+                }
+
+                if (attachmentInputEl) {
+                    attachmentInputEl.value = '';
+                }
+            } catch (error) {
+                const errorMessage = error instanceof Error ? error.message : 'Unable to send message right now.';
+                if (typeof Swal !== 'undefined' && Swal && typeof Swal.fire === 'function') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Send failed',
+                        text: errorMessage,
+                        confirmButtonColor: '#d32f2f'
+                    });
+                } else {
+                    alert(errorMessage);
+                }
+            } finally {
+                isConsumerSendBusy = false;
+                if (submitButtonEl) {
+                    submitButtonEl.disabled = false;
+                }
+            }
+        });
+    }
+
+    document.addEventListener('submit', function (event) {
+        const formEl = event.target instanceof HTMLFormElement
+            ? event.target
+            : null;
+
+        if (!formEl || !formEl.classList.contains('js-delete-conversation-form')) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const confirmMessage = (formEl.getAttribute('data-confirm-message') || 'Delete this conversation? This cannot be undone.').trim();
+        const submitForm = function () {
+            HTMLFormElement.prototype.submit.call(formEl);
+        };
+
+        if (typeof Swal !== 'undefined' && Swal && typeof Swal.fire === 'function') {
+            Swal.fire({
+                title: 'Delete Conversation?',
+                text: confirmMessage,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d32f2f',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete',
+                cancelButtonText: 'Cancel',
+                reverseButtons: false
+            }).then(function (result) {
+                if (result.isConfirmed) {
+                    submitForm();
+                }
+            });
+            return;
+        }
+
+        if (window.confirm(confirmMessage)) {
+            submitForm();
+        }
+    });
+
+    if (complaintChatModalEl) {
+        complaintChatModalEl.addEventListener('shown.bs.modal', function () {
+            syncAdminTypingStatus();
+        });
+
+        complaintChatModalEl.addEventListener('hidden.bs.modal', function () {
+            stopConsumerTypingFlow();
+            setAdminTypingIndicator(false);
+        });
+    }
+
+    function escapeChatHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/\"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function formatChatDate(isoString) {
+        if (!isoString) {
+            return 'Just now';
+        }
+
+        const parsed = new Date(isoString);
+        if (Number.isNaN(parsed.getTime())) {
+            return 'Just now';
+        }
+
+        return parsed.toLocaleString('en-US', {
+            month: 'short',
+            day: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        }).replace(',', '');
+    }
+
+    function appendLiveComplaintMessage(message) {
+        if (!complaintThread || !message || !message.id) {
+            return;
+        }
+
+        const messageId = Number(message.id);
+        if (!Number.isFinite(messageId) || knownComplaintMessageIds.has(messageId)) {
+            return;
+        }
+
+        knownComplaintMessageIds.add(messageId);
+        latestComplaintMessageId = Math.max(latestComplaintMessageId, messageId);
+
+        const isAdmin = Boolean(message.is_admin);
+        const rowClass = isAdmin ? 'is-admin' : 'is-consumer';
+        const senderLabel = isAdmin ? 'Admin' : 'Consumer';
+        const timeLabel = formatChatDate(message.created_at);
+        const attachmentButton = message.has_attachment && message.attachment_url
+            ? `
+                <button
+                    class="btn btn-sm btn-outline-secondary mb-2"
+                    type="button"
+                    data-bs-toggle="modal"
+                    data-bs-target="#attachmentViewerModal"
+                    data-attachment-url="${escapeChatHtml(message.attachment_url)}">
+                    <i class="bi bi-paperclip me-1"></i> View Attachment
+                </button>
+            `
+            : '';
+
+        const html = `
+            <div class="complaint-row js-consumer-chat-message ${rowClass}" data-message-id="${messageId}">
+                <div class="complaint-bubble">
+                    <div class="complaint-meta-row">
+                        <span>${senderLabel}</span>
+                        <span class="complaint-meta">${escapeChatHtml(timeLabel)}</span>
+                    </div>
+                    <p class="complaint-message">${escapeChatHtml(message.message || '')}</p>
+                    ${attachmentButton}
+                </div>
+            </div>
+        `;
+
+        complaintThread.insertAdjacentHTML('beforeend', html);
+
+        if (complaintChatModalEl && complaintChatModalEl.classList.contains('show')) {
+            complaintThread.scrollTop = complaintThread.scrollHeight;
+        }
+    }
+
+    async function syncLiveComplaints() {
+        if (isComplaintSyncBusy || !complaintLiveEndpoint) {
+            return;
+        }
+
+        isComplaintSyncBusy = true;
+        try {
+            const response = await fetch(`${complaintLiveEndpoint}?since_id=${latestComplaintMessageId}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (!response.ok) {
+                return;
+            }
+
+            const payload = await response.json();
+            if (!payload || !Array.isArray(payload.messages)) {
+                return;
+            }
+
+            payload.messages.forEach(appendLiveComplaintMessage);
+            if (Number.isFinite(Number(payload.latest_id))) {
+                latestComplaintMessageId = Math.max(latestComplaintMessageId, Number(payload.latest_id));
+            }
+        } catch (error) {
+            // Silent fail to keep chat usable even if live endpoint is temporarily unavailable.
+        } finally {
+            isComplaintSyncBusy = false;
+        }
+    }
+
+    setTimeout(syncLiveComplaints, 1500);
+    sendConsumerOnlineHeartbeat();
+    setInterval(syncLiveComplaints, 3000);
+    setInterval(sendConsumerOnlineHeartbeat, 10000);
+    setInterval(syncAdminTypingStatus, 2500);
 
     if (notificationBellEl && notificationListEl && notificationActionsEl) {
         function escapeHtml(value) {

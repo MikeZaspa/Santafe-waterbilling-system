@@ -56,9 +56,11 @@ class ComplaintNotificationController extends Controller
 
                 return [
                     'id' => $complaint->id,
+                    'consumer_id' => $complaint->consumer_id,
                     'consumer_name' => $fullName ?: 'Unknown Consumer',
                     'meter_no' => $consumer?->meter_no ?? 'N/A',
-                    'message' => $complaint->message,
+                    'message' => $complaint->plainMessage(),
+                    'has_attachment' => !empty($complaint->attachment_path),
                     'created_at' => $complaint->created_at?->toIso8601String(),
                     'time_ago' => $complaint->created_at?->diffForHumans() ?? 'Just now',
                 ];
@@ -85,6 +87,7 @@ class ComplaintNotificationController extends Controller
     private function unreadComplaintsQuery(Request $request, string $sessionKey)
     {
         $query = Complaint::with(['consumer:id,first_name,middle_name,last_name,suffix,meter_no'])
+            ->where('message', 'not like', Complaint::ADMIN_REPLY_PREFIX . '%')
             ->latest();
 
         $lastSeen = $request->session()->get($sessionKey);

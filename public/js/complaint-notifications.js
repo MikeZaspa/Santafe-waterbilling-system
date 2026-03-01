@@ -277,6 +277,18 @@
                     updateBadge($badge, unreadCount);
                     renderList($list, cachedNotifications);
                     updateMarkReadState();
+
+                    try {
+                        window.dispatchEvent(new CustomEvent('complaint-notifications:update', {
+                            detail: {
+                                role: role,
+                                notifications: cachedNotifications,
+                                unreadCount: unreadCount
+                            }
+                        }));
+                    } catch (error) {
+                        // Ignore event dispatch failures to keep polling stable.
+                    }
                 }
             });
         }
@@ -306,7 +318,7 @@
 
         fetchNotifications();
 
-        if (pollingInterval >= 10000) {
+        if (pollingInterval >= 1000) {
             setInterval(fetchNotifications, pollingInterval);
         }
     };

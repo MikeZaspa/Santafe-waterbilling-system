@@ -39,6 +39,7 @@ use App\Http\Controllers\AccountantNotificationController;
 use App\Http\Controllers\Admin\BackupController;
 use App\Http\Controllers\ConsumerComplaintController;
 use App\Http\Controllers\ComplaintNotificationController;
+use App\Http\Controllers\ComplaintTypingController;
 
 Route::get('/admin/backup-database', [BackupController::class, 'backupDatabase'])->name('admin.backup.database');
 
@@ -50,6 +51,11 @@ Route::post('/admin-login', [AuthController::class,'login']);
 
 Route::get('/admin-dashboard', [DashboardController::class, 'index'])->middleware('admin.auth')->name('admin.dashboard');
 Route::get('/admin/complaints/{complaint}/attachment', [DashboardController::class, 'complaintAttachment'])->middleware('admin.auth')->name('admin.complaints.attachment');
+Route::post('/admin/complaints/reply', [DashboardController::class, 'replyToComplaint'])->middleware('admin.auth')->name('admin.complaints.reply');
+Route::delete('/admin/complaints/conversation/{consumer}', [DashboardController::class, 'destroyComplaintConversation'])->middleware('admin.auth')->name('admin.complaints.destroy-conversation');
+Route::post('/admin/complaints/typing', [ComplaintTypingController::class, 'adminTyping'])->middleware('admin.auth')->name('admin.complaints.typing');
+Route::get('/admin/complaints/conversation/{consumer}/typing-status', [ComplaintTypingController::class, 'adminStatus'])->middleware('admin.auth')->name('admin.complaints.typing-status');
+Route::get('/admin/complaints/conversations/online-statuses', [ComplaintTypingController::class, 'adminOnlineStatuses'])->middleware('admin.auth')->name('admin.complaints.online-statuses');
 
 Route::get('/admin-consumer', [AdminConsumerController::class, 'index'])->name('admin-consumer');
    // Add these routes to your web.php
@@ -365,7 +371,12 @@ Route::middleware('consumer.auth')->group(function () {
 
 Route::middleware('auth:consumer')->prefix('consumer/complaints')->name('consumer.complaints.')->group(function () {
     Route::get('/', [ConsumerComplaintController::class, 'index'])->name('index');
+    Route::get('/live', [ConsumerComplaintController::class, 'live'])->name('live');
+    Route::post('/typing', [ComplaintTypingController::class, 'consumerTyping'])->name('typing');
+    Route::post('/heartbeat', [ComplaintTypingController::class, 'consumerHeartbeat'])->name('heartbeat');
+    Route::get('/typing-status', [ComplaintTypingController::class, 'consumerStatus'])->name('typing-status');
     Route::post('/', [ConsumerComplaintController::class, 'store'])->name('store');
+    Route::delete('/conversation/all', [ConsumerComplaintController::class, 'destroyConversation'])->name('destroy-conversation');
     Route::put('/{complaint}', [ConsumerComplaintController::class, 'update'])->name('update');
     Route::delete('/{complaint}', [ConsumerComplaintController::class, 'destroy'])->name('destroy');
     Route::get('/{complaint}/attachment', [ConsumerComplaintController::class, 'attachment'])->name('attachment');

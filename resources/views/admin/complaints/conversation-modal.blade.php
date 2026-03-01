@@ -78,7 +78,10 @@ function loadConversation(complaintId) {
             
             if (data.messages && data.messages.length > 0) {
                 data.messages.forEach(function(message) {
-                    const isAdmin = message.sender_type === 'admin';
+                    const prefix = '[ADMIN_REPLY] ';
+                    const rawMessage = String(message.message || '');
+                    const isAdmin = rawMessage.startsWith(prefix);
+                    const displayMessage = isAdmin ? rawMessage.slice(prefix.length).trim() : rawMessage;
                     const senderName = message.sender_name || (isAdmin ? 'Admin' : 'Consumer');
                     const timestamp = new Date(message.created_at).toLocaleString();
                     
@@ -86,7 +89,7 @@ function loadConversation(complaintId) {
                         <div class="mb-3 ${isAdmin ? 'text-end' : ''}">
                             <div class="d-inline-block ${isAdmin ? 'bg-primary text-white' : 'bg-light'} rounded-3 p-3" style="max-width: 70%;">
                                 <small class="d-block fw-bold mb-1">${senderName}</small>
-                                <p class="mb-1">${escapeHtml(message.message)}</p>
+                                <p class="mb-1">${escapeHtml(displayMessage)}</p>
                                 <small class="d-block text-muted" style="font-size: 0.75rem;">
                                     ${isAdmin ? '<i class="bi bi-check-all"></i>' : ''} ${timestamp}
                                 </small>
@@ -145,8 +148,7 @@ $('#sendReplyBtn').on('click', function() {
             'Content-Type': 'application/json'
         },
         data: JSON.stringify({
-            message: message,
-            sender_type: 'admin'
+            message: message
         }),
         success: function(response) {
             $('#conversationReply').val('');

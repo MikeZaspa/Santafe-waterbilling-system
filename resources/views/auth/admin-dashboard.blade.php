@@ -408,31 +408,6 @@
             width: 100%;
         }
 
-        .complaints-table td {
-            vertical-align: middle;
-        }
-
-        .complaint-message-preview {
-            max-width: 340px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .complaint-message-cell {
-            min-width: 300px;
-        }
-
-        .complaint-message-content {
-            white-space: pre-wrap;
-            word-break: break-word;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            background: #f8f9fa;
-            padding: 1rem;
-            min-height: 140px;
-        }
-
         .complaints-summary-card .summary-icon {
             width: 52px;
             height: 52px;
@@ -444,38 +419,290 @@
             font-size: 1.25rem;
         }
 
+        .floating-complaints-btn {
+            position: fixed;
+            right: 1.25rem;
+            bottom: 1.25rem;
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 12px 28px rgba(13, 110, 253, 0.35);
+            z-index: 1060;
+            padding: 0;
+        }
+
+        .floating-complaints-count {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            min-width: 22px;
+            height: 22px;
+            border-radius: 999px;
+            background: #dc3545;
+            color: #ffffff;
+            font-size: 0.72rem;
+            line-height: 22px;
+            font-weight: 700;
+            text-align: center;
+            border: 2px solid #ffffff;
+            padding: 0 5px;
+        }
+
         #complaintsModal .modal-dialog {
-            max-width: 92%;
+            max-width: 360px;
+            width: calc(100% - 1.5rem);
+            margin: 0.75rem 1rem 0.75rem auto;
+            display: flex;
+            align-items: center;
+            min-height: calc(100% - 1.5rem);
         }
 
         #complaintsModal .modal-content {
-            height: 85vh;
+            height: 70vh;
+            max-height: 560px;
+            border-radius: 26px;
+            overflow: hidden;
+            border: 0;
+            box-shadow: 0 18px 42px rgba(15, 23, 42, 0.28);
+            display: flex;
+            flex-direction: column;
         }
 
         #complaintsModal .modal-body {
-            height: calc(85vh - 140px);
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+            background: #f3f4f6;
+            padding: 0.9rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .complaints-conversation-list {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding-right: 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+        }
+
+        .complaint-conversation-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+        }
+
+        .consumer-online-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.76rem;
+            font-weight: 600;
+            color: #9ca3af;
+        }
+
+        .consumer-online-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: #adb5bd;
+        }
+
+        .consumer-online-indicator.is-online {
+            color: #198754;
+        }
+
+        .consumer-online-indicator.is-online .consumer-online-dot {
+            background: #20c997;
+            box-shadow: 0 0 0 3px rgba(32, 201, 151, 0.2);
+        }
+
+        .complaint-conversation-preview {
+            margin: 0.6rem 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #4b5563;
+        }
+
+        .complaint-chat-modal .modal-dialog {
+            max-width: 380px;
+            width: calc(100% - 1.5rem);
+            margin: 0.75rem 1rem 0.75rem auto;
+            display: flex;
+            align-items: center;
+            min-height: calc(100% - 1.5rem);
+        }
+
+        .complaint-chat-modal .modal-content {
+            height: 70vh;
+            max-height: 560px;
+            border: 0;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 18px 42px rgba(15, 23, 42, 0.28);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .complaint-chat-modal .modal-body {
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .admin-complaint-thread {
+            flex: 1;
+            min-height: 0;
+            max-height: none;
+            overflow-y: auto;
+            padding: 1rem;
+            background: radial-gradient(circle at top left, #f5f8ff, #edf2fb 55%, #e7edf9);
+        }
+
+        .admin-chat-row {
+            display: flex;
+            margin-bottom: 0.85rem;
+        }
+
+        .admin-chat-row.is-admin {
+            justify-content: flex-end;
+        }
+
+        .admin-chat-row.is-consumer {
+            justify-content: flex-start;
+        }
+
+        .admin-chat-bubble {
+            width: auto;
+            max-width: 88%;
+            background: #ffffff;
+            padding: 0.85rem 0.95rem;
+            border: 1px solid rgba(13, 110, 253, 0.14);
+            box-shadow: 0 10px 24px rgba(13, 48, 108, 0.08);
+        }
+
+        .admin-chat-row.is-admin .admin-chat-bubble {
+            border-radius: 16px 16px 6px 16px;
+            border-color: rgba(13, 110, 253, 0.2);
+        }
+
+        .admin-chat-row.is-consumer .admin-chat-bubble {
+            border-radius: 16px 16px 16px 6px;
+            border-color: rgba(108, 117, 125, 0.2);
+            box-shadow: 0 8px 20px rgba(71, 85, 105, 0.08);
+        }
+
+        .admin-chat-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.65rem;
+            color: #64748b;
+            font-size: 0.82rem;
+            line-height: 1.2;
+        }
+
+        .admin-chat-message {
+            margin: 0.55rem 0 0.65rem;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .complaint-reply-form {
+            width: 100%;
+        }
+
+        .complaint-reply-form .form-label {
+            margin-bottom: 0.45rem;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .typing-indicator {
+            min-height: 18px;
+            margin-bottom: 0.35rem;
+            color: #64748b;
+            font-size: 0.82rem;
+            line-height: 1.2;
+        }
+
+        .reply-composer-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: end;
+            gap: 0.55rem;
+        }
+
+        .reply-textarea {
+            min-height: 76px;
+            resize: none;
+            border: 2px solid #93c5fd;
+            border-radius: 10px;
+            background: #f8fbff;
+            padding: 0.6rem 0.72rem;
+            font-size: 0.98rem;
+            line-height: 1.35;
+            box-shadow: none;
+        }
+
+        .reply-textarea:focus {
+            border-color: #3b82f6;
+            background: #ffffff;
+            box-shadow: 0 0 0 0.18rem rgba(59, 130, 246, 0.18);
+        }
+
+        .reply-send-btn {
+            min-width: 122px;
+            height: 76px;
+            border: 0;
+            border-radius: 10px;
+            background: #dc3545;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 1rem;
+            line-height: 1.2;
+            padding: 0.5rem 0.78rem;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+        }
+
+        .reply-send-btn:hover,
+        .reply-send-btn:focus {
+            background: #c92c3a;
+            color: #ffffff;
+        }
+
+        .complaint-composer {
+            border-top: 1px solid rgba(13, 110, 253, 0.14);
+            background: #ffffff;
+            padding: 0.75rem 0.9rem;
         }
 
         #complaintAttachmentModal .modal-dialog {
-            max-width: 88%;
+            max-width: min(760px, 82vw);
         }
 
         #complaintAttachmentModal .modal-content {
-            height: 88vh;
+            height: 72vh;
         }
 
         #complaintAttachmentModal .modal-body {
-            height: calc(88vh - 86px);
+            height: calc(72vh - 86px);
             overflow: hidden;
-        }
-
-        #complaintMessageModal .modal-dialog {
-            max-width: 720px;
-        }
-
-        #complaintMessageModal .modal-content,
-        #complaintMessageModal .modal-body {
-            height: auto;
         }
 
         .attachment-preview-frame {
@@ -564,24 +791,74 @@
                 min-height: 60vh;
             }
 
-            #complaintsModal .modal-dialog,
             #complaintAttachmentModal .modal-dialog {
-                max-width: 100%;
-                margin: 0;
+                max-width: 94%;
+                margin: 1rem auto;
             }
 
-            #complaintsModal .modal-content,
             #complaintAttachmentModal .modal-content {
-                height: 100vh;
-                border-radius: 0;
+                height: 70vh;
+                border-radius: 18px;
+            }
+
+            #complaintsModal .modal-dialog {
+                max-width: 360px;
+                width: calc(100% - 1rem);
+                margin: 0.5rem 0.5rem 0.5rem auto;
+                min-height: calc(100% - 1rem);
+            }
+
+            #complaintsModal .modal-content {
+                height: 78vh;
+                max-height: none;
+                border-radius: 24px;
             }
 
             #complaintsModal .modal-body {
-                height: calc(100vh - 140px);
+                flex: 1;
+                min-height: 0;
+                overflow: hidden;
+            }
+
+            .complaint-chat-modal .modal-dialog {
+                max-width: 360px;
+                width: calc(100% - 1rem);
+                margin: 0.5rem 0.5rem 0.5rem auto;
+                min-height: calc(100% - 1rem);
+            }
+
+            .complaint-chat-modal .modal-content {
+                height: 78vh;
+                max-height: none;
+                border-radius: 22px;
+            }
+
+            .complaint-chat-modal .modal-body {
+                flex: 1;
+                min-height: 0;
+                overflow: hidden;
+            }
+
+            .reply-composer-row {
+                grid-template-columns: 1fr 112px;
+                gap: 0.5rem;
+            }
+
+            .reply-send-btn {
+                width: 100%;
+                min-width: 0;
+                height: 76px;
             }
 
             #complaintAttachmentModal .modal-body {
-                height: calc(100vh - 86px);
+                height: calc(70vh - 86px);
+            }
+
+            .floating-complaints-btn {
+                right: 0.9rem;
+                bottom: 0.9rem;
+                width: 52px;
+                height: 52px;
             }
         }
     </style>
@@ -681,6 +958,20 @@
     </header>
     
     <div id="contentWrapper" class="content-wrapper">
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
+        @if ($errors->any() && old('consumer_id'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ $errors->first() }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
         <div id="statsCards" class="row g-4">
             <!-- Total Consumers Card -->
             <div id="totalConsumersCard" class="col-md-6 col-lg-6">
@@ -768,10 +1059,7 @@
                             </div>
                         </div>
                         <div class="d-flex align-items-center gap-2">
-                            <span class="badge bg-danger-subtle text-danger fs-6">Total: {{ $totalComplaints }}</span>
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#complaintsModal">
-                                <i class="bi bi-eye me-1"></i> View Complaints
-                            </button>
+                            <span id="totalComplaintsSummary" class="badge bg-danger-subtle text-danger fs-6">Total: {{ $totalComplaints }}</span>
                         </div>
                     </div>
                 </div>
@@ -779,6 +1067,17 @@
         </div>
     </div>
 </div>
+
+<button
+    type="button"
+    class="btn btn-primary floating-complaints-btn"
+    data-bs-toggle="modal"
+    data-bs-target="#complaintsModal"
+    title="View Complaints"
+    aria-label="View Complaints">
+    <i class="bi bi-chat-left-text fs-5"></i>
+    <span id="floatingComplaintsCount" class="floating-complaints-count {{ $totalComplaints > 0 ? '' : 'd-none' }}">{{ $totalComplaints > 99 ? '99+' : $totalComplaints }}</span>
+</button>
 
 <!-- Consumer Complaints Modal -->
 <div id="complaintsModal" class="modal fade" tabindex="-1" aria-labelledby="complaintsModalLabel" aria-hidden="true">
@@ -792,86 +1091,127 @@
             </div>
             <div class="modal-body p-3">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <p class="text-muted mb-0">Latest complaint records from consumers.</p>
-                    <span class="badge bg-danger-subtle text-danger">Total: {{ $totalComplaints }}</span>
+                    <p class="text-muted mb-0">Open a conversation and reply to the consumer in chat view.</p>
+                    <span id="totalComplaintsModal" class="badge bg-danger-subtle text-danger">Total messages: {{ $totalComplaints }}</span>
                 </div>
-                <div class="table-responsive">
-                    <table class="table table-hover complaints-table">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Consumer</th>
-                                <th>Meter No.</th>
-                                <th>Last Message</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($recentComplaints as $complaint)
-                                <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    <td>{{ optional($complaint->consumer)->first_name }} {{ optional($complaint->consumer)->last_name }}</td>
-                                    <td>{{ optional($complaint->consumer)->meter_no ?? 'N/A' }}</td>
-                                    <td >
-                                        <small>{{ $complaint->last_message_at?->format('M d, Y h:i A') ?? $complaint->created_at->format('M d, Y h:i A') }}</small>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex flex-wrap gap-2">
-                                            <button
-                                                type="button"
-                                                class="btn btn-sm btn-primary view-complaint-message-btn"
-                                                data-complaint-message="{{ $complaint->message }}"
-                                                data-consumer-name="{{ trim(optional($complaint->consumer)->first_name . ' ' . optional($complaint->consumer)->last_name) }}">
-                                                <i class="bi bi-chat-left-text"></i> View Message
-                                            </button>
-                                            @if (!empty($complaint->attachment_path))
-                                                <button
-                                                    type="button"
-                                                    class="btn btn-sm btn-outline-secondary view-complaint-attachment-btn"
-                                                    data-attachment-url="{{ route('admin.complaints.attachment', $complaint->id) }}">
-                                                    <i class="bi bi-paperclip"></i> View File
-                                                </button>
-                                            @else
-                                                <button
-                                                    type="button"
-                                                    class="btn btn-sm btn-outline-secondary"
-                                                    disabled>
-                                                    <i class="bi bi-paperclip"></i> No File
-                                                </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5" class="text-center text-muted py-4">No consumer complaints found.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                <div id="complaintConversationsList" class="complaints-conversation-list">
+                    @forelse ($complaintConversations as $conversation)
+                        <div class="complaint-conversation-card" data-consumer-id="{{ $conversation['consumer_id'] }}">
+                            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                                <div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <h6 class="mb-1">{{ $conversation['consumer_name'] }}</h6>
+                                        <span class="consumer-online-indicator js-consumer-online-indicator" data-consumer-id="{{ $conversation['consumer_id'] }}" aria-label="Consumer is offline">
+                                            <span class="consumer-online-dot"></span>
+                                            <span class="js-consumer-online-label">Offline</span>
+                                        </span>
+                                    </div>
+                                    <small class="text-muted">Meter No: {{ $conversation['meter_no'] }}</small>
+                                </div>
+                                <span class="badge text-bg-primary-subtle text-primary js-conversation-count">{{ $conversation['messages']->count() }} messages</span>
+                            </div>
+                            <p class="complaint-conversation-preview js-conversation-preview">{{ \Illuminate\Support\Str::limit($conversation['last_message'], 160) }}</p>
+                            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                                <small class="text-muted js-conversation-last-activity" data-last-iso="{{ optional($conversation['last_message_at'])->toIso8601String() }}">
+                                    Last activity:
+                                    {{ optional($conversation['last_message_at'])->format('M d, Y h:i A') ?? 'No messages yet' }}
+                                </small>
+                                <button
+                                    type="button"
+                                    class="btn btn-sm btn-primary open-complaint-chat-btn"
+                                    data-chat-target="complaintChatModal{{ $conversation['consumer_id'] }}">
+                                    <i class="bi bi-chat-dots me-1"></i> Open Chat
+                                </button>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="text-center text-muted py-4">No consumer complaints found.</div>
+                    @endforelse
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Complaint Message Viewer Modal -->
-<div id="complaintMessageModal" class="modal fade" tabindex="-1" aria-labelledby="complaintMessageModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 id="complaintMessageModalLabel" class="modal-title">
-                    <i class="bi bi-chat-left-text me-2"></i>Complaint Message
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-3">
-                <p id="complaintMessageConsumer" class="text-muted mb-2 small"></p>
-                <div id="complaintMessageContent" class="complaint-message-content"></div>
+@foreach ($complaintConversations as $conversation)
+    <div id="complaintChatModal{{ $conversation['consumer_id'] }}" class="modal fade complaint-chat-modal" data-consumer-id="{{ $conversation['consumer_id'] }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <div>
+                        <h5 class="modal-title mb-0">
+                            <i class="bi bi-chat-left-text me-2"></i>{{ $conversation['consumer_name'] }}
+                        </h5>
+                        <p class="mb-0 text-white-50 small">Meter No: {{ $conversation['meter_no'] }}</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <form
+                            action="{{ route('admin.complaints.destroy-conversation', $conversation['consumer_id']) }}"
+                            method="POST"
+                            class="js-delete-conversation-form"
+                            data-confirm-message="Delete this consumer complaint conversation? This cannot be undone.">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-outline-light" title="Delete Conversation" aria-label="Delete Conversation">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="admin-complaint-thread js-admin-complaint-thread" data-consumer-id="{{ $conversation['consumer_id'] }}">
+                        @foreach ($conversation['messages'] as $message)
+                            @php
+                                $isAdminMessage = $message->isAdminReply();
+                            @endphp
+                            <div class="admin-chat-row js-admin-chat-message {{ $isAdminMessage ? 'is-admin' : 'is-consumer' }}" data-message-id="{{ $message->id }}">
+                                <div class="admin-chat-bubble">
+                                    <div class="admin-chat-meta">
+                                        <span>{{ $isAdminMessage ? 'Admin' : 'Consumer' }}</span>
+                                        <span>{{ $message->created_at->format('M d, Y h:i A') }}</span>
+                                    </div>
+                                    <p class="admin-chat-message">{{ $message->plainMessage() }}</p>
+                                    @if (!empty($message->attachment_path))
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm btn-outline-secondary view-complaint-attachment-btn"
+                                            data-attachment-url="{{ route('admin.complaints.attachment', $message->id) }}">
+                                            <i class="bi bi-paperclip me-1"></i> View Attachment
+                                        </button>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+                <div class="modal-footer complaint-composer">
+                    <form action="{{ route('admin.complaints.reply') }}" method="POST" class="w-100 complaint-reply-form js-admin-reply-form">
+                        @csrf
+                        <input type="hidden" name="consumer_id" value="{{ $conversation['consumer_id'] }}">
+                        <p class="typing-indicator js-consumer-typing-indicator d-none" data-consumer-id="{{ $conversation['consumer_id'] }}">Consumer is typing...</p>
+                        <label class="form-label mb-1">Reply as Admin</label>
+                        <div class="reply-composer-row">
+                            <textarea
+                                name="message"
+                                class="form-control reply-textarea js-admin-typing-input"
+                                data-consumer-id="{{ $conversation['consumer_id'] }}"
+                                rows="3"
+                                placeholder="Type your reply here..."
+                                required>{{ (int) old('consumer_id') === (int) $conversation['consumer_id'] ? old('message') : '' }}</textarea>
+                            <button type="submit" class="btn reply-send-btn">
+                                <i class="bi bi-send me-1"></i> Send Reply
+                            </button>
+                        </div>
+                        @if ($errors->has('message') && (int) old('consumer_id') === (int) $conversation['consumer_id'])
+                            <small class="text-danger">{{ $errors->first('message') }}</small>
+                        @endif
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
+@endforeach
 
 <!-- Complaint Attachment Viewer Modal -->
 <div id="complaintAttachmentModal" class="modal fade" tabindex="-1" aria-labelledby="complaintAttachmentModalLabel" aria-hidden="true">
@@ -1069,13 +1409,32 @@
     let map; // Will store the map instance
     let currentMarker; // Will store the current marker
     const complaintsModalEl = document.getElementById('complaintsModal');
-    const complaintMessageModalEl = document.getElementById('complaintMessageModal');
-    const complaintMessageContentEl = document.getElementById('complaintMessageContent');
-    const complaintMessageConsumerEl = document.getElementById('complaintMessageConsumer');
     const complaintAttachmentModalEl = document.getElementById('complaintAttachmentModal');
     const complaintAttachmentFrame = document.getElementById('complaintAttachmentFrame');
-    let reopenComplaintsAfterMessage = false;
-    let reopenComplaintsAfterAttachment = false;
+    const complaintConversationsListEl = document.getElementById('complaintConversationsList');
+    const totalComplaintsSummaryEl = document.getElementById('totalComplaintsSummary');
+    const totalComplaintsModalEl = document.getElementById('totalComplaintsModal');
+    const floatingComplaintsCountEl = document.getElementById('floatingComplaintsCount');
+    const adminComplaintReplyUrl = @json(route('admin.complaints.reply'));
+    const adminComplaintDeleteBaseUrl = @json(url('/admin/complaints/conversation'));
+    const adminComplaintAttachmentBaseUrl = @json(url('/admin/complaints'));
+    const adminComplaintTypingUrl = @json(route('admin.complaints.typing'));
+    const adminComplaintTypingStatusBaseUrl = @json(url('/admin/complaints/conversation'));
+    const adminComplaintOnlineStatusesUrl = @json(route('admin.complaints.online-statuses'));
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+    const openChatConsumerId = @json(session('open_chat_consumer_id'));
+    const oldConsumerId = @json(old('consumer_id'));
+    let activeComplaintModalEl = null;
+    let totalComplaintMessages = Number(@json($totalComplaints)) || 0;
+    const pageLoadedAtMs = Date.now();
+    const seenComplaintMessageIds = new Set(
+        Array.from(document.querySelectorAll('.js-admin-chat-message'))
+            .map((node) => Number(node.getAttribute('data-message-id')))
+            .filter((value) => Number.isFinite(value))
+    );
+    const adminTypingIdleTimers = {};
+    const adminTypingHeartbeatTimers = {};
+    let isOnlineStatusesSyncBusy = false;
     
     // Mobile sidebar toggle functionality
     const sidebar = $('.sidebar');
@@ -1335,56 +1694,639 @@
     // Admin Logs Modal functionality
     let currentPage = 1;
 
-    $('.view-complaint-message-btn').on('click', function() {
-        if (!complaintMessageModalEl || !complaintMessageContentEl) {
+    function escapeHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function shortenText(value, maxLength) {
+        const text = String(value || '');
+        if (text.length <= maxLength) {
+            return text;
+        }
+
+        return text.slice(0, Math.max(0, maxLength - 3)) + '...';
+    }
+
+    function formatDateTime(isoString) {
+        if (!isoString) {
+            return 'Just now';
+        }
+
+        const parsed = new Date(isoString);
+        if (Number.isNaN(parsed.getTime())) {
+            return 'Just now';
+        }
+
+        return parsed.toLocaleString('en-US', {
+            month: 'short',
+            day: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        }).replace(',', '');
+    }
+
+    async function postAdminTypingState(consumerId, isTyping) {
+        if (!consumerId || !adminComplaintTypingUrl) {
             return;
         }
 
-        const complaintMessage = $(this).data('complaint-message');
-        const consumerName = ($(this).data('consumer-name') || '').toString().trim();
+        try {
+            await fetch(adminComplaintTypingUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    consumer_id: Number(consumerId),
+                    is_typing: Boolean(isTyping)
+                })
+            });
+        } catch (error) {
+            // Silent fail to avoid interrupting chat UI.
+        }
+    }
 
-        complaintMessageContentEl.textContent = complaintMessage || 'No message provided.';
-        if (complaintMessageConsumerEl) {
-            complaintMessageConsumerEl.textContent = consumerName ? `From: ${consumerName}` : 'From: Unknown Consumer';
+    function clearAdminTypingHeartbeat(consumerId) {
+        if (adminTypingHeartbeatTimers[consumerId]) {
+            clearInterval(adminTypingHeartbeatTimers[consumerId]);
+            delete adminTypingHeartbeatTimers[consumerId];
+        }
+    }
+
+    function clearAdminTypingIdleTimer(consumerId) {
+        if (adminTypingIdleTimers[consumerId]) {
+            clearTimeout(adminTypingIdleTimers[consumerId]);
+            delete adminTypingIdleTimers[consumerId];
+        }
+    }
+
+    function stopAdminTypingFlow(consumerId) {
+        if (!consumerId) {
+            return;
         }
 
-        reopenComplaintsAfterMessage = true;
+        clearAdminTypingIdleTimer(consumerId);
+        clearAdminTypingHeartbeat(consumerId);
+        postAdminTypingState(consumerId, false);
+    }
 
-        const complaintsModal = bootstrap.Modal.getInstance(complaintsModalEl);
+    function startAdminTypingFlow(consumerId) {
+        if (!consumerId) {
+            return;
+        }
+
+        postAdminTypingState(consumerId, true);
+
+        if (!adminTypingHeartbeatTimers[consumerId]) {
+            adminTypingHeartbeatTimers[consumerId] = setInterval(function() {
+                postAdminTypingState(consumerId, true);
+            }, 4000);
+        }
+
+        clearAdminTypingIdleTimer(consumerId);
+        adminTypingIdleTimers[consumerId] = setTimeout(function() {
+            stopAdminTypingFlow(consumerId);
+        }, 2500);
+    }
+
+    function updateConsumerTypingIndicator(consumerId, isTyping) {
+        const indicatorEl = document.querySelector(`.js-consumer-typing-indicator[data-consumer-id="${consumerId}"]`);
+        if (!indicatorEl) {
+            return;
+        }
+
+        if (isTyping) {
+            indicatorEl.classList.remove('d-none');
+        } else {
+            indicatorEl.classList.add('d-none');
+        }
+    }
+
+    async function pollOpenConversationTypingStates() {
+        const openModals = Array.from(document.querySelectorAll('.complaint-chat-modal.show[data-consumer-id]'));
+        if (!openModals.length) {
+            return;
+        }
+
+        await Promise.all(openModals.map(async function(modalEl) {
+            const consumerId = Number(modalEl.getAttribute('data-consumer-id'));
+            if (!Number.isFinite(consumerId) || consumerId <= 0) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${adminComplaintTypingStatusBaseUrl}/${consumerId}/typing-status`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (!response.ok) {
+                    return;
+                }
+
+                const payload = await response.json();
+                updateConsumerTypingIndicator(consumerId, Boolean(payload?.is_typing));
+            } catch (error) {
+                // Silent fail to keep modal stable.
+            }
+        }));
+    }
+
+    function setComplaintTotals(value) {
+        totalComplaintMessages = Math.max(0, Number(value) || 0);
+
+        if (totalComplaintsSummaryEl) {
+            totalComplaintsSummaryEl.textContent = `Total: ${totalComplaintMessages}`;
+        }
+
+        if (totalComplaintsModalEl) {
+            totalComplaintsModalEl.textContent = `Total messages: ${totalComplaintMessages}`;
+        }
+
+        if (floatingComplaintsCountEl) {
+            if (totalComplaintMessages > 0) {
+                floatingComplaintsCountEl.textContent = totalComplaintMessages > 99 ? '99+' : String(totalComplaintMessages);
+                floatingComplaintsCountEl.classList.remove('d-none');
+            } else {
+                floatingComplaintsCountEl.textContent = '0';
+                floatingComplaintsCountEl.classList.add('d-none');
+            }
+        }
+    }
+
+    function setConversationOnlineState(consumerId, isOnline) {
+        if (!complaintConversationsListEl) {
+            return;
+        }
+
+        const cardEl = complaintConversationsListEl.querySelector(`.complaint-conversation-card[data-consumer-id="${consumerId}"]`);
+        if (!cardEl) {
+            return;
+        }
+
+        const indicatorEl = cardEl.querySelector('.js-consumer-online-indicator');
+        const labelEl = indicatorEl ? indicatorEl.querySelector('.js-consumer-online-label') : null;
+        if (!indicatorEl || !labelEl) {
+            return;
+        }
+
+        indicatorEl.classList.toggle('is-online', Boolean(isOnline));
+        labelEl.textContent = isOnline ? 'Online' : 'Offline';
+        indicatorEl.setAttribute('aria-label', isOnline ? 'Consumer is online' : 'Consumer is offline');
+    }
+
+    async function syncConversationOnlineStatuses() {
+        if (isOnlineStatusesSyncBusy || !adminComplaintOnlineStatusesUrl || !complaintConversationsListEl) {
+            return;
+        }
+
+        const consumerIds = Array.from(complaintConversationsListEl.querySelectorAll('.complaint-conversation-card[data-consumer-id]'))
+            .map((node) => Number(node.getAttribute('data-consumer-id')))
+            .filter((value) => Number.isFinite(value) && value > 0);
+
+        if (consumerIds.length === 0) {
+            return;
+        }
+
+        isOnlineStatusesSyncBusy = true;
+
+        try {
+            const query = new URLSearchParams();
+            consumerIds.forEach((consumerId) => query.append('ids[]', String(consumerId)));
+
+            const response = await fetch(`${adminComplaintOnlineStatusesUrl}?${query.toString()}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (!response.ok) {
+                return;
+            }
+
+            const payload = await response.json();
+            const statuses = payload && typeof payload.statuses === 'object' && payload.statuses !== null
+                ? payload.statuses
+                : {};
+
+            consumerIds.forEach((consumerId) => {
+                setConversationOnlineState(consumerId, Boolean(statuses[String(consumerId)]));
+            });
+        } catch (error) {
+            // Silent fail to keep complaint UI responsive.
+        } finally {
+            isOnlineStatusesSyncBusy = false;
+        }
+    }
+
+    function upsertConversationCard(item) {
+        if (!complaintConversationsListEl || !item || !item.consumer_id) {
+            return null;
+        }
+
+        const consumerId = Number(item.consumer_id);
+        let cardEl = complaintConversationsListEl.querySelector(`.complaint-conversation-card[data-consumer-id="${consumerId}"]`);
+        const activityLabel = `Last activity: ${formatDateTime(item.created_at)}`;
+
+        if (!cardEl) {
+            const placeholder = complaintConversationsListEl.querySelector('.text-center.text-muted.py-4');
+            if (placeholder) {
+                placeholder.remove();
+            }
+
+            cardEl = document.createElement('div');
+            cardEl.className = 'complaint-conversation-card';
+            cardEl.setAttribute('data-consumer-id', String(consumerId));
+            cardEl.innerHTML = `
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <div>
+                        <div class="d-flex align-items-center gap-2">
+                            <h6 class="mb-1">${escapeHtml(item.consumer_name || 'Unknown Consumer')}</h6>
+                            <span class="consumer-online-indicator js-consumer-online-indicator" data-consumer-id="${consumerId}" aria-label="Consumer is offline">
+                                <span class="consumer-online-dot"></span>
+                                <span class="js-consumer-online-label">Offline</span>
+                            </span>
+                        </div>
+                        <small class="text-muted">Meter No: ${escapeHtml(item.meter_no || 'N/A')}</small>
+                    </div>
+                    <span class="badge text-bg-primary-subtle text-primary js-conversation-count">1 messages</span>
+                </div>
+                <p class="complaint-conversation-preview js-conversation-preview">${escapeHtml(shortenText(item.message || '', 160))}</p>
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <small class="text-muted js-conversation-last-activity" data-last-iso="${escapeHtml(item.created_at || '')}">${escapeHtml(activityLabel)}</small>
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-primary open-complaint-chat-btn"
+                        data-chat-target="complaintChatModal${consumerId}">
+                        <i class="bi bi-chat-dots me-1"></i> Open Chat
+                    </button>
+                </div>
+            `;
+            complaintConversationsListEl.prepend(cardEl);
+            return cardEl;
+        }
+
+        const countEl = cardEl.querySelector('.js-conversation-count');
+        if (countEl) {
+            const currentCount = Number.parseInt(String(countEl.textContent).replace(/\D/g, ''), 10) || 0;
+            const nextCount = currentCount + 1;
+            countEl.textContent = `${nextCount} messages`;
+        }
+
+        const previewEl = cardEl.querySelector('.js-conversation-preview');
+        if (previewEl) {
+            previewEl.textContent = shortenText(item.message || '', 160);
+        }
+
+        const lastActivityEl = cardEl.querySelector('.js-conversation-last-activity');
+        if (lastActivityEl) {
+            lastActivityEl.textContent = activityLabel;
+            lastActivityEl.setAttribute('data-last-iso', item.created_at || '');
+        }
+
+        complaintConversationsListEl.prepend(cardEl);
+        return cardEl;
+    }
+
+    function ensureConversationModal(item) {
+        if (!item || !item.consumer_id) {
+            return null;
+        }
+
+        const consumerId = Number(item.consumer_id);
+        const modalId = `complaintChatModal${consumerId}`;
+        let modalEl = document.getElementById(modalId);
+
+        if (modalEl) {
+            return modalEl;
+        }
+
+        const modalHtml = `
+            <div id="${modalId}" class="modal fade complaint-chat-modal" data-consumer-id="${consumerId}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-white">
+                            <div>
+                                <h5 class="modal-title mb-0"><i class="bi bi-chat-left-text me-2"></i>${escapeHtml(item.consumer_name || 'Unknown Consumer')}</h5>
+                                <p class="mb-0 text-white-50 small">Meter No: ${escapeHtml(item.meter_no || 'N/A')}</p>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <form
+                                    action="${adminComplaintDeleteBaseUrl}/${consumerId}"
+                                    method="POST"
+                                    class="js-delete-conversation-form"
+                                    data-confirm-message="Delete this consumer complaint conversation? This cannot be undone.">
+                                    <input type="hidden" name="_token" value="${escapeHtml(csrfToken)}">
+                                    <input type="hidden" name="_method" value="DELETE">
+                                    <button type="submit" class="btn btn-sm btn-outline-light" title="Delete Conversation" aria-label="Delete Conversation">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                        </div>
+                        <div class="modal-body p-0">
+                            <div class="admin-complaint-thread js-admin-complaint-thread" data-consumer-id="${consumerId}"></div>
+                        </div>
+                        <div class="modal-footer complaint-composer">
+                            <form action="${adminComplaintReplyUrl}" method="POST" class="w-100 complaint-reply-form js-admin-reply-form">
+                                <input type="hidden" name="_token" value="${escapeHtml(csrfToken)}">
+                                <input type="hidden" name="consumer_id" value="${consumerId}">
+                                <p class="typing-indicator js-consumer-typing-indicator d-none" data-consumer-id="${consumerId}">Consumer is typing...</p>
+                                <label class="form-label mb-1">Reply as Admin</label>
+                                <div class="reply-composer-row">
+                                    <textarea name="message" class="form-control reply-textarea js-admin-typing-input" data-consumer-id="${consumerId}" rows="3" placeholder="Type your reply here..." required></textarea>
+                                    <button type="submit" class="btn reply-send-btn"><i class="bi bi-send me-1"></i> Send Reply</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        modalEl = document.getElementById(modalId);
+        return modalEl;
+    }
+
+    function appendIncomingComplaintMessage(item) {
+        if (!item || !item.consumer_id || !item.id) {
+            return;
+        }
+
+        upsertConversationCard(item);
+        const modalEl = ensureConversationModal(item);
+        const threadEl = modalEl ? modalEl.querySelector('.js-admin-complaint-thread') : null;
+        if (!threadEl) {
+            return;
+        }
+
+        if (threadEl.querySelector(`.js-admin-chat-message[data-message-id="${item.id}"]`)) {
+            return;
+        }
+
+        const hasAttachment = Boolean(item.has_attachment);
+        const attachmentBtn = hasAttachment
+            ? `<button type="button" class="btn btn-sm btn-outline-secondary view-complaint-attachment-btn" data-attachment-url="${adminComplaintAttachmentBaseUrl}/${item.id}/attachment"><i class="bi bi-paperclip me-1"></i> View Attachment</button>`
+            : '';
+
+        const rowHtml = `
+            <div class="admin-chat-row js-admin-chat-message is-consumer" data-message-id="${item.id}">
+                <div class="admin-chat-bubble">
+                    <div class="admin-chat-meta">
+                        <span>Consumer</span>
+                        <span>${escapeHtml(formatDateTime(item.created_at))}</span>
+                    </div>
+                    <p class="admin-chat-message">${escapeHtml(item.message || '')}</p>
+                    ${attachmentBtn}
+                </div>
+            </div>
+        `;
+
+        threadEl.insertAdjacentHTML('beforeend', rowHtml);
+
+        if (modalEl.classList.contains('show')) {
+            threadEl.scrollTop = threadEl.scrollHeight;
+        }
+    }
+
+    function appendAdminReplyMessage(item) {
+        if (!item || !item.consumer_id || !item.id) {
+            return;
+        }
+
+        upsertConversationCard(item);
+        const modalEl = ensureConversationModal(item);
+        const threadEl = modalEl ? modalEl.querySelector('.js-admin-complaint-thread') : null;
+        if (!threadEl) {
+            return;
+        }
+
+        if (threadEl.querySelector(`.js-admin-chat-message[data-message-id="${item.id}"]`)) {
+            return;
+        }
+
+        const rowHtml = `
+            <div class="admin-chat-row js-admin-chat-message is-admin" data-message-id="${item.id}">
+                <div class="admin-chat-bubble">
+                    <div class="admin-chat-meta">
+                        <span>Admin</span>
+                        <span>${escapeHtml(formatDateTime(item.created_at))}</span>
+                    </div>
+                    <p class="admin-chat-message">${escapeHtml(item.message || '')}</p>
+                </div>
+            </div>
+        `;
+
+        threadEl.insertAdjacentHTML('beforeend', rowHtml);
+
+        if (modalEl.classList.contains('show')) {
+            threadEl.scrollTop = threadEl.scrollHeight;
+        }
+    }
+
+    setComplaintTotals(totalComplaintMessages);
+    syncConversationOnlineStatuses();
+
+    setInterval(pollOpenConversationTypingStates, 2500);
+    setInterval(syncConversationOnlineStatuses, 10000);
+
+    $(document).on('submit', '.js-delete-conversation-form', function(event) {
+        event.preventDefault();
+
+        const formEl = this;
+        const confirmMessage = (formEl.getAttribute('data-confirm-message') || 'Delete this conversation? This cannot be undone.').trim();
+        const submitForm = function() {
+            HTMLFormElement.prototype.submit.call(formEl);
+        };
+
+        if (typeof Swal !== 'undefined' && Swal && typeof Swal.fire === 'function') {
+            Swal.fire({
+                title: 'Delete Conversation?',
+                text: confirmMessage,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d32f2f',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete',
+                cancelButtonText: 'Cancel',
+                reverseButtons: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    submitForm();
+                }
+            });
+            return;
+        }
+
+        if (window.confirm(confirmMessage)) {
+            submitForm();
+        }
+    });
+
+    $(document).on('input', '.js-admin-typing-input', function() {
+        const consumerId = Number($(this).data('consumer-id'));
+        const messageValue = ($(this).val() || '').toString().trim();
+
+        if (!Number.isFinite(consumerId) || consumerId <= 0) {
+            return;
+        }
+
+        if (messageValue.length > 0) {
+            startAdminTypingFlow(consumerId);
+        } else {
+            stopAdminTypingFlow(consumerId);
+        }
+    });
+
+    $(document).on('blur', '.js-admin-typing-input', function() {
+        const consumerId = Number($(this).data('consumer-id'));
+        if (Number.isFinite(consumerId) && consumerId > 0) {
+            stopAdminTypingFlow(consumerId);
+        }
+    });
+
+    $(document).on('submit', '.js-admin-reply-form', async function(event) {
+        event.preventDefault();
+
+        const formEl = this;
+        const consumerId = Number($(formEl).find('input[name="consumer_id"]').val());
+        const messageInputEl = formEl.querySelector('textarea[name="message"]');
+        const submitButtonEl = formEl.querySelector('button[type="submit"]');
+        const messageValue = (messageInputEl?.value || '').toString().trim();
+
+        if (!Number.isFinite(consumerId) || consumerId <= 0 || messageValue.length === 0) {
+            return;
+        }
+
+        stopAdminTypingFlow(consumerId);
+
+        if (submitButtonEl) {
+            submitButtonEl.disabled = true;
+        }
+
+        try {
+            const response = await fetch(adminComplaintReplyUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    consumer_id: consumerId,
+                    message: messageValue
+                })
+            });
+
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok || payload?.success !== true) {
+                const firstError = payload?.errors
+                    ? Object.values(payload.errors).flat()[0]
+                    : 'Unable to send reply right now.';
+                throw new Error(firstError || 'Unable to send reply right now.');
+            }
+
+            const complaint = payload?.complaint;
+            if (complaint && Number.isFinite(Number(complaint.id))) {
+                seenComplaintMessageIds.add(Number(complaint.id));
+                appendAdminReplyMessage(complaint);
+                setComplaintTotals(totalComplaintMessages + 1);
+            }
+
+            if (messageInputEl) {
+                messageInputEl.value = '';
+                messageInputEl.focus();
+            }
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Unable to send reply right now.';
+            if (typeof Swal !== 'undefined' && Swal && typeof Swal.fire === 'function') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Send failed',
+                    text: errorMessage,
+                    confirmButtonColor: '#d32f2f'
+                });
+            } else {
+                alert(errorMessage);
+            }
+        } finally {
+            if (submitButtonEl) {
+                submitButtonEl.disabled = false;
+            }
+        }
+    });
+
+    $(document).on('click', '.open-complaint-chat-btn', function() {
+        const chatTarget = ($(this).data('chat-target') || '').toString();
+        const chatModalEl = chatTarget ? document.getElementById(chatTarget) : null;
+
+        if (!chatModalEl) {
+            return;
+        }
+
+        const complaintsModal = complaintsModalEl ? bootstrap.Modal.getOrCreateInstance(complaintsModalEl) : null;
         if (complaintsModal) {
             complaintsModal.hide();
+            activeComplaintModalEl = complaintsModalEl;
         }
-        bootstrap.Modal.getOrCreateInstance(complaintMessageModalEl).show();
+
+        bootstrap.Modal.getOrCreateInstance(chatModalEl).show();
     });
 
-    $('#complaintMessageModal').on('hidden.bs.modal', function() {
-        if (complaintMessageContentEl) {
-            complaintMessageContentEl.textContent = '';
+    $(document).on('shown.bs.modal', '.complaint-chat-modal', function() {
+        const threadEl = this.querySelector('.js-admin-complaint-thread');
+        if (threadEl) {
+            threadEl.scrollTop = threadEl.scrollHeight;
         }
-
-        if (complaintMessageConsumerEl) {
-            complaintMessageConsumerEl.textContent = '';
-        }
-
-        if (reopenComplaintsAfterMessage && complaintsModalEl) {
-            bootstrap.Modal.getOrCreateInstance(complaintsModalEl).show();
-        }
-        reopenComplaintsAfterMessage = false;
+        pollOpenConversationTypingStates();
     });
 
-    $('.view-complaint-attachment-btn').on('click', function() {
+    $(document).on('hidden.bs.modal', '.complaint-chat-modal', function() {
+        const inputEl = this.querySelector('.js-admin-typing-input');
+        const consumerId = Number(inputEl?.getAttribute('data-consumer-id') || this.getAttribute('data-consumer-id'));
+        if (Number.isFinite(consumerId) && consumerId > 0) {
+            stopAdminTypingFlow(consumerId);
+            updateConsumerTypingIndicator(consumerId, false);
+        }
+    });
+
+    const autoOpenConsumerId = oldConsumerId || openChatConsumerId;
+    if (autoOpenConsumerId) {
+        const autoOpenModalEl = document.getElementById(`complaintChatModal${autoOpenConsumerId}`);
+
+        if (autoOpenModalEl) {
+            bootstrap.Modal.getOrCreateInstance(autoOpenModalEl).show();
+        }
+    }
+
+    $(document).on('click', '.view-complaint-attachment-btn', function() {
         const attachmentUrl = $(this).data('attachment-url');
         if (!attachmentUrl || !complaintAttachmentModalEl || !complaintAttachmentFrame) {
             return;
         }
 
-        complaintAttachmentFrame.src = attachmentUrl;
-        reopenComplaintsAfterAttachment = true;
+        const previewUrl = new URL(attachmentUrl, window.location.origin);
+        previewUrl.searchParams.set('preview', '1');
+        complaintAttachmentFrame.src = previewUrl.toString();
+        activeComplaintModalEl = $(this).closest('.modal.show').get(0) || null;
 
-        const complaintsModal = bootstrap.Modal.getInstance(complaintsModalEl);
-        if (complaintsModal) {
-            complaintsModal.hide();
+        if (activeComplaintModalEl) {
+            bootstrap.Modal.getOrCreateInstance(activeComplaintModalEl).hide();
         }
+
         bootstrap.Modal.getOrCreateInstance(complaintAttachmentModalEl).show();
     });
 
@@ -1393,10 +2335,33 @@
             complaintAttachmentFrame.src = 'about:blank';
         }
 
-        if (reopenComplaintsAfterAttachment && complaintsModalEl) {
-            bootstrap.Modal.getOrCreateInstance(complaintsModalEl).show();
+        if (activeComplaintModalEl) {
+            bootstrap.Modal.getOrCreateInstance(activeComplaintModalEl).show();
+            activeComplaintModalEl = null;
         }
-        reopenComplaintsAfterAttachment = false;
+    });
+
+    window.addEventListener('complaint-notifications:update', function(event) {
+        const detail = event?.detail || {};
+        if (detail.role !== 'admin') {
+            return;
+        }
+
+        const notifications = Array.isArray(detail.notifications) ? detail.notifications : [];
+        notifications.forEach(function(item) {
+            const messageId = Number(item.id);
+            if (!Number.isFinite(messageId) || seenComplaintMessageIds.has(messageId)) {
+                return;
+            }
+
+            seenComplaintMessageIds.add(messageId);
+            appendIncomingComplaintMessage(item);
+
+            const createdAtMs = Date.parse(item.created_at || '');
+            if (Number.isFinite(createdAtMs) && createdAtMs > pageLoadedAtMs) {
+                setComplaintTotals(totalComplaintMessages + 1);
+            }
+        });
     });
     
     // Initialize when modal is shown
@@ -1990,10 +2955,13 @@ function renderLogsTable(logs) {
 
 
 </script>
-<script src="{{ asset('js/complaint-notifications.js') }}"></script>
+<script src="{{ asset('js/complaint-notifications.js') }}?v={{ filemtime(public_path('js/complaint-notifications.js')) }}"></script>
 <script>
 $(function () {
-    initComplaintNotifications({ role: 'admin' });
+    initComplaintNotifications({
+        role: 'admin',
+        pollingInterval: 5000
+    });
 });
 </script>
 
