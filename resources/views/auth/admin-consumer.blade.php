@@ -358,11 +358,6 @@
             color: #ffc107;
         }
 
-        .badge-status-disconnected {
-            background-color: rgba(108, 117, 125, 0.1);
-            color: #6c757d;
-        }
-
         .badge-status-cut {
             background-color: rgba(220, 53, 69, 0.1);
             color: #dc3545;
@@ -784,6 +779,7 @@
                     </thead>
                     <tbody>
                         @foreach($consumers as $consumer)
+                        @if($consumer->status == 'active')
                         <tr id="consumerRow_{{ $consumer->id }}">
                             <td class="fw-semibold">{{ $consumer->id }}</td>
                             <td>{{ $consumer->first_name }}</td>
@@ -796,17 +792,9 @@
                             <td>{{ $consumer->address_information ?? 'N/A' }}</td> <!-- Address Information column -->
                             <td>{{ $consumer->connection_date ? \Carbon\Carbon::parse($consumer->connection_date)->format('M d, Y') : 'N/A' }}</td>
                             <td>
-                                <span class="badge 
-                                    @if($consumer->status == 'active') badge-status-active
-                                    @elseif($consumer->status == 'inactive') badge-status-inactive
-                                    @elseif($consumer->status == 'disconnected') badge-status-disconnected
-                                    @else badge-status-cut @endif">
-                                    <i class="bi 
-                                        @if($consumer->status == 'active') bi-check-circle
-                                        @elseif($consumer->status == 'inactive') bi-pause-circle
-                                        @elseif($consumer->status == 'disconnected') bi-plug
-                                        @else bi-x-circle @endif"></i>
-                                    {{ ucfirst($consumer->status) }}
+                                <span class="badge badge-status-active">
+                                    <i class="bi bi-check-circle"></i>
+                                    Active
                                 </span>
                             </td>
                             <td>
@@ -830,6 +818,7 @@
                                 </button>
                             </td>
                         </tr>
+                        @endif
                         @endforeach
                     </tbody>
                 </table>
