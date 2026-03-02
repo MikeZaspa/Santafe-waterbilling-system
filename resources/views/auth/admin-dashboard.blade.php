@@ -461,8 +461,8 @@
         }
 
         #complaintsModal .modal-content {
-            height: 70vh;
-            max-height: 560px;
+            height: min(78vh, 660px);
+            max-height: none;
             border-radius: 26px;
             overflow: hidden;
             border: 0;
@@ -542,8 +542,8 @@
         }
 
         .complaint-chat-modal .modal-content {
-            height: 70vh;
-            max-height: 560px;
+            height: min(76vh, 640px);
+            max-height: none;
             border: 0;
             border-radius: 24px;
             overflow: hidden;
@@ -809,7 +809,7 @@
             }
 
             #complaintsModal .modal-content {
-                height: 78vh;
+                height: min(74vh, 620px);
                 max-height: none;
                 border-radius: 24px;
             }
@@ -828,7 +828,7 @@
             }
 
             .complaint-chat-modal .modal-content {
-                height: 78vh;
+                height: min(74vh, 620px);
                 max-height: none;
                 border-radius: 22px;
             }

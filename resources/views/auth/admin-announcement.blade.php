@@ -650,6 +650,7 @@
             loadAnnouncements();
         });
     </script>
+    @include('auth.partials.admin-complaints-widget')
     <script>
         $(function () {
             initComplaintNotifications({ role: 'admin' });
