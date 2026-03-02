@@ -44,20 +44,33 @@
         const style = document.createElement('style');
         style.id = 'complaintNotificationStyles';
         style.textContent = [
+            '.complaint-notification-anchor {',
+            '  position: relative;',
+            '}',
+            '.complaint-notification-bell {',
+            '  display: block;',
+            '  line-height: 1;',
+            '  color: #111827 !important;',
+            '  font-size: 1.25rem !important;',
+            '}',
             '.complaint-notification-badge {',
             '  position: absolute;',
             '  top: -6px;',
-            '  right: -8px;',
+            '  right: -9px;',
             '  min-width: 18px;',
-            '  height: 18px;',
+            '  height: 25px;',
             '  border-radius: 999px;',
             '  background-color: #0d6efd;',
             '  color: #fff;',
-            '  font-size: 11px;',
+            '  font-size: 10px;',
             '  font-weight: 700;',
-            '  line-height: 18px;',
+            '  display: inline-flex;',
+            '  align-items: center;',
+            '  justify-content: center;',
+            '  line-height: 1;',
             '  text-align: center;',
             '  padding: 0 5px;',
+            '  box-sizing: border-box;',
             '  border: 2px solid #fff;',
             '  z-index: 4;',
             '}',
@@ -233,14 +246,14 @@
             return;
         }
 
-        $container.addClass('dropdown');
+        $container.addClass('dropdown complaint-notification-anchor');
         const bellId = 'complaintNotificationBell-' + role + '-' + Date.now();
         $bell.attr({
             id: bellId,
             role: 'button',
             'data-bs-toggle': 'dropdown',
             'aria-expanded': 'false'
-        }).css('cursor', 'pointer');
+        }).addClass('complaint-notification-bell').css('cursor', 'pointer');
 
         const $badge = $('<span class="complaint-notification-badge d-none">0</span>');
         $container.append($badge);
