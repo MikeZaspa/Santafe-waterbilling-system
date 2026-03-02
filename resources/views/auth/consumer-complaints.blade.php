@@ -12,6 +12,8 @@
         :root {
             --primary-color: #0d6efd;
             --sidebar-bg: #f8f9fa;
+            --sidebar-text: rgba(0,0,0,0.8);
+            --sidebar-hover: rgba(0,0,255,0.1);
             --overlay-color: rgba(7, 7, 7, 0.1);
             --header-height: 70px;
         }
@@ -24,7 +26,7 @@
 
         .sidebar {
             width: 280px;
-            background: var(--sidebar-bg);
+            background: white;
             position: fixed;
             height: 100vh;
             overflow-y: auto;
@@ -44,6 +46,7 @@
             padding: 1.5rem;
             color: black;
             text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
         .sidebar-menu .nav-link {
@@ -64,6 +67,18 @@
         .sidebar-menu .nav-link.active {
             color: white;
             background: blue;
+        }
+
+        .sidebar-menu .nav-link.active::after {
+            content: '';
+            position: absolute;
+            right: -10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 60%;
+            background: white;
+            border-radius: 2px;
         }
 
         .sidebar-menu .nav-link i {
@@ -136,6 +151,14 @@
             visibility: visible;
         }
 
+        .mobile-menu-toggle {
+            font-size: 1.5rem;
+            padding: 0.25rem 0.5rem;
+            border: none;
+            background: transparent;
+            color: var(--primary-color);
+        }
+
         @media (min-width: 992px) {
             .sidebar {
                 transform: translateX(0);
@@ -144,6 +167,21 @@
             .main-content {
                 margin-left: 280px;
                 width: calc(100% - 280px);
+            }
+        }
+
+        @media (max-width: 991px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
             }
         }
 
@@ -506,6 +544,62 @@
                 height: 50px;
             }
         }
+
+        @media (max-width: 767.98px) {
+            .content-wrapper {
+                padding: 20px;
+            }
+
+            .complaint-chat-modal .modal-dialog {
+                max-width: 100%;
+                width: 100%;
+                margin: 0;
+                min-height: 100dvh;
+                height: 100dvh;
+            }
+
+            .complaint-chat-modal .modal-content {
+                height: 100dvh;
+                max-height: 100dvh;
+                border-radius: 0;
+            }
+
+            .complaint-chat-modal .modal-header {
+                padding: 0.75rem 0.9rem;
+            }
+
+            .complaint-chat-modal .modal-body {
+                min-height: 0;
+            }
+
+            .complaint-thread {
+                padding: 0.7rem;
+            }
+
+            .complaint-bubble {
+                max-width: 94%;
+                padding: 0.72rem 0.78rem;
+            }
+
+            .complaint-composer {
+                padding: 0.65rem 0.75rem calc(0.75rem + env(safe-area-inset-bottom));
+            }
+
+            .consumer-composer-row {
+                grid-template-columns: 1fr;
+                gap: 0.48rem;
+            }
+
+            .consumer-textarea {
+                min-height: 64px;
+            }
+
+            .consumer-send-btn {
+                width: 100%;
+                min-width: 0;
+                height: 44px;
+            }
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -547,7 +641,7 @@
 <div class="main-content">
     <header class="header">
         <div class="d-flex align-items-center">
-            <button id="sidebarToggle" class="btn d-lg-none me-3">
+            <button id="sidebarToggle" class="btn d-lg-none me-3 mobile-menu-toggle">
                 <i class="bi bi-list"></i>
             </button>
             
@@ -820,19 +914,50 @@
         }
     }
 
+    const header = document.querySelector('.header');
+    const sidebarLinks = document.querySelectorAll('.sidebar-menu .nav-link');
+
+    function setMobileMenuState(isOpen) {
+        if (!sidebar || !mobileOverlay) {
+            return;
+        }
+
+        sidebar.classList.toggle('active', isOpen);
+        mobileOverlay.classList.toggle('active', isOpen);
+
+        if (header) {
+            header.style.backgroundColor = isOpen ? 'var(--overlay-color)' : 'white';
+        }
+
+        document.body.style.overflow = isOpen ? 'hidden' : '';
+    }
+
     if (sidebarToggle) {
         sidebarToggle.addEventListener('click', function () {
-            sidebar.classList.toggle('active');
-            mobileOverlay.classList.toggle('active');
+            const isOpen = sidebar ? !sidebar.classList.contains('active') : false;
+            setMobileMenuState(isOpen);
         });
     }
 
     if (mobileOverlay) {
         mobileOverlay.addEventListener('click', function () {
-            sidebar.classList.remove('active');
-            mobileOverlay.classList.remove('active');
+            setMobileMenuState(false);
         });
     }
+
+    sidebarLinks.forEach(function (link) {
+        link.addEventListener('click', function () {
+            if (window.innerWidth < 992) {
+                setMobileMenuState(false);
+            }
+        });
+    });
+
+    window.addEventListener('resize', function () {
+        if (window.innerWidth >= 992) {
+            setMobileMenuState(false);
+        }
+    });
 
     if (complaintChatModalEl && complaintThread) {
         complaintChatModalEl.addEventListener('shown.bs.modal', function () {

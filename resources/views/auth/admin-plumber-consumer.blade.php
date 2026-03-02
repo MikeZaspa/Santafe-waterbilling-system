@@ -37,7 +37,7 @@
         
         .sidebar {
             width: 280px;
-            background: #f8f9fa;
+            background: white;
             position: fixed;
             height: 100vh;
             overflow-y: auto;
@@ -867,7 +867,7 @@
                 <div class="col-12">
                     <div class="card animate-fadein">
                         <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center">
-                            <h5 class="mb-2 mb-md-0"  style="color: blue;">Water Consumption Records</h5>
+                            <h5 class="mb-2 mb-md-0"  style="color: blue;"><i class="bi bi-droplet-half me-2"></i>Water Consumption Records</h5>
                             <div>
                                 <button class="btn btn-primary btn-sm btn-md me-2" data-bs-toggle="modal" data-bs-target="#addBillingModal">
                                     <i class="bi bi-plus-circle me-1 me-md-2"></i>Add Reading

@@ -35,7 +35,7 @@
         /* Sidebar Styles */
         .sidebar {
             width: 280px;
-            background: var(--sidebar-bg);
+            background: white;
             position: fixed;
             height: 100vh;
             overflow-y: auto;
@@ -589,7 +589,7 @@
     <div class="content-wrapper">
         <div class="container py-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="page-title mb-0">Cubic Range</h1>
+                <h1 class="page-title mb-0"><i class="bi bi-rulers me-2"></i>Cubic Range</h1>
                 <button type="button" class="btn btn-primary" id="addRateBtn" data-bs-toggle="modal" data-bs-target="#waterRateModal">
                     <i class="bi bi-plus-circle me-2"></i>Add New Water Rate
                 </button>

@@ -35,7 +35,7 @@
         /* Sidebar Styles */
         .sidebar {
             width: 280px;
-            background: var(--sidebar-bg);
+            background: white;
             position: fixed;
             height: 100vh;
             overflow-y: auto;
@@ -492,7 +492,7 @@
         <div class="table-container animate-fadein">
             <div class="search-add-container">
                 <div class="table-title">
-                    <h3>Consumers Account</h3>
+                    <h3><i class="bi bi-person-badge-fill me-2"></i>Consumers Account</h3>
                 </div>
                 <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#accountModal">
                     <i class="bi bi-plus-lg"></i> Add New Account

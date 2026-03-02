@@ -40,7 +40,7 @@
         
         .sidebar {
             width: 280px;
-            background: var(--sidebar-bg);
+            background: white;
             position: fixed;
             height: 100vh;
             top: 0;

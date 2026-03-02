@@ -36,7 +36,7 @@
         /* Sidebar Styles */
         .sidebar {
             width: 280px;
-            background: var(--sidebar-bg);
+            background: white;
             position: fixed;
             height: 100vh;
             overflow-y: auto;
@@ -542,7 +542,7 @@
         <div class="table-container animate-fadein">
             <div class="table-title">
                 <div class="d-flex justify-content-between align-items-center w-100">
-                    <h3 class="mb-0">Consumer Notices</h3>
+                    <h3 class="mb-0"><i class="bi bi-bell-fill me-2"></i>Consumer Notices</h3>
                     <button class="btn btn-primary" id="addNoticeBtn" data-bs-toggle="modal" data-bs-target="#noticeModal">
                         <i class="bi bi-plus-circle-fill me-2"></i>
                         Add New Notice

@@ -34,7 +34,7 @@
         /* Sidebar Styles */
          .sidebar {
             width: 280px;
-            background: var(--sidebar-bg);
+            background: white;
             position: fixed;
             height: 100vh;
             overflow-y: auto;
@@ -748,7 +748,7 @@
     <div class="content-wrapper">
         <div class="table-container animate-fadein">
             <div class="table-title">
-                <h3 class="">Consumers Information</h3>
+                <h3 class=""><i class="bi bi-people-fill me-2"></i>Consumers Information</h3>
                 <button class="btn btn-primary" id="addConsumerBtn" data-bs-toggle="modal" data-bs-target="#consumerModal">
                     <i class="bi bi-plus-circle-fill me-2"></i>
                     Add New Consumer

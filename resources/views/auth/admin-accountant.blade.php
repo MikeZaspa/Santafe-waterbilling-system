@@ -31,7 +31,7 @@
         
         .sidebar {
             width: 280px;
-            background: var(--sidebar-bg);
+            background: white;
             position: fixed;
             height: 100vh;
             overflow-y: auto;
@@ -585,7 +585,7 @@
         <div class="table-container animate-fadein">
             <div class="table-title">
                 <div class="d-flex justify-content-between align-items-center w-100">
-                    <h3 class="mb-0">Accountant Information</h3>
+                    <h3 class="mb-0"><i class="bi bi-cash-coin me-2"></i>Accountant Information</h3>
                     <button class="btn btn-primary" id="addAccountantBtn" data-bs-toggle="modal" data-bs-target="#accountantModal">
                         <i class="bi bi-plus-circle-fill me-2"></i>
                         Add New Accountant

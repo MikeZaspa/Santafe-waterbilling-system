@@ -34,7 +34,7 @@
         /* Sidebar Styles */
         .sidebar {
             width: 280px;
-            background: var(--sidebar-bg);
+            background: white;
             position: fixed;
             height: 100vh;
             top: 0;
@@ -823,6 +823,17 @@
                 padding-top: 15px;
                 border-top: 1px solid #e9ecef;
             }
+
+            .mobile-empty-state {
+                display: none;
+                padding: 20px;
+                text-align: center;
+                color: #6c757d;
+                background: #fff;
+                border: 1px dashed #dee2e6;
+                border-radius: 10px;
+                font-weight: 500;
+            }
         }
 
         /* Show mobile cards only on mobile */
@@ -1044,7 +1055,7 @@
         <!-- Billing History -->
         <div class="table-container animate-fadein">
             <div class="table-title">
-                <h3>Billing History</h3>
+                <h3><i class="bi bi-receipt-cutoff me-2"></i>Billing History</h3>
                 <div>
                     <select class="form-select form-select-sm" id="statusFilter">
                         <option value="">All Status</option>
@@ -1175,6 +1186,7 @@
                     </div>
                 </div>
                 @endforeach
+                <div class="mobile-empty-state" id="mobileBillingEmptyState">No data available in table</div>
             </div>
         </div>
     </div>
@@ -1645,6 +1657,11 @@
                 info: "Showing _START_ to _END_ of _TOTAL_ entries",
             }
         });
+
+        function updateMobileEmptyState() {
+            const visibleCardsCount = $('#mobileBillingCards .billing-card:visible').length;
+            $('#mobileBillingEmptyState').toggle(visibleCardsCount === 0);
+        }
         
         // Apply status filter to both table and mobile cards
         $('#statusFilter').change(function() {
@@ -1676,6 +1693,8 @@
                 table.column(5).search('').draw();
                 $('.billing-card').show();
             }
+
+            updateMobileEmptyState();
         });
         
         // Handle window resize to toggle between table and cards
@@ -1683,9 +1702,11 @@
             if ($(window).width() <= 768) {
                 $('.table-responsive').hide();
                 $('.mobile-billing-cards').show();
+                updateMobileEmptyState();
             } else {
                 $('.table-responsive').show();
                 $('.mobile-billing-cards').hide();
+                $('#mobileBillingEmptyState').hide();
             }
         }
         

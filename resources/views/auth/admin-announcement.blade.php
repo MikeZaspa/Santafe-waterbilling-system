@@ -25,7 +25,7 @@
 
          .sidebar {
             width: 280px;
-            background: var(--sidebar-bg);
+            background: white;
             position: fixed;
             height: 100vh;
             overflow-y: auto;
@@ -379,7 +379,7 @@
             <div class="table-container">
                 <div class="table-title">
                     <div>
-                        <h3 class="mb-0">Announcements</h3>
+                        <h3 class="mb-0"><i class="bi bi-megaphone-fill me-2"></i>Announcements</h3>
                        
                     </div>
                     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#announcementModal" id="addAnnouncementBtn">
