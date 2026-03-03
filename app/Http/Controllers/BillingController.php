@@ -35,19 +35,29 @@ class BillingController extends Controller
 }
    public function create()
     {
-        $currentMonth = now()->month;
-        $currentYear = now()->year;
+        $latestReadings = Billing::select('consumer_id', DB::raw('MAX(reading_date) as last_reading_date'))
+            ->groupBy('consumer_id');
 
-        $consumers = AdminConsumer::where('status', 'active') // Correct
-            ->whereNotIn('id', function ($query) use ($currentMonth, $currentYear) {
-                $query->select('consumer_id')
-                    ->from('billings')
-                    ->whereMonth('reading_date', $currentMonth)
-                    ->whereYear('reading_date', $currentYear);
+        $consumers = AdminConsumer::query()
+            ->leftJoinSub($latestReadings, 'latest_billings', function ($join) {
+                $join->on('admin_consumers.id', '=', 'latest_billings.consumer_id');
             })
-            ->select(['id', 'first_name', 'middle_name', 'last_name', 'suffix', 'meter_no', 'consumer_type'])
-            ->orderBy('last_name')
-            ->orderBy('first_name')
+            ->where('admin_consumers.status', 'active')
+            ->where(function ($query) {
+                $query->whereNull('latest_billings.last_reading_date')
+                    ->orWhereRaw('DATE_ADD(latest_billings.last_reading_date, INTERVAL 1 MONTH) <= CURDATE()');
+            })
+            ->select([
+                'admin_consumers.id',
+                'admin_consumers.first_name',
+                'admin_consumers.middle_name',
+                'admin_consumers.last_name',
+                'admin_consumers.suffix',
+                'admin_consumers.meter_no',
+                'admin_consumers.consumer_type',
+            ])
+            ->orderBy('admin_consumers.last_name')
+            ->orderBy('admin_consumers.first_name')
             ->get();
             
         return response()->json($consumers);
@@ -74,6 +84,21 @@ class BillingController extends Controller
     $consumer = AdminConsumer::findOrFail($validated['consumer_id']);
 
     $readingDate = \Carbon\Carbon::parse($validated['reading_date']);
+    $lastReading = Billing::where('consumer_id', $validated['consumer_id'])
+        ->orderBy('reading_date', 'desc')
+        ->orderBy('created_at', 'desc')
+        ->orderBy('id', 'desc')
+        ->first();
+
+    if ($lastReading) {
+        $nextAllowedReadingDate = $lastReading->reading_date->copy()->addMonthNoOverflow();
+
+        if ($readingDate->lt($nextAllowedReadingDate)) {
+            return response()->json([
+                'message' => 'Next reading for this consumer is on ' . $nextAllowedReadingDate->format('Y-m-d') . '.'
+            ], 422);
+        }
+    }
 
     $alreadyReadThisMonth = Billing::where('consumer_id', $validated['consumer_id'])
         ->whereMonth('reading_date', $readingDate->month)
