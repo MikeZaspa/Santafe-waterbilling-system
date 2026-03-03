@@ -472,14 +472,23 @@
             }
 
             function showAlert(message, type = 'success') {
-                const alert = $(
-                    '<div class="alert alert-' + type + ' alert-dismissible fade show position-fixed top-0 end-0 m-3" role="alert" style="z-index: 2000;">' +
-                    escapeHtml(message) +
-                    '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
-                    '</div>'
-                );
-                $('body').append(alert);
-                setTimeout(() => alert.alert('close'), 3000);
+                const typeMap = {
+                    success: 'success',
+                    warning: 'warning',
+                    danger: 'error',
+                    error: 'error',
+                    info: 'info'
+                };
+
+                Swal.fire({
+                    icon: typeMap[type] || 'info',
+                    text: String(message || ''),
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                });
             }
 
             function renderTable() {
@@ -592,16 +601,28 @@
 
             $(document).on('click', '.delete-btn', function () {
                 const id = $(this).data('id');
-                if (!confirm('Delete this announcement?')) return;
 
-                $.ajax({
-                    url: `/announcements/${id}`,
-                    method: 'DELETE',
-                    headers: { 'X-CSRF-TOKEN': csrfToken }
-                }).done((response) => {
-                    loadAnnouncements();
-                    showAlert(response.message || 'Deleted successfully');
-                }).fail(() => showAlert('Failed to delete announcement', 'danger'));
+                Swal.fire({
+                    title: 'Delete announcement?',
+                    text: 'This action cannot be undone.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, delete it',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (!result.isConfirmed) return;
+
+                    $.ajax({
+                        url: `/announcements/${id}`,
+                        method: 'DELETE',
+                        headers: { 'X-CSRF-TOKEN': csrfToken }
+                    }).done((response) => {
+                        loadAnnouncements();
+                        showAlert(response.message || 'Deleted successfully');
+                    }).fail(() => showAlert('Failed to delete announcement', 'danger'));
+                });
             });
 
             const sidebar = $('#sidebar');
