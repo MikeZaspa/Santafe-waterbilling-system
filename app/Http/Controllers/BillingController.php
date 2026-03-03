@@ -454,6 +454,33 @@ public function restoreDisconnectedConsumer(Request $request, $id)
     {
         $billings = AccountantBilling::active()
             ->with('consumer')
+            ->when($request->filled('status'), function ($query) use ($request) {
+                $query->where('status', $request->status);
+            })
+            ->when($request->filled('payment_method'), function ($query) use ($request) {
+                $query->where('payment_method', $request->payment_method);
+            })
+            ->when($request->filled('month'), function ($query) use ($request) {
+                $monthDate = \Carbon\Carbon::parse($request->month);
+                $query->whereMonth('due_date', $monthDate->month)
+                    ->whereYear('due_date', $monthDate->year);
+            })
+            ->when(!$request->filled('month'), function ($query) {
+                $query->whereNotExists(function ($subQuery) {
+                    $subQuery->select(DB::raw(1))
+                        ->from('accountant_billings as newer')
+                        ->whereColumn('newer.consumer_id', 'accountant_billings.consumer_id')
+                        ->whereNull('newer.deleted_at')
+                        ->where('newer.is_archived', false)
+                        ->where(function ($compareQuery) {
+                            $compareQuery->whereColumn('newer.due_date', '>', 'accountant_billings.due_date')
+                                ->orWhere(function ($sameDateQuery) {
+                                    $sameDateQuery->whereColumn('newer.due_date', '=', 'accountant_billings.due_date')
+                                        ->whereColumn('newer.id', '>', 'accountant_billings.id');
+                                });
+                        });
+                });
+            })
             ->orderBy('due_date', 'desc')
             ->orderBy('created_at', 'desc');
 
