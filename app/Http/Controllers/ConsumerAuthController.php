@@ -148,7 +148,8 @@ class ConsumerAuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Authentication successful. Redirecting to dashboard...',
-            'redirect' => route('consumer.dashboard')
+            // Use an explicit path because "consumer.dashboard" is defined multiple times in routes/web.php.
+            'redirect' => url('/consumer/dashboard')
         ]);
     }
     
