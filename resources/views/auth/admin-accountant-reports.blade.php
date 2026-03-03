@@ -325,8 +325,9 @@
         }
 
         .notification-list {
-            max-height: 320px;
+            max-height: 252px;
             overflow-y: auto;
+            overflow-x: hidden;
         }
 
         .notification-item {
@@ -536,7 +537,7 @@
                         <button type="button" class="btn btn-sm btn-outline-secondary" id="refreshNotificationsBtn">Refresh</button>
                     </div>
                     <div class="notification-list" id="notificationList">
-                        <div class="notification-empty">No pending payments.</div>
+                        <div class="notification-empty">No notifications.</div>
                     </div>
                 </div>
             </div>
@@ -651,6 +652,15 @@
     const notificationBadge = $('#notificationBadge');
     const notificationList = $('#notificationList');
 
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     function formatNotificationTime(value) {
         if (!value) return 'Just now';
         const date = new Date(value);
@@ -674,17 +684,28 @@
 
     function renderNotificationList(notifications) {
         if (!Array.isArray(notifications) || notifications.length === 0) {
-            notificationList.html('<div class="notification-empty">No pending payments.</div>');
+            notificationList.html('<div class="notification-empty">No notifications.</div>');
             return;
         }
 
-        const notificationHtml = notifications.map(function(payment) {
-            const amount = Number(payment.amount || 0).toFixed(2);
+        const notificationHtml = notifications.map(function(item) {
+            if (item.type === 'disconnection') {
+                const reasonText = item.reason ? ` | Reason: ${escapeHtml(item.reason)}` : '';
+                return `
+                    <a href="#" class="notification-item disconnection-notification-item" data-id="${item.id}">
+                        <div class="notification-title">${escapeHtml(item.consumer_name || 'N/A')}</div>
+                        <div class="notification-message">Meter: ${escapeHtml(item.meter_no || 'N/A')} | Service disconnected${reasonText}</div>
+                        <div class="notification-time">Disconnected ${formatNotificationTime(item.created_at)}</div>
+                    </a>
+                `;
+            }
+
+            const amount = Number(item.amount || 0).toFixed(2);
             return `
-                <a href="#" class="notification-item payment-notification-item" data-id="${payment.id}">
-                    <div class="notification-title">${payment.consumer_name || 'N/A'}</div>
-                    <div class="notification-message">Meter: ${payment.meter_no || 'N/A'} | Ref: ${payment.reference_number || 'N/A'} | Amount: P${amount}</div>
-                    <div class="notification-time">Submitted ${formatNotificationTime(payment.created_at)}</div>
+                <a href="#" class="notification-item payment-notification-item" data-id="${item.id}">
+                    <div class="notification-title">${escapeHtml(item.consumer_name || 'N/A')}</div>
+                    <div class="notification-message">Meter: ${escapeHtml(item.meter_no || 'N/A')} | Ref: ${escapeHtml(item.reference_number || 'N/A')} | Amount: P${amount}</div>
+                    <div class="notification-time">Submitted ${formatNotificationTime(item.created_at)}</div>
                 </a>
             `;
         }).join('');
@@ -705,7 +726,7 @@
                 }
 
                 const notifications = response.notifications || [];
-                renderNotificationBadge(response.pending_count ?? notifications.length);
+                renderNotificationBadge(response.total_count ?? notifications.length);
                 renderNotificationList(notifications);
             },
             error: function() {
@@ -725,6 +746,11 @@
         if (paymentId) {
             window.location.href = `{{ route('paymentVerificationSection') }}?payment_id=${paymentId}`;
         }
+    });
+
+    $(document).on('click', '.disconnection-notification-item', function(e) {
+        e.preventDefault();
+        window.location.href = `{{ route('admin.accountant-consumer') }}?show_disconnected=1`;
     });
 
     fetchPendingPaymentNotifications();

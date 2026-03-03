@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\OnlinePayment;
 use App\Models\AccountantBilling;
 use App\Models\AdminConsumer;
+use App\Models\Disconnection;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -362,7 +363,7 @@ class OnlinePaymentController extends Controller
         $pendingCount = (clone $pendingQuery)->count();
         $pendingPayments = $pendingQuery->limit($limit)->get();
 
-        $notifications = $pendingPayments->map(function ($payment) {
+        $paymentNotifications = $pendingPayments->map(function ($payment) {
             $consumerName = 'N/A';
             $meterNo = 'N/A';
 
@@ -376,6 +377,8 @@ class OnlinePaymentController extends Controller
 
             return [
                 'id' => $payment->id,
+                'notification_key' => 'payment-' . $payment->id,
+                'type' => 'payment',
                 'consumer_name' => $consumerName ?: 'N/A',
                 'meter_no' => $meterNo,
                 'amount' => $payment->amount,
@@ -385,9 +388,48 @@ class OnlinePaymentController extends Controller
             ];
         });
 
+        $disconnectedQuery = Disconnection::with(['consumer:id,first_name,middle_name,last_name,suffix,meter_no'])
+            ->where('status', 'disconnected')
+            ->orderBy('created_at', 'desc');
+
+        $disconnectedCount = (clone $disconnectedQuery)->count();
+        $disconnectedConsumers = $disconnectedQuery->limit($limit)->get();
+
+        $disconnectionNotifications = $disconnectedConsumers->map(function ($disconnection) {
+            $consumer = $disconnection->consumer;
+            $consumerName = trim(implode(' ', array_filter([
+                $consumer?->first_name,
+                $consumer?->middle_name,
+                $consumer?->last_name,
+                $consumer?->suffix,
+            ])));
+
+            $createdAt = $disconnection->created_at ?: $disconnection->disconnection_date;
+
+            return [
+                'id' => $disconnection->id,
+                'notification_key' => 'disconnection-' . $disconnection->id,
+                'type' => 'disconnection',
+                'consumer_name' => $consumerName ?: ($disconnection->name ?: 'N/A'),
+                'meter_no' => $disconnection->meter_no ?: ($consumer?->meter_no ?? 'N/A'),
+                'reason' => (string) ($disconnection->reason ?? ''),
+                'message' => 'Service disconnected',
+                'created_at' => $createdAt ? $createdAt->toIso8601String() : null,
+            ];
+        });
+
+        $notifications = $paymentNotifications
+            ->concat($disconnectionNotifications)
+            ->sortByDesc(function (array $notification) {
+                return $notification['created_at'] ?? '';
+            })
+            ->values();
+
         return response()->json([
             'success' => true,
             'pending_count' => $pendingCount,
+            'disconnected_count' => $disconnectedCount,
+            'total_count' => $pendingCount + $disconnectedCount,
             'notifications' => $notifications,
         ]);
     }

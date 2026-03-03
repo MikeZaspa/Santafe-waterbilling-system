@@ -313,8 +313,9 @@
     }
 
     .notification-list {
-      max-height: 360px;
+      max-height: 252px;
       overflow-y: auto;
+      overflow-x: hidden;
     }
 
     .notification-item {
@@ -550,7 +551,7 @@
             <button type="button" class="btn btn-sm btn-outline-secondary" id="refreshNotificationsBtn">Refresh</button>
           </div>
           <div class="notification-list" id="notificationList">
-            <div class="notification-empty">No pending payments.</div>
+            <div class="notification-empty">No notifications.</div>
           </div>
         </div>
       </div>
@@ -771,6 +772,15 @@
     const notificationList = $('#notificationList');
     let knownPendingPaymentIds = new Set();
 
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     function renderNotificationBadge(count) {
         if (count > 0) {
             notificationBadge.text(count > 99 ? '99+' : count).removeClass('d-none');
@@ -781,18 +791,32 @@
 
     function renderNotificationList(notifications) {
         if (!notifications.length) {
-            notificationList.html('<div class="notification-empty">No pending payments.</div>');
+            notificationList.html('<div class="notification-empty">No notifications.</div>');
             return;
         }
 
-        const notificationHtml = notifications.map(function(payment) {
-            const submittedText = payment.created_at ? moment(payment.created_at).fromNow() : 'Just now';
-            const amount = parseFloat(payment.amount || 0).toFixed(2);
+        const notificationHtml = notifications.map(function(item) {
+            const submittedText = item.created_at ? moment(item.created_at).fromNow() : 'Just now';
+
+            if (item.type === 'disconnection') {
+                const reasonText = item.reason ? ` | Reason: ${escapeHtml(item.reason)}` : '';
+                return `
+                    <a href="#" class="notification-item disconnection-notification-item" data-id="${item.id}">
+                        <div class="notification-title">${escapeHtml(item.consumer_name || 'N/A')}</div>
+                        <div class="notification-message">
+                            Meter: ${escapeHtml(item.meter_no || 'N/A')} | Service disconnected${reasonText}
+                        </div>
+                        <div class="notification-time">Disconnected ${submittedText}</div>
+                    </a>
+                `;
+            }
+
+            const amount = parseFloat(item.amount || 0).toFixed(2);
             return `
-                <a href="#" class="notification-item payment-notification-item" data-id="${payment.id}">
-                    <div class="notification-title">${payment.consumer_name}</div>
+                <a href="#" class="notification-item payment-notification-item" data-id="${item.id}">
+                    <div class="notification-title">${escapeHtml(item.consumer_name || 'N/A')}</div>
                     <div class="notification-message">
-                        Meter: ${payment.meter_no || 'N/A'} | Ref: ${payment.reference_number || 'N/A'} | Amount:${amount}
+                        Meter: ${escapeHtml(item.meter_no || 'N/A')} | Ref: ${escapeHtml(item.reference_number || 'N/A')} | Amount: P${amount}
                     </div>
                     <div class="notification-time">Submitted ${submittedText}</div>
                 </a>
@@ -811,19 +835,24 @@
                 if (!response.success) return;
 
                 const notifications = response.notifications || [];
-                const currentIds = new Set(notifications.map(item => Number(item.id)));
+                const currentIds = new Set(
+                    notifications.map(item => String(item.notification_key || `${item.type || 'payment'}-${item.id}`))
+                );
                 const newPayments = showToastForNew
-                    ? notifications.filter(item => !knownPendingPaymentIds.has(Number(item.id)))
+                    ? notifications.filter(item => {
+                        const key = String(item.notification_key || `${item.type || 'payment'}-${item.id}`);
+                        return !knownPendingPaymentIds.has(key);
+                    })
                     : [];
 
-                renderNotificationBadge(response.pending_count || notifications.length);
+                renderNotificationBadge(response.total_count || notifications.length);
                 renderNotificationList(notifications);
                 knownPendingPaymentIds = currentIds;
 
                 if (newPayments.length > 0) {
                     const title = newPayments.length === 1
-                        ? '1 new payment submitted'
-                        : `${newPayments.length} new payments submitted`;
+                        ? '1 new notification'
+                        : `${newPayments.length} new notifications`;
 
                     Swal.fire({
                         toast: true,
@@ -987,6 +1016,11 @@
         e.preventDefault();
         const paymentId = $(this).data('id');
         openPaymentDetails(paymentId);
+    });
+
+    $(document).on('click', '.disconnection-notification-item', function(e) {
+        e.preventDefault();
+        window.location.href = `{{ route('admin.accountant-consumer') }}?show_disconnected=1`;
     });
 
     $('#refreshNotificationsBtn').on('click', function(e) {
