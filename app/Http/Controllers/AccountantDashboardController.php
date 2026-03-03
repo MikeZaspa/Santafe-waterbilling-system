@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\AccountantBilling;
+use App\Models\Disconnection;
+use App\Models\CutConsumer;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -18,6 +20,12 @@ class AccountantDashboardController extends Controller
         $paidCount = AccountantBilling::where('status', 'paid')->count();
         $unpaidCount = AccountantBilling::where('status', 'unpaid')->count();
         $overdueCount = AccountantBilling::where('status', 'overdue')->count();
+        $disconnectedCount = Disconnection::where('status', 'disconnected')->count();
+        $cutConsumerCount = CutConsumer::count();
+        $monthlyReconnectionFee = Disconnection::where('status', 'reconnected')
+            ->whereMonth('reconnection_date', now()->month)
+            ->whereYear('reconnection_date', now()->year)
+            ->sum('reconnection_fee');
         
         // Use the correct column name that exists in your table
         $totalIncome = AccountantBilling::where('status', 'paid')->sum('total_amount'); // or whatever your amount column is named
@@ -66,6 +74,9 @@ class AccountantDashboardController extends Controller
             'paidCount',
             'unpaidCount',
             'overdueCount',
+            'disconnectedCount',
+            'cutConsumerCount',
+            'monthlyReconnectionFee',
             'totalIncome',
             'monthlyLabels',
             'monthlyRevenue'

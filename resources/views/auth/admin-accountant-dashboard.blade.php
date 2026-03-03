@@ -356,11 +356,17 @@
         .text-unpaid { color: #ffc107; }
         .text-overdue { color: #dc3545; }
         .text-income { color: #17a2b8; }
+        .text-reconnection { color: #6f42c1; }
+        .text-disconnected { color: #0d6efd; }
+        .text-cut { color: #6c757d; }
         
         .bg-paid { background-color: rgba(40, 167, 69, 0.1); }
         .bg-unpaid { background-color: rgba(255, 193, 7, 0.1); }
         .bg-overdue { background-color: rgba(220, 53, 69, 0.1); }
         .bg-income { background-color: rgba(23, 162, 184, 0.1); }
+        .bg-reconnection { background-color: rgba(111, 66, 193, 0.12); }
+        .bg-disconnected { background-color: rgba(13, 110, 253, 0.1); }
+        .bg-cut { background-color: rgba(108, 117, 125, 0.12); }
         
         .graph-card {
             margin-top: 20px;
@@ -560,6 +566,69 @@
                             </div>
                             <div class="bg-income p-3 rounded">
                                 <i class="bi bi-cash-stack text-income fs-4"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row g-4 mt-1">
+            <!-- Reconnection Fee Card -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-2">Reconnection Fee</h6>
+                                <h3>P{{ number_format($monthlyReconnectionFee ?? 0, 2) }}</h3>
+                                <small class="text-reconnection">
+                                    <i class="bi bi-arrow-repeat"></i> Monthly collection
+                                </small>
+                            </div>
+                            <div class="bg-reconnection p-3 rounded">
+                                <i class="bi bi-arrow-repeat text-reconnection fs-4"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Disconnected Consumers Card -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-2">Disconnected Consumers</h6>
+                                <h3>{{ $disconnectedCount ?? 0 }}</h3>
+                                <small class="text-disconnected">
+                                    <i class="bi bi-plug"></i> Service disconnected
+                                </small>
+                            </div>
+                            <div class="bg-disconnected p-3 rounded">
+                                <i class="bi bi-plug-fill text-disconnected fs-4"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cut Consumers Card -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-2">Cut Consumers</h6>
+                                <h3>{{ $cutConsumerCount ?? 0 }}</h3>
+                                <small class="text-cut">
+                                    <i class="bi bi-scissors"></i> Service cut
+                                </small>
+                            </div>
+                            <div class="bg-cut p-3 rounded">
+                                <i class="bi bi-scissors text-cut fs-4"></i>
                             </div>
                         </div>
                     </div>

@@ -326,6 +326,13 @@ Route::post('/disconnections', [BillingController::class, 'disconnect']);
 Route::post('/disconnections/{id}/restore', [BillingController::class, 'restoreDisconnectedConsumer']);
 Route::post('/admin-plumber-disconnection/{disconnection}/reconnect', [DisconnectionController::class, 'reconnect'])->middleware('plumber.auth')->name('admin.plumber.disconnection.reconnect');
 
+Route::get('/accountant/disconnections', [BillingController::class, 'getDisconnectedConsumers'])
+    ->middleware('accountant.auth')
+    ->name('accountant.disconnections.index');
+Route::post('/accountant/disconnections/{id}/reconnect', [BillingController::class, 'restoreDisconnectedConsumer'])
+    ->middleware('accountant.auth')
+    ->name('accountant.disconnections.reconnect');
+
 Route::get('/reconnected-consumers', [ReadingController::class, 'getReconnectedConsumers'])->middleware('plumber.auth');
 Route::get('/all-reconnected-consumers', [ReadingController::class, 'getAllReconnectedConsumers'])->middleware('plumber.auth');
 Route::post('/disconnections/{id}/restore', [ReadingController::class, 'reconnect'])->middleware('plumber.auth');
@@ -449,6 +456,12 @@ Route::get('/accountant/billings/{id}/receipt', [BillingController::class, 'getR
 Route::post('/cut-consumers', [BillingController::class, 'cutConsumer'])->name('cut-consumers.store');
 Route::get('/cut-consumers', [BillingController::class, 'getCutConsumers'])->name('cut-consumers.index');
 Route::post('/cut-consumers/{id}/restore', [BillingController::class, 'restoreConsumer'])->name('cut-consumers.restore');
+Route::get('/accountant/cut-consumers', [BillingController::class, 'getCutConsumers'])
+    ->middleware('accountant.auth')
+    ->name('accountant.cut-consumers.index');
+Route::post('/accountant/cut-consumers/{id}/restore', [BillingController::class, 'restoreConsumer'])
+    ->middleware('accountant.auth')
+    ->name('accountant.cut-consumers.restore');
 
 // In your routes/web.php file, add these routes:
 

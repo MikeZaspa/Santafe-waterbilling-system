@@ -733,7 +733,15 @@
             <div class="table-title">
                 <div class="d-flex justify-content-between align-items-center w-100">
                     <h3 class="mb-0"><i class="bi bi-receipt-cutoff me-2"></i>Consumers Billing</h3>
-                    <div>
+                    <div class="d-flex gap-2 flex-wrap justify-content-end">
+                        <button class="btn btn-outline-warning" id="viewDisconnectedConsumersBtnAccountant">
+                            <i class="bi bi-x-circle me-2"></i>
+                            View Disconnected
+                        </button>
+                        <button class="btn btn-outline-danger" id="viewCutConsumersBtnAccountant">
+                            <i class="bi bi-scissors me-2"></i>
+                            View Cut Consumers
+                        </button>
                         <button class="btn btn-primary" id="addBillingBtn" data-bs-toggle="modal" data-bs-target="#billingModal">
                             <i class="bi bi-plus-circle-fill me-2"></i>
                             Create New Billing
@@ -938,6 +946,80 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-danger" id="confirmEmptyArchiveBtn" disabled>Empty Archive</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Disconnected Consumers List Modal -->
+<div class="modal fade" id="accountantDisconnectedConsumersListModal" tabindex="-1" aria-labelledby="accountantDisconnectedConsumersListModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="accountantDisconnectedConsumersListModalLabel">
+                    <i class="bi bi-x-circle me-2"></i><span id="accountantDisconnectedConsumersCount">Disconnected Consumers</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle" id="accountantDisconnectedConsumersTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Meter No.</th>
+                                <th>Reading Date</th>
+                                <th>Disconnection Date</th>
+                                <th>Reason</th>
+                                <th>Notes</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <small class="text-muted me-auto">Reconnection fee: P500.00</small>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cut Consumers List Modal -->
+<div class="modal fade" id="accountantCutConsumersListModal" tabindex="-1" aria-labelledby="accountantCutConsumersListModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="accountantCutConsumersListModalLabel">
+                    <i class="bi bi-scissors me-2"></i><span id="accountantCutConsumersCount">Cut Consumers</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle" id="accountantCutConsumersTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Meter No.</th>
+                                <th>Cut Date</th>
+                                <th>Reason</th>
+                                <th>Notes</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -1476,6 +1558,222 @@
     // Search button for active table
     $('#searchBtn').click(function() {
         activeTable.search($('#searchInput').val()).draw();
+    });
+
+    const disconnectedListModal = new bootstrap.Modal(document.getElementById('accountantDisconnectedConsumersListModal'));
+    const cutListModal = new bootstrap.Modal(document.getElementById('accountantCutConsumersListModal'));
+
+    function formatListDate(dateValue) {
+        if (!dateValue) {
+            return 'N/A';
+        }
+        return new Date(dateValue).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    }
+
+    function loadAccountantDisconnectedConsumers() {
+        return $.ajax({
+            url: '/accountant/disconnections',
+            type: 'GET',
+            dataType: 'json'
+        }).done(function(response) {
+            const records = response.data || [];
+            const tbody = $('#accountantDisconnectedConsumersTable tbody');
+            tbody.empty();
+
+            $('#accountantDisconnectedConsumersCount').text(`Disconnected Consumers (${records.length} records)`);
+
+            if (records.length === 0) {
+                tbody.append('<tr><td colspan="9" class="text-center text-muted">No disconnected consumers found.</td></tr>');
+                return;
+            }
+
+            records.forEach(function(consumer, index) {
+                tbody.append(`
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${consumer.name || 'N/A'}</td>
+                        <td>${consumer.consumer_type || '-'}</td>
+                        <td>${consumer.meter_no || '-'}</td>
+                        <td>${formatListDate(consumer.reading_date)}</td>
+                        <td>${formatListDate(consumer.disconnection_date)}</td>
+                        <td>${consumer.reason || '-'}</td>
+                        <td>${consumer.notes || '-'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-success accountant-reconnect-disconnected-btn" data-id="${consumer.id}" data-name="${consumer.name || 'Consumer'}">
+                                <i class="bi bi-arrow-clockwise me-1"></i>Reconnect
+                            </button>
+                        </td>
+                    </tr>
+                `);
+            });
+        }).fail(function(xhr) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: xhr.responseJSON?.message || 'Failed to load disconnected consumers.'
+            });
+        });
+    }
+
+    function loadAccountantCutConsumers() {
+        return $.ajax({
+            url: '/accountant/cut-consumers',
+            type: 'GET',
+            dataType: 'json'
+        }).done(function(response) {
+            const records = response.data || [];
+            const tbody = $('#accountantCutConsumersTable tbody');
+            tbody.empty();
+
+            $('#accountantCutConsumersCount').text(`Cut Consumers (${records.length} records)`);
+
+            if (records.length === 0) {
+                tbody.append('<tr><td colspan="8" class="text-center text-muted">No cut consumers found.</td></tr>');
+                return;
+            }
+
+            records.forEach(function(consumer, index) {
+                tbody.append(`
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${consumer.name || 'N/A'}</td>
+                        <td>${consumer.consumer_type || '-'}</td>
+                        <td>${consumer.meter_no || '-'}</td>
+                        <td>${formatListDate(consumer.cut_date)}</td>
+                        <td>${consumer.reason || '-'}</td>
+                        <td>${consumer.notes || '-'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-success accountant-restore-cut-btn" data-id="${consumer.id}" data-name="${consumer.name || 'Consumer'}">
+                                <i class="bi bi-arrow-clockwise me-1"></i>Restore
+                            </button>
+                        </td>
+                    </tr>
+                `);
+            });
+        }).fail(function(xhr) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: xhr.responseJSON?.message || 'Failed to load cut consumers.'
+            });
+        });
+    }
+
+    $('#viewDisconnectedConsumersBtnAccountant').click(function() {
+        const $btn = $(this).prop('disabled', true);
+        loadAccountantDisconnectedConsumers().done(function() {
+            disconnectedListModal.show();
+        }).always(function() {
+            $btn.prop('disabled', false);
+        });
+    });
+
+    $('#viewCutConsumersBtnAccountant').click(function() {
+        const $btn = $(this).prop('disabled', true);
+        loadAccountantCutConsumers().done(function() {
+            cutListModal.show();
+        }).always(function() {
+            $btn.prop('disabled', false);
+        });
+    });
+
+    $(document).on('click', '.accountant-reconnect-disconnected-btn', function() {
+        const disconnectionId = $(this).data('id');
+        const consumerName = $(this).data('name');
+
+        Swal.fire({
+            title: 'Reconnect Consumer?',
+            html: `
+                <p>Reconnect <strong>${consumerName}</strong>?</p>
+                <p class="text-info mb-2">A reconnection fee of <strong>P500.00</strong> will be applied.</p>
+                <textarea id="accountantReconnectionNotes" class="form-control" rows="3" placeholder="Optional notes"></textarea>
+            `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Reconnect',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#198754'
+        }).then(function(result) {
+            if (!result.isConfirmed) {
+                return;
+            }
+
+            const notes = $('#accountantReconnectionNotes').val();
+
+            $.ajax({
+                url: `/accountant/disconnections/${disconnectionId}/reconnect`,
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    notes: notes,
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Reconnected',
+                        text: response.message || 'Consumer successfully reconnected.'
+                    });
+                    loadAccountantDisconnectedConsumers();
+                    activeTable.ajax.reload(null, false);
+                },
+                error: function(xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Reconnection Failed',
+                        text: xhr.responseJSON?.message || 'Failed to reconnect consumer.'
+                    });
+                }
+            });
+        });
+    });
+
+    $(document).on('click', '.accountant-restore-cut-btn', function() {
+        const cutId = $(this).data('id');
+        const consumerName = $(this).data('name');
+
+        Swal.fire({
+            title: 'Restore Consumer?',
+            text: `Restore ${consumerName} to active consumers?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Restore',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#198754'
+        }).then(function(result) {
+            if (!result.isConfirmed) {
+                return;
+            }
+
+            $.ajax({
+                url: `/accountant/cut-consumers/${cutId}/restore`,
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Restored',
+                        text: response.message || 'Consumer successfully restored.'
+                    });
+                    loadAccountantCutConsumers();
+                    activeTable.ajax.reload(null, false);
+                },
+                error: function(xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Restore Failed',
+                        text: xhr.responseJSON?.message || 'Failed to restore cut consumer.'
+                    });
+                }
+            });
+        });
     });
 
     // Archive button click handler
