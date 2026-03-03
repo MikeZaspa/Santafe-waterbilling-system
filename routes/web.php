@@ -124,8 +124,8 @@ Route::post('/billings/{billing}/disconnect', [BillingController::class, 'discon
     Route::get('/consumer-portal', [AuthController::class, 'showConsumerPortalForm'])->name('consumer-portal');
     Route::post('/consumer-portal', [AuthController::class,'consumerportal']);
     
-    Route::get('/admin-accountant', [AuthController::class, 'showAdminAccountant'])->name('admin-accountant');
-    Route::post('/admin-accountant', [AuthController::class,'adminaccountant']);
+    Route::get('/admin-accountant', [AuthController::class, 'showAdminAccountant'])->middleware('admin.auth')->name('admin-accountant');
+    Route::post('/admin-accountant', [AuthController::class,'adminaccountant'])->middleware('admin.auth');
 
     Route::get('/consumer-history', [AuthController::class, 'showHistoryForm'])->name('consumer-history');
     Route::post('/consumer-history', [AuthController::class,'consumerhistory']);
@@ -308,11 +308,13 @@ Route::prefix('admin')->middleware('accountant.auth')->group(function () {
 });
 
 // Accountant Management Routes
-Route::get('/admin-accountant', [AccountantManageController::class, 'index'])->name('admin.accountant');
-Route::post('/admin-accountant', [AccountantManageController::class, 'store']);
-Route::get('/admin-accountant/{id}/edit', [AccountantManageController::class, 'edit']);
-Route::put('/admin-accountant/{id}', [AccountantManageController::class, 'update']);
-Route::delete('/admin-accountant/{id}', [AccountantManageController::class, 'destroy']);
+Route::middleware('admin.auth')->group(function () {
+    Route::get('/admin-accountant', [AccountantManageController::class, 'index'])->name('admin.accountant');
+    Route::post('/admin-accountant', [AccountantManageController::class, 'store']);
+    Route::get('/admin-accountant/{id}/edit', [AccountantManageController::class, 'edit']);
+    Route::put('/admin-accountant/{id}', [AccountantManageController::class, 'update']);
+    Route::delete('/admin-accountant/{id}', [AccountantManageController::class, 'destroy']);
+});
 
 Route::get('/consumer-information', [AuthController::class, 'showInformation'])->name('consumer-information');
     Route::post('/consumer-information', [AuthController::class,'consumerinformation']);
