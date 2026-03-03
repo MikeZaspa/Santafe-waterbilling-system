@@ -22,7 +22,10 @@ class BillingController extends Controller
         $billings = Billing::with('consumer')
             ->orderBy('reading_date', 'desc')
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->orderBy('id', 'desc')
+            ->get()
+            ->unique('consumer_id')
+            ->values();
             
         return response()->json(['data' => $billings]);
     }
