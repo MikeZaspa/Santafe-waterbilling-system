@@ -653,18 +653,6 @@
                     <i class="bi bi-people"></i> Billing
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="water-rates">
-                    <i class="bi bi-cash-coin"></i> Water Rates
-                </a>
-            </li>
-
-            <!-- Notices -->
-            <li class="nav-item">
-                <a class="nav-link" href="admin-accountant-notice">
-                    <i class="bi bi-bell"></i> Notices
-                </a>
-            </li>
 
             <li class="nav-item">
                 <a class="nav-link" href="admin-accountant-reports">

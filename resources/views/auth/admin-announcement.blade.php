@@ -310,37 +310,49 @@
         </div>
         <nav class="sidebar-menu">
             <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a class="nav-link" href="admin-dashboard">
-                        <i class="bi bi-speedometer2"></i> Dashboard
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="admin-consumer">
-                        <i class="bi bi-people"></i> Manage Consumers
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="admin-consumer-form">
-                        <i class="bi bi-person-badge"></i> Manage Accounts
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="admin-plumber">
-                        <i class="bi bi-wrench"></i> Manage Plumber
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="admin-accountant">
-                        <i class="bi bi-cash-stack"></i> Manage Accountant
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" href="admin-announcement">
-                        <i class="bi bi-megaphone"></i> Announcements
-                    </a>
-                </li>
-            </ul>
+            <li class="nav-item">
+                <a id="dashboardLink" class="nav-link" href="admin-dashboard">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a id="consumersLink" class="nav-link" href="admin-consumer">
+                    <i class="bi bi-people"></i> Manage Consumers
+                </a>
+            </li>
+            <li class="nav-item">
+                <a id="accountsLink" class="nav-link " href="admin-consumer-form">
+                    <i class="bi bi-person-badge"></i> Manage Accounts
+                </a>
+            </li>
+            <li class="nav-item">
+                <a id="plumberLink" class="nav-link" href="admin-plumber">
+                    <i class="bi bi-wrench"></i> Manage Plumber
+                </a>
+            </li>
+            <li class="nav-item">
+                <a id="accountantLink" class="nav-link active" href="admin-accountant">
+                    <i class="bi bi-cash-stack"></i> Manage Accountant
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="water-rates">
+                    <i class="bi bi-cash-coin"></i> Water Rates
+                </a>
+            </li>
+
+            <!-- Notices -->
+            <li class="nav-item">
+                <a class="nav-link" href="admin-accountant-notice">
+                    <i class="bi bi-bell"></i> Notices
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link " href="admin-announcement">
+                    <i class="bi bi-megaphone"></i> Announcements
+                </a>
+            </li>
+        </ul>
         </nav>
     </div>
 

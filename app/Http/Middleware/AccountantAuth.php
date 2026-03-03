@@ -16,10 +16,11 @@ class AccountantAuth
     public function handle(Request $request, Closure $next): Response
     {
         $isGuardAuthenticated = Auth::guard('accountant')->check();
+        $isAdminAuthenticated = Auth::guard('admin')->check();
         $hasAccountantSession = Session::has('accountant_id')
             && (Session::get('accountant_auth') || Session::has('accountant_name'));
 
-        if (!$isGuardAuthenticated && !$hasAccountantSession) {
+        if (!$isGuardAuthenticated && !$hasAccountantSession && !$isAdminAuthenticated) {
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
