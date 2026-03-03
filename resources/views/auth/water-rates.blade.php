@@ -1038,5 +1038,15 @@
         }
     });
 </script>
+@include('auth.partials.admin-complaints-widget')
+<script src="{{ asset('js/complaint-notifications.js') }}?v={{ filemtime(public_path('js/complaint-notifications.js')) }}"></script>
+<script>
+    $(function () {
+        initComplaintNotifications({
+            role: 'admin',
+            pollingInterval: 5000
+        });
+    });
+</script>
 </body>
 </html>
