@@ -460,6 +460,7 @@
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
             const modal = new bootstrap.Modal(document.getElementById('announcementModal'));
             let announcements = [];
+            const appTimeZone = 'Asia/Manila';
 
             function escapeHtml(value) {
                 if (value === null || value === undefined) return '';
@@ -496,7 +497,17 @@
                     const statusBadge = a.is_active
                         ? '<span class="badge text-bg-success">Active</span>'
                         : '<span class="badge text-bg-secondary">Inactive</span>';
-                    const publishedAt = a.published_at ? new Date(a.published_at).toLocaleString() : '-';
+                    const publishedAt = a.published_at
+                        ? new Date(a.published_at).toLocaleString('en-US', {
+                            month: 'short',
+                            day: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true,
+                            timeZone: appTimeZone
+                        }).replace(',', '')
+                        : '-';
                     return `
                         <tr>
                             <td>${index + 1}</td>

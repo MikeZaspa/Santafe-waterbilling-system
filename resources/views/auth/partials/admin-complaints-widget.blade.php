@@ -910,8 +910,33 @@
 
             $(document).on('submit', '.js-delete-conversation-form', function (event) {
                 const confirmMessage = (this.getAttribute('data-confirm-message') || 'Delete this conversation?').trim();
-                if (!window.confirm(confirmMessage)) {
-                    event.preventDefault();
+                event.preventDefault();
+
+                const formEl = this;
+                const submitForm = function () {
+                    HTMLFormElement.prototype.submit.call(formEl);
+                };
+
+                if (typeof Swal !== 'undefined' && Swal && typeof Swal.fire === 'function') {
+                    Swal.fire({
+                        title: 'Delete Conversation?',
+                        text: confirmMessage,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc3545',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, delete',
+                        cancelButtonText: 'Cancel'
+                    }).then(function (result) {
+                        if (result.isConfirmed) {
+                            submitForm();
+                        }
+                    });
+                    return;
+                }
+
+                if (window.confirm(confirmMessage)) {
+                    submitForm();
                 }
             });
 
