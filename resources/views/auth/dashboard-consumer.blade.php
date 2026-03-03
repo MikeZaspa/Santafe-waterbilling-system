@@ -913,25 +913,19 @@
         e.preventDefault();
         
         Swal.fire({
-            title: 'Logout Confirmation',
-            text: "Are you sure you want to logout?",
+            title: 'Sign Out?',
+            text: 'Are you sure you want to sign out?',
             icon: 'question',
             showCancelButton: true,
-            confirmButtonColor: '#d32f2f',
+            confirmButtonColor: '#d33',
             cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Yes, Logout!',
-            cancelButtonText: 'Cancel',
-            reverseButtons: false,
-            customClass: {
-                confirmButton: 'btn btn-danger',
-                cancelButton: 'btn btn-secondary'
-            },
-            buttonsStyling: false
+            confirmButtonText: 'Yes, Sign Out',
+            cancelButtonText: 'Cancel'
         }).then((result) => {
             if (result.isConfirmed) {
                 Swal.fire({
-                    title: 'Logging out...',
-                    text: 'Please wait while we securely log you out.',
+                    title: 'Signing Out...',
+                    text: 'Please wait',
                     allowOutsideClick: false,
                     didOpen: () => {
                         Swal.showLoading();

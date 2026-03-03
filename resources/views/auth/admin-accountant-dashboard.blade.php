@@ -877,29 +877,33 @@
             cutout: '70%'
         }
     });
-    // SweetAlert2 Logout Confirmation - Direct redirect to consumer portal
+    // Sign out confirmation
 $('#logout-btn').on('click', function(e) {
     e.preventDefault();
     
     Swal.fire({
-        title: 'Logout Confirmation',
-        text: 'Are you sure you want to logout?',
+        title: 'Sign Out?',
+        text: 'Are you sure you want to sign out?',
         icon: 'question',
         showCancelButton: true,
-        confirmButtonColor: '#d32f2f',
+        confirmButtonColor: '#d33',
         cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Yes, Logout!',
-        cancelButtonText: 'Cancel',
-        reverseButtons: false,
-        customClass: {
-            confirmButton: 'btn btn-danger',
-            cancelButton: 'btn btn-secondary'
-        },
-        buttonsStyling: false
+        confirmButtonText: 'Yes, Sign Out',
+        cancelButtonText: 'Cancel'
     }).then((result) => {
         if (result.isConfirmed) {
-            // Direct redirect to consumer portal page
-            window.location.href = '/accountant-login';
+            Swal.fire({
+                title: 'Signing Out...',
+                text: 'Please wait',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            setTimeout(() => {
+                window.location.href = '/accountant-login';
+            }, 500);
         }
     });
 });

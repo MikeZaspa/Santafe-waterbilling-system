@@ -453,6 +453,7 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{{ asset('js/complaint-notifications.js') }}?v={{ filemtime(public_path('js/complaint-notifications.js')) }}"></script>
     <script>
         $(function () {
@@ -648,7 +649,32 @@
 
             $('#logoutBtn').on('click', function (e) {
                 e.preventDefault();
-                if (!confirm('Are you sure you want to sign out?')) return;
+
+                Swal.fire({
+                    title: 'Sign Out?',
+                    text: 'Are you sure you want to sign out?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, Sign Out',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        performLogout();
+                    }
+                });
+            });
+
+            function performLogout() {
+                Swal.fire({
+                    title: 'Signing Out...',
+                    text: 'Please wait',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
 
                 $.ajax({
                     url: '/logout',
@@ -657,7 +683,7 @@
                 }).always(() => {
                     window.location.href = '/admin-login';
                 });
-            });
+            }
 
             loadAnnouncements();
         });

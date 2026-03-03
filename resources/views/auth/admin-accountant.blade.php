@@ -550,7 +550,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link active" href="admin-announcement">
+                <a class="nav-link" href="admin-announcement">
                     <i class="bi bi-megaphone"></i> Announcements
                 </a>
             </li>
