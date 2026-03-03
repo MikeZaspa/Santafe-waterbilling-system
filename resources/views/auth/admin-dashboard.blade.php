@@ -1106,7 +1106,7 @@
                             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
                                 <small class="text-muted js-conversation-last-activity" data-last-iso="{{ optional($conversation['last_message_at'])->toIso8601String() }}">
                                     Last activity:
-                                    {{ optional($conversation['last_message_at'])->format('M d, Y h:i A') ?? 'No messages yet' }}
+                                    {{ optional($conversation['last_message_at'])->timezone('Asia/Manila')->format('M d, Y h:i A') ?? 'No messages yet' }}
                                 </small>
                                 <button
                                     type="button"
@@ -1161,7 +1161,7 @@
                                 <div class="admin-chat-bubble">
                                     <div class="admin-chat-meta">
                                         <span>{{ $isAdminMessage ? 'Admin' : 'Consumer' }}</span>
-                                        <span>{{ $message->created_at->format('M d, Y h:i A') }}</span>
+                                        <span>{{ $message->created_at->timezone('Asia/Manila')->format('M d, Y h:i A') }}</span>
                                     </div>
                                     <p class="admin-chat-message">{{ $message->plainMessage() }}</p>
                                     @if (!empty($message->attachment_path))
@@ -1413,6 +1413,7 @@
     const adminComplaintTypingUrl = @json(route('admin.complaints.typing'));
     const adminComplaintTypingStatusBaseUrl = @json(url('/admin/complaints/conversation'));
     const adminComplaintOnlineStatusesUrl = @json(route('admin.complaints.online-statuses'));
+    const complaintTimeZone = 'Asia/Manila';
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
     const openChatConsumerId = @json(session('open_chat_consumer_id'));
     const oldConsumerId = @json(old('consumer_id'));
@@ -1712,7 +1713,8 @@
             year: 'numeric',
             hour: '2-digit',
             minute: '2-digit',
-            hour12: true
+            hour12: true,
+            timeZone: complaintTimeZone
         }).replace(',', '');
     }
 

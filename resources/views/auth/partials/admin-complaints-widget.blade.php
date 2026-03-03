@@ -417,7 +417,7 @@
                             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
                                 <small class="complaint-conversation-last-activity js-conversation-last-activity" data-last-iso="{{ optional($conversation['last_message_at'])->toIso8601String() }}">
                                     Last activity:
-                                    {{ optional($conversation['last_message_at'])->format('M d, Y h:i A') ?? 'No messages yet' }}
+                                    {{ optional($conversation['last_message_at'])->timezone('Asia/Manila')->format('M d, Y h:i A') ?? 'No messages yet' }}
                                 </small>
                                 <button
                                     type="button"
@@ -465,11 +465,11 @@
                 <div class="modal-body p-0">
                     <div class="admin-complaint-thread js-admin-complaint-thread" data-consumer-id="{{ $conversation['consumer_id'] }}">
                         @foreach ($conversation['messages'] as $message)
-                            <div class="admin-chat-row {{ $message->isAdminReply() ? 'is-admin' : 'is-consumer' }}">
+                            <div class="admin-chat-row js-admin-chat-message {{ $message->isAdminReply() ? 'is-admin' : 'is-consumer' }}" data-message-id="{{ $message->id }}">
                                 <div class="admin-chat-bubble">
                                     <div class="admin-chat-meta">
                                         <span>{{ $message->isAdminReply() ? 'Admin' : 'Consumer' }}</span>
-                                        <span>{{ optional($message->created_at)->format('M d, Y h:i A') }}</span>
+                                        <span>{{ optional($message->created_at)->timezone('Asia/Manila')->format('M d, Y h:i A') }}</span>
                                     </div>
                                     <p class="admin-chat-message">{{ $message->plainMessage() }}</p>
                                     @if (!$message->isAdminReply() && $message->attachment_path)
@@ -533,11 +533,20 @@
             const totalComplaintsModalEl = document.getElementById('totalComplaintsModal');
             const floatingComplaintsCountEl = document.getElementById('floatingComplaintsCount');
             const adminComplaintReplyUrl = @json(route('admin.complaints.reply'));
+            const adminComplaintDeleteBaseUrl = @json(url('/admin/complaints/conversation'));
+            const adminComplaintAttachmentBaseUrl = @json(url('/admin/complaints'));
             const adminComplaintOnlineStatusesUrl = @json(route('admin.complaints.online-statuses'));
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
             let activeComplaintModalEl = null;
             let totalComplaintMessages = Number(@json($totalComplaints)) || 0;
             let isOnlineStatusesSyncBusy = false;
+            const complaintTimeZone = 'Asia/Manila';
+            const pageLoadedAtMs = Date.now();
+            const seenComplaintMessageIds = new Set(
+                Array.from(document.querySelectorAll('.js-admin-chat-message[data-message-id]'))
+                    .map((node) => Number(node.getAttribute('data-message-id')))
+                    .filter((value) => Number.isFinite(value))
+            );
 
             function setComplaintTotals(value) {
                 totalComplaintMessages = Math.max(0, Number(value) || 0);
@@ -557,6 +566,42 @@
             }
 
             setComplaintTotals(totalComplaintMessages);
+
+            function escapeHtml(value) {
+                return String(value || '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            }
+
+            function shortenText(value, maxLength) {
+                const text = String(value || '');
+                if (text.length <= maxLength) {
+                    return text;
+                }
+                return text.slice(0, Math.max(0, maxLength - 3)) + '...';
+            }
+
+            function formatDateTime(isoString) {
+                if (!isoString) {
+                    return 'Just now';
+                }
+                const parsed = new Date(isoString);
+                if (Number.isNaN(parsed.getTime())) {
+                    return 'Just now';
+                }
+                return parsed.toLocaleString('en-US', {
+                    month: 'short',
+                    day: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true,
+                    timeZone: complaintTimeZone
+                }).replace(',', '');
+            }
 
             function setConversationOnlineState(consumerId, isOnline) {
                 if (!complaintConversationsListEl) {
@@ -623,35 +668,222 @@
                 }
             }
 
+            function upsertConversationCard(item) {
+                if (!complaintConversationsListEl || !item || !item.consumer_id) {
+                    return null;
+                }
+
+                const consumerId = Number(item.consumer_id);
+                if (!Number.isFinite(consumerId) || consumerId <= 0) {
+                    return null;
+                }
+
+                const activityLabel = 'Last activity: ' + formatDateTime(item.created_at);
+                let cardEl = complaintConversationsListEl.querySelector(`.complaint-conversation-card[data-consumer-id="${consumerId}"]`);
+
+                if (!cardEl) {
+                    const placeholder = complaintConversationsListEl.querySelector('.text-center.text-muted.py-4');
+                    if (placeholder) {
+                        placeholder.remove();
+                    }
+
+                    cardEl = document.createElement('div');
+                    cardEl.className = 'complaint-conversation-card';
+                    cardEl.setAttribute('data-consumer-id', String(consumerId));
+                    cardEl.innerHTML = `
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                            <div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <h6 class="mb-1">${escapeHtml(item.consumer_name || 'Unknown Consumer')}</h6>
+                                    <span class="consumer-online-indicator js-consumer-online-indicator" data-consumer-id="${consumerId}" aria-label="Consumer is offline">
+                                        <span class="consumer-online-dot"></span>
+                                        <span class="js-consumer-online-label">Offline</span>
+                                    </span>
+                                </div>
+                                <small class="text-muted">Meter No: ${escapeHtml(item.meter_no || 'N/A')}</small>
+                            </div>
+                            <span class="badge text-bg-primary-subtle text-primary js-conversation-count">1 message</span>
+                        </div>
+                        <p class="complaint-conversation-preview js-conversation-preview">${escapeHtml(shortenText(item.message || '', 160))}</p>
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                            <small class="complaint-conversation-last-activity js-conversation-last-activity" data-last-iso="${escapeHtml(item.created_at || '')}">${escapeHtml(activityLabel)}</small>
+                            <button
+                                type="button"
+                                class="btn btn-sm open-complaint-chat-btn"
+                                data-chat-target="complaintChatModal${consumerId}">
+                                <i class="bi bi-chat-dots me-1"></i>Open Chat
+                            </button>
+                        </div>
+                    `;
+                    complaintConversationsListEl.prepend(cardEl);
+                    return cardEl;
+                }
+
+                const countEl = cardEl.querySelector('.js-conversation-count');
+                if (countEl) {
+                    const currentCount = Number.parseInt(String(countEl.textContent).replace(/\D/g, ''), 10) || 0;
+                    const nextCount = currentCount + 1;
+                    countEl.textContent = `${nextCount} ${nextCount === 1 ? 'message' : 'messages'}`;
+                }
+
+                const previewEl = cardEl.querySelector('.js-conversation-preview');
+                if (previewEl) {
+                    previewEl.textContent = shortenText(item.message || '', 160);
+                }
+
+                const lastActivityEl = cardEl.querySelector('.js-conversation-last-activity');
+                if (lastActivityEl) {
+                    lastActivityEl.textContent = activityLabel;
+                    lastActivityEl.setAttribute('data-last-iso', item.created_at || '');
+                }
+
+                complaintConversationsListEl.prepend(cardEl);
+                return cardEl;
+            }
+
+            function ensureConversationModal(item) {
+                if (!item || !item.consumer_id) {
+                    return null;
+                }
+
+                const consumerId = Number(item.consumer_id);
+                if (!Number.isFinite(consumerId) || consumerId <= 0) {
+                    return null;
+                }
+
+                const modalId = `complaintChatModal${consumerId}`;
+                let modalEl = document.getElementById(modalId);
+                if (modalEl) {
+                    return modalEl;
+                }
+
+                const modalHtml = `
+                    <div id="${modalId}" class="modal fade complaint-chat-modal" data-consumer-id="${consumerId}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-scrollable">
+                            <div class="modal-content">
+                                <div class="modal-header bg-primary text-white">
+                                    <div>
+                                        <h5 class="modal-title mb-0">
+                                            <i class="bi bi-chat-left-text me-2"></i>${escapeHtml(item.consumer_name || 'Unknown Consumer')}
+                                        </h5>
+                                        <p class="mb-0 text-white-50 small">Meter No: ${escapeHtml(item.meter_no || 'N/A')}</p>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <form
+                                            action="${adminComplaintDeleteBaseUrl}/${consumerId}"
+                                            method="POST"
+                                            class="js-delete-conversation-form"
+                                            data-confirm-message="Delete this consumer complaint conversation? This cannot be undone.">
+                                            <input type="hidden" name="_token" value="${escapeHtml(csrfToken)}">
+                                            <input type="hidden" name="_method" value="DELETE">
+                                            <button type="submit" class="btn btn-sm delete-conversation-btn" title="Delete Conversation" aria-label="Delete Conversation">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                </div>
+                                <div class="modal-body p-0">
+                                    <div class="admin-complaint-thread js-admin-complaint-thread" data-consumer-id="${consumerId}"></div>
+                                </div>
+                                <div class="modal-footer">
+                                    <form action="${adminComplaintReplyUrl}" method="POST" class="w-100 d-flex flex-column gap-2 js-admin-reply-form">
+                                        <input type="hidden" name="_token" value="${escapeHtml(csrfToken)}">
+                                        <input type="hidden" name="consumer_id" value="${consumerId}">
+                                        <label class="form-label mb-0">Reply as Admin</label>
+                                        <div class="admin-reply-controls">
+                                            <textarea name="message" class="form-control" rows="2" placeholder="Type your reply here..." required></textarea>
+                                            <button type="submit" class="btn admin-reply-send-btn">
+                                                <i class="bi bi-send me-1"></i>Send Reply
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                return document.getElementById(modalId);
+            }
+
+            function appendIncomingComplaintMessage(item) {
+                if (!item || !item.consumer_id || !item.id) {
+                    return;
+                }
+
+                upsertConversationCard(item);
+                const modalEl = ensureConversationModal(item);
+                const threadEl = modalEl ? modalEl.querySelector('.js-admin-complaint-thread') : null;
+                if (!threadEl) {
+                    return;
+                }
+
+                if (threadEl.querySelector(`.js-admin-chat-message[data-message-id="${item.id}"]`)) {
+                    return;
+                }
+
+                const hasAttachment = Boolean(item.has_attachment);
+                const attachmentBtn = hasAttachment
+                    ? `<button type="button" class="btn btn-sm btn-outline-secondary mt-2 view-complaint-attachment-btn" data-attachment-url="${adminComplaintAttachmentBaseUrl}/${item.id}/attachment"><i class="bi bi-paperclip me-1"></i>View Attachment</button>`
+                    : '';
+
+                const rowHtml = `
+                    <div class="admin-chat-row js-admin-chat-message is-consumer" data-message-id="${item.id}">
+                        <div class="admin-chat-bubble">
+                            <div class="admin-chat-meta">
+                                <span>Consumer</span>
+                                <span>${escapeHtml(formatDateTime(item.created_at))}</span>
+                            </div>
+                            <p class="admin-chat-message">${escapeHtml(item.message || '')}</p>
+                            ${attachmentBtn}
+                        </div>
+                    </div>
+                `;
+
+                threadEl.insertAdjacentHTML('beforeend', rowHtml);
+                if (modalEl.classList.contains('show')) {
+                    threadEl.scrollTop = threadEl.scrollHeight;
+                }
+            }
+
+            function appendAdminReplyMessage(item) {
+                if (!item || !item.consumer_id || !item.id) {
+                    return;
+                }
+
+                upsertConversationCard(item);
+                const modalEl = ensureConversationModal(item);
+                const threadEl = modalEl ? modalEl.querySelector('.js-admin-complaint-thread') : null;
+                if (!threadEl) {
+                    return;
+                }
+
+                if (threadEl.querySelector(`.js-admin-chat-message[data-message-id="${item.id}"]`)) {
+                    return;
+                }
+
+                const rowHtml = `
+                    <div class="admin-chat-row js-admin-chat-message is-admin" data-message-id="${item.id}">
+                        <div class="admin-chat-bubble">
+                            <div class="admin-chat-meta">
+                                <span>Admin</span>
+                                <span>${escapeHtml(formatDateTime(item.created_at))}</span>
+                            </div>
+                            <p class="admin-chat-message">${escapeHtml(item.message || '')}</p>
+                        </div>
+                    </div>
+                `;
+
+                threadEl.insertAdjacentHTML('beforeend', rowHtml);
+                if (modalEl.classList.contains('show')) {
+                    threadEl.scrollTop = threadEl.scrollHeight;
+                }
+            }
+
             syncConversationOnlineStatuses();
             setInterval(syncConversationOnlineStatuses, 15000);
-
-            function escapeHtml(value) {
-                return String(value || '')
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(/"/g, '&quot;')
-                    .replace(/'/g, '&#39;');
-            }
-
-            function formatDateTime(isoString) {
-                if (!isoString) {
-                    return 'Just now';
-                }
-                const parsed = new Date(isoString);
-                if (Number.isNaN(parsed.getTime())) {
-                    return 'Just now';
-                }
-                return parsed.toLocaleString('en-US', {
-                    month: 'short',
-                    day: '2-digit',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: true
-                }).replace(',', '');
-            }
 
             $(document).on('click', '.open-complaint-chat-btn', function () {
                 const chatTarget = ($(this).data('chat-target') || '').toString();
@@ -721,19 +953,24 @@
                     }
 
                     const complaint = payload.complaint || {};
-                    const threadEl = formEl.closest('.modal-content')?.querySelector('.js-admin-complaint-thread');
-                    if (threadEl && complaint.id) {
-                        threadEl.insertAdjacentHTML('beforeend', '' +
-                            '<div class="admin-chat-row is-admin">' +
-                                '<div class="admin-chat-bubble">' +
-                                    '<div class="admin-chat-meta">' +
-                                        '<span>Admin</span>' +
-                                        '<span>' + escapeHtml(formatDateTime(complaint.created_at)) + '</span>' +
+                    if (complaint && Number.isFinite(Number(complaint.id))) {
+                        seenComplaintMessageIds.add(Number(complaint.id));
+                        appendAdminReplyMessage(complaint);
+                    } else {
+                        const threadEl = formEl.closest('.modal-content')?.querySelector('.js-admin-complaint-thread');
+                        if (threadEl) {
+                            threadEl.insertAdjacentHTML('beforeend', '' +
+                                '<div class="admin-chat-row is-admin">' +
+                                    '<div class="admin-chat-bubble">' +
+                                        '<div class="admin-chat-meta">' +
+                                            '<span>Admin</span>' +
+                                            '<span>' + escapeHtml(formatDateTime(new Date().toISOString())) + '</span>' +
+                                        '</div>' +
+                                        '<p class="admin-chat-message">' + escapeHtml(messageValue) + '</p>' +
                                     '</div>' +
-                                    '<p class="admin-chat-message">' + escapeHtml(complaint.message || messageValue) + '</p>' +
-                                '</div>' +
-                            '</div>');
-                        threadEl.scrollTop = threadEl.scrollHeight;
+                                '</div>');
+                            threadEl.scrollTop = threadEl.scrollHeight;
+                        }
                     }
 
                     setComplaintTotals(totalComplaintMessages + 1);
@@ -783,8 +1020,23 @@
                 if (detail.role !== 'admin') {
                     return;
                 }
-                const unreadCount = Number(detail.unreadCount || 0);
-                setComplaintTotals(Math.max(totalComplaintMessages, unreadCount));
+
+                const notifications = Array.isArray(detail.notifications) ? detail.notifications : [];
+                notifications.forEach(function (item) {
+                    const messageId = Number(item && item.id);
+                    if (!Number.isFinite(messageId) || seenComplaintMessageIds.has(messageId)) {
+                        return;
+                    }
+
+                    seenComplaintMessageIds.add(messageId);
+                    appendIncomingComplaintMessage(item);
+
+                    const createdAtMs = Date.parse(item.created_at || '');
+                    if (Number.isFinite(createdAtMs) && createdAtMs > pageLoadedAtMs) {
+                        setComplaintTotals(totalComplaintMessages + 1);
+                    }
+                });
+
                 syncConversationOnlineStatuses();
             });
         });

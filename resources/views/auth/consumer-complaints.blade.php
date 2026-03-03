@@ -792,7 +792,7 @@
                             <div class="complaint-bubble">
                                 <div class="complaint-meta-row">
                                     <span>{{ $isAdminReply ? 'Admin' : 'Consumer' }}</span>
-                                    <span class="complaint-meta">{{ $complaint->created_at->format('M d, Y h:i A') }}</span>
+                                    <span class="complaint-meta">{{ $complaint->created_at->timezone('Asia/Manila')->format('M d, Y h:i A') }}</span>
                                 </div>
                                 <p class="complaint-message">{{ $complaint->plainMessage() }}</p>
                                 @if ($complaint->attachment_path)
@@ -876,6 +876,7 @@
     const complaintTypingEndpoint = "{{ route('consumer.complaints.typing') }}";
     const complaintHeartbeatEndpoint = "{{ route('consumer.complaints.heartbeat') }}";
     const complaintTypingStatusEndpoint = "{{ route('consumer.complaints.typing-status') }}";
+    const complaintTimeZone = 'Asia/Manila';
     const csrfToken = document.querySelector('meta[name=\"csrf-token\"]')?.getAttribute('content') || '';
     const logoutButton = document.getElementById('logout-btn');
     const logoutForm = document.getElementById('logout-form');
@@ -1253,7 +1254,8 @@
             year: 'numeric',
             hour: '2-digit',
             minute: '2-digit',
-            hour12: true
+            hour12: true,
+            timeZone: complaintTimeZone
         }).replace(',', '');
     }
 
