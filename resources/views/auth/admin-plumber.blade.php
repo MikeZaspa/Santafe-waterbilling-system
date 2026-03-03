@@ -721,7 +721,15 @@
                     </div>
                     <div class="mb-3">
                         <label for="suffix" class="form-label">Suffix</label>
-                        <input type="text" class="form-control" id="suffix" placeholder="e.g., Jr., Sr., III">
+                        <select class="form-select" id="suffix">
+                            <option value="" selected>No suffix</option>
+                            <option value="Jr.">Jr.</option>
+                            <option value="Sr.">Sr.</option>
+                            <option value="II">II</option>
+                            <option value="III">III</option>
+                            <option value="IV">IV</option>
+                            <option value="V">V</option>
+                        </select>
                     </div>
 
                     <div class="mb-3">
@@ -877,7 +885,7 @@
         });
 
         // Prevent numbers in name fields
-        $('#firstName, #middleName, #lastName, #suffix').on('input', function() {
+        $('#firstName, #middleName, #lastName').on('input', function() {
             // Remove any numbers from input
             this.value = this.value.replace(/[0-9]/g, '');
         });
