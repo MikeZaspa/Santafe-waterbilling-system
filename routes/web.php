@@ -391,7 +391,7 @@ Route::middleware('auth:consumer')->prefix('consumer/complaints')->name('consume
     Route::get('/{complaint}/attachment', [ConsumerComplaintController::class, 'attachment'])->name('attachment');
 });
 
-Route::middleware('admin.auth')->prefix('admin/complaint-notifications')->name('admin.complaint-notifications.')->group(function () {
+Route::middleware('accountant.auth')->prefix('admin/complaint-notifications')->name('admin.complaint-notifications.')->group(function () {
     Route::get('/', [ComplaintNotificationController::class, 'adminIndex'])->name('index');
     Route::post('/read-all', [ComplaintNotificationController::class, 'adminMarkAllRead'])->name('read-all');
 });

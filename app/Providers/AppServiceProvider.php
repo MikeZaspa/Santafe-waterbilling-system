@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Complaint;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
 
@@ -25,12 +26,18 @@ class AppServiceProvider extends ServiceProvider
         View::composer([
             'auth.admin-dashboard',
             'auth.admin-accountant',
+            'auth.admin-accountant-notice',
             'auth.admin-announcement',
             'auth.admin-consumer',
             'auth.admin-consumer-form',
             'auth.admin-plumber',
+            'auth.water-rates',
         ], function ($view) {
-            if (!Auth::guard('admin')->check()) {
+            $isAdminAuthenticated = Auth::guard('admin')->check();
+            $isAccountantAuthenticated = Session::has('accountant_id')
+                && (Session::get('accountant_auth') || Session::has('accountant_name'));
+
+            if (!$isAdminAuthenticated && !$isAccountantAuthenticated) {
                 $view->with('complaintConversations', collect());
                 $view->with('totalComplaints', 0);
                 return;
