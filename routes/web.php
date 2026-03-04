@@ -611,10 +611,12 @@ Route::post('/plumber-apk/verify-code', function () {
 
     \Illuminate\Support\Facades\Cache::forget($codeKey);
 
+    // Use relative signed URL to avoid host/proxy mismatch issues in production.
     $downloadUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
         'plumber.apk.download',
         now()->addMinutes(5),
-        ['email' => $email]
+        ['email' => $email],
+        false
     );
 
     return response()->json([
@@ -624,7 +626,8 @@ Route::post('/plumber-apk/verify-code', function () {
     ]);
 })->name('plumber.apk.verify-code');
 Route::get('/plumber-apk', function () {
-    if (!request()->hasValidSignature()) {
+    // Validate relative signature (matches generation with $absolute = false).
+    if (!request()->hasValidSignature(false)) {
         abort(403, 'Download link is invalid or expired. Please verify again.');
     }
 
@@ -638,19 +641,37 @@ Route::get('/plumber-apk', function () {
         abort(403, 'Email is not registered as a plumber account.');
     }
 
-    $configuredPath = trim((string) env('PLUMBER_APK_PATH', public_path('reading.apk')));
-    $isAbsolutePath = preg_match('/^[A-Za-z]:\\\\|^\//', $configuredPath) === 1;
-    $apkPath = $isAbsolutePath ? $configuredPath : base_path($configuredPath);
+    $configuredPath = trim((string) env('PLUMBER_APK_PATH', ''));
+    $pathCandidates = [];
 
-    // Fallback for local Windows development if no env path/public file is present.
-    if (!file_exists($apkPath)) {
-        $windowsFallback = 'C:\\Plumber\\myapp\\platforms\\android\\app\\build\\outputs\\apk\\debug\\reading.apk';
-        if (file_exists($windowsFallback)) {
-            $apkPath = $windowsFallback;
+    if ($configuredPath !== '') {
+        $isAbsolutePath = preg_match('/^[A-Za-z]:\\\\|^\//', $configuredPath) === 1;
+        if ($isAbsolutePath) {
+            $pathCandidates[] = $configuredPath;
+        } else {
+            $pathCandidates[] = base_path($configuredPath);
+            $pathCandidates[] = public_path($configuredPath);
         }
     }
 
-    if (!file_exists($apkPath)) {
+    // Common server locations.
+    $pathCandidates[] = public_path('reading.apk');
+    $pathCandidates[] = public_path('apk/reading.apk');
+    $pathCandidates[] = storage_path('app/public/reading.apk');
+    $pathCandidates[] = storage_path('app/reading.apk');
+
+    // Local Windows development fallback.
+    $pathCandidates[] = 'C:\\Plumber\\myapp\\platforms\\android\\app\\build\\outputs\\apk\\debug\\reading.apk';
+
+    $apkPath = null;
+    foreach ($pathCandidates as $candidate) {
+        if ($candidate && file_exists($candidate)) {
+            $apkPath = $candidate;
+            break;
+        }
+    }
+
+    if (!$apkPath || !file_exists($apkPath)) {
         abort(404, 'Plumber APK file not found. Upload reading.apk to public/ or set PLUMBER_APK_PATH in .env.');
     }
 
