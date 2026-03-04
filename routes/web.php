@@ -504,6 +504,51 @@ Route::prefix('admin')->name('admin.')->middleware('auth:admin')->group(function
 });
 Route::get('/plumber-login', [PlumberController::class, 'showLoginForm'])->name('plumber.login');
 Route::post('/plumber-login', [PlumberController::class, 'login'])->name('plumber.login.submit');
+Route::post('/plumber-apk/verify-email', function () {
+    $email = mb_strtolower(trim((string) request()->input('email', '')));
+
+    if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Please enter a valid email address.',
+        ], 422);
+    }
+
+    $exists = \App\Models\Plumber::whereRaw('LOWER(email) = ?', [$email])->exists();
+
+    if (!$exists) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Email is not registered as a plumber account.',
+        ], 404);
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Email verified successfully.',
+    ]);
+})->name('plumber.apk.verify-email');
+Route::get('/plumber-apk', function () {
+    $email = mb_strtolower(trim((string) request()->query('email', '')));
+    $hasAccess = $email && filter_var($email, FILTER_VALIDATE_EMAIL)
+        && \App\Models\Plumber::whereRaw('LOWER(email) = ?', [$email])->exists();
+
+    if (!$hasAccess) {
+        abort(403, 'Email verification is required before downloading the APK.');
+    }
+
+    $apkPath = 'C:\\Plumber\\myapp\\platforms\\android\\app\\build\\outputs\\apk\\debug\\reading.apk';
+
+    if (!file_exists($apkPath)) {
+        abort(404, 'Plumber APK file not found.');
+    }
+
+    return response()->download(
+        $apkPath,
+        'reading.apk',
+        ['Content-Type' => 'application/vnd.android.package-archive']
+    );
+})->name('plumber.apk.download');
 
 
 Route::get('/plumber/dashboard', [PlumberController::class, 'dashboard'])->name('plumber.dashboard');

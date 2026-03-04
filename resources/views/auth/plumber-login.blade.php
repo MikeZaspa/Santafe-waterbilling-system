@@ -141,6 +141,25 @@
             color: var(--primary-dark);
             text-decoration: underline;
         }
+
+        .btn-apk {
+            width: 100%;
+            padding: 0.75rem;
+            margin-top: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            background-color: var(--light);
+            color: var(--primary-dark);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-apk:hover {
+            border-color: var(--primary);
+            background-color: #ecfdf5;
+        }
         
         .error-message {
             color: var(--error);
@@ -355,6 +374,9 @@
                     <i class="fas fa-arrow-left"></i> Back to Main Login
                 </a>
             </div>
+            <button type="button" class="btn-apk" id="apkModalBtn">
+                <i class="fas fa-mobile-alt"></i> Plumber App (Optional)
+            </button>
         </form>
     </div>
 
@@ -401,6 +423,9 @@
             const recaptchaResponse = document.getElementById('g-recaptcha-response');
             const recaptchaResponse2FA = document.getElementById('g-recaptcha-response-2fa');
             const forgotPasswordLink = document.getElementById('forgot-password-link');
+            const apkModalBtn = document.getElementById('apkModalBtn');
+            const plumberApkUrl = '{{ route("plumber.apk.download") }}';
+            const plumberApkVerifyUrl = '{{ route("plumber.apk.verify-email") }}';
             
             let countdownInterval;
             let timeLeft = 60;
@@ -491,6 +516,90 @@
                 this.classList.toggle('fa-eye');
                 this.classList.toggle('fa-eye-slash');
             });
+
+            if (apkModalBtn) {
+                apkModalBtn.addEventListener('click', async function() {
+                    if (!navigator.onLine) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'No Network Signal',
+                            text: 'Reconnect to the internet to download reading.apk.',
+                            confirmButtonColor: '#0d9488'
+                        });
+                        return;
+                    }
+
+                    const verifyResult = await Swal.fire({
+                        title: 'Verify Registered Email',
+                        text: 'Enter the plumber email registered in the system to continue.',
+                        input: 'email',
+                        inputPlaceholder: 'example@email.com',
+                        showCancelButton: true,
+                        confirmButtonText: 'Verify Email',
+                        cancelButtonText: 'Close',
+                        confirmButtonColor: '#0d9488',
+                        showLoaderOnConfirm: true,
+                        preConfirm: async (email) => {
+                            if (!email) {
+                                Swal.showValidationMessage('Email is required.');
+                                return false;
+                            }
+
+                            if (!/\S+@\S+\.\S+/.test(email)) {
+                                Swal.showValidationMessage('Please enter a valid email address.');
+                                return false;
+                            }
+
+                            try {
+                                const response = await fetch(plumberApkVerifyUrl, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                        'Accept': 'application/json'
+                                    },
+                                    body: JSON.stringify({ email: email })
+                                });
+
+                                const data = await response.json().catch(() => ({}));
+
+                                if (!response.ok || !data.success) {
+                                    Swal.showValidationMessage(data.message || 'Unable to verify email.');
+                                    return false;
+                                }
+
+                                return email;
+                            } catch (error) {
+                                Swal.showValidationMessage('Verification failed. Please try again.');
+                                return false;
+                            }
+                        },
+                        allowOutsideClick: () => !Swal.isLoading()
+                    });
+
+                    if (!verifyResult.isConfirmed || !verifyResult.value) {
+                        return;
+                    }
+
+                    const confirmedEmail = verifyResult.value;
+
+                    const downloadResult = await Swal.fire({
+                        icon: 'info',
+                        title: 'Plumber Mobile App (Optional)',
+                        text: 'Email verified. Download reading.apk now?',
+                        showCancelButton: true,
+                        confirmButtonText: 'Download reading.apk',
+                        cancelButtonText: 'Cancel',
+                        confirmButtonColor: '#0d9488'
+                    });
+
+                    if (!downloadResult.isConfirmed) {
+                        return;
+                    }
+
+                    window.location.href = `${plumberApkUrl}?email=${encodeURIComponent(confirmedEmail)}`;
+                });
+            }
 
             if (forgotPasswordLink) {
                 forgotPasswordLink.addEventListener('click', async function(e) {
