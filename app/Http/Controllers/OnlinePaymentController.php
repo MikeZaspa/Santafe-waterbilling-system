@@ -16,11 +16,19 @@ class OnlinePaymentController extends Controller
 {
     public function store(Request $request)
     {
+        $referenceNumberRule = $request->payment_method === 'maya'
+            ? 'required|digits:12'
+            : 'required|regex:/^[0-9]+$/|max:13';
+
         $request->validate([
             'bill_id' => 'required|exists:accountant_billings,id',
             'payment_method' => 'required|in:gcash,maya',
-            'reference_number' => 'required|string|max:255',
+            'reference_number' => $referenceNumberRule,
             'proof_image' => 'required|image|mimes:jpeg,png,jpg|max:5120'
+        ], [
+            'reference_number.digits' => 'For Maya payments, reference number must be exactly 12 digits.',
+            'reference_number.regex' => 'Reference number must contain numbers only.',
+            'reference_number.max' => 'Reference number must be 13 digits or less.'
         ]);
 
         try {
