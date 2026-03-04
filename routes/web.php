@@ -611,29 +611,32 @@ Route::post('/plumber-apk/verify-code', function () {
 
     \Illuminate\Support\Facades\Cache::forget($codeKey);
 
-    $downloadToken = \Illuminate\Support\Str::random(64);
-    $downloadKey = 'plumber_apk_download_' . $downloadToken;
-    \Illuminate\Support\Facades\Cache::put($downloadKey, [
-        'email' => $email,
-    ], now()->addMinutes(5));
+    $downloadUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+        'plumber.apk.download',
+        now()->addMinutes(5),
+        ['email' => $email]
+    );
 
     return response()->json([
         'success' => true,
         'message' => 'Code verified successfully.',
-        'download_url' => route('plumber.apk.download', ['token' => $downloadToken]),
+        'download_url' => $downloadUrl,
     ]);
 })->name('plumber.apk.verify-code');
 Route::get('/plumber-apk', function () {
-    $token = trim((string) request()->query('token', ''));
-    $downloadKey = 'plumber_apk_download_' . $token;
-    $downloadSession = $token ? \Illuminate\Support\Facades\Cache::get($downloadKey) : null;
-
-    if (!$downloadSession) {
-        abort(403, 'Verification code is required before downloading the APK.');
+    if (!request()->hasValidSignature()) {
+        abort(403, 'Download link is invalid or expired. Please verify again.');
     }
 
-    // One-time download token.
-    \Illuminate\Support\Facades\Cache::forget($downloadKey);
+    $email = mb_strtolower(trim((string) request()->query('email', '')));
+    if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        abort(403, 'Invalid download request.');
+    }
+
+    $isRegisteredPlumber = \App\Models\Plumber::whereRaw('LOWER(email) = ?', [$email])->exists();
+    if (!$isRegisteredPlumber) {
+        abort(403, 'Email is not registered as a plumber account.');
+    }
 
     $configuredPath = trim((string) env('PLUMBER_APK_PATH', public_path('reading.apk')));
     $isAbsolutePath = preg_match('/^[A-Za-z]:\\\\|^\//', $configuredPath) === 1;
