@@ -1305,8 +1305,8 @@
                             <label for="referenceNumber" class="form-label">Reference Number</label>
                             <input type="text" class="form-control" id="referenceNumber" 
                                 placeholder="Enter your transaction reference number" maxlength="13" required>
-                            <div class="form-text">Enter numbers only (max 13 digits)</div>
-                            <div class="invalid-feedback">Please enter numbers only</div>
+                            <div class="form-text" id="referenceRuleText">Enter numbers only (max 13 digits)</div>
+                            <div class="invalid-feedback" id="referenceErrorText">Please enter numbers only</div>
                         </div>
                         
                         <div id="proofPreviewContainer" class="text-center mt-3" style="display: none;">
@@ -1724,6 +1724,25 @@
         let currentBillId = '';
         let currentBillAmount = '';
         let displayBillNo = '';
+
+        function getReferenceMaxLength() {
+            return selectedMethod === 'maya' ? 12 : 13;
+        }
+
+        function applyReferenceRuleUI() {
+            const isMaya = selectedMethod === 'maya';
+            const maxLength = getReferenceMaxLength();
+
+            $('#referenceNumber').attr('maxlength', maxLength);
+
+            if (isMaya) {
+                $('#referenceRuleText').text('For Maya, enter exactly 12 digits.');
+                $('#referenceErrorText').text('For Maya, reference number must be exactly 12 digits.');
+            } else {
+                $('#referenceRuleText').text('Enter numbers only (max 13 digits).');
+                $('#referenceErrorText').text('Please enter numbers only');
+            }
+        }
         
         // Payment button click handler
         $(document).on('click', '.payment-btn', function(e) {
@@ -1775,6 +1794,10 @@
             $('#proofPreview').attr('src', '');
             $('#proofPreviewContainer').hide();
             $('#referenceNumber').val('');
+            $('#referenceNumber').attr('maxlength', 13);
+            $('#referenceRuleText').text('Enter numbers only (max 13 digits)');
+            $('#referenceErrorText').text('Please enter numbers only');
+            $('#referenceNumber').closest('.reference-number-input').removeClass('is-invalid');
             
             // Hide all QR codes
             $('.qr-code').removeClass('active');
@@ -1827,6 +1850,7 @@
                 const methodName = selectedMethod.charAt(0).toUpperCase() + selectedMethod.slice(1);
                 $('#uploadMethodName').text(methodName);
                 $('#uploadMethod').text(methodName);
+                applyReferenceRuleUI();
                 
                 // Update billing details in step 3
                 $('#uploadBillingId').text(displayBillNo);
@@ -1910,10 +1934,11 @@
         }
     });
     
-    // Reference number validation - only numbers allowed, max 13 digits
+    // Reference number validation - numbers only, max length by payment method
     $('#referenceNumber').on('input', function() {
         const $input = $(this);
         const $container = $input.closest('.reference-number-input');
+        const maxLength = getReferenceMaxLength();
         let value = $input.val();
         
         // Remove any non-numeric characters
@@ -1923,11 +1948,11 @@
         $input.val(value);
         
         // Validate length
-        if (value.length > 0 && value.length <= 13) {
+        if (value.length > 0 && value.length <= maxLength) {
             $container.removeClass('is-invalid');
-        } else if (value.length > 13) {
-            // Truncate to 13 digits
-            $input.val(value.substring(0, 13));
+        } else if (value.length > maxLength) {
+            // Truncate to allowed length
+            $input.val(value.substring(0, maxLength));
             $container.removeClass('is-invalid');
         }
     });
@@ -1937,8 +1962,12 @@
         const $input = $(this);
         const $container = $input.closest('.reference-number-input');
         const value = $input.val();
+        const isMaya = selectedMethod === 'maya';
+        const isValidLength = isMaya
+            ? value.length === 12
+            : value.length > 0 && value.length <= 13;
         
-        if (value.length > 0 && value.length <= 13) {
+        if (isValidLength) {
             $container.removeClass('is-invalid');
         } else if (value.length > 0) {
             $container.addClass('is-invalid');
@@ -1959,7 +1988,13 @@
                 return;
             }
             
-            if (referenceNumber.length > 13) {
+            if (method === 'maya' && referenceNumber.length !== 12) {
+                $('#referenceNumber').closest('.reference-number-input').addClass('is-invalid');
+                alert('For Maya payments, reference number must be exactly 12 digits.');
+                return;
+            }
+
+            if (method !== 'maya' && referenceNumber.length > 13) {
                 $('#referenceNumber').closest('.reference-number-input').addClass('is-invalid');
                 alert('Reference number must be 13 digits or less');
                 return;
