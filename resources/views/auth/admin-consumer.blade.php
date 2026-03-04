@@ -797,7 +797,7 @@
                     <tbody>
                         @foreach($consumers as $consumer)
                         <tr id="consumerRow_{{ $consumer->id }}">
-                            <td class="fw-semibold">{{ $consumer->id }}</td>
+                            <td class="fw-semibold">{{ $loop->iteration }}</td>
                             <td>{{ $consumer->first_name }}</td>
                             <td>{{ $consumer->middle_name }}</td>
                             <td>{{ $consumer->last_name }}</td>
