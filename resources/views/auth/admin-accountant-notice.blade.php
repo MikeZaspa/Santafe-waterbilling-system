@@ -55,7 +55,6 @@
         .sidebar-header {
             padding: 1.5rem;
             color: black;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
         }
         
         .sidebar-header .logo {
