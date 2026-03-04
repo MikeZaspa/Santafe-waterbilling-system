@@ -68,6 +68,7 @@
             padding: 12px 15px;
             border-radius: 8px;
             border: 1px solid #e0e0e0;
+            font-size: 16px; /* Prevent mobile auto-zoom on input focus */
             transition: all 0.3s;
         }
 
