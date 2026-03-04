@@ -986,7 +986,7 @@
 
         <div id="statsCards" class="row g-4">
             <!-- Total Consumers Card -->
-            <div id="totalConsumersCard" class="col-md-6 col-lg-6">
+            <div id="totalConsumersCard" class="col-md-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
@@ -1006,7 +1006,7 @@
             </div>
 
             <!-- Active Consumers Card -->
-            <div id="activeConsumersCard" class="col-md-6 col-lg-6">
+            <div id="activeConsumersCard" class="col-md-6 col-lg-3">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
@@ -1019,6 +1019,46 @@
                             </div>
                             <div class="bg-success bg-opacity-10 p-3 rounded">
                                 <i class="bi bi-check-circle-fill text-success fs-4"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Plumbers Card -->
+            <div id="totalPlumbersCard" class="col-md-6 col-lg-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-2">Total Plumbers</h6>
+                                <h3 class="mb-0 text-info" id="totalPlumbersCount">{{ $totalPlumbers }}</h3>
+                                <small class="text-muted">
+                                    <i class="bi bi-wrench-adjustable-circle"></i> Registered staff
+                                </small>
+                            </div>
+                            <div class="bg-info bg-opacity-10 p-3 rounded">
+                                <i class="bi bi-wrench-adjustable text-info fs-4"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Accountants Card -->
+            <div id="totalAccountantsCard" class="col-md-6 col-lg-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-2">Total Accountants</h6>
+                                <h3 class="mb-0 text-warning" id="totalAccountantsCount">{{ $totalAccountants }}</h3>
+                                <small class="text-muted">
+                                    <i class="bi bi-cash-stack"></i> Registered staff
+                                </small>
+                            </div>
+                            <div class="bg-warning bg-opacity-10 p-3 rounded">
+                                <i class="bi bi-cash-stack text-warning fs-4"></i>
                             </div>
                         </div>
                     </div>

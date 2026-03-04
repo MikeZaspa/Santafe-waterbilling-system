@@ -6,6 +6,8 @@ use App\Models\AdminLog;
 use App\Models\Admin;
 use App\Models\Complaint;
 use App\Models\Notification;
+use App\Models\Plumber;
+use App\Models\Accountant;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
@@ -24,6 +26,8 @@ class DashboardController extends Controller
         $totalConsumers = AdminConsumer::count();
         $activeConsumers = AdminConsumer::where('status', 'active')->count();
         $inactiveConsumers = AdminConsumer::where('status', 'inactive')->count();
+        $totalPlumbers = Plumber::count();
+        $totalAccountants = Accountant::count();
         
         // Get monthly consumer growth data (this is a simplified example)
         $monthlyGrowth = AdminConsumer::selectRaw('MONTH(created_at) as month, COUNT(*) as count')
@@ -71,6 +75,8 @@ class DashboardController extends Controller
             'totalConsumers',
             'activeConsumers',
             'inactiveConsumers',
+            'totalPlumbers',
+            'totalAccountants',
             'monthlyGrowth',
             'complaintConversations',
             'totalComplaints'
