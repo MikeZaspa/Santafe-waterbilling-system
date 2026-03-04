@@ -688,6 +688,8 @@
                     title: 'Get The Mobile App',
                     text: 'Download Santa Fe Water Billing for your phone.',
                     icon: 'info',
+                    heightAuto: false,
+                    scrollbarPadding: false,
                     showCancelButton: true,
                     confirmButtonText: 'Download Android APK',
                     cancelButtonText: 'Maybe later',
