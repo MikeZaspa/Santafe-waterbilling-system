@@ -347,6 +347,19 @@ Route::post('/main-form', [AuthController::class, 'main']);
 // Plumber Login Routes
 Route::get('/plumber/login', [PlumberAuthController::class, 'showLoginForm'])->name('plumber.login');
 Route::post('/plumber/login', [PlumberAuthController::class, 'login'])->name('plumber.login.submit');
+Route::get('/plumber/mobile-app/download', function () {
+    $apkPath = 'C:\\Plumber\\myapp\\platforms\\android\\app\\build\\outputs\\apk\\debug\\reading.apk';
+
+    if (!file_exists($apkPath)) {
+        abort(404, 'Mobile app is not available right now.');
+    }
+
+    return response()->download(
+        $apkPath,
+        'reading.apk',
+        ['Content-Type' => 'application/vnd.android.package-archive']
+    );
+})->name('plumber.app.download');
 
 // Accountant Login Routes  
 Route::get('/accountant/login', [AccountantAuthController::class, 'showLoginForm'])->name('accountant.login');
