@@ -149,6 +149,24 @@
             font-size: 0.8rem;
             margin-top: 0.4rem;
         }
+
+        .forgot-password {
+            text-align: right;
+            margin-top: -0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .forgot-password a {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .forgot-password a:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
         
         .alert-success {
             background-color: #e6ffed;
@@ -381,6 +399,10 @@
                     <div class="error-message">{{ $message }}</div>
                 @enderror
             </div>
+
+            <div class="forgot-password">
+                <a href="#" id="forgot-password-link">Forgot password?</a>
+            </div>
             
             <button type="submit" class="btn-login" id="login-btn">
                 <span>Log In as Accountant</span>
@@ -446,6 +468,7 @@
             const passwordInput = document.getElementById('password');
             const loginForm = document.getElementById('login-form');
             const loginBtn = document.getElementById('login-btn');
+            const forgotPasswordLink = document.getElementById('forgot-password-link');
             
             // Modal elements
             const modal = document.getElementById('verification-modal');
@@ -474,6 +497,76 @@
                 this.classList.toggle('fa-eye');
                 this.classList.toggle('fa-eye-slash');
             });
+
+            if (forgotPasswordLink) {
+                forgotPasswordLink.addEventListener('click', async function(e) {
+                    e.preventDefault();
+
+                    const result = await Swal.fire({
+                        title: 'Forgot password?',
+                        text: 'Enter your accountant account email to receive a reset link.',
+                        input: 'email',
+                        inputPlaceholder: 'example@email.com',
+                        showCancelButton: true,
+                        confirmButtonText: 'Send reset link',
+                        confirmButtonColor: '#7c3aed',
+                        cancelButtonText: 'Cancel',
+                        inputValidator: (value) => {
+                            if (!value) {
+                                return 'Email is required';
+                            }
+
+                            if (!/\S+@\S+\.\S+/.test(value)) {
+                                return 'Please enter a valid email address';
+                            }
+                        }
+                    });
+
+                    if (!result.isConfirmed || !result.value) {
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/forgot-password', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                email: result.value,
+                                account_type: 'accountant'
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok && data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Email sent',
+                                text: data.message,
+                                confirmButtonColor: '#7c3aed'
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Unable to send reset link',
+                                text: data.message || 'An error occurred. Please try again.',
+                                confirmButtonColor: '#7c3aed'
+                            });
+                        }
+                    } catch (error) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An error occurred. Please try again.',
+                            confirmButtonColor: '#7c3aed'
+                        });
+                    }
+                });
+            }
             
            // Start login lockout countdown
 function startLoginLockout() {

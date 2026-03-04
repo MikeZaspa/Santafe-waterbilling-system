@@ -241,6 +241,18 @@
             font-weight: 600;
         }
 
+        .forgot-password-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .forgot-password-link:hover {
+            text-decoration: underline;
+            color: var(--primary-dark);
+        }
+
         /* reCAPTCHA info text */
         .recaptcha-info {
             font-size: 0.7rem;
@@ -416,6 +428,10 @@
                             @error('password')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
+                        </div>
+
+                        <div class="text-end mb-2">
+                            <a href="#" id="forgotPasswordLink" class="forgot-password-link">Forgot password?</a>
                         </div>
 
                         <div class="attempt-counter" id="attemptCounter">
@@ -693,6 +709,74 @@
             const type = passwordField.attr('type') === 'password' ? 'text' : 'password';
             passwordField.attr('type', type);
             $(this).find('i').toggleClass('bi-eye bi-eye-slash');
+        });
+
+        $('#forgotPasswordLink').on('click', async function(e) {
+            e.preventDefault();
+
+            const result = await Swal.fire({
+                title: 'Forgot password?',
+                text: 'Enter your consumer account email to receive a reset link.',
+                input: 'email',
+                inputPlaceholder: 'example@email.com',
+                showCancelButton: true,
+                confirmButtonText: 'Send reset link',
+                confirmButtonColor: '#d32f2f',
+                cancelButtonText: 'Cancel',
+                inputValidator: function(value) {
+                    if (!value) {
+                        return 'Email is required';
+                    }
+
+                    if (!/\S+@\S+\.\S+/.test(value)) {
+                        return 'Please enter a valid email address';
+                    }
+                }
+            });
+
+            if (!result.isConfirmed || !result.value) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/forgot-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: result.value,
+                        account_type: 'consumer'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Email sent',
+                        text: data.message,
+                        confirmButtonColor: '#d32f2f'
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Unable to send reset link',
+                        text: data.message || 'An error occurred. Please try again.',
+                        confirmButtonColor: '#d32f2f'
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred. Please try again.',
+                    confirmButtonColor: '#d32f2f'
+                });
+            }
         });
         
         // Login attempt tracking

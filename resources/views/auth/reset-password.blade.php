@@ -213,7 +213,7 @@
         <div class="logo">
             <img src="{{ asset('image/santafe.png') }}" alt="Santa Fe Water">
             <h3 class="mt-3">Reset Your Password</h3>
-            <p>Create a new secure password for your account</p>
+            <p>Create a new secure password for your {{ isset($accountType) ? strtolower($accountType) . ' account' : 'account' }}</p>
         </div>
 
         @if(session('success'))
@@ -240,6 +240,12 @@
             @csrf
             <input type="hidden" name="token" value="{{ $token }}">
             <input type="hidden" name="email" value="{{ $email }}">
+            @if(!empty($accountType))
+                <input type="hidden" name="account_type" value="{{ $accountType }}">
+            @endif
+            @if(!empty($resetKey))
+                <input type="hidden" name="reset_key" value="{{ $resetKey }}">
+            @endif
 
             <div class="form-group">
                 <label for="password" class="form-label">New Password</label>
@@ -295,7 +301,7 @@
         </form>
 
         <div class="text-center mt-4">
-            <a href="{{ route('admin-login') }}" class="back-link">
+            <a href="{{ $loginUrl ?? route('admin-login') }}" class="back-link">
                 <i class="fas fa-arrow-left me-2"></i>Back to Login
             </a>
         </div>
