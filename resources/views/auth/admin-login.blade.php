@@ -55,8 +55,8 @@
         }
         
         .login-logo {
-            width: 170px;
-            height: 120px;
+            width: 100px;
+            height: 100px;
             margin-bottom: 1.5rem;
         }
         
@@ -225,130 +225,137 @@
             font-weight: 600;
         }
         
-        /* Spark Forgot Password Modal Styles */
+        /* Forgot Password Modal Redesign */
         .forgot-password-modal .modal-dialog {
-            max-width: 600px;
+            max-width: 430px;
+            width: min(92vw, 430px);
         }
         
         .forgot-password-modal .modal-content {
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        
-        .forgot-password-modal .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px;
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .forgot-password-modal .modal-title {
-            font-weight: 900;
-            font-size: 36px;
-            margin: 0;
-            color: var(--spark-black);
+            border: none;
+            border-radius: 14px;
+            background: #fdfdfd;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
         }
         
         .forgot-password-modal .modal-body {
-            padding: 30px 20px;
+            padding: 30px 26px 24px;
+            text-align: center;
         }
-        
-        .forgot-password-modal .logo {
+
+        .forgot-password-modal .forgot-icon {
+            width: 52px;
+            height: 52px;
+            margin: 0 auto 16px;
+            border-radius: 14px;
+            background: #eaf2ff;
+            color: #0f4ea8;
             display: flex;
             align-items: center;
-            font-weight: bold;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .forgot-password-modal .forgot-title {
+            margin: 0;
             font-size: 24px;
-            color: var(--spark-black);
+            font-weight: 600;
+            color: #111827;
+            line-height: 1.25;
         }
-        
-        .forgot-password-modal .logo svg {
-            margin-right: 8px;
-        }
-        
-        .forgot-password-modal nav a {
-            margin-left: 20px;
-            text-decoration: none;
-            color: var(--spark-black);
-            font-size: 14px;
+
+        .forgot-password-modal .forgot-subtitle {
+            margin: 10px auto 18px;
+            max-width: 330px;
+            font-size: 12px;
+            color: #6b7280;
+            line-height: 1.45;
         }
         
         .forgot-password-modal label {
-            font-weight: 600;
-            font-size: 14px;
-            display: block;
-            margin-bottom: 8px;
+            display: none;
         }
         
         .forgot-password-modal .input-container {
             position: relative;
-            margin-bottom: 6px;
+            margin-bottom: 16px;
         }
-        
-        .forgot-password-modal input[type=email] {
-            width: 100%;
-            padding: 12px 50px 12px 40px;
-            border: 1px solid var(--spark-border);
-            border-radius: 12px;
-            font-size: 16px;
-            outline: none;
-            box-sizing: border-box;
-        }
-        
-        .forgot-password-modal input[type=email]:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
-        }
-        
-        .forgot-password-modal .input-icon {
+
+        .forgot-password-modal .forgot-input-icon {
             position: absolute;
             top: 50%;
             left: 12px;
             transform: translateY(-50%);
-            width: 20px;
-            height: 20px;
-            fill: var(--spark-black);
+            color: #9ca3af;
+            font-size: 13px;
+        }
+        
+        .forgot-password-modal input[type=email] {
+            width: 100%;
+            padding: 11px 12px 11px 34px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+            box-sizing: border-box;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            background: #fff;
+            color: #1f2937;
+        }
+        
+        .forgot-password-modal input[type=email]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.14);
         }
         
         .forgot-password-modal .note {
-            font-size: 12px;
-            color: var(--spark-grey);
-            margin-top: 6px;
-            margin-bottom: 40px;
+            display: none;
         }
         
         .forgot-password-modal .buttons {
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+            gap: 8px;
         }
         
         .forgot-password-modal button {
-            width: 48%;
-            padding: 17px 0;
-            border: none;
-            border-radius: 30px;
+            width: 100%;
+            min-width: 0;
+            padding: 11px 14px;
+            border: 1px solid transparent;
+            border-radius: 8px;
             font-weight: 600;
-            font-size: 16px;
+            font-size: 13px;
             cursor: pointer;
+            transition: all 0.2s ease;
         }
         
         .forgot-password-modal .sign-in {
-            background-color: var(--spark-black);
-            color: white;
+            background-color: transparent;
+            color: #334155;
+            border: none;
+            font-weight: 500;
+            padding: 6px 0 0;
         }
         
         .forgot-password-modal .send {
-            background-color: grey;
+            background-color: #0f4ea8;
             color: white;
+            border-color: #0f4ea8;
         }
         
         .forgot-password-modal .sign-in:hover {
-            background-color: #333;
+            color: #1e293b;
+            background-color: transparent;
         }
         
         .forgot-password-modal .send:hover {
-            background-color: #666;
+            background-color: #0d4594;
+            border-color: #0d4594;
+        }
+
+        .forgot-password-modal .sign-in i {
+            margin-right: 6px;
         }
         
         @media (max-width: 480px) {
@@ -356,14 +363,17 @@
                 padding: 1.5rem;
                 border: none;
             }
-            
-            .forgot-password-modal .buttons {
-                flex-direction: column;
-                gap: 10px;
+
+            .forgot-password-modal .modal-dialog {
+                width: calc(100% - 1.5rem);
+            }
+
+            .forgot-password-modal .modal-body {
+                padding: 24px 16px 18px;
             }
             
-            .forgot-password-modal button {
-                width: 100%;
+            .forgot-password-modal .buttons {
+                gap: 8px;
             }
         }
     </style>
@@ -371,7 +381,7 @@
 <body>
     <div class="login-container">
         <div class="login-header">
-            <img src="{{ asset('image/santafe.png') }}" class="login-logo" alt="Santa Fe Water">
+            <img src="{{ asset('image/santalogo.png') }}" class="login-logo" alt="Santa Fe Water">
             <h1 class="system-title">Santa Fe Water Billing System</h1>
         </div> 
         
@@ -402,7 +412,7 @@
             
             <div class="forgot-password">
                 <a href="#" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal">
-                    Forgot password? <i class="fas fa-question-circle"></i>
+                    Forgot password?
                 </a>
             </div>
             
@@ -465,26 +475,27 @@
             </div>
         </div>
 
-        <!-- Forgot Password Modal with Spark Design -->
+        <!-- Forgot Password Modal -->
         <div class="modal fade forgot-password-modal" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
-                    <div class="modal-header">
-                        
-                    </div>
                     <div class="modal-body">
-                        <h1>Forgot Password</h1>
+                        <div class="forgot-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h2 class="forgot-title" id="forgotPasswordModalLabel">Forgot password?</h2>
+                        <p class="forgot-subtitle">It's all good. Enter your account's email address and we will send you a link to reset your password.</p>
                         <form id="forgotPasswordForm">
                             @csrf
-                            <label for="resetEmail">Enter your email</label>
+                            <label for="resetEmail">Email address</label>
                             <div class="input-container">
-                                <svg class="input-icon" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM4 6l8 5 8-5v-2l-8 5-8-5v2z"/></svg>
-                                <input type="email" id="resetEmail" name="email" required placeholder="Email">
+                                <i class="fas fa-at forgot-input-icon"></i>
+                                <input type="email" id="resetEmail" name="email" required placeholder="example@email.com">
                             </div>
-                            <div class="note">We will send a recovery link to this email</div>
+                            <p class="note">Use the email linked to your admin account.</p>
                             <div class="buttons">
-                                <button type="button" class="sign-in" data-bs-dismiss="modal">Sign in</button>
-                                <button type="submit" class="send">Send</button>
+                                <button type="submit" class="send">Send reset link</button>
+                                <button type="button" class="sign-in" data-bs-dismiss="modal"><i class="fas fa-arrow-left"></i> Return to login</button>
                             </div>
                         </form>
                     </div>

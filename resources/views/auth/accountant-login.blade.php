@@ -52,8 +52,8 @@
         }
         
         .login-logo {
-            width: 170px;
-            height: 120px;
+            width: 100px;
+            height: 100px;
             margin-bottom: 1.5rem;
         }
         
@@ -351,7 +351,7 @@
 <body>
     <div class="login-container">
         <div class="login-header">
-            <img src="{{ asset('image/santafe.png') }}" class="login-logo" alt="Santa Fe Water">
+            <img src="{{ asset('image/santalogo.png') }}" class="login-logo" alt="Santa Fe Water">
             <h1 class="system-title">Santa Fe Water Billing System</h1>
             <h2 class="portal-title">Accountant Portal</h2>
         </div> 
