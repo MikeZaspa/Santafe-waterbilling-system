@@ -127,27 +127,6 @@
             text-align: center;
         }
 
-        .mobile-app-link-container {
-            margin-top: 0.9rem;
-            text-align: center;
-        }
-
-        .mobile-app-link {
-            color: var(--primary);
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            transition: all 0.2s ease;
-        }
-
-        .mobile-app-link:hover {
-            color: var(--primary-dark);
-            text-decoration: underline;
-        }
-
         .back-link a {
             color: var(--primary);
             text-decoration: none;
@@ -371,11 +350,6 @@
             <button type="submit" class="btn-login" id="loginBtn">
                 <span>Log In as Plumber</span>
             </button>
-            <div class="mobile-app-link-container">
-                <a href="#" id="download-plumber-app-link" class="mobile-app-link">
-                    <i class="fas fa-mobile-alt"></i> Download Mobile App
-                </a>
-            </div>
             <div class="back-link">
                 <a href="{{ url('/consumer-portal') }}">
                     <i class="fas fa-arrow-left"></i> Back to Main Login
@@ -427,8 +401,6 @@
             const recaptchaResponse = document.getElementById('g-recaptcha-response');
             const recaptchaResponse2FA = document.getElementById('g-recaptcha-response-2fa');
             const forgotPasswordLink = document.getElementById('forgot-password-link');
-            const downloadPlumberAppLink = document.getElementById('download-plumber-app-link');
-            const plumberAppDownloadUrl = '{{ route("plumber.app.download") }}';
             
             let countdownInterval;
             let timeLeft = 60;
@@ -590,26 +562,6 @@
                 });
             }
 
-            if (downloadPlumberAppLink) {
-                downloadPlumberAppLink.addEventListener('click', async function(e) {
-                    e.preventDefault();
-
-                    const result = await Swal.fire({
-                        title: 'Download Plumber Mobile App',
-                        text: 'Do you want to download the latest Android APK now?',
-                        icon: 'info',
-                        showCancelButton: true,
-                        confirmButtonText: 'Download APK',
-                        confirmButtonColor: '#0d9488',
-                        cancelButtonText: 'Cancel'
-                    });
-
-                    if (result.isConfirmed) {
-                        window.location.href = plumberAppDownloadUrl;
-                    }
-                });
-            }
-            
             // Handle login form submission
             loginForm.addEventListener('submit', function(e) {
                 e.preventDefault();
