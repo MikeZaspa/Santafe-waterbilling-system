@@ -1398,12 +1398,15 @@
                         amount = parseFloat(data) || 0;
                     }
                     
+                    const penaltyAmount = parseFloat(row.penalty_amount || 0) || 0;
+                    const amountDue = amount + penaltyAmount;
+
                     // Format with Philippine Peso symbol
-                    let formattedAmount = '₱' + amount.toFixed(2);
+                    let formattedAmount = '₱' + amountDue.toFixed(2);
                     
                     // Add penalty indicator if applicable
-                    if (row.penalty_amount && row.penalty_amount > 0) {
-                        formattedAmount += ' <span class="penalty-indicator">(+₱' + row.penalty_amount.toFixed(2) + ' penalty)</span>';
+                    if (penaltyAmount > 0) {
+                        formattedAmount += ' <span class="penalty-indicator">(includes ₱' + penaltyAmount.toFixed(2) + ' penalty)</span>';
                     }
                     
                     return formattedAmount;
@@ -2934,9 +2937,8 @@ function showPaidBillingDetails(billing) {
             day: '2-digit'
         }).replace(/\//g, '-');
         
-        // Calculate due date (22nd of current month)
-        const dueDate = new Date(readingDate);
-        dueDate.setDate(22);
+        // Use persisted due date from billing cycle (reading date + 1 month)
+        const dueDate = billing.due_date ? new Date(billing.due_date) : new Date(readingDate);
         const formattedDueDate = dueDate.toLocaleDateString('en-PH', {
             year: 'numeric',
             month: '2-digit',

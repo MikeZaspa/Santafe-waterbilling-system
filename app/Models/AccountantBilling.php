@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class AccountantBilling extends Model
 {
@@ -39,6 +41,10 @@ class AccountantBilling extends Model
         'penalty_amount' => 'float',
         'is_archived' => 'boolean',
         'archived_at' => 'datetime'
+    ];
+
+    protected $appends = [
+        'amount_due',
     ];
 
     public function consumer()
@@ -79,5 +85,34 @@ class AccountantBilling extends Model
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
+    }
+
+    public static function applyAutomaticOverduePenalties(?int $consumerId = null): int
+    {
+        $graceCutoffDate = Carbon::now()->startOfDay()->subDays(3)->toDateString();
+
+        $query = static::query()
+            ->where('status', '!=', 'paid')
+            ->whereDate('due_date', '<', $graceCutoffDate);
+
+        if (!is_null($consumerId)) {
+            $query->where('consumer_id', $consumerId);
+        }
+
+        $query->where(function ($q) {
+            $q->where('status', '!=', 'overdue')
+                ->orWhereNull('penalty_amount')
+                ->orWhere('penalty_amount', '<', 10);
+        });
+
+        return $query->update([
+            'status' => 'overdue',
+            'penalty_amount' => DB::raw('CASE WHEN COALESCE(penalty_amount, 0) < 10 THEN 10 ELSE penalty_amount END'),
+        ]);
+    }
+
+    public function getAmountDueAttribute(): float
+    {
+        return (float) $this->total_amount + (float) ($this->penalty_amount ?? 0);
     }
 }

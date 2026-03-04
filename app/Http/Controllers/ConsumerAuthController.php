@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\ConsumerAccount;
 use App\Models\Billing;
+use App\Models\AccountantBilling;
 use App\Models\Notice;
 use App\Models\Notification;
 use Illuminate\Support\Facades\Auth;
@@ -185,6 +186,8 @@ class ConsumerAuthController extends Controller
         
         $account = Auth::guard('consumer')->user();
         $consumer = $account->consumer;
+
+        AccountantBilling::applyAutomaticOverduePenalties($consumer->id);
         
         // Get the consumer's bills
         $bills = $consumer->billings()->with('consumer')->orderBy('created_at', 'desc')->get();

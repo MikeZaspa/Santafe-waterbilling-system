@@ -28,6 +28,8 @@ class AccountantController extends Controller
  */
 public function getBillings(Request $request)
 {
+    AccountantBilling::applyAutomaticOverduePenalties();
+
     // Add whereNull('deleted_at') to exclude soft deleted records
     $query = AccountantBilling::with(['consumer' => function($query) {
         $query->select('id', 'first_name', 'last_name');
@@ -89,23 +91,39 @@ public function getBillings(Request $request)
         DB::beginTransaction();
 
         $consumer = AdminConsumer::findOrFail($request->consumer_id);
-        $dueDate = Carbon::parse($request->due_date);
-        
-        // Check if there's already a billing for this consumer in the same month/year
+        $billingCycleDate = Carbon::parse($request->due_date)->startOfDay();
+
+        // Get plumber reading for the selected billing month
+        $monthlyReading = Billing::where('consumer_id', $consumer->id)
+            ->whereMonth('reading_date', $billingCycleDate->month)
+            ->whereYear('reading_date', $billingCycleDate->year)
+            ->orderBy('reading_date', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        if (!$monthlyReading) {
+            return response()->json([
+                'success' => false,
+                'errors' => [
+                    'reading' => ['No reading found for ' . $billingCycleDate->format('F Y') . '. Please add monthly reading first in Admin Plumber Consumer.']
+                ]
+            ], 422);
+        }
+
+        $readingDate = Carbon::parse($monthlyReading->reading_date)->startOfDay();
+        $dueDate = $readingDate->copy()->addMonthNoOverflow();
+
+        // Check if there's already a billing for this due month.
         $existingBilling = AccountantBilling::where('consumer_id', $consumer->id)
             ->whereMonth('due_date', $dueDate->month)
             ->whereYear('due_date', $dueDate->year)
             ->first();
 
         if ($existingBilling) {
-            // If the existing billing is paid, return the billing details
             if ($existingBilling->status === 'paid') {
                 $billingWithConsumer = AccountantBilling::with('consumer')->find($existingBilling->id);
-                
-                // Calculate next month due date
-                $nextMonthDueDate = Carbon::parse($existingBilling->due_date);
-                $nextMonthDueDate->addMonth();
-                
+                $nextMonthDueDate = Carbon::parse($existingBilling->due_date)->addMonthNoOverflow();
+
                 return response()->json([
                     'success' => false,
                     'errors' => [
@@ -115,33 +133,15 @@ public function getBillings(Request $request)
                     'data' => $billingWithConsumer,
                     'next_month_due_date' => $nextMonthDueDate->format('Y-m-d')
                 ], 422);
-            } else {
-                // If the existing billing is unpaid or overdue
-                return response()->json([
-                    'success' => false,
-                    'errors' => [
-                        'unpaid' => ['This consumer already has an unpaid billing for this month.']
-                    ],
-                    'type' => 'unpaid',
-                    'data' => $existingBilling
-                ], 422);
             }
-        }
 
-        // Get plumber reading for the selected billing month
-        $monthlyReading = Billing::where('consumer_id', $consumer->id)
-            ->whereMonth('reading_date', $dueDate->month)
-            ->whereYear('reading_date', $dueDate->year)
-            ->orderBy('reading_date', 'desc')
-            ->orderBy('created_at', 'desc')
-            ->first();
-
-        if (!$monthlyReading) {
             return response()->json([
                 'success' => false,
                 'errors' => [
-                    'reading' => ['No reading found for ' . $dueDate->format('F Y') . '. Please add monthly reading first in Admin Plumber Consumer.']
-                ]
+                    'unpaid' => ['This consumer already has an unpaid billing for this month.']
+                ],
+                'type' => 'unpaid',
+                'data' => $existingBilling
             ], 422);
         }
 
@@ -165,7 +165,16 @@ public function getBillings(Request $request)
         // Calculate penalty if status is overdue
         $penaltyAmount = 0.00;
         if ($request->status === 'overdue') {
-            $penaltyAmount = $this->calculatePenalty($request->due_date);
+            $penaltyAmount = $this->calculatePenalty($dueDate);
+        }
+
+        $billingStatus = $request->status === 'paid' ? 'paid' : 'unpaid';
+        if ($billingStatus !== 'paid') {
+            $autoPenalty = $this->calculatePenalty($dueDate);
+            if ($autoPenalty > 0) {
+                $billingStatus = 'overdue';
+                $penaltyAmount = max($penaltyAmount, $autoPenalty);
+            }
         }
         
         // Validate that not all readings are zero and total amount is not zero
@@ -183,23 +192,23 @@ public function getBillings(Request $request)
             'consumer_id' => $consumer->id,
             'consumer_type' => $consumer->consumer_type,
             'meter_no' => $consumer->meter_no,
-            'due_date' => $request->due_date,
+            'due_date' => $dueDate->format('Y-m-d'),
             'previous_reading' => $previousReading,
             'current_reading' => $currentReading,
             'consumption' => $consumption,
             'payment_method' => $request->payment_method,
             'total_amount' => $totalAmount,
             'penalty_amount' => $penaltyAmount,
-            'status' => $request->status,
+            'status' => $billingStatus,
         ];
 
         // Set payment date if status is paid
-        if ($request->status === 'paid') {
+        if ($billingStatus === 'paid') {
             $billingData['payment_date'] = Carbon::now();
             
             // If paid after due date, add penalty
-            if (Carbon::now()->greaterThan(Carbon::parse($request->due_date))) {
-                $billingData['penalty_amount'] = $this->calculatePenalty($request->due_date, Carbon::now());
+            if (Carbon::now()->greaterThan($dueDate)) {
+                $billingData['penalty_amount'] = $this->calculatePenalty($dueDate, Carbon::now());
             }
         }
 
@@ -210,7 +219,7 @@ public function getBillings(Request $request)
             'consumer_id' => $consumer->id,
             'billing_id' => $billing->id,
             'title' => 'New Billing Available',
-            'message' => "A new billing for {$dueDate->format('F Y')} has been generated. Amount due: ₱" . number_format($totalAmount, 2),
+            'message' => "A new billing due on {$dueDate->format('F d, Y')} has been generated. Amount due: ₱" . number_format($totalAmount, 2),
             'type' => 'billing',
             'is_read' => false
         ]);
@@ -345,17 +354,26 @@ public function edit($id)
             }
         }
 
+        $billingStatus = $request->status === 'paid' ? 'paid' : 'unpaid';
+        if ($billingStatus !== 'paid') {
+            $autoPenalty = $this->calculatePenalty($request->due_date, Carbon::now());
+            if ($autoPenalty > 0) {
+                $billingStatus = 'overdue';
+                $penaltyAmount = max($penaltyAmount, $autoPenalty);
+            }
+        }
+
         $updateData = [
             'due_date' => $request->due_date,
             'current_reading' => $currentReading,
             'consumption' => $consumption,
             'total_amount' => $totalAmount,
             'penalty_amount' => $penaltyAmount,
-            'status' => $request->status,
+            'status' => $billingStatus,
         ];
 
         // Set payment date if status is paid
-        if ($request->status === 'paid') {
+        if ($billingStatus === 'paid') {
             $updateData['payment_date'] = Carbon::now();
         } else {
             $updateData['payment_date'] = null;
@@ -567,6 +585,7 @@ public function destroy($id)
 public function getBillingDetails($id)
 {
     try {
+        AccountantBilling::applyAutomaticOverduePenalties();
         $billing = AccountantBilling::with('consumer')->findOrFail($id);
         
         return response()->json([
@@ -584,6 +603,7 @@ public function getBillingDetails($id)
 public function getReceiptData($id)
 {
     try {
+        AccountantBilling::applyAutomaticOverduePenalties();
         $billing = AccountantBilling::with('consumer')->findOrFail($id);
         
         return response()->json([
@@ -615,7 +635,8 @@ public function calculatePenalty($dueDate, $paymentDate = null)
 public function getExistingBilling(Request $request)
 {
     $consumerId = $request->consumer_id;
-    $dueDate = Carbon::parse($request->due_date);
+    $billingCycleDate = Carbon::parse($request->due_date);
+    $dueDate = $billingCycleDate->copy()->addMonthNoOverflow();
     
     $existingBilling = AccountantBilling::where('consumer_id', $consumerId)
         ->whereMonth('due_date', $dueDate->month)
@@ -638,25 +659,28 @@ public function getExistingBilling(Request $request)
 
 public function getBillableConsumers(Request $request)
 {
-    $monthDate = $request->filled('month')
+    $billingCycleDate = $request->filled('month')
         ? Carbon::parse($request->month)
         : Carbon::now();
 
-    $month = $monthDate->month;
-    $year = $monthDate->year;
+    $dueDate = $billingCycleDate->copy()->addMonthNoOverflow();
+    $readingMonth = $billingCycleDate->month;
+    $readingYear = $billingCycleDate->year;
+    $dueMonth = $dueDate->month;
+    $dueYear = $dueDate->year;
 
     $consumers = AdminConsumer::where('status', 'active')
-        ->whereIn('id', function ($query) use ($month, $year) {
+        ->whereIn('id', function ($query) use ($readingMonth, $readingYear) {
             $query->select('consumer_id')
                 ->from('billings')
-                ->whereMonth('reading_date', $month)
-                ->whereYear('reading_date', $year);
+                ->whereMonth('reading_date', $readingMonth)
+                ->whereYear('reading_date', $readingYear);
         })
-        ->whereNotIn('id', function ($query) use ($month, $year) {
+        ->whereNotIn('id', function ($query) use ($dueMonth, $dueYear) {
             $query->select('consumer_id')
                 ->from('accountant_billings')
-                ->whereMonth('due_date', $month)
-                ->whereYear('due_date', $year)
+                ->whereMonth('due_date', $dueMonth)
+                ->whereYear('due_date', $dueYear)
                 ->whereNull('deleted_at');
         })
         ->select('id', 'first_name', 'middle_name', 'last_name', 'suffix', 'meter_no', 'consumer_type')
@@ -667,4 +691,3 @@ public function getBillableConsumers(Request $request)
     return response()->json($consumers);
 }
 }
-

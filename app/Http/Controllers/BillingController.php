@@ -452,6 +452,8 @@ public function restoreDisconnectedConsumer(Request $request, $id)
     }
      public function getBillingsData(Request $request)
     {
+        AccountantBilling::applyAutomaticOverduePenalties();
+
         $billings = AccountantBilling::active()
             ->with('consumer')
             ->when($request->filled('status'), function ($query) use ($request) {
@@ -657,6 +659,8 @@ public function restoreDisconnectedConsumer(Request $request, $id)
     public function getBillingDetails($id)
     {
         try {
+            AccountantBilling::applyAutomaticOverduePenalties();
+
             $billing = AccountantBilling::with('consumer')->findOrFail($id);
             
             return response()->json([
@@ -674,6 +678,8 @@ public function restoreDisconnectedConsumer(Request $request, $id)
     public function getReceipt($id)
     {
         try {
+            AccountantBilling::applyAutomaticOverduePenalties();
+
             $billing = AccountantBilling::with('consumer')->findOrFail($id);
             
             return response()->json([

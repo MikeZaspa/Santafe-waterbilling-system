@@ -1094,7 +1094,7 @@
                             <td>{{ \Carbon\Carbon::parse($bill->reading_date)->format('F Y') }}</td>
                             <td>{{ \Carbon\Carbon::parse($bill->due_date)->format('M d, Y') }}</td>
                             <td>{{ $bill->consumption }} m³</td>
-                            <td class="fw-medium">₱{{ number_format($bill->total_amount, 2) }}</td>
+                            <td class="fw-medium">₱{{ number_format($bill->amount_due, 2) }}</td>
                             <td>
                                 @if($bill->status === 'paid')
                                     <span class="badge badge-paid">
@@ -1116,7 +1116,7 @@
                                         @if($bill->status !== 'paid')
                                             <button class="btn btn-sm btn-success payment-btn me-1"
                                                 data-id="{{ $bill->id }}"
-                                                data-amount="{{ $bill->total_amount }}"
+                                                data-amount="{{ $bill->amount_due }}"
                                                 data-billno="{{ $loop->iteration }}">
                                                 <i class="bi bi-credit-card me-1"></i> Pay
                                             </button>
@@ -1154,7 +1154,7 @@
                     </div>
                     <div class="card-row">
                         <span class="card-label">Amount</span>
-                        <span class="card-value fw-medium">₱{{ number_format($bill->total_amount, 2) }}</span>
+                        <span class="card-value fw-medium">₱{{ number_format($bill->amount_due, 2) }}</span>
                     </div>
                     <div class="card-row">
                         <span class="card-label">Status</span>
@@ -1178,7 +1178,7 @@
                         @if($bill->status !== 'paid')
                             <button class="btn btn-sm btn-success payment-btn"
                                 data-id="{{ $bill->id }}"
-                                data-amount="{{ $bill->total_amount }}"
+                                data-amount="{{ $bill->amount_due }}"
                                 data-billno="{{ $loop->iteration }}">
                                 <i class="bi bi-credit-card me-1"></i> Pay
                             </button>

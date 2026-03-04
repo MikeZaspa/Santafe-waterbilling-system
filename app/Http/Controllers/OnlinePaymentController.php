@@ -33,6 +33,8 @@ class OnlinePaymentController extends Controller
 
         try {
             $bill = AccountantBilling::findOrFail($request->bill_id);
+            AccountantBilling::applyAutomaticOverduePenalties($bill->consumer_id);
+            $bill->refresh();
             
             // Check if bill is already paid
             if ($bill->status === 'paid') {
@@ -78,7 +80,7 @@ class OnlinePaymentController extends Controller
                 // Use the bill's consumer_id (admin_consumers.id) to keep relations consistent.
                 'consumer_id' => $bill->consumer_id,
                 'payment_method' => $request->payment_method,
-                'amount' => $bill->total_amount,
+                'amount' => $bill->amount_due,
                 'reference_number' => $request->reference_number,
                 'proof_image' => $imagePath,
                 'status' => 'pending'
