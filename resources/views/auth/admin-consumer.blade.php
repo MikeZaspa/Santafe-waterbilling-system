@@ -358,6 +358,11 @@
             color: #ffc107;
         }
 
+        .badge-status-disconnected {
+            background-color: rgba(255, 152, 0, 0.12);
+            color: #ff9800;
+        }
+
         .badge-status-cut {
             background-color: rgba(220, 53, 69, 0.1);
             color: #dc3545;
@@ -791,7 +796,6 @@
                     </thead>
                     <tbody>
                         @foreach($consumers as $consumer)
-                        @if($consumer->status == 'active')
                         <tr id="consumerRow_{{ $consumer->id }}">
                             <td class="fw-semibold">{{ $consumer->id }}</td>
                             <td>{{ $consumer->first_name }}</td>
@@ -804,10 +808,32 @@
                             <td>{{ $consumer->address_information ?? 'N/A' }}</td> <!-- Address Information column -->
                             <td>{{ $consumer->connection_date ? \Carbon\Carbon::parse($consumer->connection_date)->format('M d, Y') : 'N/A' }}</td>
                             <td>
-                                <span class="badge badge-status-active">
-                                    <i class="bi bi-check-circle"></i>
-                                    Active
-                                </span>
+                                @if($consumer->status == 'active')
+                                    <span class="badge badge-status-active">
+                                        <i class="bi bi-check-circle"></i>
+                                        Active
+                                    </span>
+                                @elseif($consumer->status == 'inactive')
+                                    <span class="badge badge-status-inactive">
+                                        <i class="bi bi-pause-circle"></i>
+                                        Inactive
+                                    </span>
+                                @elseif($consumer->status == 'disconnected')
+                                    <span class="badge badge-status-disconnected">
+                                        <i class="bi bi-slash-circle"></i>
+                                        Disconnected
+                                    </span>
+                                @elseif($consumer->status == 'cut')
+                                    <span class="badge badge-status-cut">
+                                        <i class="bi bi-x-circle"></i>
+                                        Cut
+                                    </span>
+                                @else
+                                    <span class="badge badge-status-inactive">
+                                        <i class="bi bi-question-circle"></i>
+                                        {{ ucfirst($consumer->status ?? 'Unknown') }}
+                                    </span>
+                                @endif
                             </td>
                             <td>
                                 <span class="badge 
@@ -830,7 +856,6 @@
                                 </button>
                             </td>
                         </tr>
-                        @endif
                         @endforeach
                     </tbody>
                 </table>
