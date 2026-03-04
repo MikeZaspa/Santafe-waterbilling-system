@@ -523,19 +523,117 @@ Route::post('/plumber-apk/verify-email', function () {
         ], 404);
     }
 
+    $cooldownKey = 'plumber_apk_code_cooldown_' . sha1($email);
+    if (\Illuminate\Support\Facades\Cache::has($cooldownKey)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Please wait before requesting another verification code.',
+        ], 429);
+    }
+
+    $verificationCode = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+    $codeKey = 'plumber_apk_code_' . sha1($email);
+    \Illuminate\Support\Facades\Cache::put($codeKey, [
+        'code' => $verificationCode,
+        'attempts' => 0,
+    ], now()->addMinutes(10));
+    \Illuminate\Support\Facades\Cache::put($cooldownKey, true, now()->addSeconds(60));
+
+    try {
+        \Illuminate\Support\Facades\Mail::raw(
+            "Your Santa Fe plumber APK download verification code is: {$verificationCode}. This code expires in 10 minutes.",
+            function ($message) use ($email) {
+                $message->to($email)
+                    ->subject('Plumber APK Download Verification Code');
+            }
+        );
+    } catch (\Exception $e) {
+        \Illuminate\Support\Facades\Log::error('Failed to send plumber APK verification code: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Unable to send verification code. Please try again.',
+        ], 500);
+    }
+
     return response()->json([
         'success' => true,
-        'message' => 'Email verified successfully.',
+        'message' => 'Verification code sent to your plumber email.',
     ]);
 })->name('plumber.apk.verify-email');
-Route::get('/plumber-apk', function () {
-    $email = mb_strtolower(trim((string) request()->query('email', '')));
-    $hasAccess = $email && filter_var($email, FILTER_VALIDATE_EMAIL)
-        && \App\Models\Plumber::whereRaw('LOWER(email) = ?', [$email])->exists();
+Route::post('/plumber-apk/verify-code', function () {
+    $email = mb_strtolower(trim((string) request()->input('email', '')));
+    $code = trim((string) request()->input('code', ''));
 
-    if (!$hasAccess) {
-        abort(403, 'Email verification is required before downloading the APK.');
+    if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Please enter a valid email address.',
+        ], 422);
     }
+
+    if (!preg_match('/^\d{6}$/', $code)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Verification code must be 6 digits.',
+        ], 422);
+    }
+
+    $codeKey = 'plumber_apk_code_' . sha1($email);
+    $cached = \Illuminate\Support\Facades\Cache::get($codeKey);
+
+    if (!$cached || empty($cached['code'])) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Verification code expired. Please request a new code.',
+        ], 410);
+    }
+
+    if (!hash_equals((string) $cached['code'], $code)) {
+        $attempts = ((int) ($cached['attempts'] ?? 0)) + 1;
+        if ($attempts >= 5) {
+            \Illuminate\Support\Facades\Cache::forget($codeKey);
+            return response()->json([
+                'success' => false,
+                'message' => 'Too many invalid attempts. Please request a new code.',
+            ], 429);
+        }
+
+        \Illuminate\Support\Facades\Cache::put($codeKey, [
+            'code' => $cached['code'],
+            'attempts' => $attempts,
+        ], now()->addMinutes(10));
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Invalid verification code.',
+        ], 422);
+    }
+
+    \Illuminate\Support\Facades\Cache::forget($codeKey);
+
+    $downloadToken = \Illuminate\Support\Str::random(64);
+    $downloadKey = 'plumber_apk_download_' . $downloadToken;
+    \Illuminate\Support\Facades\Cache::put($downloadKey, [
+        'email' => $email,
+    ], now()->addMinutes(5));
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Code verified successfully.',
+        'download_url' => route('plumber.apk.download', ['token' => $downloadToken]),
+    ]);
+})->name('plumber.apk.verify-code');
+Route::get('/plumber-apk', function () {
+    $token = trim((string) request()->query('token', ''));
+    $downloadKey = 'plumber_apk_download_' . $token;
+    $downloadSession = $token ? \Illuminate\Support\Facades\Cache::get($downloadKey) : null;
+
+    if (!$downloadSession) {
+        abort(403, 'Verification code is required before downloading the APK.');
+    }
+
+    // One-time download token.
+    \Illuminate\Support\Facades\Cache::forget($downloadKey);
 
     $apkPath = 'C:\\Plumber\\myapp\\platforms\\android\\app\\build\\outputs\\apk\\debug\\reading.apk';
 

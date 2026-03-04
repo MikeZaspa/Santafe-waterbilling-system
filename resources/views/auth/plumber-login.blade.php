@@ -424,8 +424,8 @@
             const recaptchaResponse2FA = document.getElementById('g-recaptcha-response-2fa');
             const forgotPasswordLink = document.getElementById('forgot-password-link');
             const apkModalBtn = document.getElementById('apkModalBtn');
-            const plumberApkUrl = '{{ route("plumber.apk.download") }}';
             const plumberApkVerifyUrl = '{{ route("plumber.apk.verify-email") }}';
+            const plumberApkVerifyCodeUrl = '{{ route("plumber.apk.verify-code") }}';
             
             let countdownInterval;
             let timeLeft = 60;
@@ -531,11 +531,11 @@
 
                     const verifyResult = await Swal.fire({
                         title: 'Verify Registered Email',
-                        text: 'Enter the plumber email registered in the system to continue.',
+                        text: 'Enter the registered plumber email. We will send a verification code.',
                         input: 'email',
                         inputPlaceholder: 'example@email.com',
                         showCancelButton: true,
-                        confirmButtonText: 'Verify Email',
+                        confirmButtonText: 'Send Code',
                         cancelButtonText: 'Close',
                         confirmButtonColor: '#0d9488',
                         showLoaderOnConfirm: true,
@@ -583,21 +583,58 @@
 
                     const confirmedEmail = verifyResult.value;
 
-                    const downloadResult = await Swal.fire({
-                        icon: 'info',
-                        title: 'Plumber Mobile App (Optional)',
-                        text: 'Email verified. Download reading.apk now?',
+                    const codeResult = await Swal.fire({
+                        title: 'Enter Verification Code',
+                        text: 'Check the registered plumber email for the 6-digit code.',
+                        input: 'text',
+                        inputPlaceholder: '123456',
                         showCancelButton: true,
-                        confirmButtonText: 'Download reading.apk',
+                        confirmButtonText: 'Verify Code',
                         cancelButtonText: 'Cancel',
-                        confirmButtonColor: '#0d9488'
+                        confirmButtonColor: '#0d9488',
+                        showLoaderOnConfirm: true,
+                        preConfirm: async (code) => {
+                            const cleanCode = String(code || '').trim();
+
+                            if (!/^\d{6}$/.test(cleanCode)) {
+                                Swal.showValidationMessage('Enter a valid 6-digit code.');
+                                return false;
+                            }
+
+                            try {
+                                const response = await fetch(plumberApkVerifyCodeUrl, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                        'Accept': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        email: confirmedEmail,
+                                        code: cleanCode
+                                    })
+                                });
+
+                                const data = await response.json().catch(() => ({}));
+                                if (!response.ok || !data.success || !data.download_url) {
+                                    Swal.showValidationMessage(data.message || 'Code verification failed.');
+                                    return false;
+                                }
+
+                                return data.download_url;
+                            } catch (error) {
+                                Swal.showValidationMessage('Verification failed. Please try again.');
+                                return false;
+                            }
+                        },
+                        allowOutsideClick: () => !Swal.isLoading()
                     });
 
-                    if (!downloadResult.isConfirmed) {
+                    if (!codeResult.isConfirmed || !codeResult.value) {
                         return;
                     }
 
-                    window.location.href = `${plumberApkUrl}?email=${encodeURIComponent(confirmedEmail)}`;
+                    window.location.href = codeResult.value;
                 });
             }
 
