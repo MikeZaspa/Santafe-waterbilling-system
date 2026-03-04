@@ -635,10 +635,20 @@ Route::get('/plumber-apk', function () {
     // One-time download token.
     \Illuminate\Support\Facades\Cache::forget($downloadKey);
 
-    $apkPath = 'C:\\Plumber\\myapp\\platforms\\android\\app\\build\\outputs\\apk\\debug\\reading.apk';
+    $configuredPath = trim((string) env('PLUMBER_APK_PATH', public_path('reading.apk')));
+    $isAbsolutePath = preg_match('/^[A-Za-z]:\\\\|^\//', $configuredPath) === 1;
+    $apkPath = $isAbsolutePath ? $configuredPath : base_path($configuredPath);
+
+    // Fallback for local Windows development if no env path/public file is present.
+    if (!file_exists($apkPath)) {
+        $windowsFallback = 'C:\\Plumber\\myapp\\platforms\\android\\app\\build\\outputs\\apk\\debug\\reading.apk';
+        if (file_exists($windowsFallback)) {
+            $apkPath = $windowsFallback;
+        }
+    }
 
     if (!file_exists($apkPath)) {
-        abort(404, 'Plumber APK file not found.');
+        abort(404, 'Plumber APK file not found. Upload reading.apk to public/ or set PLUMBER_APK_PATH in .env.');
     }
 
     return response()->download(
