@@ -12,10 +12,11 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Admin;
 use App\Models\Accountant;
 use App\Models\ConsumerAccount;
+use App\Models\Plumber;
 
 class ForgotPasswordController extends Controller
 {
-    private const ACCOUNT_TYPES = ['admin', 'accountant', 'consumer'];
+    private const ACCOUNT_TYPES = ['admin', 'accountant', 'consumer', 'plumber'];
 
     public function sendResetLink(Request $request)
     {
@@ -295,6 +296,7 @@ class ForgotPasswordController extends Controller
             'admin' => Admin::whereRaw('LOWER(email) = ?', [$normalizedEmail])->first(),
             'accountant' => Accountant::whereRaw('LOWER(email) = ?', [$normalizedEmail])->first(),
             'consumer' => ConsumerAccount::whereRaw('LOWER(email) = ?', [$normalizedEmail])->first(),
+            'plumber' => Plumber::whereRaw('LOWER(email) = ?', [$normalizedEmail])->first(),
             default => null,
         };
     }
@@ -326,6 +328,7 @@ class ForgotPasswordController extends Controller
         return match ($type) {
             'accountant' => url('/accountant-login'),
             'consumer' => url('/consumer-portal'),
+            'plumber' => url('/plumber-login'),
             default => route('admin-login'),
         };
     }
