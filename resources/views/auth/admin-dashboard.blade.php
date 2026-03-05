@@ -933,7 +933,7 @@
                 <i class="bi bi-list"></i>
             </button>
               <div>
-                <h2 class="header-title"Admin Dashboard</h2>
+<h2 class="header-title>Admin Dashboard</h2>
                 <p class="header-subtitle">Santa Fe Water Billing System</p>
             </div>
         </div>
