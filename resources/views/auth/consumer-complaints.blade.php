@@ -824,7 +824,7 @@
                     <div class="consumer-composer-row">
                         <textarea id="consumerTypingInput" name="message" class="form-control consumer-textarea" rows="3" placeholder="Type your reply here..." required>{{ old('message') }}</textarea>
                         <button type="submit" class="btn consumer-send-btn">
-                            <i class="bi bi-send me-1"></i> Send Reply
+                            <i class="bi bi-send me-1"></i> Send
                         </button>
                     </div>
                     <div class="consumer-attachment-row">
