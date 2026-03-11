@@ -52,6 +52,15 @@
                                     <td style="padding:8px;border:1px solid #e5e7eb;">{{ ucfirst($billing->status) }}</td>
                                 </tr>
                             </table>
+                            <div style="margin:16px 0 20px 0;">
+                                <a href="{{ url('/consumer-login') }}"
+                                   style="display:inline-block;background:#28a745;color:#ffffff;text-decoration:none;padding:10px 16px;border-radius:4px;font-weight:600;">
+                                    Pay Now
+                                </a>
+                            </div>
+                            <p style="margin:0 0 12px 0;font-size:12px;color:#6b7280;">
+                                If the button does not work, open this link: {{ url('/consumer-login') }}
+                            </p>
                             <p style="margin:0 0 12px 0;">You can view and pay your bill by logging in to your account.</p>
                             <p style="margin:0;">Thank you,<br>Santa Fe Water Billing System Team</p>
                         </td>
