@@ -6,6 +6,9 @@ use App\Models\Notice;
 use App\Models\AdminConsumer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use App\Mail\NoticeMail;
 
 class NoticeController extends Controller
 {
@@ -112,6 +115,7 @@ class NoticeController extends Controller
             ]);
 
             $notice->load('consumer');
+            $this->emailConsumer($notice, 'New notice');
 
             return response()->json([
                 'success' => true,
@@ -177,6 +181,7 @@ class NoticeController extends Controller
             ]);
 
             $notice->load('consumer');
+            $this->emailConsumer($notice, 'Updated notice');
 
             return response()->json([
                 'success' => true,
@@ -233,6 +238,23 @@ class NoticeController extends Controller
                 'success' => false,
                 'message' => 'Failed to update notice status: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    private function emailConsumer(Notice $notice, string $prefix): void
+    {
+        try {
+            $notice->loadMissing('consumer.account');
+            $email = $notice->consumer?->account?->email;
+            if (!empty($email)) {
+                Mail::to($email)->send(new NoticeMail($notice, $prefix));
+            }
+        } catch (\Exception $e) {
+            Log::warning('Failed to send notice email.', [
+                'consumer_id' => $notice->consumer_id ?? null,
+                'notice_id' => $notice->id ?? null,
+                'error' => $e->getMessage()
+            ]);
         }
     }
 }
