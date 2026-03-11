@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Carbon;
 use App\Models\Notification;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use App\Mail\BillingCreatedMail;
 class AccountantController extends Controller
 {
     /**
@@ -225,6 +228,21 @@ public function getBillings(Request $request)
         ]);
 
         DB::commit();
+
+        // Email consumer about the new billing (if they have an account email)
+        try {
+            $consumer->loadMissing('account');
+            $email = $consumer->account?->email;
+            if (!empty($email)) {
+                Mail::to($email)->send(new BillingCreatedMail($consumer, $billing));
+            }
+        } catch (\Exception $e) {
+            Log::warning('Failed to send billing email.', [
+                'consumer_id' => $consumer->id ?? null,
+                'billing_id' => $billing->id ?? null,
+                'error' => $e->getMessage()
+            ]);
+        }
 
         return response()->json([
             'success' => true,
