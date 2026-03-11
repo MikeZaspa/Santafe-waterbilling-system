@@ -5,12 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\OnlinePayment;
 use App\Models\AccountantBilling;
 use App\Models\AdminConsumer;
+use App\Models\Accountant;
 use App\Models\Disconnection;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use App\Mail\PaymentSubmittedMail;
 
 class OnlinePaymentController extends Controller
 {
@@ -32,7 +36,7 @@ class OnlinePaymentController extends Controller
         ]);
 
         try {
-            $bill = AccountantBilling::findOrFail($request->bill_id);
+            $bill = AccountantBilling::with('consumer')->findOrFail($request->bill_id);
             AccountantBilling::applyAutomaticOverduePenalties($bill->consumer_id);
             $bill->refresh();
             
@@ -97,6 +101,8 @@ class OnlinePaymentController extends Controller
                     'is_read' => false,
                 ]);
             }
+            
+            $this->emailAccountants($payment, $bill);
 
             return response()->json([
                 'success' => true,
@@ -471,4 +477,25 @@ class OnlinePaymentController extends Controller
     
     return response($file, 200)->header('Content-Type', $type);
 }
+
+    private function emailAccountants(OnlinePayment $payment, AccountantBilling $bill): void
+    {
+        Accountant::query()
+            ->whereNotNull('email')
+            ->where('email', '!=', '')
+            ->where('status', 'active')
+            ->chunkById(200, function ($accountants) use ($payment, $bill) {
+                foreach ($accountants as $accountant) {
+                    try {
+                        Mail::to($accountant->email)->send(new PaymentSubmittedMail($payment, $bill));
+                    } catch (\Exception $e) {
+                        Log::warning('Failed to send accountant payment email.', [
+                            'accountant_id' => $accountant->id ?? null,
+                            'payment_id' => $payment->id ?? null,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+                }
+            });
+    }
 }
