@@ -5,7 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\AdminConsumer;
 use App\Models\Announcement;
 use App\Models\Notification;
+use App\Models\ConsumerAccount;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use App\Mail\AnnouncementMail;
 
 class AnnouncementController extends Controller
 {
@@ -47,6 +51,7 @@ class AnnouncementController extends Controller
 
         if ($announcement->is_active) {
             $this->broadcastToConsumers($announcement, 'New announcement');
+            $this->emailConsumers($announcement, 'New announcement');
         }
 
         return response()->json([
@@ -81,6 +86,7 @@ class AnnouncementController extends Controller
 
         if ($announcement->is_active) {
             $this->broadcastToConsumers($announcement, 'Updated announcement');
+            $this->emailConsumers($announcement, 'Updated announcement');
         }
 
         return response()->json([
@@ -109,6 +115,7 @@ class AnnouncementController extends Controller
             $announcement->published_at = now();
             $announcement->save();
             $this->broadcastToConsumers($announcement, 'Announcement activated');
+            $this->emailConsumers($announcement, 'Announcement activated');
         }
 
         return response()->json([
@@ -149,5 +156,28 @@ class AnnouncementController extends Controller
         foreach (array_chunk($rows, 500) as $chunk) {
             Notification::insert($chunk);
         }
+    }
+
+    private function emailConsumers(Announcement $announcement, string $prefix): void
+    {
+        ConsumerAccount::query()
+            ->whereNotNull('email')
+            ->where('email', '!=', '')
+            ->whereHas('consumer', function ($query) {
+                $query->where('status', 'active');
+            })
+            ->chunkById(200, function ($accounts) use ($announcement, $prefix) {
+                foreach ($accounts as $account) {
+                    try {
+                        Mail::to($account->email)->send(new AnnouncementMail($announcement, $prefix));
+                    } catch (\Exception $e) {
+                        Log::warning('Failed to send announcement email.', [
+                            'consumer_id' => $account->consumer_id ?? null,
+                            'announcement_id' => $announcement->id ?? null,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+                }
+            });
     }
 }
